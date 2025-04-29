@@ -1,0 +1,126 @@
+# Compliance Check Results
+
+## FAIL Results
+| Namespace | Name | Result | Severity | File |
+|-----------|------|--------|----------|------|
+| openshift-compliance | ocp4-e8-api-server-encryption-provider-cipher | FAIL | medium | [ocp4-e8-api-server-encryption-provider-cipher.yaml](complianceremediations/ocp4-e8-api-server-encryption-provider-cipher.yaml) |
+| openshift-compliance | ocp4-e8-ocp-allowed-registries | FAIL | medium | N/A |
+| openshift-compliance | ocp4-e8-ocp-allowed-registries-for-import | FAIL | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-audit-rules-dac-modification-chmod | FAIL | medium | [rhcos4-e8-master-audit-rules-dac-modification-chmod.yaml](complianceremediations/rhcos4-e8-master-audit-rules-dac-modification-chmod.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-dac-modification-chown | FAIL | medium | [rhcos4-e8-master-audit-rules-dac-modification-chown.yaml](complianceremediations/rhcos4-e8-master-audit-rules-dac-modification-chown.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-execution-chcon | FAIL | medium | [rhcos4-e8-master-audit-rules-execution-chcon.yaml](complianceremediations/rhcos4-e8-master-audit-rules-execution-chcon.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-execution-restorecon | FAIL | medium | [rhcos4-e8-master-audit-rules-execution-restorecon.yaml](complianceremediations/rhcos4-e8-master-audit-rules-execution-restorecon.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-execution-semanage | FAIL | medium | [rhcos4-e8-master-audit-rules-execution-semanage.yaml](complianceremediations/rhcos4-e8-master-audit-rules-execution-semanage.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-execution-setfiles | FAIL | medium | [rhcos4-e8-master-audit-rules-execution-setfiles.yaml](complianceremediations/rhcos4-e8-master-audit-rules-execution-setfiles.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-execution-setsebool | FAIL | medium | [rhcos4-e8-master-audit-rules-execution-setsebool.yaml](complianceremediations/rhcos4-e8-master-audit-rules-execution-setsebool.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-execution-seunshare | FAIL | medium | [rhcos4-e8-master-audit-rules-execution-seunshare.yaml](complianceremediations/rhcos4-e8-master-audit-rules-execution-seunshare.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-kernel-module-loading-delete | FAIL | medium | [rhcos4-e8-master-audit-rules-kernel-module-loading-delete.yaml](complianceremediations/rhcos4-e8-master-audit-rules-kernel-module-loading-delete.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-kernel-module-loading-finit | FAIL | medium | [rhcos4-e8-master-audit-rules-kernel-module-loading-finit.yaml](complianceremediations/rhcos4-e8-master-audit-rules-kernel-module-loading-finit.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-kernel-module-loading-init | FAIL | medium | [rhcos4-e8-master-audit-rules-kernel-module-loading-init.yaml](complianceremediations/rhcos4-e8-master-audit-rules-kernel-module-loading-init.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-login-events | FAIL | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-audit-rules-login-events-faillock | FAIL | medium | [rhcos4-e8-master-audit-rules-login-events-faillock.yaml](complianceremediations/rhcos4-e8-master-audit-rules-login-events-faillock.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-login-events-lastlog | FAIL | medium | [rhcos4-e8-master-audit-rules-login-events-lastlog.yaml](complianceremediations/rhcos4-e8-master-audit-rules-login-events-lastlog.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-login-events-tallylog | FAIL | medium | [rhcos4-e8-master-audit-rules-login-events-tallylog.yaml](complianceremediations/rhcos4-e8-master-audit-rules-login-events-tallylog.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-networkconfig-modification | FAIL | medium | [rhcos4-e8-master-audit-rules-networkconfig-modification.yaml](complianceremediations/rhcos4-e8-master-audit-rules-networkconfig-modification.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-sysadmin-actions | FAIL | medium | [rhcos4-e8-master-audit-rules-sysadmin-actions.yaml](complianceremediations/rhcos4-e8-master-audit-rules-sysadmin-actions.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-time-adjtimex | FAIL | medium | [rhcos4-e8-master-audit-rules-time-adjtimex.yaml](complianceremediations/rhcos4-e8-master-audit-rules-time-adjtimex.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-time-clock-settime | FAIL | medium | [rhcos4-e8-master-audit-rules-time-clock-settime.yaml](complianceremediations/rhcos4-e8-master-audit-rules-time-clock-settime.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-time-settimeofday | FAIL | medium | [rhcos4-e8-master-audit-rules-time-settimeofday.yaml](complianceremediations/rhcos4-e8-master-audit-rules-time-settimeofday.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-time-stime | FAIL | medium | [rhcos4-e8-master-audit-rules-time-stime.yaml](complianceremediations/rhcos4-e8-master-audit-rules-time-stime.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-time-watch-localtime | FAIL | medium | [rhcos4-e8-master-audit-rules-time-watch-localtime.yaml](complianceremediations/rhcos4-e8-master-audit-rules-time-watch-localtime.yaml) |
+| openshift-compliance | rhcos4-e8-master-audit-rules-usergroup-modification | FAIL | medium | [rhcos4-e8-master-audit-rules-usergroup-modification.yaml](complianceremediations/rhcos4-e8-master-audit-rules-usergroup-modification.yaml) |
+| openshift-compliance | rhcos4-e8-master-auditd-name-format | FAIL | medium | [rhcos4-e8-master-auditd-name-format.yaml](complianceremediations/rhcos4-e8-master-auditd-name-format.yaml) |
+| openshift-compliance | rhcos4-e8-master-configure-crypto-policy | FAIL | high | [rhcos4-e8-master-configure-crypto-policy.yaml](complianceremediations/rhcos4-e8-master-configure-crypto-policy.yaml) |
+| openshift-compliance | rhcos4-e8-master-no-empty-passwords | FAIL | high | [rhcos4-e8-master-no-empty-passwords.yaml](complianceremediations/rhcos4-e8-master-no-empty-passwords.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-disable-empty-passwords | FAIL | high | [rhcos4-e8-master-sshd-disable-empty-passwords.yaml](complianceremediations/rhcos4-e8-master-sshd-disable-empty-passwords.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-disable-gssapi-auth | FAIL | medium | [rhcos4-e8-master-sshd-disable-gssapi-auth.yaml](complianceremediations/rhcos4-e8-master-sshd-disable-gssapi-auth.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-disable-rhosts | FAIL | medium | [rhcos4-e8-master-sshd-disable-rhosts.yaml](complianceremediations/rhcos4-e8-master-sshd-disable-rhosts.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-disable-root-login | FAIL | medium | [rhcos4-e8-master-sshd-disable-root-login.yaml](complianceremediations/rhcos4-e8-master-sshd-disable-root-login.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-disable-user-known-hosts | FAIL | medium | [rhcos4-e8-master-sshd-disable-user-known-hosts.yaml](complianceremediations/rhcos4-e8-master-sshd-disable-user-known-hosts.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-do-not-permit-user-env | FAIL | medium | [rhcos4-e8-master-sshd-do-not-permit-user-env.yaml](complianceremediations/rhcos4-e8-master-sshd-do-not-permit-user-env.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-enable-strictmodes | FAIL | medium | [rhcos4-e8-master-sshd-enable-strictmodes.yaml](complianceremediations/rhcos4-e8-master-sshd-enable-strictmodes.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-print-last-log | FAIL | medium | [rhcos4-e8-master-sshd-print-last-log.yaml](complianceremediations/rhcos4-e8-master-sshd-print-last-log.yaml) |
+| openshift-compliance | rhcos4-e8-master-sshd-set-loglevel-info | FAIL | low | [rhcos4-e8-master-sshd-set-loglevel-info.yaml](complianceremediations/rhcos4-e8-master-sshd-set-loglevel-info.yaml) |
+| openshift-compliance | rhcos4-e8-master-sysctl-kernel-dmesg-restrict | FAIL | low | [rhcos4-e8-master-sysctl-kernel-dmesg-restrict.yaml](complianceremediations/rhcos4-e8-master-sysctl-kernel-dmesg-restrict.yaml) |
+| openshift-compliance | rhcos4-e8-master-sysctl-kernel-randomize-va-space | FAIL | medium | [rhcos4-e8-master-sysctl-kernel-randomize-va-space.yaml](complianceremediations/rhcos4-e8-master-sysctl-kernel-randomize-va-space.yaml) |
+| openshift-compliance | rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled | FAIL | medium | [rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled.yaml](complianceremediations/rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled.yaml) |
+| openshift-compliance | rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope | FAIL | medium | [rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope.yaml](complianceremediations/rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope.yaml) |
+| openshift-compliance | rhcos4-e8-master-sysctl-net-core-bpf-jit-harden | FAIL | medium | [rhcos4-e8-master-sysctl-net-core-bpf-jit-harden.yaml](complianceremediations/rhcos4-e8-master-sysctl-net-core-bpf-jit-harden.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-dac-modification-chmod | FAIL | medium | [rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-dac-modification-chown | FAIL | medium | [rhcos4-e8-worker-audit-rules-dac-modification-chown.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-dac-modification-chown.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-execution-chcon | FAIL | medium | [rhcos4-e8-worker-audit-rules-execution-chcon.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-execution-chcon.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-execution-restorecon | FAIL | medium | [rhcos4-e8-worker-audit-rules-execution-restorecon.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-execution-restorecon.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-execution-semanage | FAIL | medium | [rhcos4-e8-worker-audit-rules-execution-semanage.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-execution-semanage.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-execution-setfiles | FAIL | medium | [rhcos4-e8-worker-audit-rules-execution-setfiles.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-execution-setfiles.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-execution-setsebool | FAIL | medium | [rhcos4-e8-worker-audit-rules-execution-setsebool.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-execution-setsebool.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-execution-seunshare | FAIL | medium | [rhcos4-e8-worker-audit-rules-execution-seunshare.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-execution-seunshare.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-kernel-module-loading-delete | FAIL | medium | [rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-kernel-module-loading-finit | FAIL | medium | [rhcos4-e8-worker-audit-rules-kernel-module-loading-finit.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-kernel-module-loading-finit.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-kernel-module-loading-init | FAIL | medium | [rhcos4-e8-worker-audit-rules-kernel-module-loading-init.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-kernel-module-loading-init.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-login-events | FAIL | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-login-events-faillock | FAIL | medium | [rhcos4-e8-worker-audit-rules-login-events-faillock.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-login-events-faillock.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-login-events-lastlog | FAIL | medium | [rhcos4-e8-worker-audit-rules-login-events-lastlog.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-login-events-lastlog.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-login-events-tallylog | FAIL | medium | [rhcos4-e8-worker-audit-rules-login-events-tallylog.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-login-events-tallylog.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-networkconfig-modification | FAIL | medium | [rhcos4-e8-worker-audit-rules-networkconfig-modification.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-networkconfig-modification.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-sysadmin-actions | FAIL | medium | [rhcos4-e8-worker-audit-rules-sysadmin-actions.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-sysadmin-actions.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-time-adjtimex | FAIL | medium | [rhcos4-e8-worker-audit-rules-time-adjtimex.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-time-adjtimex.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-time-clock-settime | FAIL | medium | [rhcos4-e8-worker-audit-rules-time-clock-settime.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-time-clock-settime.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-time-settimeofday | FAIL | medium | [rhcos4-e8-worker-audit-rules-time-settimeofday.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-time-settimeofday.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-time-stime | FAIL | medium | [rhcos4-e8-worker-audit-rules-time-stime.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-time-stime.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-time-watch-localtime | FAIL | medium | [rhcos4-e8-worker-audit-rules-time-watch-localtime.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-time-watch-localtime.yaml) |
+| openshift-compliance | rhcos4-e8-worker-audit-rules-usergroup-modification | FAIL | medium | [rhcos4-e8-worker-audit-rules-usergroup-modification.yaml](complianceremediations/rhcos4-e8-worker-audit-rules-usergroup-modification.yaml) |
+| openshift-compliance | rhcos4-e8-worker-auditd-name-format | FAIL | medium | [rhcos4-e8-worker-auditd-name-format.yaml](complianceremediations/rhcos4-e8-worker-auditd-name-format.yaml) |
+| openshift-compliance | rhcos4-e8-worker-configure-crypto-policy | FAIL | high | [rhcos4-e8-worker-configure-crypto-policy.yaml](complianceremediations/rhcos4-e8-worker-configure-crypto-policy.yaml) |
+| openshift-compliance | rhcos4-e8-worker-no-empty-passwords | FAIL | high | [rhcos4-e8-worker-no-empty-passwords.yaml](complianceremediations/rhcos4-e8-worker-no-empty-passwords.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-disable-empty-passwords | FAIL | high | [rhcos4-e8-worker-sshd-disable-empty-passwords.yaml](complianceremediations/rhcos4-e8-worker-sshd-disable-empty-passwords.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-disable-gssapi-auth | FAIL | medium | [rhcos4-e8-worker-sshd-disable-gssapi-auth.yaml](complianceremediations/rhcos4-e8-worker-sshd-disable-gssapi-auth.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-disable-rhosts | FAIL | medium | [rhcos4-e8-worker-sshd-disable-rhosts.yaml](complianceremediations/rhcos4-e8-worker-sshd-disable-rhosts.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-disable-root-login | FAIL | medium | [rhcos4-e8-worker-sshd-disable-root-login.yaml](complianceremediations/rhcos4-e8-worker-sshd-disable-root-login.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-disable-user-known-hosts | FAIL | medium | [rhcos4-e8-worker-sshd-disable-user-known-hosts.yaml](complianceremediations/rhcos4-e8-worker-sshd-disable-user-known-hosts.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-do-not-permit-user-env | FAIL | medium | [rhcos4-e8-worker-sshd-do-not-permit-user-env.yaml](complianceremediations/rhcos4-e8-worker-sshd-do-not-permit-user-env.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-enable-strictmodes | FAIL | medium | [rhcos4-e8-worker-sshd-enable-strictmodes.yaml](complianceremediations/rhcos4-e8-worker-sshd-enable-strictmodes.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-print-last-log | FAIL | medium | [rhcos4-e8-worker-sshd-print-last-log.yaml](complianceremediations/rhcos4-e8-worker-sshd-print-last-log.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sshd-set-loglevel-info | FAIL | low | [rhcos4-e8-worker-sshd-set-loglevel-info.yaml](complianceremediations/rhcos4-e8-worker-sshd-set-loglevel-info.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sysctl-kernel-dmesg-restrict | FAIL | low | [rhcos4-e8-worker-sysctl-kernel-dmesg-restrict.yaml](complianceremediations/rhcos4-e8-worker-sysctl-kernel-dmesg-restrict.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sysctl-kernel-randomize-va-space | FAIL | medium | [rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml](complianceremediations/rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled | FAIL | medium | [rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled.yaml](complianceremediations/rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope | FAIL | medium | [rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope.yaml](complianceremediations/rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope.yaml) |
+| openshift-compliance | rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden | FAIL | medium | [rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden.yaml](complianceremediations/rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden.yaml) |
+
+## PASS Results
+| Namespace | Name | Result | Severity | File |
+|-----------|------|--------|----------|------|
+| openshift-compliance | ocp4-e8-api-server-tls-cipher-suites | PASS | medium | N/A |
+| openshift-compliance | ocp4-e8-ocp-idp-no-htpasswd | PASS | medium | N/A |
+| openshift-compliance | ocp4-e8-scc-limit-container-allowed-capabilities | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-accounts-no-uid-except-zero | PASS | high | N/A |
+| openshift-compliance | rhcos4-e8-master-auditd-data-retention-flush | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-auditd-freq | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-auditd-local-events | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-auditd-log-format | PASS | low | N/A |
+| openshift-compliance | rhcos4-e8-master-auditd-write-logs | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-configure-ssh-crypto-policy | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-selinux-policytype | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-master-selinux-state | PASS | high | N/A |
+| openshift-compliance | rhcos4-e8-master-sysctl-kernel-kptr-restrict | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-accounts-no-uid-except-zero | PASS | high | N/A |
+| openshift-compliance | rhcos4-e8-worker-auditd-data-retention-flush | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-auditd-freq | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-auditd-local-events | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-auditd-log-format | PASS | low | N/A |
+| openshift-compliance | rhcos4-e8-worker-auditd-write-logs | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-configure-ssh-crypto-policy | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-selinux-policytype | PASS | medium | N/A |
+| openshift-compliance | rhcos4-e8-worker-selinux-state | PASS | high | N/A |
+| openshift-compliance | rhcos4-e8-worker-sysctl-kernel-kptr-restrict | PASS | medium | N/A |
+
+## MANUAL Results
+| Namespace | Name | Result | Severity | File |
+|-----------|------|--------|----------|------|
+| openshift-compliance | ocp4-e8-rbac-limit-cluster-admin | MANUAL | medium | N/A |
+| openshift-compliance | ocp4-e8-rbac-pod-creation-access | MANUAL | medium | N/A |
+| openshift-compliance | ocp4-e8-rbac-wildcard-use | MANUAL | medium | N/A |
+| openshift-compliance | ocp4-e8-scc-limit-privilege-escalation | MANUAL | medium | N/A |
+| openshift-compliance | ocp4-e8-scc-limit-privileged-containers | MANUAL | medium | N/A |
+| openshift-compliance | ocp4-e8-scc-limit-root-containers | MANUAL | medium | N/A |
+
