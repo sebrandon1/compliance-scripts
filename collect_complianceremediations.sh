@@ -15,6 +15,12 @@ if ! command -v yq &> /dev/null; then
   exit 1
 fi
 
+# Pre-check: Ensure the cluster is available before proceeding
+if ! oc whoami &> /dev/null; then
+  echo "Error: Unable to connect to the cluster. Please ensure you are logged in with 'oc login' and the cluster is reachable."
+  exit 1
+fi
+
 # Directory to store the YAML files
 destination_dir="complianceremediations"
 

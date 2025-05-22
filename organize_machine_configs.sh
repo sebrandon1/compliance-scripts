@@ -34,10 +34,12 @@ for file in "$source_dir"/*.yaml; do
 
 		# Generate the new file name with the "75-" prefix
 		base_name=$(basename "$file")
-		new_name="75-${base_name}"
+		# Remove any existing "75-" prefix to avoid double prefixing
+		base_name_no_prefix=${base_name#75-}
+		new_name="75-${base_name_no_prefix}"
 
-		# Generate the new metadata name
-		metadata_name="75-${base_name%.yaml}"
+		# Generate the new metadata name (remove .yaml and any existing 75- prefix)
+		metadata_name="75-${base_name_no_prefix%.yaml}"
 
 		# Determine the role (master or worker) based on the filename
 		if [[ "$base_name" == *"master"* ]]; then
@@ -47,6 +49,11 @@ for file in "$source_dir"/*.yaml; do
     else
       role="unknown"
     fi
+
+		# metadata:
+		# 	labels:
+		# 		machineconfiguration.openshift.io/role: worker
+		# 	name: 75-worker-disable-ctrlaltdel-burstaction
 
 		# Use yq to add or update the metadata section with the name and role
 		yq ".metadata.name = \"$metadata_name\" | .metadata.labels.[\"machineconfiguration.openshift.io/role\"] = \"$role\"" "$file" > "$topic_dir/$new_name"
