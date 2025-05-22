@@ -2,10 +2,15 @@
 
 This repository contains a set of scripts to help automate the collection, organization, and management of OpenShift Compliance Operator remediations and related resources.
 
+- [Compliance Operator GitHub Repository](https://github.com/ComplianceAsCode/compliance-operator)
+- [Compliance Operator Workshop Tutorials](https://github.com/ComplianceAsCode/compliance-operator/tree/master/doc/tutorials/workshop/content/exercises)
+
 ## Scripts Overview
 
 ### 1. install-compliance-operator.sh
 Installs the Compliance Operator in the `openshift-compliance` namespace. Waits for the operator to be fully installed and ready.
+
+- [Compliance Operator Install Docs](https://github.com/ComplianceAsCode/compliance-operator#installation)
 
 **Usage:**
 ```bash
@@ -57,6 +62,8 @@ Generates a Markdown report mapping ComplianceCheckResult objects to their corre
 ### 6. create-scan.sh
 Creates a basic ScanSettingBinding for the `ocp4-cis` profile in the `openshift-compliance` namespace.
 
+- [Workshop: Creating Your First Scan](https://github.com/ComplianceAsCode/compliance-operator/blob/master/doc/tutorials/workshop/content/exercises/03-creating-your-first-scan.md)
+
 **Usage:**
 ```bash
 ./create-scan.sh
@@ -66,6 +73,8 @@ Creates a basic ScanSettingBinding for the `ocp4-cis` profile in the `openshift-
 
 ### 7. apply-periodic-scan.sh
 Applies a periodic ScanSetting and ScanSettingBinding for the `rhcos4-e8` and `ocp4-e8` profiles, as described in the Compliance Operator workshop.
+
+- [Workshop: Creating Your First Scan (Periodic Example)](https://github.com/ComplianceAsCode/compliance-operator/blob/master/doc/tutorials/workshop/content/exercises/03-creating-your-first-scan.md)
 
 **Usage:**
 ```bash
