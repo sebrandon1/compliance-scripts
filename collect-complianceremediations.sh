@@ -4,21 +4,21 @@
 set -e
 
 # Check if the 'oc' command-line client is installed
-if ! command -v oc &> /dev/null; then
-  echo "Error: 'oc' command-line client is not installed. Please install it and try again."
-  exit 1
+if ! command -v oc &>/dev/null; then
+	echo "Error: 'oc' command-line client is not installed. Please install it and try again."
+	exit 1
 fi
 
 # Check if the 'yq' command-line client is installed
-if ! command -v yq &> /dev/null; then
-  echo "Error: 'yq' command-line client is not installed. Please install it and try again."
-  exit 1
+if ! command -v yq &>/dev/null; then
+	echo "Error: 'yq' command-line client is not installed. Please install it and try again."
+	exit 1
 fi
 
 # Pre-check: Ensure the cluster is available before proceeding
-if ! oc whoami &> /dev/null; then
-  echo "Error: Unable to connect to the cluster. Please ensure you are logged in with 'oc login' and the cluster is reachable."
-  exit 1
+if ! oc whoami &>/dev/null; then
+	echo "Error: Unable to connect to the cluster. Please ensure you are logged in with 'oc login' and the cluster is reachable."
+	exit 1
 fi
 
 # Directory to store the YAML files
@@ -49,27 +49,27 @@ kinds=()
 
 # Loop through each complianceremediation object
 for name in $names; do
-  # Extract the spec.object YAML structure for the current object
-  spec_object=$(echo "$complianceremediations" | yq e ".items[] | select(.metadata.name == \"$name\") | .spec.current.object" -)
+	# Extract the spec.object YAML structure for the current object
+	spec_object=$(echo "$complianceremediations" | yq e ".items[] | select(.metadata.name == \"$name\") | .spec.current.object" -)
 
-  # Validate the YAML structure of the spec.object
-  if ! echo "$spec_object" | yq e '.' - > /dev/null 2>&1; then
-    echo "Warning: Invalid YAML for complianceremediation object '$name'. Skipping."
-    count_invalid=$((count_invalid+1))
-    count_total=$((count_total+1))
-    continue
-  fi
+	# Validate the YAML structure of the spec.object
+	if ! echo "$spec_object" | yq e '.' - >/dev/null 2>&1; then
+		echo "Warning: Invalid YAML for complianceremediation object '$name'. Skipping."
+		count_invalid=$((count_invalid + 1))
+		count_total=$((count_total + 1))
+		continue
+	fi
 
-  # Save the spec.object YAML to a file named after the complianceremediation object
-  echo "$spec_object" > "$destination_dir/$name.yaml"
-  count_valid=$((count_valid+1))
-  count_total=$((count_total+1))
+	# Save the spec.object YAML to a file named after the complianceremediation object
+	echo "$spec_object" >"$destination_dir/$name.yaml"
+	count_valid=$((count_valid + 1))
+	count_total=$((count_total + 1))
 
-  # Extract kind if possible
-  kind=$(echo "$spec_object" | yq e '.kind' - 2>/dev/null)
-  if [[ -n "$kind" && "$kind" != "null" ]]; then
-    kinds+=("$kind")
-  fi
+	# Extract kind if possible
+	kind=$(echo "$spec_object" | yq e '.kind' - 2>/dev/null)
+	if [[ -n "$kind" && "$kind" != "null" ]]; then
+		kinds+=("$kind")
+	fi
 
 done
 
