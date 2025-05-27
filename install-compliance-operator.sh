@@ -52,3 +52,6 @@ fi
 
 echo "[SUCCESS] Compliance Operator installed successfully."
 oc get pods -n $NAMESPACE
+
+echo "[NEXT STEP] To schedule a periodic compliance scan, run:"
+echo "  ./apply-periodic-scan.sh"
