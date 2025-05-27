@@ -1,0 +1,20 @@
+name: Shell Lint
+
+on:
+  pull_request:
+    paths:
+      - '**.sh'
+
+jobs:
+  shfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up shfmt
+        uses: mfinelli/setup-shfmt@v3
+        with:
+          shfmt-version: "3.7.0"
+      - name: Run shfmt
+        run: |
+          shfmt .
