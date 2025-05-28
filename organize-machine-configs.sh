@@ -55,8 +55,13 @@ for file in "$source_dir"/*.yaml; do
 		# For non-MachineConfig, organize by kind
 		kind_dir="$extramanifests_dir/$kind"
 		mkdir -p "$kind_dir"
-		# Update metadata.name
-		yq ".metadata.name = \"$metadata_name\"" "$file" >"$kind_dir/$new_name"
+		if [[ "$kind" == "APIServer" ]]; then
+			# Always set metadata.name to 'cluster' for APIServer
+			yq ".metadata.name = \"cluster\"" "$file" >"$kind_dir/$new_name"
+		else
+			# Update metadata.name as before
+			yq ".metadata.name = \"$metadata_name\"" "$file" >"$kind_dir/$new_name"
+		fi
 		if ! yq e '.' "$kind_dir/$new_name" >/dev/null 2>&1; then
 			echo "Warning: Invalid YAML for the new file '$kind_dir/$new_name'. Skipping."
 			continue
