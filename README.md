@@ -109,3 +109,39 @@ Force deletes a namespace and all its resources (use with caution).
 ## Notes
 - Most scripts default to the `openshift-compliance` namespace but allow overriding via arguments.
 - Always review generated YAML and Markdown files before applying or merging into production.
+
+## Automation with Makefile
+
+A `Makefile` is provided to automate the full compliance workflow or run individual steps. This is the recommended way to run the process end-to-end.
+
+### Full Workflow
+
+To run the entire compliance process from install to report generation:
+
+```bash
+make full-workflow
+```
+
+This will sequentially run:
+- install-compliance-operator.sh
+- apply-periodic-scan.sh
+- create-scan.sh
+- collect-complianceremediations.sh
+- organize-machine-configs.sh
+- generate-compliance-markdown.sh
+
+### Individual Steps
+
+You can also run each step individually:
+
+```bash
+make install-compliance-operator
+make apply-periodic-scan
+make create-scan
+make collect-complianceremediations
+make organize-machine-configs
+make generate-compliance-markdown
+make clean  # Remove generated files
+```
+
+See the Makefile for all available targets and details.
