@@ -93,16 +93,40 @@ Force deletes a namespace and all its resources (use with caution).
 
 ---
 
+### 9. create-source-comments.py (Optional)
+Scans all YAML files in `complianceremediations/` for `kind: MachineConfig` and, for each `source: data:,...` line, decodes the data and inserts a human-readable comment block above the `source:` line. The script is idempotent and will not add duplicate comments.
+
+**Usage:**
+```bash
+python3 create-source-comments.py
+```
+
+---
+
+## Python Virtual Environment
+
+It is recommended to use a Python virtual environment when running the Python scripts. To set up a venv and install dependencies:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip3 install ruamel.yaml
+```
+
+---
+
 ## Directory Structure
 - `complianceremediations/` — Collected remediation YAMLs (auto-generated, ignored by git)
 - `created_file_paths.txt` — List of generated file paths for easy copy-paste
 - `ComplianceCheckResults.md` — Markdown report of compliance check results (auto-generated, ignored by git)
+- `source_comments/` — Directory for storing YAML files with added source comments (see above)
 
 ---
 
 ## Requirements
 - `oc` (OpenShift CLI)
 - `yq` (YAML processor)
+- `python3` (with standard library; no extra packages required)
 
 ---
 
