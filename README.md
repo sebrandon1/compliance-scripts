@@ -103,6 +103,16 @@ python3 create-source-comments.py
 
 ---
 
+### 10. combine-machineconfigs-by-path.py
+Scans all YAML files in `complianceremediations/` for `kind: MachineConfig` and combines any that target the same file path (e.g., `/etc/ssh/sshd_config`) into a single deduplicated YAML. Role distinctions (e.g., master/worker) are ignored unless explicit labels are present in the YAML. Only files with overlapping paths are combined; originals are moved to `complianceremediations/combo/` if combined. The process is idempotent and only affects files that actually overlap.
+
+**Usage:**
+```bash
+python3 combine-machineconfigs-by-path.py
+```
+
+---
+
 ## Python Virtual Environment
 
 It is recommended to use a Python virtual environment when running the Python scripts. To set up a venv and install dependencies:
