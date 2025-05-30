@@ -3,10 +3,29 @@
 # Ensure the script exits on any error
 set -e
 
-# Source and destination directories
+# Default directories
 source_dir="complianceremediations"
 machineconfig_dir="/Users/bpalm/Repositories/go/src/github.com/openshift-kni/telco-reference/telco-ran/configuration/machineconfigs"
 extramanifests_dir="/Users/bpalm/Repositories/go/src/github.com/openshift-kni/telco-reference/telco-ran/configuration/extra-manifests-builder"
+
+usage() {
+  echo "Usage: $0 [-s source_dir] [-m machineconfig_dir] [-e extramanifests_dir]"
+  echo "  -s  Source directory for YAMLs (default: complianceremediations)"
+  echo "  -m  Destination directory for MachineConfigs (default: $machineconfig_dir)"
+  echo "  -e  Destination directory for extra manifests (default: $extramanifests_dir)"
+  echo "  -h  Show this help message"
+  exit 1
+}
+
+while getopts "s:m:e:h" opt; do
+  case $opt in
+    s) source_dir="$OPTARG" ;;
+    m) machineconfig_dir="$OPTARG" ;;
+    e) extramanifests_dir="$OPTARG" ;;
+    h) usage ;;
+    *) usage ;;
+  esac
+done
 
 # Precheck and create destination directories if missing
 mkdir -p "$machineconfig_dir"
