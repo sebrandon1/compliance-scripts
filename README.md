@@ -40,12 +40,18 @@ Collects all `complianceremediation` objects from the specified namespace (defau
 ---
 
 ### 4. organize_machine_configs.sh
-Processes all YAMLs in `complianceremediations/` that are `kind: MachineConfig`, organizes them by topic (e.g., sysctl, sshd), and copies them to the appropriate folder under the ZTP kube-compare reference. Ensures file and metadata names are prefixed with `75-`. Prints out the list of created file paths for easy copy-paste into other manifests.
+Organizes all YAMLs in a source directory (default: `complianceremediations/`) that are `kind: MachineConfig` by topic (e.g., sysctl, sshd) and copies them to the appropriate destination directory. The script now accepts parameters to override the source and destination directories.
 
 **Usage:**
 ```bash
-./organize_machine_configs.sh
+./organize-machine-configs.sh -s complianceremediations -m /path/to/machineconfigs -e /path/to/extra-manifests
 ```
+- `-s`  Source directory for YAMLs (default: complianceremediations)
+- `-m`  Destination directory for MachineConfigs (default: as set in script)
+- `-e`  Destination directory for extra manifests (default: as set in script)
+- `-h`  Show help message
+
+If not specified, the script uses the default directory values set at the top of the script.
 
 ---
 
@@ -100,6 +106,19 @@ Scans all YAML files in `complianceremediations/` for `kind: MachineConfig` and,
 ```bash
 python3 create-source-comments.py
 ```
+
+---
+
+### 10. combine-machineconfigs-by-path.py
+Scans all YAML files in a source directory (default: `complianceremediations/`) for `kind: MachineConfig` and combines any that target the same file path (e.g., `/etc/ssh/sshd_config`) into a single deduplicated YAML. Role distinctions (e.g., master/worker) are ignored unless explicit labels are present in the YAML. Only files with overlapping paths are combined; originals are moved to `combo/` under the source directory if combined. The process is idempotent and only affects files that actually overlap.
+
+**Usage:**
+```bash
+python3 combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations
+```
+- `--src-dir`: Source directory containing MachineConfig YAMLs (default: complianceremediations)
+- `--out-dir`: Directory to write combined YAMLs (default: complianceremediations)
+- Use `-h` or `--help` to see all options.
 
 ---
 
