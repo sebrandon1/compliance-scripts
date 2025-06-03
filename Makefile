@@ -1,6 +1,6 @@
 # Makefile for OpenShift Compliance Operator automation
 
-.PHONY: all install-compliance-operator apply-periodic-scan create-scan collect-complianceremediations create-source-comments combine-machineconfigs-by-path organize-machine-configs generate-compliance-markdown clean full-workflow
+.PHONY: all install-compliance-operator apply-periodic-scan create-scan collect-complianceremediations create-source-comments combine-machineconfigs-by-path organize-machine-configs generate-compliance-markdown clean full-workflow python-lint
 
 all: full-workflow
 
@@ -33,3 +33,10 @@ clean:
 
 full-workflow: install-compliance-operator apply-periodic-scan create-scan collect-complianceremediations create-source-comments combine-machineconfigs-by-path organize-machine-configs generate-compliance-markdown
 	@echo "[INFO] Full compliance workflow completed."
+
+python-lint:
+	@if ! command -v flake8 >/dev/null 2>&1; then \
+	  echo 'flake8 not found, installing...'; \
+	  pip3 install --user flake8; \
+	fi
+	flake8 . --ignore=E501 --exclude=venv,.venv
