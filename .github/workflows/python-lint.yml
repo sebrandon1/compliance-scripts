@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - '**.py'
+      - 'Makefile'
 
 jobs:
   lint:
