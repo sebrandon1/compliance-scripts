@@ -8,7 +8,23 @@ from collections import defaultdict
 
 def safe_shortname(path):
     """Convert a file path to a safe shortname for filenames."""
-    return path.lstrip('/').replace('/', '_')
+    import re
+    # Get the basename (final component) of the path
+    basename = os.path.basename(path)
+
+    # For audit rules files, extract the meaningful part
+    if 'audit' in path and basename.startswith('75-'):
+        # Extract the meaningful part after '75-' and before any file extension
+        match = re.match(r'75-(.+?)(?:\.rules)?$', basename)
+        if match:
+            return f"75-{match.group(1)}"
+
+    # For other files, clean up the basename
+    # Remove file extensions and sanitize
+    name = re.sub(r'\.[^.]+$', '', basename)  # Remove extension
+    name = re.sub(r'[^a-zA-Z0-9\-_]', '-', name)  # Replace special chars with hyphens
+    name = re.sub(r'-+', '-', name)  # Collapse multiple hyphens
+    return name.strip('-')
 
 
 def parse_machineconfig_files(src_dir):
@@ -48,7 +64,7 @@ def write_combo_yaml(path, sources, out_dir):
         all_lines.update(lines)
     deduped_lines = sorted(all_lines)
     shortname = safe_shortname(path)
-    outname = f"rhcos4-{shortname}-combo.yaml"
+    outname = f"{shortname}-combo.yaml"
     outpath = os.path.join(out_dir, outname)
     with open(outpath, "w") as out:
         out.write(

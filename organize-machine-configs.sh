@@ -54,13 +54,38 @@ for file in "$source_dir"/*.yaml; do
 		fi
 		topic_dir="$machineconfig_dir/$topic"
 		mkdir -p "$topic_dir"
-		# Determine the role (master or worker) based on the filename
+		# Determine the role (master or worker) based on the filename or file contents
+		role="unknown"
+		
+		# First check filename (for backward compatibility)
 		if [[ "$base_name" == *"master"* ]]; then
 			role="master"
 		elif [[ "$base_name" == *"worker"* ]]; then
 			role="worker"
 		else
-			role="unknown"
+			# Check the first 3 lines for combined file comments
+			first_lines=$(head -n 3 "$file")
+			has_master=$(echo "$first_lines" | grep -c "master" || true)
+			has_worker=$(echo "$first_lines" | grep -c "worker" || true)
+			
+			if [[ $has_master -gt 0 && $has_worker -gt 0 ]]; then
+				# If both master and worker are mentioned, use worker
+				role="worker"
+			elif [[ $has_master -gt 0 ]]; then
+				role="master"
+			elif [[ $has_worker -gt 0 ]]; then
+				role="worker"
+			else
+				# Fallback: check entire file content
+				if grep -q "master" "$file"; then
+					role="master"
+				elif grep -q "worker" "$file"; then
+					role="worker"
+				else
+					# Default for files with no role indication
+					role="worker"
+				fi
+			fi
 		fi
 		# Update metadata.name and role label
 		yq ".metadata.name = \"$metadata_name\" | .metadata.labels.[\"machineconfiguration.openshift.io/role\"] = \"$role\"" "$file" >"$topic_dir/$new_name"
