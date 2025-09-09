@@ -28,48 +28,68 @@ def safe_shortname(path):
 
 
 def parse_machineconfig_files(src_dir):
-    """Parse all MachineConfig YAMLs in src_dir and group by file path."""
-    combo_map = defaultdict(list)  # path -> list of
-    # (source_file, decoded_lines)
-    for fname in os.listdir(src_dir):
-        # Skip non-YAMLs and the combo subdir
-        if not fname.endswith('.yaml') or fname == 'combo':
-            continue
-        fpath = os.path.join(src_dir, fname)
-        if not os.path.isfile(fpath):
-            continue
-        with open(fpath) as f:
-            docs = list(yaml.safe_load_all(f))
-        for doc in docs:
-            if not doc or doc.get('kind') != 'MachineConfig':
+    """Parse all MachineConfig YAMLs under src_dir (recursively) and group by
+    (file path, severity), where severity is inferred from directory names
+    containing one of: high, medium, low. If none found, severity is None.
+    """
+    combo_map = defaultdict(list)  # (path, severity) -> list of (source_file, decoded_lines)
+
+    severity_names = {"high", "medium", "low"}
+
+    for root, dirs, files in os.walk(src_dir):
+        # Skip the combo subdir if present
+        dirs[:] = [d for d in dirs if d != 'combo']
+
+        # Determine severity from the relative root path segments
+        rel_root = os.path.relpath(root, src_dir)
+        parts = [p.lower() for p in rel_root.split(os.sep) if p not in (".", "")]
+        severity = None
+        for p in parts:
+            if p in severity_names:
+                severity = p
+                break
+
+        for fname in files:
+            if not fname.endswith('.yaml'):
                 continue
-            files = doc.get('spec', {}).get('config', {}).get('storage', {}) \
-                .get('files', [])
-            for file_entry in files:
-                path = file_entry.get('path')
-                source = file_entry.get('contents', {}).get('source')
-                if path and source and source.startswith('data:,'):
-                    decoded = urllib.parse.unquote(source[6:])
-                    lines = [line for line in decoded.splitlines()
-                             if line.strip()]
-                    combo_map[path].append((fname, lines))
+            fpath = os.path.join(root, fname)
+            if not os.path.isfile(fpath):
+                continue
+            with open(fpath) as f:
+                docs = list(yaml.safe_load_all(f))
+            for doc in docs:
+                if not doc or doc.get('kind') != 'MachineConfig':
+                    continue
+                files = doc.get('spec', {}).get('config', {}).get('storage', {}) \
+                    .get('files', [])
+                for file_entry in files:
+                    path = file_entry.get('path')
+                    source = file_entry.get('contents', {}).get('source')
+                    if path and source and source.startswith('data:,'):
+                        decoded = urllib.parse.unquote(source[6:])
+                        lines = [line for line in decoded.splitlines() if line.strip()]
+                        combo_map[(path, severity)].append((os.path.relpath(fpath, src_dir), lines))
     return combo_map
 
 
-def write_combo_yaml(path, sources, out_dir):
-    """Write a combined MachineConfig YAML for a
-        given file path and list of sources."""
+def write_combo_yaml(path, severity, sources, out_dir):
+    """Write a combined MachineConfig YAML for a given file path and severity.
+    Sources is a list of (source_file, decoded_lines).
+    """
     all_lines = set()
     for _, lines in sources:
         all_lines.update(lines)
     deduped_lines = sorted(all_lines)
     shortname = safe_shortname(path)
-    outname = f"{shortname}-combo.yaml"
+    if severity:
+        outname = f"{shortname}-{severity}-combo.yaml"
+    else:
+        outname = f"{shortname}-combo.yaml"
     outpath = os.path.join(out_dir, outname)
     with open(outpath, "w") as out:
         out.write(
             "# Combined from the following remediations "
-            f"for {path} (all roles):\n"
+            f"for {path} (all roles){' | severity: ' + severity if severity else ''}:\n"
         )
         for src, _ in sources:
             out.write(f"#   - {src}\n")
@@ -106,15 +126,19 @@ def move_originals_to_combo(combo_map, src_dir, combo_dir):
     """Move original YAMLs that were combined to the
         combo subfolder."""
     moved = set()
-    for path, sources in combo_map.items():
+    for (_path, _severity), sources in combo_map.items():
         if len(sources) < 2:
             continue
         for src, _ in sources:
-            if src not in moved:
-                src_path = os.path.join(src_dir, src)
-                if os.path.exists(src_path):
-                    os.rename(src_path, os.path.join(combo_dir, src))
-                    moved.add(src)
+            if src in moved:
+                continue
+            src_path = os.path.join(src_dir, src)
+            if os.path.exists(src_path):
+                # Ensure destination subdirs exist inside combo_dir to preserve structure
+                dest_path = os.path.join(combo_dir, src)
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                os.rename(src_path, dest_path)
+                moved.add(src)
     if moved:
         print(f"Moved original remediations to {combo_dir}/ "
               f"(only those used in combos)")
@@ -146,14 +170,14 @@ def main():
     os.makedirs(combo_dir, exist_ok=True)
     os.makedirs(out_dir, exist_ok=True)
 
-    # Parse and group MachineConfig YAMLs by file path
+    # Parse and group MachineConfig YAMLs by (file path, severity)
     combo_map = parse_machineconfig_files(src_dir)
 
-    # Write combined YAMLs for each path with >1 source
-    for path, sources in combo_map.items():
+    # Write combined YAMLs for each (path, severity) with >1 source
+    for (path, severity), sources in combo_map.items():
         if len(sources) < 2:
             continue  # Only combine if path appears more than once
-        write_combo_yaml(path, sources, out_dir)
+        write_combo_yaml(path, severity, sources, out_dir)
 
     # Move originals that were combined to the combo/ subfolder
     move_originals_to_combo(combo_map, src_dir, combo_dir)
