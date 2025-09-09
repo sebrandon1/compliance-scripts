@@ -24,25 +24,22 @@ fi
 # Directory to store the YAML files
 destination_dir="complianceremediations"
 
-# Remove the destination directory if it exists to start fresh
-echo "[INFO] Removing existing $destination_dir directory (if any) to start fresh."
-rm -rf "$destination_dir"
-
-# Create the directory if it doesn't exist
-mkdir -p "$destination_dir"
+# (Default behavior) Preserve existing destination directory across runs
 
 # Parse arguments
 print_usage() {
-	echo "Usage: $0 [-n|--namespace NAMESPACE] [-s|--severity SEVERITY[,SEVERITY...]]"
+	echo "Usage: $0 [-n|--namespace NAMESPACE] [-s|--severity SEVERITY[,SEVERITY...]] [-f|--fresh]"
 	echo "\nOptions:"
 	echo "  -n, --namespace   Namespace for complianceremediation objects (default: openshift-compliance)"
 	echo "  -s, --severity    Comma-separated severities to include: high,medium,low (case-insensitive)"
+	echo "  -f, --fresh       Remove existing output directory before collecting"
 	echo "  -h, --help        Show this help message"
 }
 
 NAMESPACE_DEFAULT="openshift-compliance"
 NAMESPACE="$NAMESPACE_DEFAULT"
 SEVERITY_FILTER=""
+CLEAN_OUTPUT=0
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -53,6 +50,10 @@ while [[ $# -gt 0 ]]; do
 		-s|--severity)
 			SEVERITY_FILTER="$2"
 			shift 2
+			;;
+		-f|--fresh)
+			CLEAN_OUTPUT=1
+			shift
 			;;
 		-h|--help)
 			print_usage
@@ -82,6 +83,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "[INFO] Using namespace: $NAMESPACE"
+# Prepare output directory
+if [[ $CLEAN_OUTPUT -eq 1 ]]; then
+    echo "[INFO] Removing existing $destination_dir directory to start fresh."
+    rm -rf "$destination_dir"
+fi
+mkdir -p "$destination_dir"
+
 if [[ -n "$SEVERITY_FILTER" ]]; then
 	# Normalize and validate severity filter (comma-separated list)
 	SEVERITY_FILTER=$(echo "$SEVERITY_FILTER" | tr '[:upper:]' '[:lower:]' | tr -d ' ')
@@ -93,6 +101,10 @@ if [[ -n "$SEVERITY_FILTER" ]]; then
 		fi
 	done
 	echo "[INFO] Severity filter enabled: $SEVERITY_FILTER"
+	# Create subdirectories for each requested severity under the destination directory
+	for s in "${severity_list[@]}"; do
+		mkdir -p "$destination_dir/$s"
+	done
 fi
 
 # Fetch all complianceremediation objects in YAML format
@@ -143,8 +155,14 @@ for name in $names; do
 		continue
 	fi
 
+	# Determine output directory (severity subfolder if filter specified)
+	output_dir="$destination_dir"
+	if [[ -n "$SEVERITY_FILTER" && -n "$check_severity" ]]; then
+		output_dir="$destination_dir/$check_severity"
+	fi
+	mkdir -p "$output_dir"
 	# Save the spec.object YAML to a file named after the complianceremediation object
-	echo "$spec_object" >"$destination_dir/$name.yaml"
+	echo "$spec_object" >"$output_dir/$name.yaml"
 	count_valid=$((count_valid + 1))
 	count_total=$((count_total + 1))
 
