@@ -25,7 +25,7 @@ BG_BLUE := \033[44m
 # ────────────────────────────────────────────────────────────────────────────────
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations organize-machine-configs \
-        generate-compliance-markdown clean full-workflow banner
+        generate-compliance-markdown clean clean-complianceremediations full-workflow banner
 
 # Default target
 all: help
@@ -119,6 +119,13 @@ clean: ## 🧹 Clean up generated files and directories
 	@echo "$(DIM)  • Removing ComplianceCheckResults.md...$(RESET)"
 	@rm -f ComplianceCheckResults.md
 	@echo "$(GREEN)✅ Cleanup completed!$(RESET)"
+	@echo ""
+
+clean-complianceremediations: ## 🧹 Remove and recreate the complianceremediations directory only
+	@echo "$(BOLD)$(YELLOW)🧹 Resetting complianceremediations directory...$(RESET)"
+	@rm -rf complianceremediations
+	@mkdir -p complianceremediations
+	@echo "$(GREEN)✅ complianceremediations directory reset!$(RESET)"
 	@echo ""
 
 # ────────────────────────────────────────────────────────────────────────────────

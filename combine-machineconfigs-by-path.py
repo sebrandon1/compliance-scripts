@@ -162,16 +162,39 @@ def main():
         '--out-dir', default='complianceremediations',
         help='Directory to write combined YAMLs (default: complianceremediations)'
     )
+    parser.add_argument(
+        '-s', '--severity', default=None,
+        help='Comma-separated severities to include (case-insensitive): high,medium,low'
+    )
     args = parser.parse_args()
 
     src_dir = args.src_dir
     out_dir = args.out_dir
+    # Parse and validate optional severity filter
+    severity_filter = None
+    if args.severity:
+        raw = args.severity.strip().lower().replace(' ', '')
+        requested = [s for s in raw.split(',') if s]
+        valid = {"high", "medium", "low"}
+        invalid = [s for s in requested if s not in valid]
+        if invalid:
+            raise SystemExit(
+                f"Invalid severity value(s): {','.join(invalid)}. Allowed: high, medium, low"
+            )
+        severity_filter = set(requested)
     combo_dir = os.path.join(src_dir, "combo")
     os.makedirs(combo_dir, exist_ok=True)
     os.makedirs(out_dir, exist_ok=True)
 
     # Parse and group MachineConfig YAMLs by (file path, severity)
     combo_map = parse_machineconfig_files(src_dir)
+    # If a severity filter is provided, reduce the map to only those severities
+    if severity_filter is not None:
+        combo_map = {
+            (path, sev): sources
+            for (path, sev), sources in combo_map.items()
+            if sev in severity_filter
+        }
 
     # Write combined YAMLs for each (path, severity) with >1 source
     for (path, severity), sources in combo_map.items():
