@@ -24,7 +24,7 @@ BG_BLUE := \033[44m
 # 📋 Target Definitions
 # ────────────────────────────────────────────────────────────────────────────────
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
-        collect-complianceremediations organize-machine-configs \
+        collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown clean clean-complianceremediations full-workflow banner
 
 # Default target
@@ -94,6 +94,12 @@ collect-complianceremediations: ## 📥 Collect compliance remediation data
 	@echo "$(GREEN)✅ Compliance remediations collected!$(RESET)"
 	@echo ""
 
+combine-machineconfigs: ## 🧩 Combine overlapping MachineConfig remediations by file path
+	@echo "$(BOLD)$(BLUE)🧩 Combining MachineConfigs by file path...$(RESET)"
+	@python3 combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none
+	@echo "$(GREEN)✅ Combined MachineConfig YAMLs generated!$(RESET)"
+	@echo ""
+
 organize-machine-configs: ## 📋 Organize machine configuration files
 	@echo "$(BOLD)$(BLUE)📋 Organizing machine configurations...$(RESET)"
 	@./organize-machine-configs.sh
@@ -132,7 +138,7 @@ clean-complianceremediations: ## 🧹 Remove and recreate the complianceremediat
 # 🚀 Workflow Orchestration
 # ────────────────────────────────────────────────────────────────────────────────
 
-full-workflow: banner install-compliance-operator apply-periodic-scan create-scan collect-complianceremediations organize-machine-configs generate-compliance-markdown ## 🚀 Execute complete compliance workflow
+full-workflow: banner install-compliance-operator apply-periodic-scan create-scan collect-complianceremediations combine-machineconfigs organize-machine-configs generate-compliance-markdown ## 🚀 Execute complete compliance workflow
 	@echo ""
 	@echo "$(BOLD)$(BG_GREEN)$(WHITE)"
 	@echo "  ╔═════════════════════════════════════════════════════════════╗"
