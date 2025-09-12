@@ -72,7 +72,7 @@ def parse_machineconfig_files(src_dir):
     return combo_map
 
 
-def write_combo_yaml(path, severity, sources, out_dir):
+def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
     """Write a combined MachineConfig YAML for a given file path and severity.
     Sources is a list of (source_file, decoded_lines).
     """
@@ -87,12 +87,20 @@ def write_combo_yaml(path, severity, sources, out_dir):
         outname = f"{shortname}-combo.yaml"
     outpath = os.path.join(out_dir, outname)
     with open(outpath, "w") as out:
-        out.write(
-            "# Combined from the following remediations "
-            f"for {path} (all roles){' | severity: ' + severity if severity else ''}:\n"
-        )
-        for src, _ in sources:
-            out.write(f"#   - {src}\n")
+        # Optional top-of-file header
+        if header_mode and header_mode != "none":
+            if header_mode == "provenance":
+                out.write(
+                    f"# Combined from {len(sources)} remediations for {path}"
+                    f"{' | severity: ' + severity if severity else ''}.\n"
+                )
+            elif header_mode == "full":
+                out.write(
+                    "# Combined from the following remediations "
+                    f"for {path} (all roles){' | severity: ' + severity if severity else ''}:\n"
+                )
+                for src, _ in sources:
+                    out.write(f"#   - {src}\n")
         out.write(
             "apiVersion: machineconfiguration.openshift.io/v1\n"
             "kind: MachineConfig\n"
@@ -166,6 +174,10 @@ def main():
         '-s', '--severity', default=None,
         help='Comma-separated severities to include (case-insensitive): high,medium,low'
     )
+    parser.add_argument(
+        '--header', default='none', choices=['none', 'provenance', 'full'],
+        help="Top-of-file header mode for generated files: 'none' (default), 'provenance' (one-line), or 'full' (list sources)"
+    )
     args = parser.parse_args()
 
     src_dir = args.src_dir
@@ -200,7 +212,7 @@ def main():
     for (path, severity), sources in combo_map.items():
         if len(sources) < 2:
             continue  # Only combine if path appears more than once
-        write_combo_yaml(path, severity, sources, out_dir)
+        write_combo_yaml(path, severity, sources, out_dir, header_mode=args.header)
 
     # Move originals that were combined to the combo/ subfolder
     move_originals_to_combo(combo_map, src_dir, combo_dir)
