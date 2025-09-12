@@ -29,33 +29,39 @@ Deletes the Compliance Operator, its resources, and the `openshift-compliance` n
 
 ---
 
-### 3. collect_complianceremediations.sh
-Collects all `complianceremediation` objects from the specified namespace (default: `openshift-compliance`), extracts their YAML, and saves them to the `complianceremediations/` directory. Logs totals and types of objects collected.
+### 3. collect-complianceremediations.sh
+Collects all `complianceremediation` objects from the specified namespace (default: `openshift-compliance`), extracts their YAML, and saves them to the `complianceremediations/` directory. Supports optional severity filtering and a fresh run.
 
 **Usage:**
 ```bash
-./collect_complianceremediations.sh [namespace]
+./collect-complianceremediations.sh [-n|--namespace NAMESPACE] [-s|--severity high,medium,low] [-f|--fresh]
 ```
+– `-n, --namespace` Namespace for complianceremediation objects (default: openshift-compliance)
+– `-s, --severity` Comma-separated severities to include: high,medium,low
+– `-f, --fresh` Remove existing output directory before collecting
+– `-h, --help` Show help
 
 ---
 
-### 4. organize_machine_configs.sh
+### 4. organize-machine-configs.sh
 Organizes all YAMLs in a source directory (default: `complianceremediations/`) that are `kind: MachineConfig` by topic (e.g., sysctl, sshd) and copies them to the appropriate destination directory. The script now accepts parameters to override the source and destination directories.
 
 **Usage:**
 ```bash
-./organize-machine-configs.sh -s complianceremediations -m /path/to/machineconfigs -e /path/to/extra-manifests
+./organize-machine-configs.sh -d complianceremediations -m /path/to/machineconfigs -e /path/to/extra-manifests -s high,medium,low [-x]
 ```
-- `-s`  Source directory for YAMLs (default: complianceremediations)
-- `-m`  Destination directory for MachineConfigs (default: as set in script)
-- `-e`  Destination directory for extra manifests (default: as set in script)
+- `-d`  Source directory for YAMLs (default: complianceremediations)
+- `-m`  Destination directory for MachineConfigs
+- `-e`  Destination directory for extra manifests
+- `-s`  Comma-separated severities to include (alias: `-S`)
+- `-x`  Execute automated apply + health/perf tests for created files
 - `-h`  Show help message
 
 If not specified, the script uses the default directory values set at the top of the script.
 
 ---
 
-### 5. generate_compliance_markdown.sh
+### 5. generate-compliance-markdown.sh
 Generates a Markdown report mapping ComplianceCheckResult objects to their corresponding remediation files, including severity and result, sorted by result type.
 
 **Usage:**
@@ -89,7 +95,32 @@ Applies a periodic ScanSetting and ScanSettingBinding for the `rhcos4-e8` and `o
 
 ---
 
-### 8. force-delete-namespace.sh
+### 8. generate-network-policies.sh
+Generates a default-deny `NetworkPolicy` for selected namespaces. By default, previews YAMLs to `./generated-networkpolicies`. Can apply directly with `--apply`.
+
+**Usage:**
+```bash
+./generate-network-policies.sh [--apply] [--out-dir DIR] [--exclude-regex REGEX] [--namespaces ns1,ns2]
+```
+- `--apply` Apply to cluster (default: preview only)
+- `--out-dir` Output directory when previewing (default: generated-networkpolicies)
+- `--exclude-regex` Regex of namespaces to skip (default excludes system namespaces)
+- `--namespaces` Comma-separated explicit namespaces to target
+- `-h, --help` Show help
+
+---
+
+### 9. apply-remediations-by-severity.sh
+Applies combined remediation YAMLs for a single severity (`high|medium|low`). Injects required metadata, performs server-side dry-run first, applies, and waits for reconciliation where appropriate.
+
+**Usage:**
+```bash
+./apply-remediations-by-severity.sh <severity>
+```
+
+---
+
+### 10. force-delete-namespace.sh
 Force deletes a namespace and all its resources (use with caution).
 
 **Usage:**
@@ -99,7 +130,7 @@ Force deletes a namespace and all its resources (use with caution).
 
 ---
 
-### 9. create-source-comments.py (Optional)
+### 11. create-source-comments.py (Optional)
 Scans all YAML files in `complianceremediations/` for `kind: MachineConfig` and, for each `source: data:,...` line, decodes the data and inserts a human-readable comment block above the `source:` line. The script is idempotent and will not add duplicate comments.
 
 **Usage:**
@@ -109,16 +140,17 @@ python3 create-source-comments.py
 
 ---
 
-### 10. combine-machineconfigs-by-path.py
+### 12. combine-machineconfigs-by-path.py
 Scans all YAML files in a source directory (default: `complianceremediations/`) for `kind: MachineConfig` and combines any that target the same file path (e.g., `/etc/ssh/sshd_config`) into a single deduplicated YAML. Role distinctions (e.g., master/worker) are ignored unless explicit labels are present in the YAML. Only files with overlapping paths are combined; originals are moved to `combo/` under the source directory if combined. The process is idempotent and only affects files that actually overlap.
 
 **Usage:**
 ```bash
-python3 combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations
+python3 combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations [--severity high,medium,low] [--header none|provenance|full]
 ```
-- `--src-dir`: Source directory containing MachineConfig YAMLs (default: complianceremediations)
-- `--out-dir`: Directory to write combined YAMLs (default: complianceremediations)
-- Use `-h` or `--help` to see all options.
+- `--src-dir` Source directory containing MachineConfig YAMLs (default: complianceremediations)
+- `--out-dir` Directory to write combined YAMLs (default: complianceremediations)
+- `-s, --severity` Optional comma-separated severities to include
+- `--header` Header mode for generated files: `none` (default), `provenance` (one-line), `full` (list sources)
 
 ---
 
@@ -129,16 +161,17 @@ It is recommended to use a Python virtual environment when running the Python sc
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip3 install ruamel.yaml
+pip3 install pyyaml
 ```
 
 ---
 
 ## Directory Structure
 - `complianceremediations/` — Collected remediation YAMLs (auto-generated, ignored by git)
-- `created_file_paths.txt` — List of generated file paths for easy copy-paste
+- `generated-networkpolicies/` — Generated NetworkPolicy YAMLs (preview mode, ignored by git)
+- `created_file_paths.txt` — List of generated file paths (ignored by git)
+- `testing-plan.md` — Testing plan generated by organize script
 - `ComplianceCheckResults.md` — Markdown report of compliance check results (auto-generated, ignored by git)
-- `source_comments/` — Directory for storing YAML files with added source comments (see above)
 
 ---
 
