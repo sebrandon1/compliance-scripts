@@ -198,13 +198,16 @@ To run the entire compliance process from install to report generation:
 make full-workflow
 ```
 
-This will sequentially run:
+Recommended order of operations:
 - install-compliance-operator.sh
 - apply-periodic-scan.sh
 - create-scan.sh
 - collect-complianceremediations.sh
-- organize-machine-configs.sh
+- combine-machineconfigs-by-path.py  ← combines overlapping MachineConfigs
+- organize-machine-configs.sh         ← organizes the newly combined outputs
 - generate-compliance-markdown.sh
+
+The `make full-workflow` target runs these steps in order, including the combine step.
 
 ### Individual Steps
 
@@ -215,6 +218,7 @@ make install-compliance-operator
 make apply-periodic-scan
 make create-scan
 make collect-complianceremediations
+make combine-machineconfigs
 make organize-machine-configs
 make generate-compliance-markdown
 make clean  # Remove generated files
