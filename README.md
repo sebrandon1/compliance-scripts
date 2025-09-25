@@ -11,11 +11,33 @@ This repository contains a set of scripts to help automate the collection, organ
 Installs the Compliance Operator in the `openshift-compliance` namespace. Waits for the operator to be fully installed and ready.
 
 - [Compliance Operator Install Docs](https://github.com/ComplianceAsCode/compliance-operator#installation)
+  - By default this script resolves and uses the latest release tag from the Compliance Operator [releases page](https://github.com/ComplianceAsCode/compliance-operator/releases). If the GitHub API cannot be reached or is rate-limited, it falls back to `master`.
 
 **Usage:**
 ```bash
 ./install-compliance-operator.sh
 ```
+
+**Version pinning and overrides:**
+
+- `--co-ref <ref>`: Force a specific tag/branch for the Compliance Operator manifests (e.g., `v1.7.0`).
+- `COMPLIANCE_OPERATOR_REF` env var: Same as `--co-ref`.
+- Default when not provided: latest published release tag from GitHub [releases](https://github.com/ComplianceAsCode/compliance-operator/releases).
+
+Examples:
+```bash
+# Use the latest release (default behavior)
+./install-compliance-operator.sh
+
+# Pin to a specific release tag
+./install-compliance-operator.sh --co-ref v1.7.0
+
+# Or via environment variable
+COMPLIANCE_OPERATOR_REF=v1.7.0 ./install-compliance-operator.sh
+```
+
+Readiness behavior:
+- After subscribing and installing, the script waits for the operator's non-completed pods in `openshift-compliance` to reach Ready (up to 5 minutes). If not all pods become Ready within the timeout, it prints current pod statuses and continues.
 
 ---
 
@@ -66,7 +88,7 @@ Generates a Markdown report mapping ComplianceCheckResult objects to their corre
 
 **Usage:**
 ```bash
-./generate_compliance_markdown.sh
+./generate-compliance-markdown.sh
 ```
 
 ---
@@ -107,6 +129,107 @@ Generates a default-deny `NetworkPolicy` for selected namespaces. By default, pr
 - `--exclude-regex` Regex of namespaces to skip (default excludes system namespaces)
 - `--namespaces` Comma-separated explicit namespaces to target
 - `-h, --help` Show help
+
+---
+
+### 9. deploy-loopback-ds.sh
+Deploys a privileged DaemonSet on every node that creates and attaches a file-backed loop device (default: `/dev/loop0`) and can optionally patch LVMS `LVMCluster` to reference it. Useful for lab clusters without spare disks.
+
+**Usage:**
+```bash
+./deploy-loopback-ds.sh [--namespace NS] [--device /dev/loopX] [--size-gib N] [--skip-patch] [--no-auto-detect] [--wait-timeout 300s]
+```
+- `--namespace` Target namespace for resources (default: `openshift-storage`)
+- `--device` Loop device path to target (default: `/dev/loop0`)
+- `--size-gib` Backing file size in GiB (default: `10`)
+- `--skip-patch` Do not patch LVMS `LVMCluster` after deploy
+- `--no-auto-detect` Skip post-rollout device auto-detection
+- `--wait-timeout` DaemonSet rollout wait timeout (default: `300s`)
+
+---
+
+### 10. bootstrap-storage.sh
+Ensures a default `StorageClass` exists. Can bootstrap using Red Hat LVMS (TopoLVM) or Rancher local-path for labs. Prints the detected default `StorageClass` name to stdout.
+
+**Usage:**
+```bash
+./bootstrap-storage.sh [--storage lvms|local-path|none] [--force-storage-bootstrap] [--namespace NAMESPACE]
+```
+- `--storage` Provider to use when bootstrapping (default: `lvms`)
+- `--force-storage-bootstrap` Bootstrap even if a default SC already exists
+- `--namespace` Namespace for capacity probe objects (default: `openshift-compliance`)
+
+---
+
+### 11. unbootstrap-storage.sh
+Attempts to undo storage bootstrap actions (LVMS or Rancher local-path). Best-effort cleanup of operators, CRDs, SCs, and related RBAC. Prints the resulting default `StorageClass` name to stdout.
+
+**Usage:**
+```bash
+./unbootstrap-storage.sh [--provider auto|lvms|local-path]
+```
+
+---
+
+### 12. delete-scans.sh
+Removes the periodic `ScanSetting`/`ScanSettingBinding` (`periodic-setting`/`periodic-e8`) and associated PVCs. Optionally also removes the CIS scan binding/suite.
+
+**Usage:**
+```bash
+./delete-scans.sh [--namespace NAMESPACE] [--include-cis]
+```
+
+---
+
+### 13. delete-compliancescans.sh
+Deletes `ComplianceScan` objects, optionally filtering by substring, and optionally deleting related `ComplianceSuite` and `ScanSettingBinding` resources.
+
+**Usage:**
+```bash
+./delete-compliancescans.sh [-n|--namespace NAMESPACE] [--filter SUBSTRING] [--delete-suite] [--delete-ssb]
+```
+
+---
+
+### 14. restart-scans.sh
+Requests re-scan of one or more `ComplianceScan` resources via annotation. Can target all scans and optionally watch status.
+
+**Usage:**
+```bash
+./restart-scans.sh [--namespace NAMESPACE] [--watch] (--all | --scan NAME [--scan NAME ...] | NAME [NAME ...])
+```
+
+---
+
+### 15. monitor-inprogress-scans.sh
+Convenience dashboard to view default `StorageClass`, scans, suites, pods, PVCs, ProfileBundles, and recent events in the compliance namespace. Supports watch mode, refresh interval, and name filtering.
+
+**Usage:**
+```bash
+./monitor-inprogress-scans.sh [-n|--namespace NAMESPACE] [--watch] [--interval SECONDS] [--filter SUBSTRING]
+```
+
+---
+
+### 16. replace-pull-secret-credentials.sh
+Backs up and updates the cluster-wide pull secret in `openshift-config/secret/pull-secret`. Supports `merge` (default) or `replace` modes and optional verification of resulting registries.
+
+**Usage:**
+```bash
+./replace-pull-secret-credentials.sh --pull-secret /path/to/pull-secret.json [--kubeconfig /path/to/kubeconfig] [--mode merge|replace] [--namespace openshift-config] [--secret-name pull-secret] [--no-verify]
+```
+
+---
+
+### 17. fetch-kubeconfig.sh
+Fetches a kubeconfig from a remote host via `scp`, writing to a local destination, and sets secure file permissions.
+
+**Usage:**
+```bash
+./fetch-kubeconfig.sh                        # use defaults
+./fetch-kubeconfig.sh <REMOTE_IP>            # custom remote IP
+./fetch-kubeconfig.sh <REMOTE_IP> <DEST>     # custom remote IP and destination path
+```
 
 ---
 
