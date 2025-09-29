@@ -8,12 +8,41 @@ SUBSCRIPTION_NAME="compliance-operator-sub"
 # Optional: choose storage bootstrap provider when no default SC exists: lvms|local-path|none
 STORAGE_PROVIDER="lvms"
 FORCE_STORAGE_BOOTSTRAP=false
+SKIP_STORAGE_BOOTSTRAP=false
+
+usage() {
+cat <<USAGE
+Usage: $(basename "$0") [options]
+
+Install the Compliance Operator into namespace '${NAMESPACE}' and ensure a usable default StorageClass.
+
+Options:
+  --storage <provider>          Storage bootstrap provider when no default SC exists (default: lvms)
+                                Accepted: lvms | local-path | none
+  --force-storage-bootstrap     Force storage bootstrap even if a default StorageClass already exists
+  --skip-storage-bootstrap      Skip storage bootstrap even if no default StorageClass check passes
+  --co-ref <ref>                Git ref or release tag for Compliance Operator (default: latest release)
+  -h, --help                    Show this help and exit
+
+Notes:
+  - If the cluster already has a default StorageClass backed by HostPath/CRC, storage bootstrap is skipped.
+  - Storage bootstrap is delegated to ./bootstrap-storage.sh with the selected provider.
+  - Set KUBECONFIG to choose a specific cluster context, e.g.:
+      KUBECONFIG=/path/to/kubeconfig $(basename "$0") --storage lvms
+USAGE
+}
 while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--storage)
 			STORAGE_PROVIDER="$2"; shift 2;;
 		--force-storage-bootstrap)
 			FORCE_STORAGE_BOOTSTRAP=true; shift;;
+		--skip-storage-bootstrap)
+			SKIP_STORAGE_BOOTSTRAP=true; shift;;
+		--co-ref)
+			CO_REF="$2"; shift 2;;
+		-h|--help)
+			usage; exit 0;;
 		*)
 			shift;;
 	esac
@@ -38,183 +67,88 @@ else
 	echo "[PRECHECK] No non-completed pods found in 'openshift-marketplace'; continuing."
 fi
 
-echo "[PRECHECK] Verifying a default StorageClass exists..."
-# Try to find a default StorageClass via GA and beta annotations
+# Detect CRC and decide whether to skip storage bootstrap
+SERVER=$(oc whoami --show-server 2>/dev/null || true)
+IS_CRC=false
+if [[ "$SERVER" =~ crc\.testing ]]; then
+	IS_CRC=true
+fi
+
+SKIP_BOOTSTRAP=false
+if [[ "$IS_CRC" == true ]]; then
+	SKIP_BOOTSTRAP=true
+fi
+
+# Determine default SC; if one exists, prefer to skip unless forced
 DEFAULT_SC=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
 if [[ -z "$DEFAULT_SC" ]]; then
 	DEFAULT_SC=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.beta\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
 fi
 
-# Detect presence of Rancher local-path SC regardless of default
-RANCHER_SC_PRESENT=false
-if oc get sc -o jsonpath='{range .items[*]}{.metadata.name}:{.provisioner}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="rancher.io/local-path"{found=1} END{exit !found}'; then
-	RANCHER_SC_PRESENT=true
+if [[ -n "$DEFAULT_SC" ]]; then
+	SKIP_BOOTSTRAP=true
 fi
 
-if [[ -z "$DEFAULT_SC" || "$RANCHER_SC_PRESENT" == true || ( "$FORCE_STORAGE_BOOTSTRAP" == true && "$STORAGE_PROVIDER" != "none" ) ]]; then
-    # If Rancher SC is present, prefer switching to LVMS automatically (no flags required)
-    if [[ "$RANCHER_SC_PRESENT" == true ]]; then
-        STORAGE_PROVIDER="lvms"
-        echo "[WARN] Detected Rancher local-path StorageClass. Installing LVMS and switching default StorageClass."
-    fi
+# Honor explicit flags
+if [[ "$FORCE_STORAGE_BOOTSTRAP" == true ]]; then
+	SKIP_BOOTSTRAP=false
+fi
+if [[ "$SKIP_STORAGE_BOOTSTRAP" == true ]]; then
+	SKIP_BOOTSTRAP=true
+fi
 
-	echo "[WARN] Bootstrapping storage using provider: $STORAGE_PROVIDER"
-    case "$STORAGE_PROVIDER" in
-        lvms)
-            echo "[INFO] Ensuring Red Hat default catalog sources are enabled..."
-            if ! oc get catalogsource redhat-operators -n openshift-marketplace &>/dev/null; then
-                oc patch operatorhubs.config.openshift.io cluster --type merge -p '{"spec":{"disableAllDefaultSources":false}}' || true
-                for i in {1..24}; do
-                    if oc get catalogsource redhat-operators -n openshift-marketplace &>/dev/null; then
-                        break
-                    fi
-                    sleep 5
-                done
-            fi
-
-            echo "[INFO] Installing LVM Storage Operator (Red Hat)"
-            # Ensure namespace exists
-            if ! oc get ns openshift-storage &>/dev/null; then
-                echo "[INFO] Creating namespace: openshift-storage"
-                if ! oc create ns openshift-storage &>/dev/null; then
-                    echo "[ERROR] Failed to create namespace 'openshift-storage'. Please create it and re-run."
-                    exit 1
-                fi
-            fi
-
-            # Determine LVMS channel (prefer defaultChannel if available)
-            CHANNEL_LVMS=$(oc get packagemanifests -n openshift-marketplace lvms-operator -o jsonpath='{.status.defaultChannel}' 2>/dev/null || true)
-            if [[ -z "$CHANNEL_LVMS" ]]; then
-                # Fallback channel commonly available
-                CHANNEL_LVMS="stable-4.19"
-            fi
-
-            cat <<YAML | oc apply -f -
-apiVersion: operators.coreos.com/v1
-kind: OperatorGroup
-metadata:
-  name: openshift-storage-og
-  namespace: openshift-storage
-spec:
-  targetNamespaces:
-  - openshift-storage
----
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: lvms-operator
-  namespace: openshift-storage
-spec:
-  channel: ${CHANNEL_LVMS}
-  name: lvms-operator
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace
-YAML
-
-            echo "[INFO] Waiting for LVMS Operator CSV to succeed..."
-            for i in {1..30}; do
-                CSV_LVMS=$(oc get subscription lvms-operator -n openshift-storage -o jsonpath='{.status.installedCSV}' 2>/dev/null || true)
-                if [[ -n "$CSV_LVMS" ]]; then
-                    PHASE_LVMS=$(oc get csv "$CSV_LVMS" -n openshift-storage -o jsonpath='{.status.phase}' 2>/dev/null || true)
-                    echo "[WAIT] LVMS CSV: $CSV_LVMS phase=$PHASE_LVMS ($i/30)"
-                    [[ "$PHASE_LVMS" == "Succeeded" ]] && break
-                fi
-                sleep 10
-            done
-            if [[ "${PHASE_LVMS:-}" != "Succeeded" ]]; then
-                echo "[ERROR] LVMS Operator did not become ready. Skipping LVMS bootstrap."
-                break
-            fi
-
-			echo "[INFO] LVMS Operator installed. Ensuring a StorageClass from LVMS exists..."
-			# If there is already a topolvm-based SC, prefer it; otherwise create an LVMCluster
-			if ! oc get sc -o jsonpath='{range .items[*]}{.metadata.name}:{.provisioner}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="topolvm.io"{found=1} END{exit !found}'; then
-				cat <<'YAML' | oc apply -f -
-apiVersion: lvm.topolvm.io/v1alpha1
-kind: LVMCluster
-metadata:
-  name: lvmcluster
-  namespace: openshift-storage
-spec:
-  storage:
-    deviceClasses:
-    - name: vg1
-      default: true
-      fstype: xfs
-      thinPoolConfig:
-        name: thin-pool
-        sizePercent: 90
-        overprovisionRatio: 10
-YAML
-				echo "[INFO] Waiting for a topolvm-based StorageClass to appear..."
-				for i in {1..60}; do
-					SC_LVMS=$(oc get sc -o jsonpath='{range .items[*]}{.metadata.name}:{.provisioner}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="topolvm.io"{print $1; exit}')
-					if [[ -n "$SC_LVMS" ]]; then
-						echo "[INFO] Found LVMS StorageClass: $SC_LVMS"
-						break
-					fi
-					sleep 10
-				done
-				if [[ -z "${SC_LVMS:-}" ]]; then
-					echo "[ERROR] No LVMS StorageClass detected. Ensure nodes have unused local disks."
-					break
-				fi
-				# Set LVMS SC as default
-				echo "[INFO] Marking '$SC_LVMS' as the default StorageClass"
-				oc patch storageclass "$SC_LVMS" -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}' || true
-			fi
-
-			echo "[INFO] LVMS storage bootstrap complete."
-            ;;
-		local-path)
-			echo "[INFO] Installing local-path provisioner (lab use only) and setting default"
-			oc apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml
-			oc -n local-path-storage rollout status deploy/local-path-provisioner --timeout=120s || true
-			# OpenShift requires SCC for hostPath provisioners; grant privileged to SA
-			oc adm policy add-scc-to-user privileged -z local-path-provisioner-service-account -n local-path-storage || true
-			oc patch storageclass local-path -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}' || true
-			;;
-		none|*)
-			echo "[ERROR] No default StorageClass and storage bootstrap disabled (provider=$STORAGE_PROVIDER)."
-            echo "[HINT] Install a dynamic provisioner (e.g., LVMS/ODF/NFS) and re-run."
-			exit 1
-			;;
-	esac
-	# Re-detect default SC after bootstrap
-	DEFAULT_SC=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
+if [[ "$SKIP_BOOTSTRAP" == true ]]; then
+	echo "[INFO] Skipping storage bootstrap. Server='$SERVER' SC='$DEFAULT_SC'"
+else
+	SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+	BOOTSTRAP_ARGS=(--storage "$STORAGE_PROVIDER" --namespace "$NAMESPACE")
+	if [[ "$FORCE_STORAGE_BOOTSTRAP" == true ]]; then BOOTSTRAP_ARGS+=(--force-storage-bootstrap); fi
+	DEFAULT_SC=$("$SCRIPT_DIR/bootstrap-storage.sh" "${BOOTSTRAP_ARGS[@]}")
 	if [[ -z "$DEFAULT_SC" ]]; then
-		echo "[ERROR] Failed to establish a default StorageClass. Please configure cluster storage and retry."
+		echo "[ERROR] Failed to detect default StorageClass after bootstrap." >&2
 		exit 1
 	fi
 fi
 echo "[INFO] Default StorageClass detected: $DEFAULT_SC"
 
-# If we bootstrapped storage, optionally remove Rancher local-path provisioner to avoid confusion
-if [[ "$STORAGE_PROVIDER" == "lvms" ]]; then
-	if oc get sc local-path &>/dev/null; then
-		# Re-detect default after attempted LSO bootstrap
-		DEFAULT_SC=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
-		if [[ "$DEFAULT_SC" != "local-path" && -n "$DEFAULT_SC" ]]; then
-			echo "[CLEANUP] Removing Rancher local-path provisioner and StorageClass"
-			oc delete -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml || true
-			oc delete sc local-path --ignore-not-found=true || true
-			# Best-effort: remove privileged SCC grant to the SA
-			oc adm policy remove-scc-from-user privileged -z local-path-provisioner-service-account -n local-path-storage || true
-		fi
-	fi
+
+
+CO_REPO_OWNER="ComplianceAsCode"
+CO_REPO_NAME="compliance-operator"
+# Allow environment override via COMPLIANCE_OPERATOR_REF
+CO_REF="${CO_REF:-${COMPLIANCE_OPERATOR_REF:-}}"
+
+get_latest_release_tag() {
+    curl -fsSL "https://api.github.com/repos/$CO_REPO_OWNER/$CO_REPO_NAME/releases/latest" 2>/dev/null \
+    | grep -m1 '"tag_name"' \
+    | sed -E 's/.*"tag_name"\s*:\s*"([^"]+)".*/\1/'
+}
+
+if [[ -z "$CO_REF" ]]; then
+    echo "[INFO] Resolving latest $CO_REPO_OWNER/$CO_REPO_NAME release tag from GitHub..."
+    CO_REF=$(get_latest_release_tag || true)
 fi
 
+if [[ -z "$CO_REF" ]]; then
+    echo "[WARN] Could not determine latest release (rate limit or network issue). Falling back to 'master'."
+    CO_REF="master"
+else
+    echo "[INFO] Using Compliance Operator ref: $CO_REF"
+fi
+
+BASE_RAW="https://raw.githubusercontent.com/$CO_REPO_OWNER/$CO_REPO_NAME/$CO_REF"
+
 echo "[INFO] Creating namespace: $NAMESPACE"
-oc apply -f https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/ns/ns.yaml
+oc apply -f "$BASE_RAW/config/ns/ns.yaml"
 
 echo "[INFO] Creating OperatorGroup"
-oc apply -f https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/catalog/catalog-source.yaml
+oc apply -f "$BASE_RAW/config/catalog/catalog-source.yaml"
 
 echo "[INFO] Subscribing to Compliance Operator from Red Hat"
-oc apply -f https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/catalog/operator-group.yaml
+oc apply -f "$BASE_RAW/config/catalog/operator-group.yaml"
 
 echo "[INFO] Creating Subscription for Compliance Operator"
-oc apply -f https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/catalog/subscription.yaml
+oc apply -f "$BASE_RAW/config/catalog/subscription.yaml"
 
 echo "[INFO] Waiting for Subscription to populate installedCSV..."
 for i in {1..30}; do
@@ -251,6 +185,17 @@ fi
 
 echo "[SUCCESS] Compliance Operator installed successfully."
 oc get pods -n $NAMESPACE
+
+echo "[INFO] Waiting up to 5m for non-completed pods in '$NAMESPACE' to be Ready..."
+NSPODS=$(oc -n "$NAMESPACE" get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | tr '\n' ' ' | xargs || true)
+if [[ -n "$NSPODS" ]]; then
+    if ! oc -n "$NAMESPACE" wait --for=condition=Ready pod $NSPODS --timeout=300s; then
+        echo "[WARN] Not all non-completed pods in '$NAMESPACE' became Ready within the timeout. Current pod statuses:"
+        oc -n "$NAMESPACE" get pods -o wide || true
+    fi
+else
+    echo "[INFO] No non-completed pods found in '$NAMESPACE'; continuing."
+fi
 
 echo "[NEXT STEP] To schedule a periodic compliance scan, run:"
 echo "  ./apply-periodic-scan.sh"
