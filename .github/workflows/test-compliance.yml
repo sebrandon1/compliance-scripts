@@ -1,0 +1,93 @@
+name: Test Compliance Operator
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  test-compliance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Verify CRC_PULL_SECRET is set
+        env:
+          CRC_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRC_PULL_SECRET}" ]; then
+            echo "CRC_PULL_SECRET secret is required but not set. Add it in repository or organization secrets."
+            exit 1
+          fi
+
+      - name: Setup quick-ocp cluster
+        uses: palmsoftware/quick-ocp@v0.0.18
+        with:
+          ocpPullSecret: $OCP_PULL_SECRET
+          bundleCache: true
+          waitForOperatorsReady: true
+        env:
+          OCP_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
+
+      - name: Run install-compliance-operator.sh
+        run: ./install-compliance-operator.sh
+
+      - name: Assert Compliance Operator pods are Ready
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get pods
+          pods="$(oc -n openshift-compliance get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')"
+          test -n "$pods"
+          NSPODS=$(oc -n openshift-compliance get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{"\n"}{end}' | tr '\n' ' ' | xargs || true)
+          if [ -n "$NSPODS" ]; then
+            oc -n openshift-compliance wait --for=condition=Ready pod $NSPODS --timeout=300s
+          fi
+
+      - name: Assert ProfileBundles exist
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get profilebundle ocp4
+          oc -n openshift-compliance get profilebundle rhcos4
+
+      - name: Apply periodic scan
+        run: ./apply-periodic-scan.sh
+
+      - name: Assert periodic scan resources exist
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get scansetting periodic-setting
+          oc -n openshift-compliance get scansettingbinding periodic-e8
+
+      - name: Assert periodic scan Profiles exist
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get profile ocp4-e8
+          oc -n openshift-compliance get profile rhcos4-e8
+
+      - name: Assert ComplianceSuite created for periodic scan
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get compliancesuite periodic-e8
+
+      - name: Run create-scan.sh
+        run: ./create-scan.sh
+
+      - name: Assert on-demand scan resources exist
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get scansetting default
+          oc -n openshift-compliance get scansettingbinding cis-scan
+          oc -n openshift-compliance get profile ocp4-cis
+
+      - name: Assert ComplianceSuite created for CIS scan
+        run: |
+          set -euxo pipefail
+          oc -n openshift-compliance get compliancesuite cis-scan
