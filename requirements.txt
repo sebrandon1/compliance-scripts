@@ -1,0 +1,7 @@
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+playwright>=1.40.0
+
+# Optional: For Red Hat internal sites with Kerberos authentication
+# Uncomment if needed:
+# requests-kerberos>=0.14.0

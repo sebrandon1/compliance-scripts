@@ -25,7 +25,8 @@ BG_BLUE := \033[44m
 # ────────────────────────────────────────────────────────────────────────────────
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
-        generate-compliance-markdown clean clean-complianceremediations full-workflow banner
+        generate-compliance-markdown clean clean-complianceremediations full-workflow banner \
+        lint python-lint bash-lint
 
 # Default target
 all: help
@@ -51,6 +52,9 @@ help: banner ## 📖 Show this help message
 	@echo ""
 	@echo "$(YELLOW)📊 Data Collection Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(collect|organize|generate)"
+	@echo ""
+	@echo "$(YELLOW)🔍 Code Quality Commands:$(RESET)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(lint)"
 	@echo ""
 	@echo "$(YELLOW)🧹 Utility Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(clean|help)"
@@ -155,9 +159,35 @@ full-workflow: banner install-compliance-operator apply-periodic-scan create-sca
 	@echo "$(DIM)  ✓ Compliance markdown report generated$(RESET)"
 	@echo ""
 
-python-lint:
-	@if ! command -v flake8 >/dev/null 2>&1; then \
-	  echo 'flake8 not found, installing...'; \
-	  pip3 install --user flake8; \
+# ────────────────────────────────────────────────────────────────────────────────
+# 🔍 Code Quality & Linting
+# ────────────────────────────────────────────────────────────────────────────────
+
+lint: python-lint bash-lint ## 🔍 Run all linters (Python + Bash)
+	@echo ""
+	@echo "$(BOLD)$(GREEN)✅ All linting checks passed!$(RESET)"
+	@echo ""
+
+python-lint: ## 🐍 Lint Python files with flake8
+	@echo "$(BOLD)$(BLUE)🐍 Linting Python files...$(RESET)"
+	@if ! command -v flake8 >/dev/null 2>&1 && ! python3 -m flake8 --version >/dev/null 2>&1; then \
+	  echo "$(YELLOW)⚙️  flake8 not found, installing...$(RESET)"; \
+	  pip3 install --user --break-system-packages flake8 2>/dev/null || pip3 install --user flake8; \
 	fi
-	flake8 . --ignore=E501 --exclude=venv,.venv
+	@if command -v flake8 >/dev/null 2>&1; then \
+	  flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
+	else \
+	  python3 -m flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
+	fi
+	@echo "$(GREEN)✅ Python linting passed!$(RESET)"
+
+bash-lint: ## 📜 Lint Bash scripts with shellcheck
+	@echo "$(BOLD)$(BLUE)📜 Linting Bash scripts...$(RESET)"
+	@if ! command -v shellcheck >/dev/null 2>&1; then \
+	  echo "$(RED)❌ shellcheck not found. Please install it:$(RESET)"; \
+	  echo "$(DIM)  macOS: brew install shellcheck$(RESET)"; \
+	  echo "$(DIM)  Linux: apt-get install shellcheck or dnf install ShellCheck$(RESET)"; \
+	  exit 1; \
+	fi
+	@shellcheck -e SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 *.sh || (echo "$(RED)❌ Bash linting failed!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ Bash linting passed!$(RESET)"
