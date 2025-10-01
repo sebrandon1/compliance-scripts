@@ -5,10 +5,69 @@ This repository contains a set of scripts to help automate the collection, organ
 - [Compliance Operator GitHub Repository](https://github.com/ComplianceAsCode/compliance-operator)
 - [Compliance Operator Workshop Tutorials](https://github.com/ComplianceAsCode/compliance-operator/tree/master/doc/tutorials/workshop/content/exercises)
 
+## Quick Start
+
+### Recommended: Single Command (Fully Automated)
+
+```bash
+# This handles everything automatically - no prompts needed!
+./install-compliance-operator.sh
+```
+
+The script will:
+1. ✅ Check for suitable storage
+2. ✅ **Automatically deploy** HostPath CSI if needed (same as CRC uses)
+3. ✅ Install Compliance Operator
+4. ✅ Wait for everything to be ready
+
+**No user interaction required!** Just run and wait.
+
+Then run scans:
+```bash
+./create-scan.sh           # CIS compliance scan
+./apply-periodic-scan.sh   # Periodic E8 scans
+```
+
+### Alternative: Manual Two-Step
+
+If you prefer to deploy storage manually first:
+
+```bash
+./deploy-hostpath-csi.sh        # Deploy storage (same as CRC)
+./install-compliance-operator.sh # Install operator
+./create-scan.sh                 # Run scans
+```
+
+---
+
 ## Scripts Overview
 
-### 1. install-compliance-operator.sh
+### 1. deploy-hostpath-csi.sh
+Deploys the **KubeVirt HostPath CSI driver** - the same storage provisioner used by CRC (Code Ready Containers). This is the **recommended storage solution** for compliance scans.
+
+**Why use this?**
+- Handles permissions correctly for `restricted-v2` SCC pods
+- Works reliably with SELinux Enforcing
+- Same provisioner used by CRC (proven solution)
+- No issues with ResultServer writing scan results
+
+**Usage:**
+```bash
+./deploy-hostpath-csi.sh
+```
+
+**What it deploys:**
+- Namespace: `hostpath-provisioner`
+- CSI Driver: `kubevirt.io.hostpath-provisioner`
+- DaemonSet with 4 containers per node
+- Default StorageClass: `crc-csi-hostpath-provisioner`
+
+---
+
+### 2. install-compliance-operator.sh
 Installs the Compliance Operator in the `openshift-compliance` namespace. Waits for the operator to be fully installed and ready.
+
+**Fully automated:** The script automatically checks for suitable storage and deploys the HostPath CSI driver if needed - no prompts required!
 
 - [Compliance Operator Install Docs](https://github.com/ComplianceAsCode/compliance-operator#installation)
   - By default this script resolves and uses the latest release tag from the Compliance Operator [releases page](https://github.com/ComplianceAsCode/compliance-operator/releases). If the GitHub API cannot be reached or is rate-limited, it falls back to `master`.
@@ -17,6 +76,13 @@ Installs the Compliance Operator in the `openshift-compliance` namespace. Waits 
 ```bash
 ./install-compliance-operator.sh
 ```
+
+**Automatic storage detection:**
+If no suitable storage is detected, the script will automatically:
+- Deploy KubeVirt HostPath CSI driver (same as CRC uses)
+- Set it as the default StorageClass
+- Continue with operator installation
+- No user interaction needed!
 
 **Version pinning and overrides:**
 
@@ -41,7 +107,7 @@ Readiness behavior:
 
 ---
 
-### 2. delete-compliance-operator.sh
+### 3. delete-compliance-operator.sh
 Deletes the Compliance Operator, its resources, and the `openshift-compliance` namespace.
 
 **Usage:**
@@ -51,7 +117,7 @@ Deletes the Compliance Operator, its resources, and the `openshift-compliance` n
 
 ---
 
-### 3. collect-complianceremediations.sh
+### 4. collect-complianceremediations.sh
 Collects all `complianceremediation` objects from the specified namespace (default: `openshift-compliance`), extracts their YAML, and saves them to the `complianceremediations/` directory. Supports optional severity filtering and a fresh run.
 
 **Usage:**
@@ -65,7 +131,7 @@ Collects all `complianceremediation` objects from the specified namespace (defau
 
 ---
 
-### 4. organize-machine-configs.sh
+### 5. organize-machine-configs.sh
 Organizes all YAMLs in a source directory (default: `complianceremediations/`) that are `kind: MachineConfig` by topic (e.g., sysctl, sshd) and copies them to the appropriate destination directory. The script now accepts parameters to override the source and destination directories.
 
 **Usage:**
@@ -83,7 +149,7 @@ If not specified, the script uses the default directory values set at the top of
 
 ---
 
-### 5. generate-compliance-markdown.sh
+### 6. generate-compliance-markdown.sh
 Generates a Markdown report mapping ComplianceCheckResult objects to their corresponding remediation files, including severity and result, sorted by result type.
 
 **Usage:**
@@ -93,7 +159,7 @@ Generates a Markdown report mapping ComplianceCheckResult objects to their corre
 
 ---
 
-### 6. create-scan.sh
+### 7. create-scan.sh
 Creates a basic ScanSettingBinding for the `ocp4-cis` profile in the `openshift-compliance` namespace.
 
 - [Workshop: Creating Your First Scan](https://github.com/ComplianceAsCode/compliance-operator/blob/master/doc/tutorials/workshop/content/exercises/03-creating-your-first-scan.md)
@@ -105,7 +171,7 @@ Creates a basic ScanSettingBinding for the `ocp4-cis` profile in the `openshift-
 
 ---
 
-### 7. apply-periodic-scan.sh
+### 8. apply-periodic-scan.sh
 Applies a periodic ScanSetting and ScanSettingBinding for the `rhcos4-e8` and `ocp4-e8` profiles, as described in the Compliance Operator workshop.
 
 - [Workshop: Creating Your First Scan (Periodic Example)](https://github.com/ComplianceAsCode/compliance-operator/blob/master/doc/tutorials/workshop/content/exercises/03-creating-your-first-scan.md)
@@ -117,7 +183,7 @@ Applies a periodic ScanSetting and ScanSettingBinding for the `rhcos4-e8` and `o
 
 ---
 
-### 8. generate-network-policies.sh
+### 9. generate-network-policies.sh
 Generates a default-deny `NetworkPolicy` for selected namespaces. By default, previews YAMLs to `./generated-networkpolicies`. Can apply directly with `--apply`.
 
 **Usage:**
@@ -132,7 +198,7 @@ Generates a default-deny `NetworkPolicy` for selected namespaces. By default, pr
 
 ---
 
-### 9. deploy-loopback-ds.sh
+### 10. deploy-loopback-ds.sh
 Deploys a privileged DaemonSet on every node that creates and attaches a file-backed loop device (default: `/dev/loop0`) and can optionally patch LVMS `LVMCluster` to reference it. Useful for lab clusters without spare disks.
 
 **Usage:**
@@ -148,30 +214,7 @@ Deploys a privileged DaemonSet on every node that creates and attaches a file-ba
 
 ---
 
-### 10. bootstrap-storage.sh
-Ensures a default `StorageClass` exists. Can bootstrap using Red Hat LVMS (TopoLVM) or Rancher local-path for labs. Prints the detected default `StorageClass` name to stdout.
-
-**Usage:**
-```bash
-./bootstrap-storage.sh [--storage lvms|local-path|none] [--force-storage-bootstrap] [--namespace NAMESPACE]
-```
-- `--storage` Provider to use when bootstrapping (default: `lvms`)
-- `--force-storage-bootstrap` Bootstrap even if a default SC already exists
-- `--namespace` Namespace for capacity probe objects (default: `openshift-compliance`)
-
----
-
-### 11. unbootstrap-storage.sh
-Attempts to undo storage bootstrap actions (LVMS or Rancher local-path). Best-effort cleanup of operators, CRDs, SCs, and related RBAC. Prints the resulting default `StorageClass` name to stdout.
-
-**Usage:**
-```bash
-./unbootstrap-storage.sh [--provider auto|lvms|local-path]
-```
-
----
-
-### 12. delete-scans.sh
+### 13. delete-scans.sh
 Removes the periodic `ScanSetting`/`ScanSettingBinding` (`periodic-setting`/`periodic-e8`) and associated PVCs. Optionally also removes the CIS scan binding/suite.
 
 **Usage:**
@@ -181,7 +224,7 @@ Removes the periodic `ScanSetting`/`ScanSettingBinding` (`periodic-setting`/`per
 
 ---
 
-### 13. delete-compliancescans.sh
+### 14. delete-compliancescans.sh
 Deletes `ComplianceScan` objects, optionally filtering by substring, and optionally deleting related `ComplianceSuite` and `ScanSettingBinding` resources.
 
 **Usage:**
@@ -191,7 +234,7 @@ Deletes `ComplianceScan` objects, optionally filtering by substring, and optiona
 
 ---
 
-### 14. restart-scans.sh
+### 15. restart-scans.sh
 Requests re-scan of one or more `ComplianceScan` resources via annotation. Can target all scans and optionally watch status.
 
 **Usage:**
@@ -201,7 +244,7 @@ Requests re-scan of one or more `ComplianceScan` resources via annotation. Can t
 
 ---
 
-### 15. monitor-inprogress-scans.sh
+### 16. monitor-inprogress-scans.sh
 Convenience dashboard to view default `StorageClass`, scans, suites, pods, PVCs, ProfileBundles, and recent events in the compliance namespace. Supports watch mode, refresh interval, and name filtering.
 
 **Usage:**
@@ -211,7 +254,7 @@ Convenience dashboard to view default `StorageClass`, scans, suites, pods, PVCs,
 
 ---
 
-### 16. replace-pull-secret-credentials.sh
+### 17. replace-pull-secret-credentials.sh
 Backs up and updates the cluster-wide pull secret in `openshift-config/secret/pull-secret`. Supports `merge` (default) or `replace` modes and optional verification of resulting registries.
 
 **Usage:**
@@ -221,7 +264,7 @@ Backs up and updates the cluster-wide pull secret in `openshift-config/secret/pu
 
 ---
 
-### 17. fetch-kubeconfig.sh
+### 18. fetch-kubeconfig.sh
 Fetches a kubeconfig from a remote host via `scp`, writing to a local destination, and sets secure file permissions.
 
 **Usage:**
@@ -233,7 +276,7 @@ Fetches a kubeconfig from a remote host via `scp`, writing to a local destinatio
 
 ---
 
-### 9. apply-remediations-by-severity.sh
+### 19. apply-remediations-by-severity.sh
 Applies combined remediation YAMLs for a single severity (`high|medium|low`). Injects required metadata, performs server-side dry-run first, applies, and waits for reconciliation where appropriate.
 
 **Usage:**
@@ -243,7 +286,7 @@ Applies combined remediation YAMLs for a single severity (`high|medium|low`). In
 
 ---
 
-### 10. force-delete-namespace.sh
+### 20. force-delete-namespace.sh
 Force deletes a namespace and all its resources (use with caution).
 
 **Usage:**
@@ -253,7 +296,7 @@ Force deletes a namespace and all its resources (use with caution).
 
 ---
 
-### 11. create-source-comments.py (Optional)
+### 21. create-source-comments.py (Optional)
 Scans all YAML files in `complianceremediations/` for `kind: MachineConfig` and, for each `source: data:,...` line, decodes the data and inserts a human-readable comment block above the `source:` line. The script is idempotent and will not add duplicate comments.
 
 **Usage:**
@@ -263,7 +306,7 @@ python3 create-source-comments.py
 
 ---
 
-### 12. combine-machineconfigs-by-path.py
+### 22. combine-machineconfigs-by-path.py
 Scans all YAML files in a source directory (default: `complianceremediations/`) for `kind: MachineConfig` and combines any that target the same file path (e.g., `/etc/ssh/sshd_config`) into a single deduplicated YAML. Role distinctions (e.g., master/worker) are ignored unless explicit labels are present in the YAML. Only files with overlapping paths are combined; originals are moved to `combo/` under the source directory if combined. The process is idempotent and only affects files that actually overlap.
 
 **Usage:**

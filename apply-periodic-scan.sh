@@ -19,15 +19,19 @@ while [[ ${#} -gt 0 ]]; do
   esac
 done
 if [[ "${NO_PVC}" != "true" ]]; then
-  # Prefer local-path if available; else pick an LVMS/topolvm SC; else first SC. Allow env override.
+  # Use default StorageClass; prefer crc-csi-hostpath-provisioner; else first SC. Allow env override.
   if [[ -z "${SC_NAME:-}" ]]; then
-    if oc get sc local-path &>/dev/null; then
-      SC_NAME=local-path
-    else
-      SC_NAME=$(oc get sc -o jsonpath='{range .items[*]}{.metadata.name}:{.provisioner}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="topolvm.io"{print $1; exit}')
-      if [[ -z "${SC_NAME:-}" ]]; then
-        SC_NAME=$(oc get sc -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-      fi
+    # First, try to get the default StorageClass
+    SC_NAME=$(oc get sc -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || true)
+    
+    # If no default, prefer crc-csi-hostpath-provisioner (recommended)
+    if [[ -z "${SC_NAME:-}" ]] && oc get sc crc-csi-hostpath-provisioner &>/dev/null; then
+      SC_NAME=crc-csi-hostpath-provisioner
+    fi
+    
+    # Fall back to any available StorageClass
+    if [[ -z "${SC_NAME:-}" ]]; then
+      SC_NAME=$(oc get sc -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
     fi
   fi
   # Storage defaults aligned with CRD defaults
