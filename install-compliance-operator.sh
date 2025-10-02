@@ -5,11 +5,6 @@ NAMESPACE="openshift-compliance"
 OPERATOR_NAME="compliance-operator"
 SUBSCRIPTION_NAME="compliance-operator-sub"
 
-# Optional: choose storage bootstrap provider when no default SC exists: lvms|local-path|none
-STORAGE_PROVIDER="lvms"
-FORCE_STORAGE_BOOTSTRAP=false
-SKIP_STORAGE_BOOTSTRAP=false
-
 usage() {
 cat <<USAGE
 Usage: $(basename "$0") [options]
@@ -17,28 +12,17 @@ Usage: $(basename "$0") [options]
 Install the Compliance Operator into namespace '${NAMESPACE}' and ensure a usable default StorageClass.
 
 Options:
-  --storage <provider>          Storage bootstrap provider when no default SC exists (default: lvms)
-                                Accepted: lvms | local-path | none
-  --force-storage-bootstrap     Force storage bootstrap even if a default StorageClass already exists
-  --skip-storage-bootstrap      Skip storage bootstrap even if no default StorageClass check passes
   --co-ref <ref>                Git ref or release tag for Compliance Operator (default: latest release)
   -h, --help                    Show this help and exit
 
 Notes:
-  - If the cluster already has a default StorageClass backed by HostPath/CRC, storage bootstrap is skipped.
-  - Storage bootstrap is delegated to ./bootstrap-storage.sh with the selected provider.
+  - The script will check for suitable storage and prompt to deploy HostPath CSI if needed.
   - Set KUBECONFIG to choose a specific cluster context, e.g.:
-      KUBECONFIG=/path/to/kubeconfig $(basename "$0") --storage lvms
+      KUBECONFIG=/path/to/kubeconfig $(basename "$0")
 USAGE
 }
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--storage)
-			STORAGE_PROVIDER="$2"; shift 2;;
-		--force-storage-bootstrap)
-			FORCE_STORAGE_BOOTSTRAP=true; shift;;
-		--skip-storage-bootstrap)
-			SKIP_STORAGE_BOOTSTRAP=true; shift;;
 		--co-ref)
 			CO_REF="$2"; shift 2;;
 		-h|--help)
@@ -48,70 +32,125 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+# ============================================================================
+# Storage Provisioner Check
+# ============================================================================
+echo "[PRECHECK] Checking for suitable storage provisioner..."
+
+# Check if hostpath CSI driver is deployed (recommended)
+HOSTPATH_CSI_DEPLOYED=false
+if oc get csidriver kubevirt.io.hostpath-provisioner &>/dev/null; then
+	echo "[INFO] ✅ KubeVirt HostPath CSI driver detected (recommended)"
+	HOSTPATH_CSI_DEPLOYED=true
+fi
+
+# Check for default StorageClass
+DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || true)
+
+if [[ -z "$DEFAULT_SC" ]] && [[ "$HOSTPATH_CSI_DEPLOYED" == "false" ]]; then
+	echo ""
+	echo "════════════════════════════════════════════════════════════════════"
+	echo "📦 No default StorageClass detected - deploying HostPath CSI driver"
+	echo "════════════════════════════════════════════════════════════════════"
+	echo ""
+	echo "[INFO] Deploying KubeVirt HostPath CSI driver (same as CRC uses)"
+	echo "[INFO] This handles permissions correctly for restricted-v2 SCC"
+	echo ""
+	
+	if [[ -x "./deploy-hostpath-csi.sh" ]]; then
+		./deploy-hostpath-csi.sh
+		echo ""
+		echo "[SUCCESS] HostPath CSI driver deployed!"
+		echo "[INFO] Continuing with Compliance Operator installation..."
+		echo ""
+	else
+		echo "[ERROR] deploy-hostpath-csi.sh not found or not executable"
+		echo "[INFO] Please run: ./deploy-hostpath-csi.sh"
+		exit 1
+	fi
+elif [[ "$HOSTPATH_CSI_DEPLOYED" == "true" ]]; then
+	echo "[INFO] ✅ HostPath CSI driver already deployed"
+elif [[ -n "$DEFAULT_SC" ]]; then
+	echo "[INFO] Default StorageClass found: $DEFAULT_SC"
+	PROVISIONER=$(oc get storageclass "$DEFAULT_SC" -o jsonpath='{.provisioner}' 2>/dev/null || echo "unknown")
+	if [[ "$PROVISIONER" == "kubevirt.io.hostpath-provisioner" ]]; then
+		echo "[INFO] ✅ Using recommended KubeVirt HostPath CSI provisioner"
+	elif [[ "$PROVISIONER" == "rancher.io/local-path" ]]; then
+		echo "[WARN] ⚠️  local-path provisioner detected"
+		echo "[WARN] This may have permission issues with restricted-v2 SCC"
+		echo "[WARN] Consider running: ./deploy-hostpath-csi.sh"
+	else
+		echo "[INFO] Using provisioner: $PROVISIONER"
+	fi
+fi
+echo ""
+
+# ============================================================================
+# Marketplace Health Check
+# ============================================================================
 echo "[PRECHECK] Ensuring 'openshift-marketplace' is healthy before proceeding..."
 if ! oc get ns openshift-marketplace &>/dev/null; then
 	echo "[ERROR] Namespace 'openshift-marketplace' not found. Ensure you're connected to an OpenShift cluster."
 	exit 1
 fi
 
+echo "[PRECHECK] Checking for pods in error states in 'openshift-marketplace'..."
+# Check for pods in permanent error states (ImagePullBackOff, CrashLoopBackOff, etc.)
+ERROR_PODS=$(oc -n openshift-marketplace get pods -o json 2>/dev/null | \
+	jq -r '.items[] | select(.status.phase != "Succeeded" and .status.phase != "Running") | 
+	select(.status.containerStatuses // [] | any(.state.waiting.reason | 
+	test("ImagePullBackOff|ErrImagePull|CrashLoopBackOff|CreateContainerConfigError|InvalidImageName"))) | 
+	.metadata.name' | tr '\n' ' ' || true)
+
+if [[ -n "$ERROR_PODS" ]]; then
+	echo "[ERROR] Found pods in permanent error states in 'openshift-marketplace':"
+	oc -n openshift-marketplace get pods -o wide || true
+	echo ""
+	echo "Pods in error state: $ERROR_PODS"
+	echo "[ERROR] Please resolve the pod errors above before proceeding."
+	exit 1
+fi
+
 echo "[PRECHECK] Waiting up to 5m for non-completed pods in 'openshift-marketplace' to be Ready..."
-# Gather only pods that are not in Succeeded (Completed) phase (compatible with older bash)
-MKTPODS=$(oc -n openshift-marketplace get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | tr '\n' ' ' | xargs || true)
-if [[ -n "$MKTPODS" ]]; then
-	if ! oc -n openshift-marketplace wait --for=condition=Ready pod $MKTPODS --timeout=300s; then
-		echo "[ERROR] Not all non-completed pods in 'openshift-marketplace' became Ready within the timeout. Current pod statuses:"
-		oc -n openshift-marketplace get pods -o wide || true
-		exit 1
+# Poll for pods to be ready, handling pods that might be deleted/recreated during the wait
+for i in {1..30}; do
+	# Get current non-completed pods
+	MKTPODS=$(oc -n openshift-marketplace get pods \
+		-o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' 2>/dev/null || true)
+	
+	if [[ -z "$MKTPODS" ]]; then
+		echo "[PRECHECK] No non-completed pods found in 'openshift-marketplace'"
+		break
 	fi
-else
-	echo "[PRECHECK] No non-completed pods found in 'openshift-marketplace'; continuing."
-fi
-
-# Detect CRC and decide whether to skip storage bootstrap
-SERVER=$(oc whoami --show-server 2>/dev/null || true)
-IS_CRC=false
-if [[ "$SERVER" =~ crc\.testing ]]; then
-	IS_CRC=true
-fi
-
-SKIP_BOOTSTRAP=false
-if [[ "$IS_CRC" == true ]]; then
-	SKIP_BOOTSTRAP=true
-fi
-
-# Determine default SC; if one exists, prefer to skip unless forced
-DEFAULT_SC=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
-if [[ -z "$DEFAULT_SC" ]]; then
-	DEFAULT_SC=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.beta\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
-fi
-
-if [[ -n "$DEFAULT_SC" ]]; then
-	SKIP_BOOTSTRAP=true
-fi
-
-# Honor explicit flags
-if [[ "$FORCE_STORAGE_BOOTSTRAP" == true ]]; then
-	SKIP_BOOTSTRAP=false
-fi
-if [[ "$SKIP_STORAGE_BOOTSTRAP" == true ]]; then
-	SKIP_BOOTSTRAP=true
-fi
-
-if [[ "$SKIP_BOOTSTRAP" == true ]]; then
-	echo "[INFO] Skipping storage bootstrap. Server='$SERVER' SC='$DEFAULT_SC'"
-else
-	SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-	BOOTSTRAP_ARGS=(--storage "$STORAGE_PROVIDER" --namespace "$NAMESPACE")
-	if [[ "$FORCE_STORAGE_BOOTSTRAP" == true ]]; then BOOTSTRAP_ARGS+=(--force-storage-bootstrap); fi
-	DEFAULT_SC=$("$SCRIPT_DIR/bootstrap-storage.sh" "${BOOTSTRAP_ARGS[@]}")
-	if [[ -z "$DEFAULT_SC" ]]; then
-		echo "[ERROR] Failed to detect default StorageClass after bootstrap." >&2
-		exit 1
+	
+	ALL_READY=true
+	while IFS= read -r line; do
+		POD_NAME=$(echo "$line" | awk '{print $1}')
+		
+		# Check if pod still exists and is Ready
+		if oc -n openshift-marketplace get pod "$POD_NAME" &>/dev/null; then
+			if ! oc -n openshift-marketplace get pod "$POD_NAME" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q "True"; then
+				ALL_READY=false
+			fi
+		fi
+	done <<< "$MKTPODS"
+	
+	if [[ "$ALL_READY" == "true" ]]; then
+		echo "[PRECHECK] All pods in 'openshift-marketplace' are Ready"
+		break
 	fi
+	
+	echo "[WAIT] Waiting for marketplace pods to be Ready ($i/30)..."
+	sleep 10
+done
+
+# Final check - if pods are still not ready after timeout, fail
+FAILED_PODS=$(oc -n openshift-marketplace get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.conditions[?(@.type=="Ready")]}{.status}{end}{"\n"}{end}' 2>/dev/null | grep -v "True$" || true)
+if [[ -n "$FAILED_PODS" ]]; then
+	echo "[ERROR] Some pods in 'openshift-marketplace' are not Ready. Current pod statuses:"
+	oc -n openshift-marketplace get pods -o wide || true
+	exit 1
 fi
-echo "[INFO] Default StorageClass detected: $DEFAULT_SC"
-
-
 
 CO_REPO_OWNER="ComplianceAsCode"
 CO_REPO_NAME="compliance-operator"
@@ -141,8 +180,33 @@ BASE_RAW="https://raw.githubusercontent.com/$CO_REPO_OWNER/$CO_REPO_NAME/$CO_REF
 echo "[INFO] Creating namespace: $NAMESPACE"
 oc apply -f "$BASE_RAW/config/ns/ns.yaml"
 
-echo "[INFO] Creating OperatorGroup"
-oc apply -f "$BASE_RAW/config/catalog/catalog-source.yaml"
+echo "[INFO] Compliance Operator will use default SCCs (restricted-v2)"
+# DO NOT grant anyuid or privileged to compliance service accounts!
+# The operator needs restricted-v2 SCC which auto-assigns UIDs from namespace range
+# Granting anyuid/privileged breaks pods with runAsNonRoot: true
+
+echo "[INFO] Creating CatalogSource with master node tolerations"
+echo "[INFO] Using catalog image tag: $CO_REF"
+cat <<EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: compliance-operator
+  namespace: openshift-marketplace
+spec:
+  displayName: Compliance Operator Upstream
+  image: ghcr.io/complianceascode/compliance-operator-catalog:$CO_REF
+  publisher: github.com/complianceascode/compliance-operator
+  sourceType: grpc
+  grpcPodConfig:
+    tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+EOF
 
 echo "[INFO] Subscribing to Compliance Operator from Red Hat"
 oc apply -f "$BASE_RAW/config/catalog/operator-group.yaml"
@@ -187,15 +251,67 @@ echo "[SUCCESS] Compliance Operator installed successfully."
 oc get pods -n $NAMESPACE
 
 echo "[INFO] Waiting up to 5m for non-completed pods in '$NAMESPACE' to be Ready..."
-NSPODS=$(oc -n "$NAMESPACE" get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{"\n"}{end}' 2>/dev/null | tr '\n' ' ' | xargs || true)
-if [[ -n "$NSPODS" ]]; then
-    if ! oc -n "$NAMESPACE" wait --for=condition=Ready pod $NSPODS --timeout=300s; then
-        echo "[WARN] Not all non-completed pods in '$NAMESPACE' became Ready within the timeout. Current pod statuses:"
-        oc -n "$NAMESPACE" get pods -o wide || true
+# Clean up any leftover storage probe pods first
+oc -n "$NAMESPACE" delete pod -l app=co-storage-probe --ignore-not-found=true >/dev/null 2>&1 || true
+
+for i in {1..30}; do
+    # Get current non-completed, non-probe pods
+    NSPODS=$(oc -n "$NAMESPACE" get pods \
+        -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' 2>/dev/null \
+        | grep -v "co-storage-probe" || true)
+    
+    if [[ -z "$NSPODS" ]]; then
+        echo "[INFO] No non-completed pods found in '$NAMESPACE'"
+        break
     fi
-else
-    echo "[INFO] No non-completed pods found in '$NAMESPACE'; continuing."
-fi
+    
+    # Count pods and check if any are not Ready
+    NOT_READY=$(echo "$NSPODS" | wc -l | xargs)
+    ALL_READY=true
+    
+    while IFS= read -r line; do
+        POD_NAME=$(echo "$line" | awk '{print $1}')
+        POD_PHASE=$(echo "$line" | awk '{print $2}')
+        
+        # Check if pod still exists and is Ready
+        if oc -n "$NAMESPACE" get pod "$POD_NAME" &>/dev/null; then
+            if ! oc -n "$NAMESPACE" get pod "$POD_NAME" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q "True"; then
+                ALL_READY=false
+            fi
+        fi
+    done <<< "$NSPODS"
+    
+    if [[ "$ALL_READY" == "true" ]]; then
+        echo "[INFO] All pods in '$NAMESPACE' are Ready"
+        break
+    fi
+    
+    echo "[WAIT] Waiting for pods to be Ready ($i/30)..."
+    sleep 10
+done
+
+# Final status check
+echo "[INFO] Final pod status in '$NAMESPACE':"
+oc -n "$NAMESPACE" get pods -o wide 2>/dev/null || true
+
+echo "[INFO] Waiting for ProfileBundles to become VALID..."
+for i in {1..30}; do
+	OCP4_STATUS=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+	RHCOS4_STATUS=$(oc get profilebundle rhcos4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+	
+	if [[ "$OCP4_STATUS" == "VALID" && "$RHCOS4_STATUS" == "VALID" ]]; then
+		echo "[INFO] All ProfileBundles are VALID"
+		break
+	fi
+	echo "[WAIT] Waiting for ProfileBundles to be valid ($i/30)... ocp4=$OCP4_STATUS rhcos4=$RHCOS4_STATUS"
+	sleep 10
+done
+
+echo "[INFO] ProfileBundle status:"
+oc get profilebundles -n "$NAMESPACE" 2>/dev/null || true
+
+echo "[INFO] Profile parser pods should be using 'restricted-v2' SCC"
+echo "[INFO] You can verify with: oc get pods -n $NAMESPACE -o custom-columns=NAME:.metadata.name,SCC:.metadata.annotations.'openshift\.io/scc'"
 
 echo "[NEXT STEP] To schedule a periodic compliance scan, run:"
 echo "  ./apply-periodic-scan.sh"
