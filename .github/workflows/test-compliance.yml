@@ -12,6 +12,8 @@ on:
 jobs:
   test-compliance:
     runs-on: ubuntu-latest
+    # Only run on main branch and not from forks
+    if: github.repository_owner == 'sebrandon1'
     permissions:
       contents: read
     steps:
