@@ -1,5 +1,9 @@
 # Hardening Scripts Collection
 
+[![Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/lint.yml)
+[![Shell Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml)
+[![Test Compliance Operator](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance.yml)
+
 This repository contains a set of scripts to help automate the collection, organization, and management of OpenShift Compliance Operator remediations and related resources.
 
 - [Compliance Operator GitHub Repository](https://github.com/ComplianceAsCode/compliance-operator)
