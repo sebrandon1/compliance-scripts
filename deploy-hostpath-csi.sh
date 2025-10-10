@@ -8,18 +8,123 @@ set -e
 NAMESPACE="hostpath-provisioner"
 STORAGE_CLASS_NAME="crc-csi-hostpath-provisioner"
 
+# Check if already deployed and offer to reinstall
+if oc get namespace "$NAMESPACE" &>/dev/null; then
+    echo "[INFO] HostPath CSI Driver is already deployed"
+    echo "[INFO] Reinstalling by deleting existing deployment first..."
+    
+    # Get the directory where this script is located
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    DELETE_SCRIPT="${SCRIPT_DIR}/delete-hostpath-csi.sh"
+    
+    if [ -f "$DELETE_SCRIPT" ]; then
+        echo "[INFO] Running delete script..."
+        bash "$DELETE_SCRIPT"
+        echo "[INFO] Waiting 5 seconds before redeploying..."
+        sleep 5
+    else
+        echo "[WARN] delete-hostpath-csi.sh not found at $DELETE_SCRIPT"
+        echo "[INFO] Manually cleaning up existing resources..."
+        
+        # Manual cleanup
+        oc delete storageclass "$STORAGE_CLASS_NAME" --ignore-not-found=true
+        oc delete daemonset csi-hostpathplugin -n "$NAMESPACE" --ignore-not-found=true
+        oc delete csidriver kubevirt.io.hostpath-provisioner --ignore-not-found=true
+        oc adm policy remove-scc-from-user privileged -z csi-hostpath-provisioner-sa -n "$NAMESPACE" 2>/dev/null || true
+        oc delete clusterrolebinding hostpath-csi-provisioner-role --ignore-not-found=true
+        oc delete clusterrole hostpath-external-provisioner-runner --ignore-not-found=true
+        oc delete namespace "$NAMESPACE" --ignore-not-found=true --timeout=60s || true
+        echo "[INFO] Waiting 5 seconds before redeploying..."
+        sleep 5
+    fi
+fi
+
+# Function to check if an image exists in registry
+check_image_exists() {
+    local image=$1
+    echo "[DEBUG] Checking if image exists: $image"
+    
+    # Try to get image manifest without pulling the full image
+    if podman manifest inspect "$image" &>/dev/null; then
+        return 0
+    elif skopeo inspect "docker://$image" &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Detect OpenShift cluster version for image tags
 echo "[INFO] Detecting OpenShift cluster version..."
 CLUSTER_VERSION=$(oc get clusterversion version -o jsonpath='{.status.desired.version}' 2>/dev/null | cut -d'.' -f1-2 || echo "")
 
 if [[ -z "$CLUSTER_VERSION" ]]; then
-    echo "[WARN] Could not detect cluster version, defaulting to v4.15"
-    IMAGE_TAG="v4.15"
-else
-    # Extract major.minor (e.g., "4.17.1" -> "v4.17")
-    IMAGE_TAG="v${CLUSTER_VERSION}"
-    echo "[INFO] Detected cluster version: ${CLUSTER_VERSION}, using image tag: ${IMAGE_TAG}"
+    echo "[WARN] Could not detect cluster version, defaulting to search from v4.19"
+    CLUSTER_VERSION="4.19"
 fi
+
+# Extract major.minor (e.g., "4.17.1" -> "4.17")
+echo "[INFO] Detected cluster version: ${CLUSTER_VERSION}"
+
+# Parse version components
+MAJOR=$(echo "$CLUSTER_VERSION" | cut -d'.' -f1)
+MINOR=$(echo "$CLUSTER_VERSION" | cut -d'.' -f2)
+
+# Define all required images
+HOSTPATH_IMAGE_BASE="registry.redhat.io/container-native-virtualization/hostpath-csi-driver-rhel9"
+NODE_REGISTRAR_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-node-driver-registrar"
+LIVENESS_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-livenessprobe"
+PROVISIONER_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-external-provisioner"
+
+# Try to find the most recent compatible image version where ALL images exist
+IMAGE_TAG=""
+
+echo "[INFO] Searching for compatible image version (checking all required images)..."
+for ((i=MINOR; i>=15; i--)); do
+    TEST_TAG="v${MAJOR}.${i}"
+    
+    echo "[DEBUG] Testing version ${TEST_TAG}..."
+    
+    # Check if ALL required images exist for this version
+    ALL_EXIST=true
+    
+    if ! check_image_exists "${HOSTPATH_IMAGE_BASE}:${TEST_TAG}"; then
+        echo "[DEBUG] - hostpath-csi-driver not found"
+        ALL_EXIST=false
+    fi
+    
+    if ! check_image_exists "${NODE_REGISTRAR_IMAGE_BASE}:${TEST_TAG}"; then
+        echo "[DEBUG] - ose-csi-node-driver-registrar not found"
+        ALL_EXIST=false
+    fi
+    
+    if ! check_image_exists "${LIVENESS_IMAGE_BASE}:${TEST_TAG}"; then
+        echo "[DEBUG] - ose-csi-livenessprobe not found"
+        ALL_EXIST=false
+    fi
+    
+    if ! check_image_exists "${PROVISIONER_IMAGE_BASE}:${TEST_TAG}"; then
+        echo "[DEBUG] - ose-csi-external-provisioner not found"
+        ALL_EXIST=false
+    fi
+    
+    if [ "$ALL_EXIST" = true ]; then
+        IMAGE_TAG="$TEST_TAG"
+        echo "[INFO] ✓ Found compatible image version: ${IMAGE_TAG} (all images exist)"
+        break
+    else
+        echo "[DEBUG] Version ${TEST_TAG} incomplete, trying older version..."
+    fi
+done
+
+# Fallback if no image found
+if [[ -z "$IMAGE_TAG" ]]; then
+    echo "[WARN] Could not find compatible image by probing registry"
+    echo "[WARN] Defaulting to v4.19 (known working version)"
+    IMAGE_TAG="v4.19"
+fi
+
+echo "[INFO] Using image tag: ${IMAGE_TAG} for all CSI components"
 
 echo "[INFO] Deploying KubeVirt HostPath CSI Driver"
 echo "[INFO] This is the same provisioner used by CRC"
