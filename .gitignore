@@ -2,3 +2,8 @@ complianceremediations/
 ComplianceCheckResults.md
 created_file_paths.txt
 generated-networkpolicies/
+test-runs/
+cluster-baseline-*.json
+cluster-validation-*.json
+functional-test-results-*.json
+applied-yamls-*.txt
