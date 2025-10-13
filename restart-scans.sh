@@ -8,12 +8,14 @@ declare -a SCANS
 
 usage() {
     cat <<USAGE
-Usage: $0 [--namespace NAMESPACE|-n NAMESPACE] [--watch] (--all | --scan NAME [--scan NAME ...] | NAME [NAME ...])
+Usage: $0 [--namespace NAMESPACE|-n NAMESPACE] [--watch] [--scan NAME [--scan NAME ...] | NAME [NAME ...]]
+
+Defaults to restarting all scans if no specific scans are provided.
 
 Examples:
-  $0 --all
-  $0 ocp4-cis rhcos4-e8-worker
-  $0 -n openshift-compliance --watch --all
+  $0                                    # Restart all scans
+  $0 ocp4-cis rhcos4-e8-worker          # Restart specific scans
+  $0 -n openshift-compliance --watch    # Restart all scans and watch
 USAGE
 }
 
@@ -38,10 +40,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ "${#SCANS[@]}" -eq 0 && "$ALL" != true ]]; then
-    echo "[ERROR] Specify --all or one or more ComplianceScan names."
-    usage
-    exit 1
+# Default to ALL if no specific scans provided
+if [[ "${#SCANS[@]}" -eq 0 ]]; then
+    ALL=true
 fi
 
 echo "[PRECHECK] Verifying namespace '$NAMESPACE' exists..."
@@ -51,7 +52,7 @@ if ! oc get ns "$NAMESPACE" &>/dev/null; then
 fi
 
 if [[ "$ALL" == true ]]; then
-    echo "[INFO] Discovering all ComplianceScans in namespace '$NAMESPACE'..."
+    echo "[INFO] Restarting all ComplianceScans in namespace '$NAMESPACE'..."
     SCANS_OUTPUT=$(oc -n "$NAMESPACE" get compliancescan -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
     SCANS=()
     if [[ -n "$SCANS_OUTPUT" ]]; then
