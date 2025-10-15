@@ -28,18 +28,31 @@ EXPLICIT_NAMESPACES=""
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--apply)
-			APPLY=1; shift ;;
-		--out-dir)
-			OUT_DIR="$2"; shift 2 ;;
-		--exclude-regex)
-			EXCLUDE_REGEX="$2"; shift 2 ;;
-		--namespaces)
-			EXPLICIT_NAMESPACES="$2"; shift 2 ;;
-		-h|--help)
-			usage; exit 0 ;;
-		*)
-			echo "[ERROR] Unknown option: $1"; usage; exit 1 ;;
+	--apply)
+		APPLY=1
+		shift
+		;;
+	--out-dir)
+		OUT_DIR="$2"
+		shift 2
+		;;
+	--exclude-regex)
+		EXCLUDE_REGEX="$2"
+		shift 2
+		;;
+	--namespaces)
+		EXPLICIT_NAMESPACES="$2"
+		shift 2
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		echo "[ERROR] Unknown option: $1"
+		usage
+		exit 1
+		;;
 	esac
 done
 
@@ -66,16 +79,17 @@ skipped_present=0
 processed=0
 
 for ns in "${namespaces[@]}"; do
-	processed=$((processed+1))
+	processed=$((processed + 1))
 	# Skip if a default-deny policy already exists (by name)
 	if oc -n "$ns" get networkpolicy default-deny-all >/dev/null 2>&1; then
-		skipped_present=$((skipped_present+1))
+		skipped_present=$((skipped_present + 1))
 		echo "[SKIP] $ns already has NetworkPolicy/default-deny-all"
 		continue
 	fi
 
 	# YAML content for default deny ingress+egress
-	yaml=$(cat <<'EOF'
+	yaml=$(
+		cat <<'EOF'
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -86,20 +100,18 @@ spec:
     - Ingress
     - Egress
 EOF
-)
+	)
 
 	if [[ $APPLY -eq 1 ]]; then
 		echo "[APPLY] Creating NetworkPolicy/default-deny-all in namespace $ns"
 		echo "$yaml" | oc -n "$ns" apply -f -
-		created=$((created+1))
+		created=$((created + 1))
 	else
 		file="$OUT_DIR/${ns}-default-deny-all.yaml"
 		echo "$yaml" >"$file"
 		echo "[WRITE] $file"
-		created=$((created+1))
+		created=$((created + 1))
 	fi
 done
 
 echo "[SUMMARY] namespaces_processed=$processed, created=$created, skipped_present=$skipped_present, apply=$APPLY"
-
-

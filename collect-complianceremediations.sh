@@ -43,50 +43,50 @@ CLEAN_OUTPUT=0
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		-n|--namespace)
-			NAMESPACE="$2"
-			shift 2
-			;;
-		-s|--severity)
-			SEVERITY_FILTER="$2"
-			shift 2
-			;;
-		-f|--fresh)
-			CLEAN_OUTPUT=1
+	-n | --namespace)
+		NAMESPACE="$2"
+		shift 2
+		;;
+	-s | --severity)
+		SEVERITY_FILTER="$2"
+		shift 2
+		;;
+	-f | --fresh)
+		CLEAN_OUTPUT=1
+		shift
+		;;
+	-h | --help)
+		print_usage
+		exit 0
+		;;
+	--)
+		shift
+		break
+		;;
+	-*)
+		echo "Error: Unknown option: $1"
+		print_usage
+		exit 1
+		;;
+	*)
+		# Backward compatibility: treat first non-flag arg as namespace if not set explicitly
+		if [[ "$NAMESPACE" == "$NAMESPACE_DEFAULT" ]]; then
+			NAMESPACE="$1"
 			shift
-			;;
-		-h|--help)
-			print_usage
-			exit 0
-			;;
-		--)
-			shift
-			break
-			;;
-		-*)
-			echo "Error: Unknown option: $1"
-			print_usage
-			exit 1
-			;;
-		*)
-			# Backward compatibility: treat first non-flag arg as namespace if not set explicitly
-			if [[ "$NAMESPACE" == "$NAMESPACE_DEFAULT" ]]; then
-				NAMESPACE="$1"
-				shift
-				continue
-			fi
-			echo "Error: Unexpected argument: $1"
-			print_usage
-			exit 1
-			;;
+			continue
+		fi
+		echo "Error: Unexpected argument: $1"
+		print_usage
+		exit 1
+		;;
 	esac
 done
 
 echo "[INFO] Using namespace: $NAMESPACE"
 # Prepare output directory
 if [[ $CLEAN_OUTPUT -eq 1 ]]; then
-    echo "[INFO] Removing existing $destination_dir directory to start fresh."
-    rm -rf "$destination_dir"
+	echo "[INFO] Removing existing $destination_dir directory to start fresh."
+	rm -rf "$destination_dir"
 fi
 mkdir -p "$destination_dir"
 
@@ -181,7 +181,7 @@ echo "Total complianceremediation objects processed: $count_total"
 echo "Valid YAMLs collected: $count_valid"
 echo "Invalid YAMLs skipped: $count_invalid"
 if [[ -n "$SEVERITY_FILTER" ]]; then
-echo "Skipped due to severity filter ($SEVERITY_FILTER): $count_skipped_severity"
+	echo "Skipped due to severity filter ($SEVERITY_FILTER): $count_skipped_severity"
 fi
 echo "Kinds found in collected objects:"
 echo "$unique_kinds"

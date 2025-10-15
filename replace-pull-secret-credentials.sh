@@ -15,23 +15,39 @@ VERIFY=true
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--kubeconfig)
-			KUBECONFIG_ARG="$2"; shift 2;;
-		--pull-secret)
-			PULL_SECRET_FILE="$2"; shift 2;;
-		--mode)
-			MODE="$2"; shift 2;;
-		--namespace)
-			NAMESPACE="$2"; shift 2;;
-		--secret-name)
-			SECRET_NAME="$2"; shift 2;;
-		--no-verify)
-			VERIFY=false; shift;;
-		-h|--help)
-			show_usage; exit 0;;
-		*)
-			echo "Unknown argument: $1" >&2
-			show_usage; exit 1;;
+	--kubeconfig)
+		KUBECONFIG_ARG="$2"
+		shift 2
+		;;
+	--pull-secret)
+		PULL_SECRET_FILE="$2"
+		shift 2
+		;;
+	--mode)
+		MODE="$2"
+		shift 2
+		;;
+	--namespace)
+		NAMESPACE="$2"
+		shift 2
+		;;
+	--secret-name)
+		SECRET_NAME="$2"
+		shift 2
+		;;
+	--no-verify)
+		VERIFY=false
+		shift
+		;;
+	-h | --help)
+		show_usage
+		exit 0
+		;;
+	*)
+		echo "Unknown argument: $1" >&2
+		show_usage
+		exit 1
+		;;
 	esac
 done
 
@@ -87,7 +103,7 @@ if [[ "$MODE" == "merge" ]]; then
 	MERGED_JSON="$TMPDIR/merged.json"
 	cp "$BACKUP" "$CURRENT_JSON"
 
-	cat > "$TMPDIR/merge_pull_secret.py" <<'PY'
+	cat >"$TMPDIR/merge_pull_secret.py" <<'PY'
 import json, sys
 
 cur_path, new_path, out_path = sys.argv[1:4]
@@ -129,5 +145,3 @@ PY
 fi
 
 echo "[DONE] Updated '$SECRET_NAME'. Backup at $BACKUP"
-
-

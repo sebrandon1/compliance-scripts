@@ -13,7 +13,7 @@ WAIT_TIMEOUT="300s"
 AUTO_DETECT_DEVICE=true
 
 usage() {
-  cat <<USAGE
+	cat <<USAGE
 Usage: $(basename "$0") [options]
 
 Deploy a privileged DaemonSet that sets up a loop device on each node.
@@ -36,29 +36,45 @@ USAGE
 }
 
 while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --namespace)
-      NAMESPACE="$2"; shift 2;;
-    --device)
-      LOOP_DEVICE="$2"; shift 2;;
-    --size-gib)
-      FILE_SIZE_GIB="$2"; shift 2;;
-    --skip-patch)
-      PATCH_LVMS=false; shift;;
-    --no-auto-detect)
-      AUTO_DETECT_DEVICE=false; shift;;
-    --wait-timeout)
-      WAIT_TIMEOUT="$2"; shift 2;;
-    -h|--help)
-      usage; exit 0;;
-    *)
-      echo "[WARN] Ignoring unknown argument: $1"; shift;;
-  esac
+	case "$1" in
+	--namespace)
+		NAMESPACE="$2"
+		shift 2
+		;;
+	--device)
+		LOOP_DEVICE="$2"
+		shift 2
+		;;
+	--size-gib)
+		FILE_SIZE_GIB="$2"
+		shift 2
+		;;
+	--skip-patch)
+		PATCH_LVMS=false
+		shift
+		;;
+	--no-auto-detect)
+		AUTO_DETECT_DEVICE=false
+		shift
+		;;
+	--wait-timeout)
+		WAIT_TIMEOUT="$2"
+		shift 2
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		echo "[WARN] Ignoring unknown argument: $1"
+		shift
+		;;
+	esac
 done
 
 if ! command -v oc >/dev/null 2>&1; then
-  echo "[ERROR] 'oc' CLI not found in PATH. Please install OpenShift CLI." >&2
-  exit 1
+	echo "[ERROR] 'oc' CLI not found in PATH. Please install OpenShift CLI." >&2
+	exit 1
 fi
 
 echo "[INFO] Using KUBECONFIG: ${KUBECONFIG:-<default>}"
@@ -87,11 +103,11 @@ BACKING_FILE_POD_PATH="/host-var-lib-loopback/${BACKING_FILE_NAME}"
 echo "[INFO] Applying DaemonSet 'loopback-setup' in namespace '$NAMESPACE'"
 echo "[INFO] Checking for existing DaemonSet 'loopback-setup' in '$NAMESPACE'"
 if oc -n "$NAMESPACE" get ds/loopback-setup >/dev/null 2>&1; then
-  echo "[INFO] Deleting existing DaemonSet 'loopback-setup' before re-deploying"
-  oc -n "$NAMESPACE" delete ds/loopback-setup --ignore-not-found || true
-  if ! oc -n "$NAMESPACE" wait --for=delete ds/loopback-setup --timeout="$WAIT_TIMEOUT"; then
-    echo "[WARN] Wait for DaemonSet deletion returned non-zero; continuing"
-  fi
+	echo "[INFO] Deleting existing DaemonSet 'loopback-setup' before re-deploying"
+	oc -n "$NAMESPACE" delete ds/loopback-setup --ignore-not-found || true
+	if ! oc -n "$NAMESPACE" wait --for=delete ds/loopback-setup --timeout="$WAIT_TIMEOUT"; then
+		echo "[WARN] Wait for DaemonSet deletion returned non-zero; continuing"
+	fi
 fi
 cat <<EOF | oc apply -f -
 apiVersion: apps/v1
@@ -186,65 +202,64 @@ EOF
 
 echo "[INFO] Waiting for DaemonSet rollout to complete (timeout: ${WAIT_TIMEOUT})"
 if ! oc -n "$NAMESPACE" rollout status ds/loopback-setup --timeout="$WAIT_TIMEOUT"; then
-  echo "[ERROR] DaemonSet 'loopback-setup' did not finish rollout successfully within ${WAIT_TIMEOUT}" >&2
-  exit 1
+	echo "[ERROR] DaemonSet 'loopback-setup' did not finish rollout successfully within ${WAIT_TIMEOUT}" >&2
+	exit 1
 fi
 
 DETECTED_DEVICE=""
 if [[ "$AUTO_DETECT_DEVICE" == true ]]; then
-  echo "[INFO] Attempting to auto-detect loop device attached to ${BACKING_FILE_POD_PATH}"
-  PODS=$(oc -n "$NAMESPACE" get pods -l app=loopback-setup -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
-  if [[ -n "$PODS" ]]; then
-    CMD="losetup -a | grep -F \"(${BACKING_FILE_POD_PATH})\" | head -n1 | cut -d: -f1 || true"
-    while read -r POD; do
-      [[ -z "$POD" ]] && continue
-      DEV=$(oc -n "$NAMESPACE" exec "$POD" -- bash -ceu -- "$CMD" 2>/dev/null | tr -d '\r')
-      if [[ -n "$DEV" ]]; then
-        DETECTED_DEVICE="$DEV"; break
-      fi
-    done <<<"$PODS"
-  fi
-  if [[ -n "$DETECTED_DEVICE" ]]; then
-    echo "[INFO] Detected loop device for our backing file: $DETECTED_DEVICE"
-    LOOP_DEVICE="$DETECTED_DEVICE"
-  else
-    echo "[WARN] Could not auto-detect loop device for ${BACKING_FILE_POD_PATH}; using requested ${LOOP_DEVICE}"
-  fi
+	echo "[INFO] Attempting to auto-detect loop device attached to ${BACKING_FILE_POD_PATH}"
+	PODS=$(oc -n "$NAMESPACE" get pods -l app=loopback-setup -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
+	if [[ -n "$PODS" ]]; then
+		CMD="losetup -a | grep -F \"(${BACKING_FILE_POD_PATH})\" | head -n1 | cut -d: -f1 || true"
+		while read -r POD; do
+			[[ -z "$POD" ]] && continue
+			DEV=$(oc -n "$NAMESPACE" exec "$POD" -- bash -ceu -- "$CMD" 2>/dev/null | tr -d '\r')
+			if [[ -n "$DEV" ]]; then
+				DETECTED_DEVICE="$DEV"
+				break
+			fi
+		done <<<"$PODS"
+	fi
+	if [[ -n "$DETECTED_DEVICE" ]]; then
+		echo "[INFO] Detected loop device for our backing file: $DETECTED_DEVICE"
+		LOOP_DEVICE="$DETECTED_DEVICE"
+	else
+		echo "[WARN] Could not auto-detect loop device for ${BACKING_FILE_POD_PATH}; using requested ${LOOP_DEVICE}"
+	fi
 fi
 
 if [[ "$PATCH_LVMS" == true ]]; then
-  echo "[INFO] Attempting to patch LVMCluster deviceSelector.paths with ${LOOP_DEVICE}"
-  # Find existing LVMCluster(s)
-  LVM_LIST=$(oc get lvmcluster -A -o jsonpath='{range .items[*]}{.metadata.namespace} {.metadata.name}{"\n"}{end}' 2>/dev/null || true)
-  if [[ -z "$LVM_LIST" ]]; then
-    echo "[WARN] No LVMCluster found. Skipping patch. Install LVMS and re-run if needed."
-  else
-    while read -r LNS LNAME; do
-      [[ -z "${LNS:-}" || -z "${LNAME:-}" ]] && continue
-      echo "[INFO] Patching LVMCluster '${LNAME}' in namespace '${LNS}'"
-      # Fetch current deviceClasses to decide idempotent action
-      LC_JSON=$(oc -n "$LNS" get lvmcluster "$LNAME" -o json 2>/dev/null || true)
-      DC_JSON=$(echo "$LC_JSON" | jq -c '.spec.storage.deviceClasses // []' 2>/dev/null || echo '[]')
-      if echo "$DC_JSON" | jq -e ".[] | select(.deviceSelector.paths != null) | .deviceSelector.paths[] | select(. == \"${LOOP_DEVICE}\")" >/dev/null; then
-        echo "[INFO] LVMCluster already references ${LOOP_DEVICE}; skipping patch"
-      elif echo "$DC_JSON" | jq -e 'length == 0' >/dev/null; then
-        echo "[INFO] Setting initial deviceClasses with ${LOOP_DEVICE}"
-        PATCH_PAYLOAD_MERGE='{"spec":{"storage":{"deviceClasses":[{"name":"loopback","deviceSelector":{"paths":["'"${LOOP_DEVICE}"'"]}}]}}}'
-        if oc -n "$LNS" patch lvmcluster "$LNAME" --type=merge -p "$PATCH_PAYLOAD_MERGE"; then
-          echo "[SUCCESS] Initialized deviceClasses with ${LOOP_DEVICE}"
-        else
-          echo "[ERROR] Failed to initialize deviceClasses; manual intervention may be required."
-        fi
-      else
-        echo "[WARN] Existing deviceClasses present and do not include ${LOOP_DEVICE}. Skipping patch to avoid webhook violations."
-        echo "[HINT] Create or edit the LVMCluster up-front with desired deviceClasses, or reinstall LVMS with a spec that includes deviceSelector.paths."
-      fi
-    done <<<"$LVM_LIST"
-  fi
+	echo "[INFO] Attempting to patch LVMCluster deviceSelector.paths with ${LOOP_DEVICE}"
+	# Find existing LVMCluster(s)
+	LVM_LIST=$(oc get lvmcluster -A -o jsonpath='{range .items[*]}{.metadata.namespace} {.metadata.name}{"\n"}{end}' 2>/dev/null || true)
+	if [[ -z "$LVM_LIST" ]]; then
+		echo "[WARN] No LVMCluster found. Skipping patch. Install LVMS and re-run if needed."
+	else
+		while read -r LNS LNAME; do
+			[[ -z "${LNS:-}" || -z "${LNAME:-}" ]] && continue
+			echo "[INFO] Patching LVMCluster '${LNAME}' in namespace '${LNS}'"
+			# Fetch current deviceClasses to decide idempotent action
+			LC_JSON=$(oc -n "$LNS" get lvmcluster "$LNAME" -o json 2>/dev/null || true)
+			DC_JSON=$(echo "$LC_JSON" | jq -c '.spec.storage.deviceClasses // []' 2>/dev/null || echo '[]')
+			if echo "$DC_JSON" | jq -e ".[] | select(.deviceSelector.paths != null) | .deviceSelector.paths[] | select(. == \"${LOOP_DEVICE}\")" >/dev/null; then
+				echo "[INFO] LVMCluster already references ${LOOP_DEVICE}; skipping patch"
+			elif echo "$DC_JSON" | jq -e 'length == 0' >/dev/null; then
+				echo "[INFO] Setting initial deviceClasses with ${LOOP_DEVICE}"
+				PATCH_PAYLOAD_MERGE='{"spec":{"storage":{"deviceClasses":[{"name":"loopback","deviceSelector":{"paths":["'"${LOOP_DEVICE}"'"]}}]}}}'
+				if oc -n "$LNS" patch lvmcluster "$LNAME" --type=merge -p "$PATCH_PAYLOAD_MERGE"; then
+					echo "[SUCCESS] Initialized deviceClasses with ${LOOP_DEVICE}"
+				else
+					echo "[ERROR] Failed to initialize deviceClasses; manual intervention may be required."
+				fi
+			else
+				echo "[WARN] Existing deviceClasses present and do not include ${LOOP_DEVICE}. Skipping patch to avoid webhook violations."
+				echo "[HINT] Create or edit the LVMCluster up-front with desired deviceClasses, or reinstall LVMS with a spec that includes deviceSelector.paths."
+			fi
+		done <<<"$LVM_LIST"
+	fi
 fi
 
 echo "[DONE] Loopback DaemonSet deployed in namespace '${NAMESPACE}'."
 echo "[INFO] To verify devices: oc -n ${NAMESPACE} logs -l app=loopback-setup --tail=50"
 echo "[INFO] If LVMS was patched, reconcile may take a few minutes."
-
-

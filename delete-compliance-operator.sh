@@ -12,26 +12,26 @@ REPO_PATH="${COMPLIANCE_OPERATOR_REPO:-}"
 # Parse args
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		--purge-crds)
-			PURGE_CRDS=true
-			shift
-			;;
-		--use-make-tear-down)
-			USE_MAKE_TEAR_DOWN=true
-			shift
-			;;
-		--repo-path)
-			REPO_PATH="$2"
-			shift 2
-			;;
-		--repo-path=*)
-			REPO_PATH="${1#*=}"
-			shift
-			;;
-		*)
-			# ignore unknown flags for forward compatibility
-			shift
-			;;
+	--purge-crds)
+		PURGE_CRDS=true
+		shift
+		;;
+	--use-make-tear-down)
+		USE_MAKE_TEAR_DOWN=true
+		shift
+		;;
+	--repo-path)
+		REPO_PATH="$2"
+		shift 2
+		;;
+	--repo-path=*)
+		REPO_PATH="${1#*=}"
+		shift
+		;;
+	*)
+		# ignore unknown flags for forward compatibility
+		shift
+		;;
 	esac
 done
 
@@ -170,13 +170,13 @@ if oc get namespace "$NAMESPACE" &>/dev/null; then
 	oc delete namespace "$NAMESPACE" --ignore-not-found=true
 
 	echo "[INFO] Waiting up to ${NAMESPACE_DELETE_TIMEOUT_SECONDS}s for namespace to be removed..."
-	for i in $(seq 1 $((NAMESPACE_DELETE_TIMEOUT_SECONDS/5))); do
+	for i in $(seq 1 $((NAMESPACE_DELETE_TIMEOUT_SECONDS / 5))); do
 		if ! oc get ns "$NAMESPACE" &>/dev/null; then
 			echo "[SUCCESS] Namespace '$NAMESPACE' has been deleted."
 			break
 		fi
 		sleep 5
-		if [[ $i -eq $((NAMESPACE_DELETE_TIMEOUT_SECONDS/5)) ]]; then
+		if [[ $i -eq $((NAMESPACE_DELETE_TIMEOUT_SECONDS / 5)) ]]; then
 			STATUS=$(oc get ns "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || echo "NotFound")
 			if [[ "$STATUS" == "Terminating" ]]; then
 				echo "[WARN] Namespace '$NAMESPACE' is stuck terminating. Attempting force deletion..."

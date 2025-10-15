@@ -1,11 +1,6 @@
-name: Lint
+name: Python Lint
 
 on:
-  push:
-    paths:
-      - '**.py'
-      - '**.sh'
-      - 'Makefile'
   pull_request:
     paths:
       - '**.py'
@@ -13,7 +8,7 @@ on:
       - 'Makefile'
 
 jobs:
-  lint:
+  python-lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,4 +22,4 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y make shellcheck
       - name: Run linting
-        run: make lint
+        run: make python-lint

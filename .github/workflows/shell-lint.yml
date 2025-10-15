@@ -7,13 +7,26 @@ on:
       - 'Makefile'
 
 jobs:
-  shfmt:
+  bash-lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-      - name: Set up shfmt
-        uses: mfinelli/setup-shfmt@v4
-      - name: Run shfmt
+      - name: Install shellcheck and shfmt
         run: |
-          shfmt .
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          # Install shfmt
+          SHFMT_VERSION=3.10.0
+          wget -qO /tmp/shfmt "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64"
+          chmod +x /tmp/shfmt
+          sudo mv /tmp/shfmt /usr/local/bin/shfmt
+          # Verify shfmt installation
+          which shfmt
+          shfmt --version
+      - name: Run bash-lint
+        run: |
+          # Debug: Check if shfmt is available
+          echo "PATH: $PATH"
+          which shfmt || echo "shfmt not found in PATH"
+          make bash-lint
