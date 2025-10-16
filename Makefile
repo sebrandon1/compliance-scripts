@@ -181,7 +181,7 @@ python-lint: ## 🐍 Lint Python files with flake8
 	fi
 	@echo "$(GREEN)✅ Python linting passed!$(RESET)"
 
-bash-lint: ## 📜 Lint Bash scripts with shellcheck
+bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	@echo "$(BOLD)$(BLUE)📜 Linting Bash scripts...$(RESET)"
 	@if ! command -v shellcheck >/dev/null 2>&1; then \
 	  echo "$(RED)❌ shellcheck not found. Please install it:$(RESET)"; \
@@ -189,5 +189,14 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck
 	  echo "$(DIM)  Linux: apt-get install shellcheck or dnf install ShellCheck$(RESET)"; \
 	  exit 1; \
 	fi
-	@shellcheck -e SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 *.sh || (echo "$(RED)❌ Bash linting failed!$(RESET)" && exit 1)
+	@echo "$(DIM)  • Running shellcheck...$(RESET)"
+	@shellcheck -e SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 *.sh || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
+	@if ! command -v shfmt >/dev/null 2>&1; then \
+	  echo "$(RED)❌ shfmt not found. Please install it:$(RESET)"; \
+	  echo "$(DIM)  macOS: brew install shfmt$(RESET)"; \
+	  echo "$(DIM)  Linux: go install mvdan.cc/sh/v3/cmd/shfmt@latest$(RESET)"; \
+	  exit 1; \
+	fi
+	@echo "$(DIM)  • Running shfmt...$(RESET)"
+	@shfmt -d . || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w .$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ Bash linting passed!$(RESET)"

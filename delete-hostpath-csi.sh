@@ -44,8 +44,8 @@ oc delete serviceaccount csi-hostpath-provisioner-sa -n "$NAMESPACE" --ignore-no
 # Delete namespace
 echo "[INFO] Deleting namespace: $NAMESPACE"
 oc delete namespace "$NAMESPACE" --ignore-not-found=true --timeout=60s || {
-  echo "[WARN] Namespace deletion taking longer than expected"
-  echo "[INFO] You may need to check for finalizers if namespace is stuck"
+	echo "[WARN] Namespace deletion taking longer than expected"
+	echo "[INFO] You may need to check for finalizers if namespace is stuck"
 }
 
 echo ""
@@ -53,4 +53,3 @@ echo "============================================"
 echo "[SUCCESS] KubeVirt HostPath CSI Driver deleted!"
 echo "============================================"
 echo ""
-

@@ -18,18 +18,31 @@ usage() {
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
-		-n|--namespace)
-			NAMESPACE="$2"; shift 2;;
-		--watch)
-			WATCH=true; shift;;
-		--interval)
-			INTERVAL="$2"; shift 2;;
-		--filter)
-			FILTER="$2"; shift 2;;
-		-h|--help)
-			usage; exit 0;;
-		*)
-			echo "[ERROR] Unknown argument: $1"; usage; exit 1;;
+	-n | --namespace)
+		NAMESPACE="$2"
+		shift 2
+		;;
+	--watch)
+		WATCH=true
+		shift
+		;;
+	--interval)
+		INTERVAL="$2"
+		shift 2
+		;;
+	--filter)
+		FILTER="$2"
+		shift 2
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		echo "[ERROR] Unknown argument: $1"
+		usage
+		exit 1
+		;;
 	esac
 done
 
@@ -134,7 +147,3 @@ if [[ "$WATCH" == true ]]; then
 else
 	render
 fi
-
-
-
-

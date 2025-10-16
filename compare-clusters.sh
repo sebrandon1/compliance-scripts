@@ -5,9 +5,9 @@
 set -euo pipefail
 
 if [[ $# -ne 2 ]]; then
-    echo "Usage: $0 <crc-kubeconfig> <remote-kubeconfig>"
-    echo "Example: $0 ~/.crc/machines/crc/kubeconfig ~/Downloads/cnfdc3-kubeconfig"
-    exit 1
+	echo "Usage: $0 <crc-kubeconfig> <remote-kubeconfig>"
+	echo "Example: $0 ~/.crc/machines/crc/kubeconfig ~/Downloads/cnfdc3-kubeconfig"
+	exit 1
 fi
 
 CRC_KUBECONFIG="$1"
@@ -20,21 +20,21 @@ echo ""
 
 # Function to run command on both clusters
 compare() {
-    local description="$1"
-    local command="$2"
-    
-    echo "### $description"
-    echo ""
-    
-    echo "CRC:"
-    KUBECONFIG="$CRC_KUBECONFIG" bash -c "$command" 2>&1 || echo "  [ERROR]"
-    echo ""
-    
-    echo "Remote:"
-    KUBECONFIG="$REMOTE_KUBECONFIG" bash -c "$command" 2>&1 || echo "  [ERROR]"
-    echo ""
-    echo "---"
-    echo ""
+	local description="$1"
+	local command="$2"
+
+	echo "### $description"
+	echo ""
+
+	echo "CRC:"
+	KUBECONFIG="$CRC_KUBECONFIG" bash -c "$command" 2>&1 || echo "  [ERROR]"
+	echo ""
+
+	echo "Remote:"
+	KUBECONFIG="$REMOTE_KUBECONFIG" bash -c "$command" 2>&1 || echo "  [ERROR]"
+	echo ""
+	echo "---"
+	echo ""
 }
 
 # 1. OpenShift Version
@@ -76,4 +76,3 @@ echo "  1. SELinux: Enforcing vs Permissive"
 echo "  2. SCC priorities: anyuid vs privileged"
 echo "  3. Group permissions: system:serviceaccounts"
 echo "  4. Actual SCC assignments on pods"
-

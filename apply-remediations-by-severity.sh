@@ -13,8 +13,11 @@ fi
 
 SEVERITY="$(printf "%s" "$1" | tr '[:upper:]' '[:lower:]')"
 case "$SEVERITY" in
-	high|medium|low) ;;
-	*) echo "[ERROR] Invalid severity: $SEVERITY"; usage ;;
+high | medium | low) ;;
+*)
+	echo "[ERROR] Invalid severity: $SEVERITY"
+	usage
+	;;
 	# no default
 esac
 
@@ -40,7 +43,7 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC_DIR="$REPO_DIR/complianceremediations"
 
 # Precompute severity-matched combined YAMLs for visibility (exclude complianceremediations/combo)
-MATCHED_FILES=$(\
+MATCHED_FILES=$(
 	(
 		# Root-level combined files matching *-<severity>-combo.yaml
 		find "$SRC_DIR" -maxdepth 1 -type f -name "*-$SEVERITY-combo.yaml" 2>/dev/null || true
@@ -57,7 +60,7 @@ if [[ ! -d "$SRC_DIR" ]]; then
 fi
 
 # Collect YAML files by severity from allowed locations/patterns
-FILES_TO_APPLY=$(\
+FILES_TO_APPLY=$(
 	(
 		# Root-level combined files matching *-<severity>-combo.yaml
 		find "$SRC_DIR" -maxdepth 1 -type f -name "*-$SEVERITY-combo.yaml" 2>/dev/null || true
@@ -75,8 +78,8 @@ COUNT=$(printf "%s\n" "$FILES_TO_APPLY" | grep -c ".")
 echo "[INFO] Applying $COUNT remediation YAML(s) for severity '$SEVERITY'..."
 
 report_path="$REPO_DIR/applied-yamls-$SEVERITY-$(date -u +%Y%m%dT%H%M%SZ).txt"
-echo "# YAML apply report ($SEVERITY) - $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$report_path"
-echo "file,reboot_hint,result" >> "$report_path"
+echo "# YAML apply report ($SEVERITY) - $(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$report_path"
+echo "file,reboot_hint,result" >>"$report_path"
 
 # Use a temp workspace for metadata-injected files
 TMP_DIR=$(mktemp -d)
@@ -136,7 +139,7 @@ while IFS= read -r file; do
 	# Validate the transformed YAML
 	if ! yq e '.' "$modified_file" >/dev/null 2>&1; then
 		echo "[WARN] Transformed YAML is invalid for $file. Skipping."
-		echo "$file,invalid-transformed-yaml" >> "$report_path"
+		echo "$file,invalid-transformed-yaml" >>"$report_path"
 		continue
 	fi
 
@@ -147,7 +150,7 @@ while IFS= read -r file; do
 	echo "[APPLY] oc apply -f $modified_file (from $file) | reboot_hint=$reboot_hint"
 	result=$(oc apply -f "$modified_file" 2>&1 || true)
 	echo "$result"
-	echo "$file,$reboot_hint,${result//,/;}" >> "$report_path"
+	echo "$file,$reboot_hint,${result//,/;}" >>"$report_path"
 
 	# Wait for reconciliation where appropriate
 	if [[ "$kind" == "MachineConfig" ]]; then
@@ -161,8 +164,7 @@ while IFS= read -r file; do
 		# Basic existence check for other resource kinds
 		oc get -f "$modified_file" >/dev/null 2>&1 || true
 	fi
-done <<< "$FILES_TO_APPLY"
+done <<<"$FILES_TO_APPLY"
 
 echo "[SUCCESS] Completed applying remediations for severity '$SEVERITY'."
 echo "[INFO] Wrote YAML apply report to $report_path"
-
