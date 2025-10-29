@@ -31,7 +31,7 @@ jobs:
           fi
 
       - name: Setup quick-ocp cluster
-        uses: palmsoftware/quick-ocp@v0.0.19
+        uses: palmsoftware/quick-ocp@v0.0.20
         with:
           ocpPullSecret: $OCP_PULL_SECRET
           bundleCache: true
