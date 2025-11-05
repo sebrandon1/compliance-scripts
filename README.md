@@ -324,6 +324,70 @@ python3 combine-machineconfigs-by-path.py --src-dir complianceremediations --out
 
 ---
 
+### 23. split-machineconfigs-modular.py
+Creates modular MachineConfig files using `.d` directory includes for paths that support it (e.g., `/etc/ssh/sshd_config.d/`, `/etc/pam.d/system-auth.d/`). Instead of combining all settings into one monolithic file, this script:
+
+1. Creates a "base" file that enables the `.d` include directory
+2. Generates individual modular files for each remediation, placed in the appropriate `.d` directory
+3. Makes remediations easier to review, manage, and apply incrementally
+
+This is the **recommended approach** for creating modular, reviewable compliance remediations.
+
+**Usage:**
+```bash
+python3 split-machineconfigs-modular.py --src-dir complianceremediations --out-dir complianceremediations/modular [-s high,medium,low]
+```
+- `--src-dir` Source directory containing MachineConfig YAMLs (default: complianceremediations)
+- `--out-dir` Directory to write modular YAMLs (default: complianceremediations/modular)
+- `-s, --severity` Optional comma-separated severities to include: high, medium, low
+
+**Example Output:**
+- `75-sshd_config-base-high.yaml` - Enables `/etc/ssh/sshd_config.d/` include directory
+- `76-sshd_config-disable-root-login-worker-high.yaml` - Modular config for PermitRootLogin
+- `77-sshd_config-disable-password-auth-worker-high.yaml` - Modular config for PasswordAuthentication
+
+---
+
+### 24. create-modular-configs.sh
+User-friendly wrapper script for `split-machineconfigs-modular.py` that simplifies the modular file creation process. This script handles virtual environment activation automatically and provides clear guidance on next steps.
+
+**Usage:**
+```bash
+./create-modular-configs.sh [-s severity] [-i input-dir] [-o output-dir]
+```
+- `-s` Severity level(s) to process: high, medium, low (default: high)
+- `-i` Input directory for remediation YAMLs (default: complianceremediations)
+- `-o` Output directory for modular YAMLs (default: complianceremediations/modular)
+- `-h` Show help message
+
+**Examples:**
+```bash
+# Process high-severity remediations
+./create-modular-configs.sh -s high
+
+# Process multiple severity levels
+./create-modular-configs.sh -s high,medium
+
+# Custom directories
+./create-modular-configs.sh -i custom-input -o custom-output -s high
+```
+
+---
+
+## Documentation
+
+### model-context/
+The `model-context/` directory contains comprehensive documentation about the modular MachineConfig implementation:
+
+- **MODULAR_APPROACH.md** - User-facing guide explaining the modular approach, benefits, and usage
+- **IMPLEMENTATION_SUMMARY.md** - Technical implementation details and design decisions
+- **COMPARISON.md** - Comparison with [PR #439](https://github.com/openshift-kni/telco-reference/pull/439) from telco-reference
+- **README.md** - Index and guide for the documentation
+
+This documentation is designed to provide context for AI models, onboarding new developers, and preserving design decisions.
+
+---
+
 ## Python Virtual Environment
 
 It is recommended to use a Python virtual environment when running the Python scripts. To set up a venv and install dependencies:
@@ -373,11 +437,15 @@ Recommended order of operations:
 - apply-periodic-scan.sh
 - create-scan.sh
 - collect-complianceremediations.sh
-- combine-machineconfigs-by-path.py  ← combines overlapping MachineConfigs
-- organize-machine-configs.sh         ← organizes the newly combined outputs
+- **Option A (Modular - Recommended):**
+  - create-modular-configs.sh         ← creates modular .d directory files
+  - organize-machine-configs.sh        ← organizes the modular outputs
+- **Option B (Combo):**
+  - combine-machineconfigs-by-path.py  ← combines overlapping MachineConfigs
+  - organize-machine-configs.sh        ← organizes the combined outputs
 - generate-compliance-markdown.sh
 
-The `make full-workflow` target runs these steps in order, including the combine step.
+The `make full-workflow` target runs these steps in order, using the combo approach (Option B) by default.
 
 ### Individual Steps
 

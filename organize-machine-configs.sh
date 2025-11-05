@@ -202,16 +202,16 @@ shopt -s nullglob
 files_to_process=()
 
 # Include top-level YAMLs; if severity filter provided, include only those whose
-# filename contains one of the requested severities AND contains '-combo'
-# (ensures we only pick combined outputs and not the originals)
+# filename contains one of the requested severities
+# Accepts both -combo.yaml files and modular files (e.g., -high.yaml)
 for f in "$source_dir"/*.yaml; do
 	if [[ -n "$SEVERITY_FILTER" ]]; then
 		base_name=$(basename "$f")
 		include=0
 		for s in "${severity_list[@]}"; do
 			if [[ "$base_name" == *"-$s-"* || "$base_name" == *"-$s.yaml" ]]; then
-				# Only include if it's a combo output
-				if [[ "$base_name" == *"-combo.yaml" ]]; then
+				# Include if it's a combo output OR a modular file
+				if [[ "$base_name" == *"-combo.yaml" || "$base_name" == *"-$s.yaml" ]]; then
 					include=1
 					break
 				fi
@@ -224,13 +224,14 @@ for f in "$source_dir"/*.yaml; do
 	files_to_process+=("$f")
 done
 
-# If severity filter provided, include -combo.yaml files inside matching
-# severity-named subdirectories directly under source_dir
+# If severity filter provided, include matching files inside subdirectories
+# Accepts both -combo.yaml files and modular files
 if [[ -n "$SEVERITY_FILTER" ]]; then
 	for s in "${severity_list[@]}"; do
 		for f in "$source_dir/$s"/*.yaml; do
 			base_name=$(basename "$f")
-			if [[ "$base_name" == *"-combo.yaml" ]]; then
+			# Include combo files or files matching severity
+			if [[ "$base_name" == *"-combo.yaml" || "$base_name" == *"-$s.yaml" ]]; then
 				files_to_process+=("$f")
 			fi
 		done
@@ -242,9 +243,19 @@ for file in "${files_to_process[@]}"; do
 	# Extract the kind from the YAML
 	kind=$(yq e '.kind' "$file")
 	base_name=$(basename "$file")
-	base_name_no_prefix=${base_name#75-}
-	new_name="75-${base_name_no_prefix}"
-	metadata_name="75-${base_name_no_prefix%.yaml}"
+
+	# Check if file already has a numeric prefix (e.g., 75-, 76-, 77-)
+	# If so, preserve it (for modular files). Otherwise, add 75- prefix.
+	if [[ "$base_name" =~ ^[0-9]{2,3}- ]]; then
+		# File already has numeric prefix, keep it
+		new_name="$base_name"
+		metadata_name="${base_name%.yaml}"
+	else
+		# No numeric prefix, add 75- prefix
+		base_name_no_prefix=${base_name#75-}
+		new_name="75-${base_name_no_prefix}"
+		metadata_name="75-${base_name_no_prefix%.yaml}"
+	fi
 
 	if [[ "$kind" == "MachineConfig" ]]; then
 		# Determine the topic based on the file content or name
@@ -364,6 +375,7 @@ if [[ -n "$new_paths" ]]; then
 	while IFS= read -r path; do
 		kind=$(yq e '.kind' "$path" 2>/dev/null || echo "Unknown")
 		role_label=$(yq e '.metadata.labels."machineconfiguration.openshift.io/role"' "$path" 2>/dev/null || true)
+		# shellcheck disable=SC2034
 		name=$(yq e '.metadata.name' "$path" 2>/dev/null || true)
 		{
 			echo
