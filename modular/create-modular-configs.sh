@@ -50,9 +50,12 @@ if [[ -z "$VIRTUAL_ENV" ]]; then
 	source venv/bin/activate
 fi
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Check if split-machineconfigs-modular.py exists
-if [[ ! -f "split-machineconfigs-modular.py" ]]; then
-	echo "Error: split-machineconfigs-modular.py not found in current directory."
+if [[ ! -f "$SCRIPT_DIR/split-machineconfigs-modular.py" ]]; then
+	echo "Error: split-machineconfigs-modular.py not found in $SCRIPT_DIR"
 	exit 1
 fi
 
@@ -63,7 +66,7 @@ echo "  Output: $modular_dir"
 echo "  Severity: $severity"
 echo ""
 
-python3 split-machineconfigs-modular.py \
+python3 "$SCRIPT_DIR/split-machineconfigs-modular.py" \
 	--src-dir "$source_dir" \
 	--out-dir "$modular_dir" \
 	-s "$severity"
@@ -86,9 +89,9 @@ echo "========================================"
 echo ""
 echo "Next steps:"
 echo "  1. Review the generated files in: $modular_dir"
-echo "  2. Use organize-machine-configs.sh to copy them to the target repository"
+echo "  2. Use core/organize-machine-configs.sh to copy them to the target repository"
 echo "  3. Or apply them directly with: oc apply -f $modular_dir/"
 echo ""
 echo "Example:"
-echo "  ./organize-machine-configs.sh -d $modular_dir -s $severity"
+echo "  ./core/organize-machine-configs.sh -d $modular_dir -s $severity"
 echo ""

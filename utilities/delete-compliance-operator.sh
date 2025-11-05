@@ -184,7 +184,7 @@ if oc get namespace "$NAMESPACE" &>/dev/null; then
 					"$FORCE_DELETE_NS_SCRIPT" "$NAMESPACE"
 				else
 					echo "[ERROR] Force delete script not found or not executable: $FORCE_DELETE_NS_SCRIPT"
-					echo "[HINT] Run: ./force-delete-namespace.sh $NAMESPACE"
+					echo "[HINT] Run: ./utilities/force-delete-namespace.sh $NAMESPACE"
 				fi
 			else
 				echo "[INFO] Namespace status: $STATUS"

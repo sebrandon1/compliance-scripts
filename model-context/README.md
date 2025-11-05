@@ -58,8 +58,8 @@ This `model-context` directory serves multiple purposes:
 ## Quick Links
 
 - **Main Documentation**: See [../README.md](../README.md) for overall project documentation
-- **Modular Script**: [../split-machineconfigs-modular.py](../split-machineconfigs-modular.py)
-- **Wrapper Script**: [../create-modular-configs.sh](../create-modular-configs.sh)
+- **Modular Script**: [../modular/split-machineconfigs-modular.py](../modular/split-machineconfigs-modular.py)
+- **Wrapper Script**: [../modular/create-modular-configs.sh](../modular/create-modular-configs.sh)
 - **Related PR**: [openshift-kni/telco-reference#439](https://github.com/openshift-kni/telco-reference/pull/439)
 
 ## Usage
