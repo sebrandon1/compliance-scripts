@@ -2,3 +2,9 @@ complianceremediations/
 ComplianceCheckResults.md
 created_file_paths.txt
 generated-networkpolicies/
+
+# Test data directories
+test-runs/
+testing/
+testing-plan.md
+applied-yamls-*.txt

@@ -40,7 +40,7 @@ jobs:
           OCP_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
 
       - name: Run install-compliance-operator.sh
-        run: ./install-compliance-operator.sh
+        run: ./core/install-compliance-operator.sh
 
       - name: Assert Compliance Operator pods are Ready
         run: |
@@ -60,7 +60,7 @@ jobs:
           oc -n openshift-compliance get profilebundle rhcos4
 
       - name: Apply periodic scan
-        run: ./apply-periodic-scan.sh
+        run: ./core/apply-periodic-scan.sh
 
       - name: Assert periodic scan resources exist
         run: |
@@ -80,7 +80,7 @@ jobs:
           oc -n openshift-compliance get compliancesuite periodic-e8
 
       - name: Run create-scan.sh
-        run: ./create-scan.sh
+        run: ./core/create-scan.sh
 
       - name: Assert on-demand scan resources exist
         run: |

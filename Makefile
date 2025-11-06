@@ -68,7 +68,7 @@ help: banner ## 📖 Show this help message
 
 install-compliance-operator: ## 🔧 Install the OpenShift Compliance Operator
 	@echo "$(BOLD)$(BLUE)🔧 Installing Compliance Operator...$(RESET)"
-	@./install-compliance-operator.sh
+	@./core/install-compliance-operator.sh
 	@echo "$(GREEN)✅ Compliance Operator installation completed!$(RESET)"
 	@echo ""
 
@@ -78,13 +78,13 @@ install-compliance-operator: ## 🔧 Install the OpenShift Compliance Operator
 
 apply-periodic-scan: ## ⏰ Apply periodic compliance scan configuration
 	@echo "$(BOLD)$(BLUE)⏰ Applying periodic scan configuration...$(RESET)"
-	@./apply-periodic-scan.sh
+	@./core/apply-periodic-scan.sh
 	@echo "$(GREEN)✅ Periodic scan configuration applied!$(RESET)"
 	@echo ""
 
 create-scan: ## 🔍 Create a new compliance scan
 	@echo "$(BOLD)$(BLUE)🔍 Creating compliance scan...$(RESET)"
-	@./create-scan.sh
+	@./core/create-scan.sh
 	@echo "$(GREEN)✅ Compliance scan created successfully!$(RESET)"
 	@echo ""
 
@@ -94,25 +94,25 @@ create-scan: ## 🔍 Create a new compliance scan
 
 collect-complianceremediations: ## 📥 Collect compliance remediation data
 	@echo "$(BOLD)$(BLUE)📥 Collecting compliance remediations...$(RESET)"
-	@./collect-complianceremediations.sh
+	@./core/collect-complianceremediations.sh
 	@echo "$(GREEN)✅ Compliance remediations collected!$(RESET)"
 	@echo ""
 
 combine-machineconfigs: ## 🧩 Combine overlapping MachineConfig remediations by file path
 	@echo "$(BOLD)$(BLUE)🧩 Combining MachineConfigs by file path...$(RESET)"
-	@python3 combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none
+	@python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none
 	@echo "$(GREEN)✅ Combined MachineConfig YAMLs generated!$(RESET)"
 	@echo ""
 
 organize-machine-configs: ## 📋 Organize machine configuration files
 	@echo "$(BOLD)$(BLUE)📋 Organizing machine configurations...$(RESET)"
-	@./organize-machine-configs.sh
+	@./core/organize-machine-configs.sh
 	@echo "$(GREEN)✅ Machine configurations organized!$(RESET)"
 	@echo ""
 
 generate-compliance-markdown: ## 📄 Generate compliance report in Markdown format
 	@echo "$(BOLD)$(BLUE)📄 Generating compliance markdown report...$(RESET)"
-	@./generate-compliance-markdown.sh
+	@./core/generate-compliance-markdown.sh
 	@echo "$(GREEN)✅ Compliance markdown report generated!$(RESET)"
 	@echo ""
 
@@ -190,7 +190,7 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	  exit 1; \
 	fi
 	@echo "$(DIM)  • Running shellcheck...$(RESET)"
-	@shellcheck -e SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 *.sh || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
+	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' | xargs shellcheck -e SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
 	@if ! command -v shfmt >/dev/null 2>&1; then \
 	  echo "$(RED)❌ shfmt not found. Please install it:$(RESET)"; \
 	  echo "$(DIM)  macOS: brew install shfmt$(RESET)"; \
@@ -198,5 +198,5 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	  exit 1; \
 	fi
 	@echo "$(DIM)  • Running shfmt...$(RESET)"
-	@shfmt -d . || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w .$(RESET)" && exit 1)
+	@shfmt -d core utilities modular lab-tools misc || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w core utilities modular lab-tools misc$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ Bash linting passed!$(RESET)"

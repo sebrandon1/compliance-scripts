@@ -106,4 +106,4 @@ EOF
 
 echo "[INFO] ScanSetting 'periodic-setting' and ScanSettingBinding 'periodic-e8' applied in namespace '$NAMESPACE'."
 
-echo "[ACTION REQUIRED] To continue, please run: ./create-scan.sh"
+echo "[ACTION REQUIRED] To continue, please run: ./core/create-scan.sh"

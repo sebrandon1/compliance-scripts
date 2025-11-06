@@ -62,15 +62,15 @@ if [[ -z "$DEFAULT_SC" ]] && [[ "$HOSTPATH_CSI_DEPLOYED" == "false" ]]; then
 	echo "[INFO] This handles permissions correctly for restricted-v2 SCC"
 	echo ""
 
-	if [[ -x "./deploy-hostpath-csi.sh" ]]; then
-		./deploy-hostpath-csi.sh
+	if [[ -x "./utilities/deploy-hostpath-csi.sh" ]]; then
+		./utilities/deploy-hostpath-csi.sh
 		echo ""
 		echo "[SUCCESS] HostPath CSI driver deployed!"
 		echo "[INFO] Continuing with Compliance Operator installation..."
 		echo ""
 	else
-		echo "[ERROR] deploy-hostpath-csi.sh not found or not executable"
-		echo "[INFO] Please run: ./deploy-hostpath-csi.sh"
+		echo "[ERROR] utilities/deploy-hostpath-csi.sh not found or not executable"
+		echo "[INFO] Please run: ./utilities/deploy-hostpath-csi.sh"
 		exit 1
 	fi
 elif [[ "$HOSTPATH_CSI_DEPLOYED" == "true" ]]; then
@@ -83,7 +83,7 @@ elif [[ -n "$DEFAULT_SC" ]]; then
 	elif [[ "$PROVISIONER" == "rancher.io/local-path" ]]; then
 		echo "[WARN] ⚠️  local-path provisioner detected"
 		echo "[WARN] This may have permission issues with restricted-v2 SCC"
-		echo "[WARN] Consider running: ./deploy-hostpath-csi.sh"
+		echo "[WARN] Consider running: ./utilities/deploy-hostpath-csi.sh"
 	else
 		echo "[INFO] Using provisioner: $PROVISIONER"
 	fi
@@ -319,4 +319,4 @@ echo "[INFO] Profile parser pods should be using 'restricted-v2' SCC"
 echo "[INFO] You can verify with: oc get pods -n $NAMESPACE -o custom-columns=NAME:.metadata.name,SCC:.metadata.annotations.'openshift\.io/scc'"
 
 echo "[NEXT STEP] To schedule a periodic compliance scan, run:"
-echo "  ./apply-periodic-scan.sh"
+echo "  ./core/apply-periodic-scan.sh"
