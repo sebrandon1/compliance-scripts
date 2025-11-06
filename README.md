@@ -1,6 +1,6 @@
 # Hardening Scripts Collection
 
-[![Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/lint.yml)
+[![Python Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/python-lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/python-lint.yml)
 [![Shell Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml)
 [![Test Compliance Operator](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance.yml)
 
