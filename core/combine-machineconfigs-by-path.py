@@ -107,7 +107,7 @@ def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
             "spec:\n"
             "  config:\n"
             "    ignition:\n"
-            "      version: 3.1.0\n"
+            "      version: 3.5.0\n"
             "    storage:\n"
             "      files:\n"
             "        - contents:\n"

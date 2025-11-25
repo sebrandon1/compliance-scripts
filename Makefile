@@ -25,8 +25,8 @@ BG_BLUE := \033[44m
 # ────────────────────────────────────────────────────────────────────────────────
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
-        generate-compliance-markdown clean clean-complianceremediations full-workflow banner \
-        lint python-lint bash-lint
+        generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
+        full-workflow banner lint python-lint bash-lint
 
 # Default target
 all: help
@@ -102,6 +102,33 @@ combine-machineconfigs: ## 🧩 Combine overlapping MachineConfig remediations b
 	@echo "$(BOLD)$(BLUE)🧩 Combining MachineConfigs by file path...$(RESET)"
 	@python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none
 	@echo "$(GREEN)✅ Combined MachineConfig YAMLs generated!$(RESET)"
+	@echo ""
+
+filter-machineconfigs: ## 🎯 Filter specific flags from combined MachineConfig (requires INPUT, OUTPUT, and FLAGS or FLAGS_FILE)
+	@echo "$(BOLD)$(BLUE)🎯 Filtering MachineConfig flags...$(RESET)"
+	@if [ -z "$(INPUT)" ] || [ -z "$(OUTPUT)" ]; then \
+	  echo "$(RED)❌ Error: INPUT and OUTPUT are required!$(RESET)"; \
+	  echo "$(YELLOW)Usage:$(RESET)"; \
+	  echo "  $(CYAN)make filter-machineconfigs INPUT=input.yaml OUTPUT=output.yaml FLAGS=\"flag1 flag2\"$(RESET)"; \
+	  echo "  $(CYAN)make filter-machineconfigs INPUT=input.yaml OUTPUT=output.yaml FLAGS_FILE=flags.txt$(RESET)"; \
+	  exit 1; \
+	fi
+	@ARGS=""; \
+	if [ -n "$(FLAGS)" ]; then \
+	  ARGS="$$ARGS -f $(FLAGS)"; \
+	fi; \
+	if [ -n "$(FLAGS_FILE)" ]; then \
+	  ARGS="$$ARGS --flags-file $(FLAGS_FILE)"; \
+	fi; \
+	if [ -n "$(DESC)" ]; then \
+	  ARGS="$$ARGS -d \"$(DESC)\""; \
+	fi; \
+	if [ -z "$(FLAGS)" ] && [ -z "$(FLAGS_FILE)" ]; then \
+	  echo "$(RED)❌ Error: Either FLAGS or FLAGS_FILE must be specified!$(RESET)"; \
+	  exit 1; \
+	fi; \
+	python3 core/filter-machineconfig-flags.py -i "$(INPUT)" -o "$(OUTPUT)" $$ARGS
+	@echo "$(GREEN)✅ Filtered MachineConfig created: $(OUTPUT)$(RESET)"
 	@echo ""
 
 organize-machine-configs: ## 📋 Organize machine configuration files
