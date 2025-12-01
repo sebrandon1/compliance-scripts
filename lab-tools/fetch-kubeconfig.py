@@ -143,8 +143,28 @@ def check_node_status(url: str, verify_ssl: bool = False) -> dict:
             'installer_ip': installer_ip
         }
 
+    except requests.exceptions.ConnectionError as e:
+        # Check if it's a DNS resolution error (likely VPN issue)
+        error_str = str(e)
+        if 'Failed to resolve' in error_str or 'nodename nor servname provided' in error_str:
+            print("\n⚠️  DNS Resolution Error", file=sys.stderr)
+            print(f"Cannot resolve hostname: {url.split('//')[-1].split('/')[0]}", file=sys.stderr)
+            print("\nPossible causes:", file=sys.stderr)
+            print("  • Not connected to Red Hat VPN", file=sys.stderr)
+            print("  • Network connectivity issues", file=sys.stderr)
+            print("  • Incorrect URL or hostname", file=sys.stderr)
+            print("\nPlease check your VPN connection and try again.", file=sys.stderr)
+        else:
+            print(f"\n⚠️  Connection Error: {e}", file=sys.stderr)
+        return {'nodes': {}, 'installer_ip': None}
+    except requests.exceptions.Timeout as e:
+        print(f"\n⚠️  Timeout Error: Request took too long - {e}", file=sys.stderr)
+        return {'nodes': {}, 'installer_ip': None}
+    except requests.exceptions.RequestException as e:
+        print(f"\n⚠️  Request Error: {e}", file=sys.stderr)
+        return {'nodes': {}, 'installer_ip': None}
     except Exception as e:
-        print(f"Error checking node status: {e}", file=sys.stderr)
+        print(f"\n⚠️  Unexpected Error: {e}", file=sys.stderr)
         return {'nodes': {}, 'installer_ip': None}
 
 
@@ -255,11 +275,14 @@ def scrape_installer_ip(url: str, verify_ssl: bool = False,
     print(f"Fetching installer IP from {url} ...")
     status = check_node_status(url, verify_ssl)
     installer_ip = status.get('installer_ip')
+    nodes = status.get('nodes', {})
 
     if installer_ip:
-        print(f"Found installer IP: {installer_ip}")
-    else:
-        print("Warning: Could not find installer IP in the webpage", file=sys.stderr)
+        print(f"✓ Found installer IP: {installer_ip}")
+    elif nodes:
+        # We got nodes but no installer - parsing issue
+        print("⚠️  Warning: Retrieved cluster info but couldn't identify installer node", file=sys.stderr)
+    # If no nodes at all, the error was already printed by check_node_status
 
     return installer_ip
 
@@ -459,8 +482,10 @@ def main():
             poll_interval=args.poll_interval
         )
         if not remote_ip:
-            print("Error: Could not determine installer IP", file=sys.stderr)
-            print("Please provide IP manually: ./fetch-kubeconfig.py <IP>", file=sys.stderr)
+            print("\n❌ Could not determine installer IP", file=sys.stderr)
+            print("\nTo use a specific IP address directly:", file=sys.stderr)
+            print("  ./fetch-kubeconfig.py <IP> [destination]", file=sys.stderr)
+            print("  Example: ./fetch-kubeconfig.py 10.6.105.126", file=sys.stderr)
             sys.exit(1)
 
     # Remove old SSH host key
