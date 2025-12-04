@@ -168,6 +168,20 @@ get_latest_release_tag() {
 		sed -E 's/.*"tag_name"\s*:\s*"([^"]+)".*/\1/'
 }
 
+# ============================================================================
+# ARM Architecture Check
+# ============================================================================
+echo "[INFO] Checking cluster architecture..."
+ARM_NODES=$(oc get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}' 2>/dev/null | tr ' ' '\n' | grep -c "arm64" || echo "0")
+
+if [[ "$ARM_NODES" -gt 0 ]]; then
+	echo "[INFO] Detected $ARM_NODES ARM64 node(s) in cluster"
+	ARM_CLUSTER=true
+else
+	echo "[INFO] Detected x86_64 cluster"
+	ARM_CLUSTER=false
+fi
+
 if [[ -z "$CO_REF" ]]; then
 	echo "[INFO] Resolving latest $CO_REPO_OWNER/$CO_REPO_NAME release tag from GitHub..."
 	CO_REF=$(get_latest_release_tag || true)
@@ -178,6 +192,34 @@ if [[ -z "$CO_REF" ]]; then
 	CO_REF="master"
 else
 	echo "[INFO] Using Compliance Operator ref: $CO_REF"
+fi
+
+# ============================================================================
+# ARM Compatibility Check
+# ============================================================================
+if [[ "$ARM_CLUSTER" == "true" ]]; then
+	# Check if version is earlier than v1.7.0 (which don't support ARM)
+	# v1.7.0 is the ONLY version that supports ARM64
+	if [[ "$CO_REF" =~ ^v1\.[0-6]\..*$ ]]; then
+		echo ""
+		echo "════════════════════════════════════════════════════════════════════"
+		echo "❌ ERROR: ARM64 Incompatibility Detected"
+		echo "════════════════════════════════════════════════════════════════════"
+		echo ""
+		echo "Compliance Operator $CO_REF does not support ARM64 architecture."
+		echo ""
+		echo "Your cluster has $ARM_NODES ARM64 node(s)."
+		echo ""
+		echo "Options:"
+		echo "  1. Use v1.7.0 (the only ARM64-compatible version):"
+		echo "     CO_REF=v1.7.0 $0"
+		echo ""
+		echo "  2. Use an x86_64 cluster"
+		echo ""
+		exit 1
+	else
+		echo "[INFO] ✅ Version $CO_REF is compatible with ARM64"
+	fi
 fi
 
 BASE_RAW="https://raw.githubusercontent.com/$CO_REPO_OWNER/$CO_REPO_NAME/$CO_REF"
@@ -254,6 +296,57 @@ fi
 
 echo "[SUCCESS] Compliance Operator installed successfully."
 oc get pods -n $NAMESPACE
+
+# ============================================================================
+# CustomRule CRD Check and Installation
+# ============================================================================
+echo "[INFO] Checking for CustomRule CRD..."
+if ! oc get crd customrules.compliance.openshift.io &>/dev/null; then
+	echo "[WARN] CustomRule CRD not found - attempting to install it..."
+
+	# Try to apply from the same ref we're using for the operator
+	CRD_URL="$BASE_RAW/deploy/crds/compliance.openshift.io_customrules.yaml"
+	echo "[INFO] Attempting to apply CustomRule CRD from: $CRD_URL"
+
+	if oc apply -f "$CRD_URL" 2>/dev/null; then
+		echo "[SUCCESS] ✅ CustomRule CRD installed successfully"
+	else
+		echo "[WARN] Failed to apply from $CRD_URL, trying fallback locations..."
+
+		# Try alternate paths that might exist
+		# Note: The correct path is config/crd/bases/ (not deploy/crds/)
+		FALLBACK_URLS=(
+			"https://raw.githubusercontent.com/$CO_REPO_OWNER/$CO_REPO_NAME/master/config/crd/bases/compliance.openshift.io_customrules.yaml"
+			"https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/crd/bases/compliance.openshift.io_customrules.yaml"
+			"https://raw.githubusercontent.com/openshift/compliance-operator/master/config/crd/bases/compliance.openshift.io_customrules.yaml"
+		)
+
+		CRD_APPLIED=false
+		for URL in "${FALLBACK_URLS[@]}"; do
+			echo "[INFO] Trying: $URL"
+			if oc apply -f "$URL" 2>/dev/null; then
+				echo "[SUCCESS] ✅ CustomRule CRD installed from fallback location"
+				CRD_APPLIED=true
+				break
+			fi
+		done
+
+		if [[ "$CRD_APPLIED" == "false" ]]; then
+			echo "[WARN] ⚠️  Could not install CustomRule CRD from any known location"
+			echo "[WARN] The operator may restart with cache sync errors"
+			echo "[WARN] You can manually apply it later with:"
+			echo "  oc apply -f https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/deploy/crds/compliance.openshift.io_customrules.yaml"
+		fi
+	fi
+
+	# Verify the CRD was installed
+	if oc get crd customrules.compliance.openshift.io &>/dev/null; then
+		echo "[INFO] ✅ CustomRule CRD is now present"
+	fi
+else
+	echo "[INFO] ✅ CustomRule CRD already exists"
+fi
+echo ""
 
 echo "[INFO] Waiting up to 5m for non-completed pods in '$NAMESPACE' to be Ready..."
 # Clean up any leftover storage probe pods first
