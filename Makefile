@@ -26,7 +26,7 @@ BG_BLUE := \033[44m
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
-        full-workflow banner lint python-lint bash-lint
+        full-workflow banner lint python-lint bash-lint verify-images
 
 # Default target
 all: help
@@ -65,6 +65,11 @@ help: banner ## 📖 Show this help message
 # ────────────────────────────────────────────────────────────────────────────────
 # 🔧 Installation & Setup
 # ────────────────────────────────────────────────────────────────────────────────
+
+verify-images: ## 🔍 Verify container images are accessible before installation
+	@echo "$(BOLD)$(BLUE)🔍 Verifying container images...$(RESET)"
+	@./utilities/verify-images.sh
+	@echo ""
 
 install-compliance-operator: ## 🔧 Install the OpenShift Compliance Operator
 	@echo "$(BOLD)$(BLUE)🔧 Installing Compliance Operator...$(RESET)"

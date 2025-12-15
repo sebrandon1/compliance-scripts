@@ -84,7 +84,7 @@ roles:
   - master
 EOF
 
-# Create the ScanSettingBinding YAML
+# Create the ScanSettingBinding for E8 profiles
 cat <<EOF | oc apply -f -
 apiVersion: compliance.openshift.io/v1alpha1
 kind: ScanSettingBinding
@@ -104,6 +104,26 @@ settingsRef:
   apiGroup: compliance.openshift.io/v1alpha1
 EOF
 
-echo "[INFO] ScanSetting 'periodic-setting' and ScanSettingBinding 'periodic-e8' applied in namespace '$NAMESPACE'."
+# Create the ScanSettingBinding for CIS profile
+cat <<EOF | oc apply -f -
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSettingBinding
+metadata:
+  name: cis-scan
+  namespace: $NAMESPACE
+profiles:
+  - name: ocp4-cis
+    kind: Profile
+    apiGroup: compliance.openshift.io/v1alpha1
+settingsRef:
+  name: periodic-setting
+  kind: ScanSetting
+  apiGroup: compliance.openshift.io/v1alpha1
+EOF
+
+echo "[INFO] ScanSetting 'periodic-setting' applied in namespace '$NAMESPACE'."
+echo "[INFO] ScanSettingBindings created:"
+echo "       - periodic-e8 (rhcos4-e8-master, rhcos4-e8-worker, ocp4-e8)"
+echo "       - cis-scan (ocp4-cis)"
 
 echo "[ACTION REQUIRED] To continue, please run: ./core/create-scan.sh"

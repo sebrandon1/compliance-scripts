@@ -298,6 +298,63 @@ echo "[SUCCESS] Compliance Operator installed successfully."
 oc get pods -n $NAMESPACE
 
 # ============================================================================
+# RBAC Fix: Ensure compliance-operator can create Jobs
+# ============================================================================
+# The upstream operator RBAC is missing 'create' permission for Jobs which
+# prevents scans from launching. This supplements the missing permissions.
+echo "[INFO] Applying supplemental RBAC for Job creation..."
+cat <<EOF | oc apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: compliance-operator-job-permissions
+  namespace: $NAMESPACE
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+  - update
+  - patch
+EOF
+
+cat <<EOF | oc apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: compliance-operator-job-permissions
+  namespace: $NAMESPACE
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: compliance-operator-job-permissions
+subjects:
+- kind: ServiceAccount
+  name: compliance-operator
+  namespace: $NAMESPACE
+EOF
+echo "[INFO] ✅ Supplemental RBAC applied"
+
+# ============================================================================
+# CRD Updates - Ensure CRDs have all required fields
+# ============================================================================
+# The v1.7.0 CRDs are missing the 'scannerType' field that the operator expects.
+# Update the ComplianceScan CRD from master to fix "unknown field spec.scannerType" errors.
+echo "[INFO] Updating ComplianceScan CRD to include scannerType field..."
+SCAN_CRD_URL="https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/crd/bases/compliance.openshift.io_compliancescans.yaml"
+if oc apply -f "$SCAN_CRD_URL" 2>/dev/null; then
+	echo "[INFO] ✅ ComplianceScan CRD updated"
+else
+	echo "[WARN] Could not update ComplianceScan CRD - scans may get stuck in PENDING"
+fi
+
+# ============================================================================
 # CustomRule CRD Check and Installation
 # ============================================================================
 echo "[INFO] Checking for CustomRule CRD..."
