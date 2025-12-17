@@ -26,7 +26,7 @@ BG_BLUE := \033[44m
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
-        full-workflow banner lint python-lint bash-lint verify-images
+        full-workflow banner lint python-lint bash-lint verify-images test-compliance
 
 # Default target
 all: help
@@ -48,7 +48,7 @@ help: banner ## 📖 Show this help message
 	@echo "$(BOLD)$(BLUE)Available Commands:$(RESET)"
 	@echo ""
 	@echo "$(YELLOW)🚀 Workflow Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(workflow|install|apply|create)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(workflow|install|apply|create|test-compliance)"
 	@echo ""
 	@echo "$(YELLOW)📊 Data Collection Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(collect|organize|generate)"
@@ -189,6 +189,80 @@ full-workflow: banner install-compliance-operator apply-periodic-scan create-sca
 	@echo "$(DIM)  ✓ Compliance remediations collected$(RESET)"
 	@echo "$(DIM)  ✓ Machine configurations organized$(RESET)"
 	@echo "$(DIM)  ✓ Compliance markdown report generated$(RESET)"
+	@echo ""
+
+# ────────────────────────────────────────────────────────────────────────────────
+# 🧪 Testing & Validation
+# ────────────────────────────────────────────────────────────────────────────────
+
+test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) on local cluster
+	@echo "$(BOLD)$(BLUE)🧪 Running compliance validation on local cluster...$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 1/9: Installing Compliance Operator...$(RESET)"
+	@./core/install-compliance-operator.sh
+	@echo "$(GREEN)✅ Compliance Operator installation completed!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 2/9: Waiting for Compliance Operator pods to be Ready...$(RESET)"
+	@oc -n openshift-compliance get pods
+	@pods=$$(oc -n openshift-compliance get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); \
+	if [ -z "$$pods" ]; then \
+		echo "$(RED)❌ No pods found in openshift-compliance namespace!$(RESET)"; \
+		exit 1; \
+	fi; \
+	NSPODS=$$(oc -n openshift-compliance get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{"\n"}{end}' | tr '\n' ' ' | xargs || true); \
+	if [ -n "$$NSPODS" ]; then \
+		oc -n openshift-compliance wait --for=condition=Ready pod $$NSPODS --timeout=300s; \
+	fi
+	@echo "$(GREEN)✅ All Compliance Operator pods are Ready!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 3/9: Asserting ProfileBundles exist...$(RESET)"
+	@oc -n openshift-compliance get profilebundle ocp4 || (echo "$(RED)❌ ProfileBundle ocp4 not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get profilebundle rhcos4 || (echo "$(RED)❌ ProfileBundle rhcos4 not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ ProfileBundles ocp4 and rhcos4 exist!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 4/9: Applying periodic scan configuration...$(RESET)"
+	@./core/apply-periodic-scan.sh
+	@echo "$(GREEN)✅ Periodic scan configuration applied!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 5/9: Asserting periodic scan resources exist...$(RESET)"
+	@oc -n openshift-compliance get scansetting periodic-setting || (echo "$(RED)❌ ScanSetting periodic-setting not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get scansettingbinding periodic-e8 || (echo "$(RED)❌ ScanSettingBinding periodic-e8 not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ Periodic scan resources exist!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 6/9: Asserting periodic scan Profiles exist...$(RESET)"
+	@oc -n openshift-compliance get profile ocp4-e8 || (echo "$(RED)❌ Profile ocp4-e8 not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get profile rhcos4-e8 || (echo "$(RED)❌ Profile rhcos4-e8 not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ Profiles ocp4-e8 and rhcos4-e8 exist!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 7/9: Asserting ComplianceSuite for periodic scan exists...$(RESET)"
+	@oc -n openshift-compliance get compliancesuite periodic-e8 || (echo "$(RED)❌ ComplianceSuite periodic-e8 not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ ComplianceSuite periodic-e8 exists!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 8/9: Creating CIS scan...$(RESET)"
+	@./core/create-scan.sh
+	@echo "$(GREEN)✅ CIS scan created!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(MAGENTA)Step 9/9: Asserting on-demand CIS scan resources exist...$(RESET)"
+	@oc -n openshift-compliance get scansetting default || (echo "$(RED)❌ ScanSetting default not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get scansettingbinding cis-scan || (echo "$(RED)❌ ScanSettingBinding cis-scan not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get profile ocp4-cis || (echo "$(RED)❌ Profile ocp4-cis not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get compliancesuite cis-scan || (echo "$(RED)❌ ComplianceSuite cis-scan not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ CIS scan resources exist!$(RESET)"
+	@echo ""
+	@echo "$(BOLD)$(BG_GREEN)$(WHITE)"
+	@echo "  ╔═════════════════════════════════════════════════════════════╗"
+	@echo "  ║       🎉 COMPLIANCE VALIDATION COMPLETED SUCCESSFULLY! 🎉   ║"
+	@echo "  ║              All assertions passed!                         ║"
+	@echo "  ╚═════════════════════════════════════════════════════════════╝"
+	@echo "$(RESET)"
+	@echo "$(GREEN)📋 Validation Summary:$(RESET)"
+	@echo "$(DIM)  ✓ Compliance Operator installed and pods Ready$(RESET)"
+	@echo "$(DIM)  ✓ ProfileBundles ocp4 and rhcos4 exist$(RESET)"
+	@echo "$(DIM)  ✓ Periodic scan configuration applied$(RESET)"
+	@echo "$(DIM)  ✓ Periodic scan resources and profiles exist$(RESET)"
+	@echo "$(DIM)  ✓ ComplianceSuite periodic-e8 created$(RESET)"
+	@echo "$(DIM)  ✓ CIS scan created$(RESET)"
+	@echo "$(DIM)  ✓ CIS scan resources and ComplianceSuite exist$(RESET)"
 	@echo ""
 
 # ────────────────────────────────────────────────────────────────────────────────
