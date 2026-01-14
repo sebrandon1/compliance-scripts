@@ -1,0 +1,757 @@
+{
+  "version": "4.17",
+  "scan_date": "2026-01-14T19:42:21Z",
+  "cluster": "cnfdt16.lab.eng.tlv2.redhat.com",
+  "summary": {
+    "total_checks": 205,
+    "passing": 100,
+    "failing": 78,
+    "manual": 27,
+    "skipped": 0
+  },
+  "remediations": {
+    "high": [
+      {
+        "name": "ocp4-cis-configure-network-policies-namespaces",
+        "check": "ocp4-cis-configure-network-policies-namespaces",
+        "status": "FAIL",
+        "description": "Ensure that application Namespaces have Network Policies defined.\nUse network policies to isolate traffic in your cluster network.",
+        "severity": "high"
+      },
+      {
+        "name": "rhcos4-e8-master-configure-crypto-policy",
+        "check": "rhcos4-e8-master-configure-crypto-policy",
+        "status": "FAIL",
+        "description": "Configure System Cryptography Policy\nTo configure the system cryptography policy to use ciphers only from the DEFAULT:NO-SHA1 policy, create a MachineConfig as follows:\n\n---\napiVersion: machineconfiguration.openshift.io/v1\nkind: MachineConfig\nmetadata:\n labels:\n   machineconfiguration.openshift.io/role: master\n name: 50-master-configure-crypto-policy\nspec:\n config:\n   ignition:\n     version: 3.1.0\n   systemd:\n     units:\n       - name: configure-crypto-policy.service\n         enabled: true\n         contents: |\n           [Unit]\n           Before=kubelet.service\n           [Service]\n           Type=oneshot\n           ExecStart=update-crypto-policies --set DEFAULT:NO-SHA1 RemainAfterExit=yes\n           [Install]\n           WantedBy=multi-user.target\n\nThis will configure the crypto policy appropriately in all the nodes labeled with the \"master\" role.\n\nNote that this needs to be done for each MachineConfigPool\n\nFor more information on how to configure nodes with the Machine Config Operator see the relevant documentation ( https://docs.openshift.com/container-platform/4.6/post_installation_configuration/machine-configuration-tasks.html ).\n\nThe rule checks if settings for selected crypto policy are configured as expected. Configuration files in the /etc/crypto-policies/back-ends are either symlinks to correct files provided by Crypto-policies package or they are regular files in case crypto policy customizations are applied. Crypto policies may be customized by crypto policy modules, in which case it is delimited from the base policy using a colon.",
+        "severity": "high"
+      },
+      {
+        "name": "rhcos4-e8-master-no-empty-passwords",
+        "check": "rhcos4-e8-master-no-empty-passwords",
+        "status": "FAIL",
+        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
+        "severity": "high"
+      },
+      {
+        "name": "rhcos4-e8-worker-configure-crypto-policy",
+        "check": "rhcos4-e8-worker-configure-crypto-policy",
+        "status": "FAIL",
+        "description": "Configure System Cryptography Policy\nTo configure the system cryptography policy to use ciphers only from the DEFAULT:NO-SHA1 policy, create a MachineConfig as follows:\n\n---\napiVersion: machineconfiguration.openshift.io/v1\nkind: MachineConfig\nmetadata:\n labels:\n   machineconfiguration.openshift.io/role: master\n name: 50-master-configure-crypto-policy\nspec:\n config:\n   ignition:\n     version: 3.1.0\n   systemd:\n     units:\n       - name: configure-crypto-policy.service\n         enabled: true\n         contents: |\n           [Unit]\n           Before=kubelet.service\n           [Service]\n           Type=oneshot\n           ExecStart=update-crypto-policies --set DEFAULT:NO-SHA1 RemainAfterExit=yes\n           [Install]\n           WantedBy=multi-user.target\n\nThis will configure the crypto policy appropriately in all the nodes labeled with the \"master\" role.\n\nNote that this needs to be done for each MachineConfigPool\n\nFor more information on how to configure nodes with the Machine Config Operator see the relevant documentation ( https://docs.openshift.com/container-platform/4.6/post_installation_configuration/machine-configuration-tasks.html ).\n\nThe rule checks if settings for selected crypto policy are configured as expected. Configuration files in the /etc/crypto-policies/back-ends are either symlinks to correct files provided by Crypto-policies package or they are regular files in case crypto policy customizations are applied. Crypto policies may be customized by crypto policy modules, in which case it is delimited from the base policy using a colon.",
+        "severity": "high"
+      },
+      {
+        "name": "rhcos4-e8-worker-no-empty-passwords",
+        "check": "rhcos4-e8-worker-no-empty-passwords",
+        "status": "FAIL",
+        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
+        "severity": "high"
+      }
+    ],
+    "medium": [
+      {
+        "name": "ocp4-cis-api-server-encryption-provider-cipher",
+        "check": "ocp4-cis-api-server-encryption-provider-cipher",
+        "status": "FAIL",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-audit-log-forwarding-enabled",
+        "check": "ocp4-cis-audit-log-forwarding-enabled",
+        "status": "FAIL",
+        "description": "Ensure that Audit Log Forwarding Is Enabled\nOpenShift audit works at the API server level, logging all requests coming to the server. Audit is on by default and the best practice is to ship audit logs off the cluster for retention. The cluster-logging-operator is able to do this with the\n\nClusterLogForwarders\n\nresource. The forementioned resource can be configured to logs to different third party systems. For more information on this, please reference the official documentation: https://docs.openshift.com/container-platform/latest/observability/logging/logging-6.0/log6x-clf.html",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-audit-profile-set",
+        "check": "ocp4-cis-audit-profile-set",
+        "status": "FAIL",
+        "description": "Ensure that the cluster's audit profile is properly set\nOpenShift can audit the details of requests made to the API server through the standard Kubernetes audit capabilities.\n\nIn OpenShift, auditing of the API Server is on by default. Audit provides a security-relevant chronological set of records documenting the sequence of activities that have affected system by individual users, administrators, or other components of the system. Audit works at the API server level, logging all requests coming to the server. Each audit log contains two entries:\n\nThe request line containing:\n\n* A Unique ID allowing to match the response line (see #2)\n* The source IP of the request\n* The HTTP method being invoked\n* The original user invoking the operation\n* The impersonated user for the operation (self meaning himself)\n* The impersonated group for the operation (lookup meaning user's group)\n* The namespace of the request or none\n* The URI as requested\n\nThe response line containing:\n\n* The aforementioned unique ID\n* The response code\n\nFor more information on how to configure the audit profile, please visit the documentation ( https://docs.openshift.com/container-platform/latest/security/audit-log-policy-config.html )",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-idp-is-configured",
+        "check": "ocp4-cis-idp-is-configured",
+        "status": "FAIL",
+        "description": "Configure An Identity Provider\nFor users to interact with OpenShift Container Platform, they must first authenticate to the cluster. The authentication layer identifies the user associated with requests to the OpenShift Container Platform API. The authorization layer then uses information about the requesting user to determine if the request is allowed. Understanding authentication | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/4.6/logging/cluster-logging-external.html )\n\nThe OpenShift Container Platform includes a built-in OAuth server for token-based authentication. Developers and administrators obtain OAuth access tokens to authenticate themselves to the API. It is recommended for an administrator to configure OAuth to specify an identity provider after the cluster is installed. User access to the cluster is managed through the identity provider. Understanding identity provider configuration | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/4.6/authentication/understanding-identity-provider.html )\n\nOpenShift includes built-in role based access control (RBAC) to determine whether a user is allowed to perform a given action within the cluster. Roles can have cluster scope or local (i.e. project) scope. Using RBAC to define and apply permissions | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/4.6/authentication/using-rbac.html )",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-ingress-controller-tls-cipher-suites",
+        "check": "ocp4-cis-ingress-controller-tls-cipher-suites",
+        "status": "FAIL",
+        "description": "Ensure that the Ingress Controller only makes use of Strong Cryptographic Ciphers\nEnsure that the Ingress Controller is configured to only use strong cryptographic ciphers.",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-kubeadmin-removed",
+        "check": "ocp4-cis-kubeadmin-removed",
+        "status": "FAIL",
+        "description": "Ensure that the kubeadmin secret has been removed\nThe kubeadmin user is meant to be a temporary user used for bootstrapping purposes. It is preferable to assign system administrators whose users are backed by an Identity Provider.\n\nMake sure to remove the user as described in the documentation ( https://docs.openshift.com/container-platform/latest/authentication/remove-kubeadmin.html )",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-ocp-allowed-registries",
+        "check": "ocp4-cis-ocp-allowed-registries",
+        "status": "FAIL",
+        "description": "Allowed registries are configured\nThe configuration registrySources.allowedRegistries determines the permitted registries that the OpenShift container runtime can access for builds and pods. This configuration setting ensures that all registries other than those specified are blocked. You can set the allowed repositories by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-registries-patch.yaml\n\nspec:\n registrySources:\n   allowedRegistries:\n   - my-trusted-registry.internal.example.com\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-registries-patch.yaml)\" --type=merge",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-cis-ocp-allowed-registries-for-import",
+        "check": "ocp4-cis-ocp-allowed-registries-for-import",
+        "status": "FAIL",
+        "description": "Allowed registries for import are configured\nThe configuration allowedRegistriesForImport limits the container image registries from which normal users may import images. This is important to control, as a user who can stand up a malicious registry can then import content which claims to include the SHAs of legitimate content layers. You can set the allowed repositories for import by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-import-registries-patch.yaml\n\nspec:\n allowedRegistriesForImport:\n - domainName: my-trusted-registry.internal.example.com\n   insecure: false\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-import-registries-patch.yaml)\" --type=merge",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-e8-api-server-encryption-provider-cipher",
+        "check": "ocp4-e8-api-server-encryption-provider-cipher",
+        "status": "FAIL",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-e8-ocp-allowed-registries",
+        "check": "ocp4-e8-ocp-allowed-registries",
+        "status": "FAIL",
+        "description": "Allowed registries are configured\nThe configuration registrySources.allowedRegistries determines the permitted registries that the OpenShift container runtime can access for builds and pods. This configuration setting ensures that all registries other than those specified are blocked. You can set the allowed repositories by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-registries-patch.yaml\n\nspec:\n registrySources:\n   allowedRegistries:\n   - my-trusted-registry.internal.example.com\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-registries-patch.yaml)\" --type=merge",
+        "severity": "medium"
+      },
+      {
+        "name": "ocp4-e8-ocp-allowed-registries-for-import",
+        "check": "ocp4-e8-ocp-allowed-registries-for-import",
+        "status": "FAIL",
+        "description": "Allowed registries for import are configured\nThe configuration allowedRegistriesForImport limits the container image registries from which normal users may import images. This is important to control, as a user who can stand up a malicious registry can then import content which claims to include the SHAs of legitimate content layers. You can set the allowed repositories for import by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-import-registries-patch.yaml\n\nspec:\n allowedRegistriesForImport:\n - domainName: my-trusted-registry.internal.example.com\n   insecure: false\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-import-registries-patch.yaml)\" --type=merge",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-dac-modification-chmod",
+        "check": "rhcos4-e8-master-audit-rules-dac-modification-chmod",
+        "status": "FAIL",
+        "description": "Record Events that Modify the System's Discretionary Access Controls - chmod\nAt a minimum, the audit system should collect file permission changes for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-dac-modification-chown",
+        "check": "rhcos4-e8-master-audit-rules-dac-modification-chown",
+        "status": "FAIL",
+        "description": "Record Events that Modify the System's Discretionary Access Controls - chown\nAt a minimum, the audit system should collect file permission changes for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-execution-chcon",
+        "check": "rhcos4-e8-master-audit-rules-execution-chcon",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run chcon\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/bin/chcon -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/bin/chcon -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-execution-restorecon",
+        "check": "rhcos4-e8-master-audit-rules-execution-restorecon",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run restorecon\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/restorecon -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/restorecon -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-execution-semanage",
+        "check": "rhcos4-e8-master-audit-rules-execution-semanage",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run semanage\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/semanage -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/semanage -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-execution-setfiles",
+        "check": "rhcos4-e8-master-audit-rules-execution-setfiles",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run setfiles\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/setfiles -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/setfiles -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-execution-setsebool",
+        "check": "rhcos4-e8-master-audit-rules-execution-setsebool",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run setsebool\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/setsebool -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/setsebool -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-execution-seunshare",
+        "check": "rhcos4-e8-master-audit-rules-execution-seunshare",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run seunshare\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/seunshare -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/seunshare -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-kernel-module-loading-delete",
+        "check": "rhcos4-e8-master-audit-rules-kernel-module-loading-delete",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects Information on Kernel Module Unloading - delete_module\nTo capture kernel module loading and unloading events, use the following line, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch= ARCH -S delete_module -F key=modules\n\nPlace to add the line depends on a way auditd daemon is configured. If it is configured to use the augenrules program (the default), add the line to a file with suffix.rules in the directory /etc/audit/rules.d. If the auditd daemon is configured to use the auditctl utility, add the line to file /etc/audit/audit.rules.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-kernel-module-loading-finit",
+        "check": "rhcos4-e8-master-audit-rules-kernel-module-loading-finit",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects Information on Kernel Module Loading and Unloading - finit_module\nTo capture kernel module loading and unloading events, use the following line, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch= ARCH -S finit_module -F key=modules\n\nPlace to add the line depends on a way auditd daemon is configured. If it is configured to use the augenrules program (the default), add the line to a file with suffix.rules in the directory /etc/audit/rules.d. If the auditd daemon is configured to use the auditctl utility, add the line to file /etc/audit/audit.rules.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-kernel-module-loading-init",
+        "check": "rhcos4-e8-master-audit-rules-kernel-module-loading-init",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects Information on Kernel Module Loading - init_module\nTo capture kernel module loading and unloading events, use the following line, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch= ARCH -S init_module -F key=modules\n\nPlace to add the line depends on a way auditd daemon is configured. If it is configured to use the augenrules program (the default), add the line to a file with suffix.rules in the directory /etc/audit/rules.d. If the auditd daemon is configured to use the auditctl utility, add the line to file /etc/audit/audit.rules.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-login-events",
+        "check": "rhcos4-e8-master-audit-rules-login-events",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d in order to watch for attempted manual edits of files involved in storing logon events:\n\n-w /var/log/tallylog -p wa -k logins\n-w /var/run/faillock -p wa -k logins\n-w /var/log/lastlog -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules file in order to watch for unattempted manual edits of files involved in storing logon events:\n\n-w /var/log/tallylog -p wa -k logins\n-w /var/run/faillock -p wa -k logins\n-w /var/log/lastlog -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-login-events-faillock",
+        "check": "rhcos4-e8-master-audit-rules-login-events-faillock",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events - faillock\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /var/run/faillock -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /var/run/faillock -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-login-events-lastlog",
+        "check": "rhcos4-e8-master-audit-rules-login-events-lastlog",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events - lastlog\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /var/log/lastlog -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /var/log/lastlog -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-login-events-tallylog",
+        "check": "rhcos4-e8-master-audit-rules-login-events-tallylog",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events - tallylog\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /var/log/tallylog -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /var/log/tallylog -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-networkconfig-modification",
+        "check": "rhcos4-e8-master-audit-rules-networkconfig-modification",
+        "status": "FAIL",
+        "description": "Record Events that Modify the System's Network Environment\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d , setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch=ARCH -S sethostname,setdomainname -F key=audit_rules_networkconfig_modification\n-w /etc/issue -p wa -k audit_rules_networkconfig_modification\n-w /etc/issue.net -p wa -k audit_rules_networkconfig_modification\n-w /etc/hosts -p wa -k audit_rules_networkconfig_modification\n\n-w /etc/sysconfig/network -p wa -k audit_rules_networkconfig_modification\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules file, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch=ARCH -S sethostname,setdomainname -F key=audit_rules_networkconfig_modification\n-w /etc/issue -p wa -k audit_rules_networkconfig_modification\n-w /etc/issue.net -p wa -k audit_rules_networkconfig_modification\n-w /etc/hosts -p wa -k audit_rules_networkconfig_modification\n-w /etc/sysconfig/network -p wa -k audit_rules_networkconfig_modification",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-sysadmin-actions",
+        "check": "rhcos4-e8-master-audit-rules-sysadmin-actions",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects System Administrator Actions\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /etc/sudoers -p wa -k actions\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /etc/sudoers -p wa -k actions\n\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /etc/sudoers.d/ -p wa -k actions\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /etc/sudoers.d/ -p wa -k actions",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-time-adjtimex",
+        "check": "rhcos4-e8-master-audit-rules-time-adjtimex",
+        "status": "FAIL",
+        "description": "Record attempts to alter time through adjtimex\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S adjtimex -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S adjtimex -F key=audit_time_rules\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S adjtimex -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S adjtimex -F key=audit_time_rules\n\nThe -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined syscalls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-time-clock-settime",
+        "check": "rhcos4-e8-master-audit-rules-time-clock-settime",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Time Through clock_settime\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -F key=time-change\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -F key=time-change\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -F key=time-change\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -F key=time-change\n\nThe -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined syscalls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-time-settimeofday",
+        "check": "rhcos4-e8-master-audit-rules-time-settimeofday",
+        "status": "FAIL",
+        "description": "Record attempts to alter time through settimeofday\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S settimeofday -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S settimeofday -F key=audit_time_rules\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S settimeofday -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S settimeofday -F key=audit_time_rules\n\nThe -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined syscalls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-time-stime",
+        "check": "rhcos4-e8-master-audit-rules-time-stime",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Time Through stime\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d for both 32 bit and 64 bit systems:\n\n-a always,exit -F arch=b32 -S stime -F key=audit_time_rules\n\nSince the 64 bit version of the \"stime\" system call is not defined in the audit lookup table, the corresponding \"-F arch=b64\" form of this rule is not expected to be defined on 64 bit systems (the aforementioned \"-F arch=b32\" stime rule form itself is sufficient for both 32 bit and 64 bit systems). If the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file for both 32 bit and 64 bit systems:\n\n-a always,exit -F arch=b32 -S stime -F key=audit_time_rules\n\nSince the 64 bit version of the \"stime\" system call is not defined in the audit lookup table, the corresponding \"-F arch=b64\" form of this rule is not expected to be defined on 64 bit systems (the aforementioned \"-F arch=b32\" stime rule form itself is sufficient for both 32 bit and 64 bit systems). The -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined system calls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-time-watch-localtime",
+        "check": "rhcos4-e8-master-audit-rules-time-watch-localtime",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter the localtime File\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /etc/localtime -p wa -k audit_time_rules\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /etc/localtime -p wa -k audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-audit-rules-usergroup-modification",
+        "check": "rhcos4-e8-master-audit-rules-usergroup-modification",
+        "status": "FAIL",
+        "description": "Record Events that Modify User/Group Information\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d , in order to capture events that modify account changes:\n\n-w /etc/group -p wa -k audit_rules_usergroup_modification\n-w /etc/passwd -p wa -k audit_rules_usergroup_modification\n-w /etc/gshadow -p wa -k audit_rules_usergroup_modification\n-w /etc/shadow -p wa -k audit_rules_usergroup_modification\n-w /etc/security/opasswd -p wa -k audit_rules_usergroup_modification\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules file, in order to capture events that modify account changes:\n\n-w /etc/group -p wa -k audit_rules_usergroup_modification\n-w /etc/passwd -p wa -k audit_rules_usergroup_modification\n-w /etc/gshadow -p wa -k audit_rules_usergroup_modification\n-w /etc/shadow -p wa -k audit_rules_usergroup_modification\n-w /etc/security/opasswd -p wa -k audit_rules_usergroup_modification",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-auditd-name-format",
+        "check": "rhcos4-e8-master-auditd-name-format",
+        "status": "FAIL",
+        "description": "Set type of computer node name logging in audit logs\nTo configure Audit daemon to use a unique identifier as computer node name in the audit events, set name_format to hostname in /etc/audit/auditd.conf.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-disable-gssapi-auth",
+        "check": "rhcos4-e8-master-sshd-disable-gssapi-auth",
+        "status": "FAIL",
+        "description": "Disable GSSAPI Authentication\nUnless needed, SSH should not permit extraneous or unnecessary authentication mechanisms like GSSAPI.\n\nThe default SSH configuration disallows authentications based on GSSAPI. The appropriate configuration is used if no value is set for GSSAPIAuthentication.\n\nTo explicitly disable GSSAPI authentication, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nGSSAPIAuthentication no",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-disable-user-known-hosts",
+        "check": "rhcos4-e8-master-sshd-disable-user-known-hosts",
+        "status": "FAIL",
+        "description": "Disable SSH Support for User Known Hosts\nSSH can allow system users to connect to systems if a cache of the remote systems public keys is available. This should be disabled.\n\nTo ensure this behavior is disabled, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nIgnoreUserKnownHosts yes",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-randomize-va-space",
+        "check": "rhcos4-e8-master-sysctl-kernel-randomize-va-space",
+        "status": "FAIL",
+        "description": "Enable Randomized Layout of Virtual Address Space\nTo set the runtime status of the kernel.randomize_va_space kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.randomize_va_space=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.randomize_va_space = 2",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled",
+        "check": "rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled",
+        "status": "FAIL",
+        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope",
+        "check": "rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope",
+        "status": "FAIL",
+        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-net-core-bpf-jit-harden",
+        "check": "rhcos4-e8-master-sysctl-net-core-bpf-jit-harden",
+        "status": "FAIL",
+        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-dac-modification-chmod",
+        "check": "rhcos4-e8-worker-audit-rules-dac-modification-chmod",
+        "status": "FAIL",
+        "description": "Record Events that Modify the System's Discretionary Access Controls - chmod\nAt a minimum, the audit system should collect file permission changes for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chmod -F auid>=1000 -F auid!=unset -F key=perm_mod",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-dac-modification-chown",
+        "check": "rhcos4-e8-worker-audit-rules-dac-modification-chown",
+        "status": "FAIL",
+        "description": "Record Events that Modify the System's Discretionary Access Controls - chown\nAt a minimum, the audit system should collect file permission changes for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S chown -F auid>=1000 -F auid!=unset -F key=perm_mod",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-execution-chcon",
+        "check": "rhcos4-e8-worker-audit-rules-execution-chcon",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run chcon\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/bin/chcon -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/bin/chcon -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-execution-restorecon",
+        "check": "rhcos4-e8-worker-audit-rules-execution-restorecon",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run restorecon\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/restorecon -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/restorecon -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-execution-semanage",
+        "check": "rhcos4-e8-worker-audit-rules-execution-semanage",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run semanage\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/semanage -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/semanage -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-execution-setfiles",
+        "check": "rhcos4-e8-worker-audit-rules-execution-setfiles",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run setfiles\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/setfiles -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/setfiles -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-execution-setsebool",
+        "check": "rhcos4-e8-worker-audit-rules-execution-setsebool",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run setsebool\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/setsebool -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/setsebool -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-execution-seunshare",
+        "check": "rhcos4-e8-worker-audit-rules-execution-seunshare",
+        "status": "FAIL",
+        "description": "Record Any Attempts to Run seunshare\nAt a minimum, the audit system should collect the execution of privileged commands for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add a line of the following form to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F path=/usr/sbin/seunshare -F auid>=1000 -F auid!=unset -F key=privileged\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add a line of the following form to /etc/audit/audit.rules :\n\n-a always,exit -F path=/usr/sbin/seunshare -F auid>=1000 -F auid!=unset -F key=privileged",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-kernel-module-loading-delete",
+        "check": "rhcos4-e8-worker-audit-rules-kernel-module-loading-delete",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects Information on Kernel Module Unloading - delete_module\nTo capture kernel module loading and unloading events, use the following line, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch= ARCH -S delete_module -F key=modules\n\nPlace to add the line depends on a way auditd daemon is configured. If it is configured to use the augenrules program (the default), add the line to a file with suffix.rules in the directory /etc/audit/rules.d. If the auditd daemon is configured to use the auditctl utility, add the line to file /etc/audit/audit.rules.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-kernel-module-loading-finit",
+        "check": "rhcos4-e8-worker-audit-rules-kernel-module-loading-finit",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects Information on Kernel Module Loading and Unloading - finit_module\nTo capture kernel module loading and unloading events, use the following line, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch= ARCH -S finit_module -F key=modules\n\nPlace to add the line depends on a way auditd daemon is configured. If it is configured to use the augenrules program (the default), add the line to a file with suffix.rules in the directory /etc/audit/rules.d. If the auditd daemon is configured to use the auditctl utility, add the line to file /etc/audit/audit.rules.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-kernel-module-loading-init",
+        "check": "rhcos4-e8-worker-audit-rules-kernel-module-loading-init",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects Information on Kernel Module Loading - init_module\nTo capture kernel module loading and unloading events, use the following line, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch= ARCH -S init_module -F key=modules\n\nPlace to add the line depends on a way auditd daemon is configured. If it is configured to use the augenrules program (the default), add the line to a file with suffix.rules in the directory /etc/audit/rules.d. If the auditd daemon is configured to use the auditctl utility, add the line to file /etc/audit/audit.rules.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-login-events",
+        "check": "rhcos4-e8-worker-audit-rules-login-events",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d in order to watch for attempted manual edits of files involved in storing logon events:\n\n-w /var/log/tallylog -p wa -k logins\n-w /var/run/faillock -p wa -k logins\n-w /var/log/lastlog -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules file in order to watch for unattempted manual edits of files involved in storing logon events:\n\n-w /var/log/tallylog -p wa -k logins\n-w /var/run/faillock -p wa -k logins\n-w /var/log/lastlog -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-login-events-faillock",
+        "check": "rhcos4-e8-worker-audit-rules-login-events-faillock",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events - faillock\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /var/run/faillock -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /var/run/faillock -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-login-events-lastlog",
+        "check": "rhcos4-e8-worker-audit-rules-login-events-lastlog",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events - lastlog\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /var/log/lastlog -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /var/log/lastlog -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-login-events-tallylog",
+        "check": "rhcos4-e8-worker-audit-rules-login-events-tallylog",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Logon and Logout Events - tallylog\nThe audit system already collects login information for all users and root. If the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /var/log/tallylog -p wa -k logins\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /var/log/tallylog -p wa -k logins",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-networkconfig-modification",
+        "check": "rhcos4-e8-worker-audit-rules-networkconfig-modification",
+        "status": "FAIL",
+        "description": "Record Events that Modify the System's Network Environment\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d , setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch=ARCH -S sethostname,setdomainname -F key=audit_rules_networkconfig_modification\n-w /etc/issue -p wa -k audit_rules_networkconfig_modification\n-w /etc/issue.net -p wa -k audit_rules_networkconfig_modification\n-w /etc/hosts -p wa -k audit_rules_networkconfig_modification\n\n-w /etc/sysconfig/network -p wa -k audit_rules_networkconfig_modification\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules file, setting ARCH to either b32 for 32-bit system, or having two lines for both b32 and b64 in case your system is 64-bit:\n\n-a always,exit -F arch=ARCH -S sethostname,setdomainname -F key=audit_rules_networkconfig_modification\n-w /etc/issue -p wa -k audit_rules_networkconfig_modification\n-w /etc/issue.net -p wa -k audit_rules_networkconfig_modification\n-w /etc/hosts -p wa -k audit_rules_networkconfig_modification\n-w /etc/sysconfig/network -p wa -k audit_rules_networkconfig_modification",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-sysadmin-actions",
+        "check": "rhcos4-e8-worker-audit-rules-sysadmin-actions",
+        "status": "FAIL",
+        "description": "Ensure auditd Collects System Administrator Actions\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /etc/sudoers -p wa -k actions\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /etc/sudoers -p wa -k actions\n\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /etc/sudoers.d/ -p wa -k actions\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /etc/sudoers.d/ -p wa -k actions",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-time-adjtimex",
+        "check": "rhcos4-e8-worker-audit-rules-time-adjtimex",
+        "status": "FAIL",
+        "description": "Record attempts to alter time through adjtimex\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S adjtimex -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S adjtimex -F key=audit_time_rules\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S adjtimex -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S adjtimex -F key=audit_time_rules\n\nThe -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined syscalls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-time-clock-settime",
+        "check": "rhcos4-e8-worker-audit-rules-time-clock-settime",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Time Through clock_settime\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -F key=time-change\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -F key=time-change\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -F key=time-change\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -F key=time-change\n\nThe -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined syscalls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-time-settimeofday",
+        "check": "rhcos4-e8-worker-audit-rules-time-settimeofday",
+        "status": "FAIL",
+        "description": "Record attempts to alter time through settimeofday\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-a always,exit -F arch=b32 -S settimeofday -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S settimeofday -F key=audit_time_rules\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file:\n\n-a always,exit -F arch=b32 -S settimeofday -F key=audit_time_rules\n\nIf the system is 64 bit then also add the following line:\n\n-a always,exit -F arch=b64 -S settimeofday -F key=audit_time_rules\n\nThe -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined syscalls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-time-stime",
+        "check": "rhcos4-e8-worker-audit-rules-time-stime",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter Time Through stime\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following line to a file with suffix.rules in the directory /etc/audit/rules.d for both 32 bit and 64 bit systems:\n\n-a always,exit -F arch=b32 -S stime -F key=audit_time_rules\n\nSince the 64 bit version of the \"stime\" system call is not defined in the audit lookup table, the corresponding \"-F arch=b64\" form of this rule is not expected to be defined on 64 bit systems (the aforementioned \"-F arch=b32\" stime rule form itself is sufficient for both 32 bit and 64 bit systems). If the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following line to /etc/audit/audit.rules file for both 32 bit and 64 bit systems:\n\n-a always,exit -F arch=b32 -S stime -F key=audit_time_rules\n\nSince the 64 bit version of the \"stime\" system call is not defined in the audit lookup table, the corresponding \"-F arch=b64\" form of this rule is not expected to be defined on 64 bit systems (the aforementioned \"-F arch=b32\" stime rule form itself is sufficient for both 32 bit and 64 bit systems). The -k option allows for the specification of a key in string form that can be used for better reporting capability through ausearch and aureport. Multiple system calls can be defined on the same line to save space if desired, but is not required. See an example of multiple combined system calls:\n\n-a always,exit -F arch=b64 -S adjtimex,settimeofday -F key=audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-time-watch-localtime",
+        "check": "rhcos4-e8-worker-audit-rules-time-watch-localtime",
+        "status": "FAIL",
+        "description": "Record Attempts to Alter the localtime File\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d :\n\n-w /etc/localtime -p wa -k audit_time_rules\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules :\n\n-w /etc/localtime -p wa -k audit_time_rules",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-audit-rules-usergroup-modification",
+        "check": "rhcos4-e8-worker-audit-rules-usergroup-modification",
+        "status": "FAIL",
+        "description": "Record Events that Modify User/Group Information\nIf the auditd daemon is configured to use the augenrules program to read audit rules during daemon startup (the default), add the following lines to a file with suffix.rules in the directory /etc/audit/rules.d , in order to capture events that modify account changes:\n\n-w /etc/group -p wa -k audit_rules_usergroup_modification\n-w /etc/passwd -p wa -k audit_rules_usergroup_modification\n-w /etc/gshadow -p wa -k audit_rules_usergroup_modification\n-w /etc/shadow -p wa -k audit_rules_usergroup_modification\n-w /etc/security/opasswd -p wa -k audit_rules_usergroup_modification\n\nIf the auditd daemon is configured to use the auditctl utility to read audit rules during daemon startup, add the following lines to /etc/audit/audit.rules file, in order to capture events that modify account changes:\n\n-w /etc/group -p wa -k audit_rules_usergroup_modification\n-w /etc/passwd -p wa -k audit_rules_usergroup_modification\n-w /etc/gshadow -p wa -k audit_rules_usergroup_modification\n-w /etc/shadow -p wa -k audit_rules_usergroup_modification\n-w /etc/security/opasswd -p wa -k audit_rules_usergroup_modification",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-auditd-name-format",
+        "check": "rhcos4-e8-worker-auditd-name-format",
+        "status": "FAIL",
+        "description": "Set type of computer node name logging in audit logs\nTo configure Audit daemon to use a unique identifier as computer node name in the audit events, set name_format to hostname in /etc/audit/auditd.conf.",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-disable-gssapi-auth",
+        "check": "rhcos4-e8-worker-sshd-disable-gssapi-auth",
+        "status": "FAIL",
+        "description": "Disable GSSAPI Authentication\nUnless needed, SSH should not permit extraneous or unnecessary authentication mechanisms like GSSAPI.\n\nThe default SSH configuration disallows authentications based on GSSAPI. The appropriate configuration is used if no value is set for GSSAPIAuthentication.\n\nTo explicitly disable GSSAPI authentication, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nGSSAPIAuthentication no",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-disable-user-known-hosts",
+        "check": "rhcos4-e8-worker-sshd-disable-user-known-hosts",
+        "status": "FAIL",
+        "description": "Disable SSH Support for User Known Hosts\nSSH can allow system users to connect to systems if a cache of the remote systems public keys is available. This should be disabled.\n\nTo ensure this behavior is disabled, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nIgnoreUserKnownHosts yes",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-randomize-va-space",
+        "check": "rhcos4-e8-worker-sysctl-kernel-randomize-va-space",
+        "status": "FAIL",
+        "description": "Enable Randomized Layout of Virtual Address Space\nTo set the runtime status of the kernel.randomize_va_space kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.randomize_va_space=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.randomize_va_space = 2",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled",
+        "check": "rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled",
+        "status": "FAIL",
+        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope",
+        "check": "rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope",
+        "status": "FAIL",
+        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
+        "severity": "medium"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden",
+        "check": "rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden",
+        "status": "FAIL",
+        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
+        "severity": "medium"
+      }
+    ],
+    "low": [
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-dmesg-restrict",
+        "check": "rhcos4-e8-master-sysctl-kernel-dmesg-restrict",
+        "status": "FAIL",
+        "description": "Restrict Access to Kernel Message Buffer\nTo set the runtime status of the kernel.dmesg_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.dmesg_restrict=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.dmesg_restrict = 1",
+        "severity": "low"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-dmesg-restrict",
+        "check": "rhcos4-e8-worker-sysctl-kernel-dmesg-restrict",
+        "status": "FAIL",
+        "description": "Restrict Access to Kernel Message Buffer\nTo set the runtime status of the kernel.dmesg_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.dmesg_restrict=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.dmesg_restrict = 1",
+        "severity": "low"
+      }
+    ]
+  },
+  "manual_checks": [
+    {
+      "name": "ocp4-cis-accounts-restrict-service-account-tokens",
+      "check": "ocp4-cis-accounts-restrict-service-account-tokens",
+      "status": "MANUAL",
+      "description": "Restrict Automounting of Service Account Tokens\nService accounts tokens should not be mounted in pods except where the workload running in the pod explicitly needs to communicate with the API server. To ensure pods do not automatically mount tokens, set automountServiceAccountToken to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-accounts-unique-service-account",
+      "check": "ocp4-cis-accounts-unique-service-account",
+      "status": "MANUAL",
+      "description": "Ensure Usage of Unique Service Accounts \nUsing the default service account prevents accurate application rights review and audit tracing. Instead of default , create a new and unique service account with the following command:\n\n$ oc create sa service_account_name\n\nwhere service_account_name is the name of a service account that is needed in the project namespace.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-general-apply-scc",
+      "check": "ocp4-cis-general-apply-scc",
+      "status": "MANUAL",
+      "description": "Apply Security Context to Your Pods and Containers\nApply Security Context to your Pods and Containers",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-general-default-namespace-use",
+      "check": "ocp4-cis-general-default-namespace-use",
+      "status": "MANUAL",
+      "description": "The default namespace should not be used\nKubernetes provides a default namespace, where objects are placed if no namespace is specified for them. Placing objects in this namespace makes application of RBAC and other controls more difficult.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-general-default-seccomp-profile",
+      "check": "ocp4-cis-general-default-seccomp-profile",
+      "status": "MANUAL",
+      "description": "Ensure Seccomp Profile Pod Definitions\nEnable default seccomp profiles in your pod definitions.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-general-namespaces-in-use",
+      "check": "ocp4-cis-general-namespaces-in-use",
+      "status": "MANUAL",
+      "description": "Create administrative boundaries between resources using namespaces\nUse namespaces to isolate your Kubernetes objects.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-rbac-least-privilege",
+      "check": "ocp4-cis-rbac-least-privilege",
+      "status": "MANUAL",
+      "description": "Ensure that the RBAC setup follows the principle of least privilege\nRole-based access control (RBAC) objects determine whether a user is allowed to perform a given action within a project. If users or groups exist that are bound to roles they must not have, modify the user or group permissions using the following cluster and local role binding commands: Remove a User from a Cluster RBAC role by executing the following: oc adm policy remove-cluster-role-from-user role username Remove a Group from a Cluster RBAC role by executing the following: oc adm policy remove-cluster-role-from-group role groupname Remove a User from a Local RBAC role by executing the following: oc adm policy remove-role-from-user role username Remove a Group from a Local RBAC role by executing the following: oc adm policy remove-role-from-group role groupname NOTE: For additional information. https://docs.openshift.com/container-platform/latest/authentication/using-rbac.html",
+      "severity": "high"
+    },
+    {
+      "name": "ocp4-cis-rbac-limit-cluster-admin",
+      "check": "ocp4-cis-rbac-limit-cluster-admin",
+      "status": "MANUAL",
+      "description": "Ensure that the cluster-admin role is only used where required\nThe RBAC role cluster-admin provides wide-ranging powers over the environment and should be used only where and when needed.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-rbac-limit-secrets-access",
+      "check": "ocp4-cis-rbac-limit-secrets-access",
+      "status": "MANUAL",
+      "description": "Limit Access to Kubernetes Secrets\nThe Kubernetes API stores secrets, which may be service account tokens for the Kubernetes API or credentials used by workloads in the cluster. Access to these secrets should be restricted to the smallest possible group of users to reduce the risk of privilege escalation. To restrict users from secrets, remove get , list , and watch access to unauthorized users to secret objects in the cluster.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-rbac-pod-creation-access",
+      "check": "ocp4-cis-rbac-pod-creation-access",
+      "status": "MANUAL",
+      "description": "Minimize Access to Pod Creation\nThe ability to create pods in a namespace can provide a number of opportunities for privilege escalation. Where applicable, remove create access to pod objects in the cluster.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-rbac-wildcard-use",
+      "check": "ocp4-cis-rbac-wildcard-use",
+      "status": "MANUAL",
+      "description": "Minimize Wildcard Usage in Cluster and Local Roles\nKubernetes Cluster and Local Roles provide access to resources based on sets of objects and actions that can be taken on those objects. It is possible to set either of these using a wildcard * which matches all items. This violates the principle of least privilege and leaves a cluster in a more vulnerable state to privilege abuse.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-drop-container-capabilities",
+      "check": "ocp4-cis-scc-drop-container-capabilities",
+      "status": "MANUAL",
+      "description": "Drop Container Capabilities\nContainers should not enable more capabilities than needed as this opens the door for malicious use. To disable the capabilities, the appropriate Security Context Constraints (SCCs) should set all capabilities as * or a list of capabilities in requiredDropCapabilities.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-ipc-namespace",
+      "check": "ocp4-cis-scc-limit-ipc-namespace",
+      "status": "MANUAL",
+      "description": "Limit Access to the Host IPC Namespace\nContainers should not be allowed access to the host's Interprocess Communication (IPC) namespace. To prevent containers from getting access to a host's IPC namespace, the appropriate Security Context Constraints (SCCs) should set allowHostIPC to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-net-raw-capability",
+      "check": "ocp4-cis-scc-limit-net-raw-capability",
+      "status": "MANUAL",
+      "description": "Limit Use of the CAP_NET_RAW\nContainers should not enable more capabilities than needed as this opens the door for malicious use. CAP_NET_RAW enables a container to launch a network attack on another container or cluster. To disable the CAP_NET_RAW capability, the appropriate Security Context Constraints (SCCs) should set NET_RAW in requiredDropCapabilities.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-network-namespace",
+      "check": "ocp4-cis-scc-limit-network-namespace",
+      "status": "MANUAL",
+      "description": "Limit Access to the Host Network Namespace\nContainers should not be allowed access to the host's network namespace. To prevent containers from getting access to a host's network namespace, the appropriate Security Context Constraints (SCCs) should set allowHostNetwork to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-privilege-escalation",
+      "check": "ocp4-cis-scc-limit-privilege-escalation",
+      "status": "MANUAL",
+      "description": "Limit Containers Ability to Escalate Privileges\nContainers should be limited to only the privileges required to run and should not be allowed to escalate their privileges. To prevent containers from escalating privileges, the appropriate Security Context Constraints (SCCs) should set allowPrivilegeEscalation to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-privileged-containers",
+      "check": "ocp4-cis-scc-limit-privileged-containers",
+      "status": "MANUAL",
+      "description": "Limit Privileged Container Use\nContainers should be limited to only the privileges required to run. To prevent containers from running as privileged containers, the appropriate Security Context Constraints (SCCs) should set allowPrivilegedContainer to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-process-id-namespace",
+      "check": "ocp4-cis-scc-limit-process-id-namespace",
+      "status": "MANUAL",
+      "description": "Limit Access to the Host Process ID Namespace\nContainers should not be allowed access to the host's process ID namespace. To prevent containers from getting access to a host's process ID namespace, the appropriate Security Context Constraints (SCCs) should set allowHostPID to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-scc-limit-root-containers",
+      "check": "ocp4-cis-scc-limit-root-containers",
+      "status": "MANUAL",
+      "description": "Limit Container Running As Root User\nContainers should run as a random non-privileged user. To prevent containers from running as root user, the appropriate Security Context Constraints (SCCs) should set.runAsUser.type to MustRunAsRange.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-secrets-consider-external-storage",
+      "check": "ocp4-cis-secrets-consider-external-storage",
+      "status": "MANUAL",
+      "description": "Consider external secret storage\nConsider the use of an external secrets storage and management system, instead of using Kubernetes Secrets directly, if you have more complex secret management needs. Ensure the solution requires authentication to access secrets, has auditing of access to and use of secrets, and encrypts secrets. Some solutions also make it easier to rotate secrets.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-cis-secrets-no-environment-variables",
+      "check": "ocp4-cis-secrets-no-environment-variables",
+      "status": "MANUAL",
+      "description": "Do Not Use Environment Variables with Secrets\nSecrets should be mounted as data volumes instead of environment variables.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-e8-rbac-limit-cluster-admin",
+      "check": "ocp4-e8-rbac-limit-cluster-admin",
+      "status": "MANUAL",
+      "description": "Ensure that the cluster-admin role is only used where required\nThe RBAC role cluster-admin provides wide-ranging powers over the environment and should be used only where and when needed.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-e8-rbac-pod-creation-access",
+      "check": "ocp4-e8-rbac-pod-creation-access",
+      "status": "MANUAL",
+      "description": "Minimize Access to Pod Creation\nThe ability to create pods in a namespace can provide a number of opportunities for privilege escalation. Where applicable, remove create access to pod objects in the cluster.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-e8-rbac-wildcard-use",
+      "check": "ocp4-e8-rbac-wildcard-use",
+      "status": "MANUAL",
+      "description": "Minimize Wildcard Usage in Cluster and Local Roles\nKubernetes Cluster and Local Roles provide access to resources based on sets of objects and actions that can be taken on those objects. It is possible to set either of these using a wildcard * which matches all items. This violates the principle of least privilege and leaves a cluster in a more vulnerable state to privilege abuse.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-e8-scc-limit-privilege-escalation",
+      "check": "ocp4-e8-scc-limit-privilege-escalation",
+      "status": "MANUAL",
+      "description": "Limit Containers Ability to Escalate Privileges\nContainers should be limited to only the privileges required to run and should not be allowed to escalate their privileges. To prevent containers from escalating privileges, the appropriate Security Context Constraints (SCCs) should set allowPrivilegeEscalation to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-e8-scc-limit-privileged-containers",
+      "check": "ocp4-e8-scc-limit-privileged-containers",
+      "status": "MANUAL",
+      "description": "Limit Privileged Container Use\nContainers should be limited to only the privileges required to run. To prevent containers from running as privileged containers, the appropriate Security Context Constraints (SCCs) should set allowPrivilegedContainer to false.",
+      "severity": "medium"
+    },
+    {
+      "name": "ocp4-e8-scc-limit-root-containers",
+      "check": "ocp4-e8-scc-limit-root-containers",
+      "status": "MANUAL",
+      "description": "Limit Container Running As Root User\nContainers should run as a random non-privileged user. To prevent containers from running as root user, the appropriate Security Context Constraints (SCCs) should set.runAsUser.type to MustRunAsRange.",
+      "severity": "medium"
+    }
+  ]
+}

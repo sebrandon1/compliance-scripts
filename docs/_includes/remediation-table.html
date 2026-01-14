@@ -1,0 +1,64 @@
+<table class="remediation-table">
+  <thead>
+    <tr>
+      <th>Check Name</th>
+      <th>Status</th>
+      <th>Jira</th>
+      <th>PR</th>
+      <th>Tracking Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for check in include.checks %}
+    {% assign base_name = check.name | remove: "rhcos4-e8-worker-" | remove: "rhcos4-e8-master-" | remove: "ocp4-cis-" | remove: "ocp4-e8-" %}
+    {% assign tracking = site.data.tracking.remediations[base_name] %}
+    <tr>
+      <td>
+        <code>{{ check.name }}</code>
+        {% if check.description %}
+        <br><small class="description">{{ check.description | truncate: 80 }}</small>
+        {% endif %}
+      </td>
+      <td>
+        <span class="status-badge {{ check.status | downcase }}">
+          {% if check.status == "FAIL" %}&#10060;{% elsif check.status == "PASS" %}&#9989;{% else %}&#8505;{% endif %}
+          {{ check.status }}
+        </span>
+      </td>
+      <td>
+        {% if tracking.jira and tracking.jira != "" %}
+        <a href="{{ site.data.tracking.jira_base_url }}{{ tracking.jira }}" target="_blank" class="jira-link">
+          {{ tracking.jira }}
+        </a>
+        {% else %}
+        <span class="no-tracking">-</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if tracking.pr and tracking.pr != "" %}
+        <a href="{{ site.data.tracking.pr_base_url }}{{ tracking.pr }}" target="_blank" class="pr-link">
+          #{{ tracking.pr }}
+        </a>
+        {% else %}
+        <span class="no-tracking">-</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if tracking.status %}
+        <span class="tracking-status {{ tracking.status }}">
+          {% case tracking.status %}
+            {% when "in_progress" %}In Progress
+            {% when "pending" %}Pending
+            {% when "on_hold" %}On Hold
+            {% when "done" %}Done
+            {% else %}{{ tracking.status }}
+          {% endcase %}
+        </span>
+        {% else %}
+        <span class="tracking-status pending">Not Tracked</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -1,0 +1,95 @@
+---
+layout: default
+---
+
+<div class="version-page">
+  <h1>OCP {{ page.version }} Compliance Status</h1>
+
+  {% assign data_file = "ocp-" | append: page.version %}
+  {% assign version_data = site.data[data_file] %}
+
+  {% if version_data %}
+  <div class="scan-info">
+    <p><strong>Cluster:</strong> {{ version_data.cluster }}</p>
+    <p><strong>Last Scan:</strong> {{ version_data.scan_date | date: "%Y-%m-%d %H:%M UTC" }}</p>
+  </div>
+
+  <div class="summary-cards">
+    <div class="card total">
+      <h3>Total Checks</h3>
+      <span class="number">{{ version_data.summary.total_checks }}</span>
+    </div>
+    <div class="card passing">
+      <h3>Passing</h3>
+      <span class="number">{{ version_data.summary.passing }}</span>
+    </div>
+    <div class="card failing">
+      <h3>Failing</h3>
+      <span class="number">{{ version_data.summary.failing }}</span>
+    </div>
+    <div class="card manual">
+      <h3>Manual</h3>
+      <span class="number">{{ version_data.summary.manual }}</span>
+    </div>
+  </div>
+
+  <div class="coverage-bar">
+    {% assign coverage = version_data.summary.passing | times: 100 | divided_by: version_data.summary.total_checks %}
+    <div class="progress" style="width: {{ coverage }}%"></div>
+    <span class="coverage-text">{{ coverage }}% Coverage</span>
+  </div>
+
+  {% if version_data.remediations.high.size > 0 %}
+  <section class="remediation-section">
+    <h2><span class="severity-badge high">HIGH</span> Severity Failing Checks ({{ version_data.remediations.high.size }})</h2>
+    {% include remediation-table.html checks=version_data.remediations.high severity="high" %}
+  </section>
+  {% endif %}
+
+  {% if version_data.remediations.medium.size > 0 %}
+  <section class="remediation-section">
+    <h2><span class="severity-badge medium">MEDIUM</span> Severity Failing Checks ({{ version_data.remediations.medium.size }})</h2>
+    {% include remediation-table.html checks=version_data.remediations.medium severity="medium" %}
+  </section>
+  {% endif %}
+
+  {% if version_data.remediations.low.size > 0 %}
+  <section class="remediation-section">
+    <h2><span class="severity-badge low">LOW</span> Severity Failing Checks ({{ version_data.remediations.low.size }})</h2>
+    {% include remediation-table.html checks=version_data.remediations.low severity="low" %}
+  </section>
+  {% endif %}
+
+  {% if version_data.manual_checks.size > 0 %}
+  <section class="remediation-section">
+    <h2><span class="severity-badge manual">MANUAL</span> Checks Requiring Review ({{ version_data.manual_checks.size }})</h2>
+    <table class="remediation-table">
+      <thead>
+        <tr>
+          <th>Check Name</th>
+          <th>Severity</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for check in version_data.manual_checks %}
+        <tr>
+          <td><code>{{ check.name }}</code></td>
+          <td><span class="severity-badge {{ check.severity }}">{{ check.severity | upcase }}</span></td>
+          <td>{{ check.description | truncate: 100 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% else %}
+  <div class="no-data">
+    <p>No compliance data available for OCP {{ page.version }}.</p>
+    <p>Run <code>make export-compliance OCP_VERSION={{ page.version }}</code> to collect data.</p>
+  </div>
+  {% endif %}
+</div>
+
+{{ content }}

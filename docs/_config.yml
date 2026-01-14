@@ -1,0 +1,32 @@
+# Jekyll configuration for Compliance Remediation Tracker
+title: Compliance Remediation Tracker
+description: OpenShift Compliance Operator results tracking by OCP version
+baseurl: "/compliance-scripts"
+url: "https://sebrandon1.github.io"
+
+# Build settings
+markdown: kramdown
+theme: null
+
+# Exclude from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+
+# Include data directory
+data_dir: _data
+
+# Default front matter
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+
+# Collections for version pages
+collections:
+  versions:
+    output: true
+    permalink: /versions/:name/

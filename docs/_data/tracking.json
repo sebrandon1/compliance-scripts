@@ -1,0 +1,118 @@
+{
+  "jira_base_url": "https://issues.redhat.com/browse/",
+  "pr_base_url": "https://github.com/openshift-kni/telco-reference/pull/",
+  "remediations": {
+    "configure-crypto-policy": {
+      "jira": "CNF-21212",
+      "pr": "529",
+      "status": "in_progress",
+      "file": "75-crypto-policy-high.yaml",
+      "description": "System-wide crypto policy (DEFAULT:NO-SHA1)"
+    },
+    "no-empty-passwords": {
+      "jira": "CNF-21212",
+      "pr": "529",
+      "status": "in_progress",
+      "file": "75-pam-auth-high.yaml",
+      "description": "Disable nullok in PAM system-auth and password-auth"
+    },
+    "sshd-disable-empty-passwords": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Prevent SSH login with empty passwords"
+    },
+    "sshd-disable-root-login": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Disable direct root SSH access"
+    },
+    "sshd-disable-gssapi-auth": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Disable GSSAPI authentication"
+    },
+    "sshd-disable-rhosts": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Disable rhost authentication"
+    },
+    "sshd-disable-user-known-hosts": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Ignore user's known_hosts file"
+    },
+    "sshd-do-not-permit-user-env": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Block user environment variable passing"
+    },
+    "sshd-enable-strictmodes": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Enable strict mode checking"
+    },
+    "sshd-print-last-log": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Display last login information"
+    },
+    "sshd-set-loglevel-info": {
+      "jira": "CNF-19031",
+      "pr": "466",
+      "status": "in_progress",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Set SSH logging to INFO level"
+    },
+    "sysctl-kernel-randomize-va-space": {
+      "jira": "CNF-21196",
+      "pr": "",
+      "status": "on_hold",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Full ASLR - randomizes memory layout"
+    },
+    "sysctl-kernel-unprivileged-bpf-disabled": {
+      "jira": "CNF-21196",
+      "pr": "",
+      "status": "on_hold",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Prevent BPF-based privilege escalation"
+    },
+    "sysctl-kernel-yama-ptrace-scope": {
+      "jira": "CNF-21196",
+      "pr": "",
+      "status": "on_hold",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Restrict ptrace to parent-child processes"
+    },
+    "sysctl-net-core-bpf-jit-harden": {
+      "jira": "CNF-21196",
+      "pr": "",
+      "status": "on_hold",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Harden BPF JIT against spraying attacks"
+    },
+    "sysctl-kernel-dmesg-restrict": {
+      "jira": "",
+      "pr": "",
+      "status": "pending",
+      "file": "75-sysctl-low.yaml",
+      "description": "Restrict kernel log access to privileged users"
+    }
+  }
+}

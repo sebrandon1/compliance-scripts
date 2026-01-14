@@ -26,7 +26,8 @@ BG_BLUE := \033[44m
 .PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
-        full-workflow banner lint python-lint bash-lint verify-images test-compliance
+        full-workflow banner lint python-lint bash-lint verify-images test-compliance \
+        export-compliance update-dashboard serve-docs install-jekyll
 
 # Default target
 all: help
@@ -55,6 +56,9 @@ help: banner ## 📖 Show this help message
 	@echo ""
 	@echo "$(YELLOW)🔍 Code Quality Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(lint)"
+	@echo ""
+	@echo "$(YELLOW)🌐 Dashboard Commands:$(RESET)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(export-compliance|update-dashboard|serve-docs|install-jekyll)"
 	@echo ""
 	@echo "$(YELLOW)🧹 Utility Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(clean|help)"
@@ -306,3 +310,43 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	@echo "$(DIM)  • Running shfmt...$(RESET)"
 	@shfmt -d core utilities modular lab-tools misc || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w core utilities modular lab-tools misc$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ Bash linting passed!$(RESET)"
+
+# ────────────────────────────────────────────────────────────────────────────────
+# 🌐 Compliance Dashboard (GitHub Pages)
+# ────────────────────────────────────────────────────────────────────────────────
+
+export-compliance: ## 📊 Export compliance data to JSON for dashboard (requires OCP_VERSION)
+	@if [ -z "$(OCP_VERSION)" ]; then \
+	  echo "$(RED)❌ Error: OCP_VERSION is required!$(RESET)"; \
+	  echo "$(YELLOW)Usage: make export-compliance OCP_VERSION=4.17$(RESET)"; \
+	  exit 1; \
+	fi
+	@echo "$(BOLD)$(BLUE)📊 Exporting compliance data for OCP $(OCP_VERSION)...$(RESET)"
+	@./core/export-compliance-data.sh $(OCP_VERSION)
+	@echo "$(GREEN)✅ Compliance data exported to docs/_data/ocp-$(OCP_VERSION).json$(RESET)"
+	@echo ""
+
+update-dashboard: ## 🔄 Export compliance data and push to trigger dashboard rebuild
+	@if [ -z "$(OCP_VERSION)" ]; then \
+	  echo "$(RED)❌ Error: OCP_VERSION is required!$(RESET)"; \
+	  echo "$(YELLOW)Usage: make update-dashboard OCP_VERSION=4.17$(RESET)"; \
+	  exit 1; \
+	fi
+	@echo "$(BOLD)$(BLUE)🔄 Updating compliance dashboard for OCP $(OCP_VERSION)...$(RESET)"
+	@./core/export-compliance-data.sh $(OCP_VERSION)
+	@git add docs/_data/
+	@git commit -m "Update compliance data for OCP $(OCP_VERSION)"
+	@git push
+	@echo "$(GREEN)✅ Dashboard update pushed! GitHub Actions will rebuild the site.$(RESET)"
+	@echo ""
+
+serve-docs: ## 🖥️  Serve the compliance dashboard locally (requires Jekyll)
+	@echo "$(BOLD)$(BLUE)🖥️  Starting local Jekyll server...$(RESET)"
+	@echo "$(DIM)  Visit http://localhost:4000 to view the dashboard$(RESET)"
+	@cd docs && bundle exec jekyll serve
+
+install-jekyll: ## 💎 Install Jekyll dependencies for local dashboard development
+	@echo "$(BOLD)$(BLUE)💎 Installing Jekyll dependencies...$(RESET)"
+	@cd docs && bundle install --path vendor/bundle
+	@echo "$(GREEN)✅ Jekyll dependencies installed!$(RESET)"
+	@echo ""

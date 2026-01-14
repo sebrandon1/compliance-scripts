@@ -1,0 +1,13 @@
+# Jekyll build output
+_site/
+
+# Jekyll cache
+.jekyll-cache/
+.jekyll-metadata
+
+# Bundler
+.bundle/
+vendor/
+
+# Local Gemfile.lock (Ruby version specific)
+Gemfile.lock

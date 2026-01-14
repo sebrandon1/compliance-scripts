@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="nav-container">
+        <a href="{{ '/' | relative_url }}" class="logo">{{ site.title }}</a>
+        <div class="nav-links">
+          <a href="{{ '/' | relative_url }}">Dashboard</a>
+          <a href="{{ '/REMEDIATION_GROUPINGS' | relative_url }}">Remediation Groups</a>
+          <a href="https://github.com/sebrandon1/compliance-scripts" target="_blank">GitHub</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      {{ content }}
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Compliance Remediation Tracker |
+        <a href="https://github.com/sebrandon1/compliance-scripts">Source</a> |
+        Built with Jekyll
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
