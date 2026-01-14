@@ -25,7 +25,7 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Status | Jira | PR |
 |-------|-------|--------|------|-----|
-| [M1](M1.html) | SSHD Configuration | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [M1](M1.html) | SSHD Configuration | 🟡 Pending | - | - |
 | [M2](M2.html) | Kernel Hardening (Sysctl) | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
 | [M3](M3.html) | Audit Rules - DAC Modifications | 🟡 Pending | - | - |
 | [M4](M4.html) | Audit Rules - SELinux | 🟡 Pending | - | - |
@@ -44,7 +44,7 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Status | Jira | PR |
 |-------|-------|--------|------|-----|
-| [L1](L1.html) | SSHD LogLevel | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [L1](L1.html) | SSHD LogLevel | 🟡 Pending | - | - |
 | [L2](L2.html) | Sysctl dmesg_restrict | 🟡 Pending | - | - |
 
 ---

@@ -16,9 +16,9 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 | Severity | Groups | Settings | Status |
 |----------|--------|----------|--------|
-| **HIGH** | 3 groups | 3 unique | 2 In Progress, 1 Manual |
-| **MEDIUM** | 12 groups | 36 unique | 1 In Progress, 1 On Hold, 10 Pending |
-| **LOW** | 2 groups | 2 unique | 1 In Progress, 1 Pending |
+| **HIGH** | 3 groups | 3 unique | 3 In Progress |
+| **MEDIUM** | 12 groups | 36 unique | 1 On Hold, 11 Pending |
+| **LOW** | 2 groups | 2 unique | 2 Pending |
 
 ---
 
@@ -28,8 +28,8 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 |-------|----------|----------|-------|--------|------|-----|
 | [H1](groups/H1.html) | Crypto Policy | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
 | [H2](groups/H2.html) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H3](groups/H3.html) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) *(consolidated)* |
-| [M1](groups/M1.html) | SSHD Configuration | MEDIUM | 7 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [H3](groups/H3.html) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [M1](groups/M1.html) | SSHD Configuration | MEDIUM | 7 | 🟡 Pending | - | - |
 | [M2](groups/M2.html) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
 | [M3](groups/M3.html) | Audit DAC | MEDIUM | 2 | 🟡 Pending | - | - |
 | [M4](groups/M4.html) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | - | - |
@@ -41,7 +41,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 | [M10](groups/M10.html) | API Encryption | MEDIUM | 2 | 🟡 Pending | - | - |
 | [M11](groups/M11.html) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | - | - |
 | [M12](groups/M12.html) | Audit Profile | MEDIUM | 1 | 🟡 Pending | - | - |
-| [L1](groups/L1.html) | SSHD LogLevel | LOW | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [L1](groups/L1.html) | SSHD LogLevel | LOW | 1 | 🟡 Pending | - | - |
 | [L2](groups/L2.html) | Sysctl dmesg | LOW | 1 | 🟡 Pending | - | - |
 
 **Status Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
