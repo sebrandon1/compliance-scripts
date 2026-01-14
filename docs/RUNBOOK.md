@@ -257,9 +257,9 @@ kind: MachineConfig
 
 ## Compliance Checks Remediated
 
-| Check | Profile | Description |
-|-------|---------|-------------|
-| `check-name` | E8/CIS | Description |
+| Check | Profile | Description | Docs |
+|-------|---------|-------------|------|
+| `check-name` | E8/CIS | Description | [📖](docs-url) |
 
 <div class="source-files">
 <h4>Source Remediation Files</h4>
@@ -536,6 +536,25 @@ docs/
 | Audit Rules | M3-M9 | MachineConfig |
 | API Server | M10, M12 | APIServer CRD |
 | Ingress | M11 | IngressController CRD |
+
+### Documentation Links
+
+Each compliance check should include a documentation link (📖) in the Compliance Checks Remediated table. Use these URL patterns:
+
+| Check Type | Documentation URL Pattern |
+|------------|---------------------------|
+| RHCOS SSHD rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/services/ssh/ssh_server/{rule_name}` |
+| RHCOS Sysctl rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/system/permissions/restrictions/{rule_name}` |
+| RHCOS Audit rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/auditing/auditd_configure_rules/{rule_name}` |
+| OCP4 API Server | `https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html` |
+| OCP4 Ingress TLS | `https://docs.openshift.com/container-platform/latest/security/tls-security-profiles.html` |
+| OCP4 Audit Profile | `https://docs.openshift.com/container-platform/latest/security/audit-log-policy-config.html` |
+| Fallback (E8 guide) | `https://static.open-scap.org/ssg-guides/ssg-rhcos4-guide-e8.html` |
+
+**Rule Name Mapping:**
+- Check names like `rhcos4-e8-worker-sshd-disable-root-login` map to rules like `sshd_disable_root_login`
+- Replace hyphens with underscores: `sshd-disable-root-login` → `sshd_disable_root_login`
+- Remove the `rhcos4-e8-worker-` prefix to get the base rule name
 
 ---
 
