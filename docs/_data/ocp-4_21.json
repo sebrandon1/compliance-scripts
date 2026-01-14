@@ -1,6 +1,6 @@
 {
   "version": "4.21",
-  "scan_date": "2026-01-14T19:48:20Z",
+  "scan_date": "2026-01-14T20:19:36Z",
   "summary": {
     "total_checks": 205,
     "passing": 100,
@@ -637,6 +637,814 @@
         "description": "Restrict Access to Kernel Message Buffer\nTo set the runtime status of the kernel.dmesg_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.dmesg_restrict=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.dmesg_restrict = 1",
         "severity": "low",
         "summary": "Set kernel.dmesg_restrict=1 via sysctl"
+      }
+    ]
+  },
+  "passing_checks": {
+    "high": [
+      {
+        "name": "ocp4-cis-api-server-admission-control-plugin-alwayspullimages",
+        "check": "ocp4-cis-api-server-admission-control-plugin-alwayspullimages",
+        "status": "PASS",
+        "description": "Ensure that the Admission Control Plugin AlwaysPullImages is not set\nThe AlwaysPullImages admission control plugin should be disabled, since it can introduce new failure modes for control plane components if an image registry is unreachable.",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-audit-log-path",
+        "check": "ocp4-cis-api-server-audit-log-path",
+        "status": "PASS",
+        "description": "Configure the Audit Log Path\nTo enable auditing on the Kubernetes API Server, the audit log path must be set. Edit the openshift-kube-apiserver configmap and set the audit-log-path to a suitable path and file where audit logs should be written. For example:\n\n\"apiServerArguments\":{\n ...\n \"audit-log-path\":\"/var/log/kube-apiserver/audit.log\",\n ...",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-kubelet-certificate-authority",
+        "check": "ocp4-cis-api-server-kubelet-certificate-authority",
+        "status": "PASS",
+        "description": "Configure the kubelet Certificate Authority for the API Server\nTo ensure OpenShift verifies kubelet certificates before establishing connections, follow the OpenShift documentation and setup the TLS connection between the API Server and kubelets. Edit the openshift-kube-apiserver configmap and set the below parameter if it is not already configured:\n\n\"apiServerArguments\":{\n ...\n \"kubelet-certificate-authority\":\"/etc/kubernetes/static-pod-resources/configmaps/kubelet-serving-ca/ca-bundle.crt\",\n ...",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-kubelet-client-cert",
+        "check": "ocp4-cis-api-server-kubelet-client-cert",
+        "status": "PASS",
+        "description": "Configure the kubelet Certificate File for the API Server\nTo enable certificate based kubelet authentication, edit the config configmap in the openshift-kube-apiserver namespace and set the below parameter in the config.yaml key if it is not already configured:\n\n\"apiServerArguments\":{\n...\n \"kubelet-client-certificate\":\"/etc/kubernetes/static-pod-resources/secrets/kubelet-client/tls.crt\",\n...\n}",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-kubelet-client-key",
+        "check": "ocp4-cis-api-server-kubelet-client-key",
+        "status": "PASS",
+        "description": "Configure the kubelet Certificate Key for the API Server\nTo enable certificate based kubelet authentication, edit the config configmap in the openshift-kube-apiserver namespace and set the below parameter in the config.yaml key if it is not already configured:\n\n\"apiServerArguments\":{\n...\n \"kubelet-client-key\":\"/etc/kubernetes/static-pod-resources/secrets/kubelet-client/tls.key\",\n...\n}",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-token-auth",
+        "check": "ocp4-cis-api-server-token-auth",
+        "status": "PASS",
+        "description": "Disable Token-based Authentication\nTo ensure OpenShift does not accept token-based authentication, follow the OpenShift documentation and configure alternate mechanisms for authentication. Then, edit the API Server pod specification file Edit the openshift-kube-apiserver configmap and remove the token-auth-file parameter:\n\n\"apiServerArguments\":{\n ...\n \"token-auth-file\":[\n   \"/path/to/any/file\"\n ],\n ...",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-configure-network-policies",
+        "check": "ocp4-cis-configure-network-policies",
+        "status": "PASS",
+        "description": "Ensure that the CNI in use supports Network Policies\nThere are a variety of CNI plugins available for Kubernetes. If the CNI in use does not support Network Policies it may not be possible to effectively restrict traffic in the cluster. OpenShift supports Kubernetes NetworkPolicy using a Kubernetes Container Network Interface (CNI) plug-in.",
+        "severity": "high",
+        "summary": "Add NetworkPolicy to each namespace"
+      },
+      {
+        "name": "ocp4-cis-openshift-api-server-audit-log-path",
+        "check": "ocp4-cis-openshift-api-server-audit-log-path",
+        "status": "PASS",
+        "description": "Configure the Audit Log Path\nTo enable auditing on the OpenShift API Server, the audit log path must be set. Edit the openshift-apiserver configmap and set the audit-log-path to a suitable path and file where audit logs should be written. For example:\n\n\"apiServerArguments\":{\n ...\n \"audit-log-path\":\"/var/log/openshift-apiserver/audit.log\",\n ...",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-accounts-no-uid-except-zero",
+        "check": "rhcos4-e8-master-accounts-no-uid-except-zero",
+        "status": "PASS",
+        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-selinux-state",
+        "check": "rhcos4-e8-master-selinux-state",
+        "status": "PASS",
+        "description": "Ensure SELinux State is Enforcing\nThe SELinux state should be set to enforcing at system boot time. In the file /etc/selinux/config , add or correct the following line to configure the system to boot into enforcing mode:\n\nSELINUX= enforcing \n\nEnsure that all files have correct SELinux labels by running:\n\nfixfiles onboot\n\nThen reboot the system.",
+        "severity": "high",
+        "summary": "Set to to enforcing"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-disable-empty-passwords",
+        "check": "rhcos4-e8-master-sshd-disable-empty-passwords",
+        "status": "PASS",
+        "description": "Disable SSH Access via Empty Passwords\nDisallow SSH login with empty passwords. The default SSH configuration disables logins with empty passwords. The appropriate configuration is used if no value is set for PermitEmptyPasswords.\n\nTo explicitly disallow SSH login from accounts with empty passwords, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPermitEmptyPasswords no\n\nAny accounts with empty passwords should be disabled immediately, and PAM configuration should prevent users from being able to assign themselves empty passwords.",
+        "severity": "high",
+        "summary": "Remove 'nullok' from /etc/pam.d/system-auth and password-auth"
+      },
+      {
+        "name": "rhcos4-e8-worker-accounts-no-uid-except-zero",
+        "check": "rhcos4-e8-worker-accounts-no-uid-except-zero",
+        "status": "PASS",
+        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "severity": "high",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-worker-selinux-state",
+        "check": "rhcos4-e8-worker-selinux-state",
+        "status": "PASS",
+        "description": "Ensure SELinux State is Enforcing\nThe SELinux state should be set to enforcing at system boot time. In the file /etc/selinux/config , add or correct the following line to configure the system to boot into enforcing mode:\n\nSELINUX= enforcing \n\nEnsure that all files have correct SELinux labels by running:\n\nfixfiles onboot\n\nThen reboot the system.",
+        "severity": "high",
+        "summary": "Set to to enforcing"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-disable-empty-passwords",
+        "check": "rhcos4-e8-worker-sshd-disable-empty-passwords",
+        "status": "PASS",
+        "description": "Disable SSH Access via Empty Passwords\nDisallow SSH login with empty passwords. The default SSH configuration disables logins with empty passwords. The appropriate configuration is used if no value is set for PermitEmptyPasswords.\n\nTo explicitly disallow SSH login from accounts with empty passwords, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPermitEmptyPasswords no\n\nAny accounts with empty passwords should be disabled immediately, and PAM configuration should prevent users from being able to assign themselves empty passwords.",
+        "severity": "high",
+        "summary": "Remove 'nullok' from /etc/pam.d/system-auth and password-auth"
+      }
+    ],
+    "medium": [
+      {
+        "name": "ocp4-cis-api-server-admission-control-plugin-alwaysadmit",
+        "check": "ocp4-cis-api-server-admission-control-plugin-alwaysadmit",
+        "status": "PASS",
+        "description": "Disable the AlwaysAdmit Admission Control Plugin\nTo ensure OpenShift only responses to requests explicitly allowed by the admission control plugin. Check that the config ConfigMap object does not contain the AlwaysAdmit plugin.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-admission-control-plugin-namespacelifecycle",
+        "check": "ocp4-cis-api-server-admission-control-plugin-namespacelifecycle",
+        "status": "PASS",
+        "description": "Enable the NamespaceLifecycle Admission Control Plugin\nOpenShift enables the NamespaceLifecycle plugin by default.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-admission-control-plugin-noderestriction",
+        "check": "ocp4-cis-api-server-admission-control-plugin-noderestriction",
+        "status": "PASS",
+        "description": "Enable the NodeRestriction Admission Control Plugin\nTo limit the Node and Pod objects that a kubelet could modify, ensure that the NodeRestriction plugin on kubelets is enabled in the api-server configuration by running the following command:\n\n$ oc -n openshift-kube-apiserver get configmap config -o json | jq -r '.data.\"config.yaml\"' | jq '.apiServerArguments.\"enable-admission-plugins\"'",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-admission-control-plugin-scc",
+        "check": "ocp4-cis-api-server-admission-control-plugin-scc",
+        "status": "PASS",
+        "description": "Enable the SecurityContextConstraint Admission Control Plugin\nTo ensure pod permissions are managed, make sure that the SecurityContextConstraint admission control plugin is used.",
+        "severity": "medium",
+        "summary": "Configure SecurityContextConstraints appropriately"
+      },
+      {
+        "name": "ocp4-cis-api-server-admission-control-plugin-service-account",
+        "check": "ocp4-cis-api-server-admission-control-plugin-service-account",
+        "status": "PASS",
+        "description": "Enable the ServiceAccount Admission Control Plugin\nTo ensure ServiceAccount objects must be created and granted before pod creation is allowed, follow the documentation and create ServiceAccount objects as per your environment. Ensure that the plugin is enabled in the api-server configuration:\n\n$ oc -n openshift-kube-apiserver get configmap config -o json | jq -r '.data.\"config.yaml\"' | jq '.apiServerArguments.\"enable-admission-plugins\"'",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-anonymous-auth",
+        "check": "ocp4-cis-api-server-anonymous-auth",
+        "status": "PASS",
+        "description": "Ensure that anonymous requests to the API Server are authorized\nBy default, anonymous access to the OpenShift API is enabled, but at the same time, all requests must be authorized. If no authentication mechanism is used, the request is assigned the system:anonymous virtual user and the system:unauthenticated virtual group. This allows the authorization layer to determine which requests, if any, is an anonymous user authorized to make. To verify the authorization rules for anonymous requests run the following:\n\n$ oc describe clusterrolebindings\n\nand inspect the bindings of the system:anonymous virtual user and the system:unauthenticated virtual group. To test that an anonymous request is authorized to access the readyz endpoint, run:\n\n$ oc get --as=\"system:anonymous\" --raw='/readyz?verbose'\n\nIn contrast, a request to list all projects should not be authorized:\n\n$ oc get --as=\"system:anonymous\" projects",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-audit-log-maxsize",
+        "check": "ocp4-cis-api-server-audit-log-maxsize",
+        "status": "PASS",
+        "description": "Configure Kubernetes API Server Maximum Audit Log Size\nTo rotate audit logs upon reaching a maximum size, edit the openshift-kube-apiserver configmap and set the audit-log-maxsize parameter to an appropriate size in MB. For example, to set it to 100 MB:\n\n\"apiServerArguments\":{\n ...\n \"audit-log-maxsize\": [\"100\"],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-auth-mode-no-aa",
+        "check": "ocp4-cis-api-server-auth-mode-no-aa",
+        "status": "PASS",
+        "description": "The authorization-mode cannot be AlwaysAllow\nDo not always authorize all requests.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-auth-mode-rbac",
+        "check": "ocp4-cis-api-server-auth-mode-rbac",
+        "status": "PASS",
+        "description": "Ensure authorization-mode RBAC is configured\nTo ensure OpenShift restricts different identities to a defined set of operations they are allowed to perform, check that the API server's authorization-mode configuration option list contains RBAC.",
+        "severity": "medium",
+        "summary": "Review and restrict RBAC permissions"
+      },
+      {
+        "name": "ocp4-cis-api-server-basic-auth",
+        "check": "ocp4-cis-api-server-basic-auth",
+        "status": "PASS",
+        "description": "Disable basic-auth-file for the API Server\nBasic Authentication should not be used for any reason. If needed, edit API Edit the openshift-kube-apiserver configmap and remove the basic-auth-file parameter:\n\n\"apiServerArguments\":{\n ...\n \"basic-auth-file\":[\n   \"/path/to/any/file\"\n ],\n ...\n\nAlternate authentication mechanisms such as tokens and certificates will need to be used. Username and password for basic authentication will be disabled.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-client-ca",
+        "check": "ocp4-cis-api-server-client-ca",
+        "status": "PASS",
+        "description": "Configure the Client Certificate Authority for the API Server\nCertificates must be provided to fully setup TLS client certificate authentication. To ensure the API Server utilizes its own TLS certificates, the clientCA must be configured. Verify that servingInfo has the clientCA configured in the openshift-kube-apiserver config configmap to something similar to:\n\n\"apiServerArguments\": {\n ...\n   \"client-ca-file\": [\n     \"/etc/kubernetes/static-pod-certs/configmaps/client-ca/ca-bundle.crt\"\n   ],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-etcd-ca",
+        "check": "ocp4-cis-api-server-etcd-ca",
+        "status": "PASS",
+        "description": "Configure the etcd Certificate Authority for the API Server\nTo ensure etcd is configured to make use of TLS encryption for client connections, follow the OpenShift documentation and setup the TLS connection between the API Server and etcd. Then, verify that apiServerArguments has the etcd-cafile configured in the openshift-kube-apiserver config configmap to something similar to:\n\n\"apiServerArguments\": {\n ...\n   \"etcd-cafile\": [\n       \"/etc/kubernetes/static-pod-resources/configmaps/etcd-serving-ca/ca-bundle.crt\"\n   ],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-etcd-cert",
+        "check": "ocp4-cis-api-server-etcd-cert",
+        "status": "PASS",
+        "description": "Configure the etcd Certificate for the API Server\nTo ensure etcd is configured to make use of TLS encryption for client communications, follow the OpenShift documentation and setup the TLS connection between the API Server and etcd. Then, verify that apiServerArguments has the etcd-certfile configured in the openshift-kube-apiserver configmap to something similar to:\n\n...\n\"etcd-certfile\": [\n   \"/etc/kubernetes/static-pod-resources/secrets/etcd-client/tls.crt\"\n],\n...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-etcd-key",
+        "check": "ocp4-cis-api-server-etcd-key",
+        "status": "PASS",
+        "description": "Configure the etcd Certificate Key for the API Server\nTo ensure etcd is configured to make use of TLS encryption for client communications, follow the OpenShift documentation and setup the TLS connection between the API Server and etcd. Then, verify that apiServerArguments has the etcd-keyfile configured in the openshift-kube-apiserver configmap to something similar to:\n\n...\n\"etcd-keyfile\": [\n   \"/etc/kubernetes/static-pod-resources/secrets/etcd-client/tls.key\"\n],\n...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-https-for-kubelet-conn",
+        "check": "ocp4-cis-api-server-https-for-kubelet-conn",
+        "status": "PASS",
+        "description": "Ensure that the --kubelet-https argument is set to true\nThe kube-apiserver ensures https to the kubelet by default. The apiserver flag \"--kubelet-https\" is deprecated and should be either set to \"true\" or omitted from the argument list.",
+        "severity": "medium",
+        "summary": "Set to to true"
+      },
+      {
+        "name": "ocp4-cis-api-server-insecure-bind-address",
+        "check": "ocp4-cis-api-server-insecure-bind-address",
+        "status": "PASS",
+        "description": "Disable Use of the Insecure Bind Address\nOpenShift should not bind to non-loopback insecure addresses. Edit the openshift-kube-apiserver configmap and remove the insecure-bind-address if it exists:\n\n\"apiServerArguments\":{\n ...\n \"insecure-bind-address\":[\n   \"127.0.0.1\"\n ],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-kube-no-unsupported-config-overrides",
+        "check": "ocp4-cis-api-server-kube-no-unsupported-config-overrides",
+        "status": "PASS",
+        "description": "Ensure No Unsupported Configuration Overrides are Used\nKubernetes API servers should not use unsupported configuration overrides that can potentially compromise the security and stability of the cluster. This rule checks that no unsupported configuration overrides are present in the cluster API server configurations.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-no-unsupported-config-overrides",
+        "check": "ocp4-cis-api-server-no-unsupported-config-overrides",
+        "status": "PASS",
+        "description": "Ensure No Unsupported Configuration Overrides are Used\nOpenShift API servers should not use unsupported configuration overrides that can potentially compromise the security and stability of the cluster. This rule checks that no unsupported configuration overrides are present in the cluster API server configurations.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-oauth-https-serving-cert",
+        "check": "ocp4-cis-api-server-oauth-https-serving-cert",
+        "status": "PASS",
+        "description": "Ensure the openshift-oauth-apiserver service uses TLS\nBy default, the OpenShift OAuth API Server uses TLS. HTTPS should be used for connections between openshift-oauth-apiserver and kube-apiserver. By default, the OpenShift OAuth API Server uses Intermediate profile which requires a minimum TLS version of 1.2.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-openshift-https-serving-cert",
+        "check": "ocp4-cis-api-server-openshift-https-serving-cert",
+        "status": "PASS",
+        "description": "Ensure the openshift-oauth-apiserver service uses TLS\nBy default, the OpenShift API Server uses TLS. HTTPS should be used for connections between openshift-apiserver and kube-apiserver. By default, the OpenShift OAuth API Server uses Intermediate profile which requires a minimum TLS version of 1.2.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-profiling-protected-by-rbac",
+        "check": "ocp4-cis-api-server-profiling-protected-by-rbac",
+        "status": "PASS",
+        "description": "Profiling is protected by RBAC\nEnsure that the cluster-debugger cluster role includes the /metrics resource URL. This demonstrates that profiling is protected by RBAC, with a specific cluster role to allow access.",
+        "severity": "medium",
+        "summary": "Review and restrict RBAC permissions"
+      },
+      {
+        "name": "ocp4-cis-api-server-request-timeout",
+        "check": "ocp4-cis-api-server-request-timeout",
+        "status": "PASS",
+        "description": "Configure the API Server Minimum Request Timeout\nThe API server minimum request timeout defines the minimum number of seconds a handler must keep a request open before timing it out. To set this, edit the openshift-kube-apiserver configmap and set min-request-timeout under the apiServerArguments field:\n\n\"apiServerArguments\":{\n ...\n \"min-request-timeout\":[ 3600 ],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-service-account-lookup",
+        "check": "ocp4-cis-api-server-service-account-lookup",
+        "status": "PASS",
+        "description": "Ensure that the service-account-lookup argument is set to true\nValidate service account before validating token.",
+        "severity": "medium",
+        "summary": "Set to to true"
+      },
+      {
+        "name": "ocp4-cis-api-server-service-account-public-key",
+        "check": "ocp4-cis-api-server-service-account-public-key",
+        "status": "PASS",
+        "description": "Configure the Service Account Public Key for the API Server\nTo ensure the API Server utilizes its own key pair, edit the openshift-kube-apiserver configmap and set the serviceAccountPublicKeyFiles parameter to the public key file for service accounts:\n\n...\n\"serviceAccountPublicKeyFiles\":[\n \"/etc/kubernetes/static-pod-resources/configmaps/sa-token-signing-certs\"\n],\n...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-tls-cert",
+        "check": "ocp4-cis-api-server-tls-cert",
+        "status": "PASS",
+        "description": "Configure the Certificate for the API Server\nTo ensure the API Server utilizes its own TLS certificates, the tls-cert-file must be configured. Verify that the apiServerArguments section has the tls-cert-file configured in the config configmap in the openshift-kube-apiserver namespace similar to:\n\n\"apiServerArguments\":{\n...\n\"tls-cert-file\": [\n \"/etc/kubernetes/static-pod-certs/secrets/service-network-serving-certkey/tls.crt\"\n],\n...\n}",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-tls-private-key",
+        "check": "ocp4-cis-api-server-tls-private-key",
+        "status": "PASS",
+        "description": "Configure the Certificate Key for the API Server\nTo ensure the API Server utilizes its own TLS certificates, the tls-private-key-file must be configured. Verify that the apiServerArguments section has the tls-private-key-file configured in the config configmap in the openshift-kube-apiserver namespace similar to:\n\n\"apiServerArguments\":{\n...\n\"tls-private-key-file\": [\n \"/etc/kubernetes/static-pod-certs/secrets/service-network-serving-certkey/tls.key\"\n],\n...\n}",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-tls-security-profile-custom-min-tls-version",
+        "check": "ocp4-cis-api-server-tls-security-profile-custom-min-tls-version",
+        "status": "PASS",
+        "description": "Ensure custom tlsSecurityProfile configured for APIServer uses secure TLS version\nThe configuration tlsSecurityProfile specifies TLS configurations to be used while establishing connections with the externally exposed servers. Though secure transport mode is used for establishing connections, the protocols used may not always be strong enough to avoid interception and manipulation of the data in transport. When Custom TLS Security profile is used it's always better to configure TLS version 1.2 or newer to avoid any security breaches. Update minTLSVersion configured in Custom tlsSecurityProfile using the following command:\n\noc patch apiservers.config.openshift.io cluster --type 'merge' --patch '{\"spec\":{\"tlsSecurityProfile\":{\"custom\":{\"minTLSVersion\":\"VersionTLS12\"}}}}'\n\nFor more information, follow OpenShift documentation: the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/tls-security-profiles.html ).",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-tls-security-profile-not-old",
+        "check": "ocp4-cis-api-server-tls-security-profile-not-old",
+        "status": "PASS",
+        "description": "Ensure APIServer is not configured with Old tlsSecurityProfile\nThe configuration tlsSecurityProfile specifies TLS configurations to be used while establishing connections with the externally exposed servers. Though secure transport mode is used for establishing connections, the protocols used may not always be strong enough to avoid interception and manipulation of the data in transport. TLS Security profile Old should be avoided, as it supports vulnerable protocols, ciphers, and algorithms which could lead to security breaches. Update tlsSecurityProfile from Old to Intermediate using the following command:\n\noc patch apiservers.config.openshift.io cluster --type 'json' --patch '[{\"op\": \"add\", \"path\": \"/spec/tlsSecurityProfile/intermediate\", \"value\": {}}, {\"op\": \"replace\", \"path\": \"/spec/tlsSecurityProfile/type\", \"value\": \"Intermediate\"}, {\"op\": \"remove\", \"path\": \"/spec/tlsSecurityProfile/old\"}]'\n\nFor more information, follow OpenShift documentation: the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/tls-security-profiles.html ).",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-audit-logging-enabled",
+        "check": "ocp4-cis-audit-logging-enabled",
+        "status": "PASS",
+        "description": "Ensure that API server audit logging is enabled\nOpenShift has the ability to audit API server requests. Audit provides a security-relevant chronological set of records documenting the sequence of activities that have affected system by individual users, administrators, or other components of the system. Audit works at the API server level, logging all requests coming to the server. Verify that audit logging is enabled by checking that the API server audit log configuration is not set to `None`, which explicitly disables the functionality. For more information on how to configure the audit profile, please visit the documentation ( https://docs.openshift.com/container-platform/latest/security/audit-log-policy-config.html )",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-controller-service-account-ca",
+        "check": "ocp4-cis-controller-service-account-ca",
+        "status": "PASS",
+        "description": "Configure the Service Account Certificate Authority Key for the Controller Manager\nTo ensure the API Server utilizes its own key pair, set the masterCA parameter to the public key file for service accounts in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"root-ca-file\": [\n   \"/etc/kubernetes/static-pod-resources/configmaps/serviceaccount-ca/ca-bundle.crt\"\n ],\n...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-controller-service-account-private-key",
+        "check": "ocp4-cis-controller-service-account-private-key",
+        "status": "PASS",
+        "description": "Configure the Service Account Private Key for the Controller Manager\nTo ensure the API Server utilizes its own key pair, set the privateKeyFile parameter to the public key file for service accounts in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"service-account-private-key-file\": [\n   \"/etc/kubernetes/static-pod-resources/secrets/service-account-private-key/service-account.key\"\n ],\n...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-controller-use-service-account",
+        "check": "ocp4-cis-controller-use-service-account",
+        "status": "PASS",
+        "description": "Ensure that use-service-account-credentials is enabled\nTo ensure individual service account credentials are used, set the use-service-account-credentials option to true in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"use-service-account-credentials\": [\n   \"true\"\n ],\n...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-auto-tls",
+        "check": "ocp4-cis-etcd-auto-tls",
+        "status": "PASS",
+        "description": "Disable etcd Self-Signed Certificates\nTo ensure the etcd service is not using self-signed certificates, run the following command:\n\n$ oc get cm/etcd-pod -n openshift-etcd -o yaml\n\nThe etcd pod configuration contained in the configmap should not contain the --auto-tls=true flag.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-cert-file",
+        "check": "ocp4-cis-etcd-cert-file",
+        "status": "PASS",
+        "description": "Ensure That The etcd Client Certificate Is Correctly Set\nTo ensure the etcd service is serving TLS to clients, make sure the etcd-pod* ConfigMaps in the openshift-etcd namespace contain the following argument for the etcd binary in the etcd pod:\n\n--cert-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-[a-z]+/etcd-serving-NODE_NAME.crt\n\n. Note that the\n\n[a-z]+\n\nis being used since the directory might change between OpenShift versions.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-client-cert-auth",
+        "check": "ocp4-cis-etcd-client-cert-auth",
+        "status": "PASS",
+        "description": "Enable The Client Certificate Authentication\nTo ensure the etcd service is serving TLS to clients, make sure the etcd-pod* ConfigMaps in the openshift-etcd namespace contain the following argument for the etcd binary in the etcd pod:\n\noc get -nopenshift-etcd cm etcd-pod -oyaml | grep \"\\-\\-client-cert-auth=\"\n\nthe parameter should be set to true.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-key-file",
+        "check": "ocp4-cis-etcd-key-file",
+        "status": "PASS",
+        "description": "Ensure That The etcd Key File Is Correctly Set\nTo ensure the etcd service is serving TLS to clients, make sure the etcd-pod* ConfigMaps in the openshift-etcd namespace contain the following argument for the etcd binary in the etcd pod:\n\noc get -nopenshift-etcd cm etcd-pod -oyaml | grep \"\\-\\-key-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-[a-z]+/etcd-serving-NODE_NAME.key\"\n\n. Note that the\n\n[a-z]+\n\nis being used since the directory might change between OpenShift versions.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-peer-auto-tls",
+        "check": "ocp4-cis-etcd-peer-auto-tls",
+        "status": "PASS",
+        "description": "Disable etcd Peer Self-Signed Certificates\nTo ensure the etcd service is not using self-signed certificates, run the following command:\n\n$ oc get cm/etcd-pod -n openshift-etcd -o yaml\n\nThe etcd pod configuration contained in the configmap should not contain the --peer-auto-tls=true flag.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-peer-cert-file",
+        "check": "ocp4-cis-etcd-peer-cert-file",
+        "status": "PASS",
+        "description": "Ensure That The etcd Peer Client Certificate Is Correctly Set\nTo ensure the etcd service is serving TLS to peers, make sure the etcd-pod* ConfigMaps in the openshift-etcd namespace contain the following argument for the etcd binary in the etcd pod:\n\n--peer-cert-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-[a-z]+/etcd-peer-NODE_NAME.crt\n\nNote that the\n\n[a-z]+\n\nis being used since the directory might change between OpenShift versions.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-peer-client-cert-auth",
+        "check": "ocp4-cis-etcd-peer-client-cert-auth",
+        "status": "PASS",
+        "description": "Enable The Peer Client Certificate Authentication\nTo ensure the etcd service is serving TLS to clients, make sure the etcd-pod* ConfigMaps in the openshift-etcd namespace contain the following argument for the etcd binary in the etcd pod:\n\noc get -nopenshift-etcd cm etcd-pod -oyaml | grep \"\\-\\-peer-client-cert-auth=\"\n\nthe parameter should be set to true.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-etcd-peer-key-file",
+        "check": "ocp4-cis-etcd-peer-key-file",
+        "status": "PASS",
+        "description": "Ensure That The etcd Peer Key File Is Correctly Set\nTo ensure the etcd service is serving TLS to peers, make sure the etcd-pod* ConfigMaps in the openshift-etcd namespace contain the following argument for the etcd binary in the etcd pod:\n\noc get -nopenshift-etcd cm etcd-pod -oyaml | grep \"\\-\\-peer-key-file=/etc/kubernetes/static-pod-certs/secrets/etcd-all-[a-z]+/etcd-peer-NODE_NAME.key\"\n\nNote that the\n\n[a-z]+\n\nis being used since the directory might change between OpenShift versions.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-kubelet-configure-tls-cert",
+        "check": "ocp4-cis-kubelet-configure-tls-cert",
+        "status": "PASS",
+        "description": "Ensure That The kubelet Client Certificate Is Correctly Set\nTo ensure the kubelet TLS client certificate is configured, edit the kubelet configuration file /etc/kubernetes/kubelet.conf and configure the kubelet certificate file.\n\ntlsCertFile: /path/to/TLS/cert.key",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-kubelet-configure-tls-key",
+        "check": "ocp4-cis-kubelet-configure-tls-key",
+        "status": "PASS",
+        "description": "Ensure That The kubelet Server Key Is Correctly Set\nTo ensure the kubelet TLS private server key certificate is configured, edit the kubelet configuration file /etc/kubernetes/kubelet.conf and configure the kubelet private key file.\n\ntlsPrivateKeyFile: /path/to/TLS/private.key",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-kubelet-disable-readonly-port",
+        "check": "ocp4-cis-kubelet-disable-readonly-port",
+        "status": "PASS",
+        "description": "kubelet - Disable the Read-Only Port\nTo disable the read-only port, edit the kubelet configuration Edit the openshift-kube-apiserver configmap and set the kubelet-read-only-port parameter to 0:\n\n\"apiServerArguments\":{\n ...\n \"kubelet-read-only-port\":[\n   \"0\"\n ],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-ocp-api-server-audit-log-maxsize",
+        "check": "ocp4-cis-ocp-api-server-audit-log-maxsize",
+        "status": "PASS",
+        "description": "Configure OpenShift API Server Maximum Audit Log Size\nTo rotate audit logs upon reaching a maximum size, edit the openshift-apiserver configmap and set the audit-log-maxsize parameter to an appropriate size in MB. For example, to set it to 100 MB:\n\n\"apiServerArguments\":{\n ...\n \"audit-log-maxsize\": [\"100\"],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-ocp-insecure-allowed-registries-for-import",
+        "check": "ocp4-cis-ocp-insecure-allowed-registries-for-import",
+        "status": "PASS",
+        "description": "Check configured allowed registries for import uses secure protocol\nThe configuration allowedRegistriesForImport limits the container image registries from which normal users may import images. This is a list of the registries that can be trusted to contain valid images and the image location configured is assumed to be secured unless configured otherwise. It is important to allow only secure registries to avoid man in the middle attacks, as the insecure image import request can be impersonated and could lead to fetching malicious content. List all the allowed repositories for import configured with insecure set to true using the following command:\n\noc get image.config.openshift.io/cluster -o json | jq '.spec | (.allowedRegistriesForImport[])? | select(.insecure==true)'\n\nRemove or edit the listed registries having insecure set by using the command:\n\noc edit image.config.openshift.io/cluster\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/openshift_images/image-configuration.html ).",
+        "severity": "medium",
+        "summary": "Set spec.allowedRegistriesForImport in image.config.openshift.io"
+      },
+      {
+        "name": "ocp4-cis-ocp-insecure-registries",
+        "check": "ocp4-cis-ocp-insecure-registries",
+        "status": "PASS",
+        "description": "Check if any insecure registry sources is configured\nThe configuration registrySources.insecureRegistries determines the insecure registries that the OpenShift container runtime can access for builds and pods. This configuration setting is for accessing the configured registries without TLS validation which could lead to security breaches and should be avoided. Remove any insecureRegistries configured using the following command:\n\noc patch image.config.openshift.io cluster --type=json -p \"[{'op': 'remove', 'path': '/spec/registrySources/insecureRegistries'}]\"\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/openshift_images/image-configuration.html ).",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-rbac-debug-role-protects-pprof",
+        "check": "ocp4-cis-rbac-debug-role-protects-pprof",
+        "status": "PASS",
+        "description": "Profiling is protected by RBAC\nEnsure that the cluster-debugger cluster role includes the /debug/pprof resource URL. This demonstrates that profiling is protected by RBAC, with a specific cluster role to allow access.",
+        "severity": "medium",
+        "summary": "Review and restrict RBAC permissions"
+      },
+      {
+        "name": "ocp4-cis-scc-limit-container-allowed-capabilities",
+        "check": "ocp4-cis-scc-limit-container-allowed-capabilities",
+        "status": "PASS",
+        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
+        "severity": "medium",
+        "summary": "Configure SecurityContextConstraints appropriately"
+      },
+      {
+        "name": "ocp4-cis-scheduler-profiling-protected-by-rbac",
+        "check": "ocp4-cis-scheduler-profiling-protected-by-rbac",
+        "status": "PASS",
+        "description": "Verify that the scheduler API service is protected by RBAC\nDo not bind the scheduler service to non-loopback insecure addresses.",
+        "severity": "medium",
+        "summary": "Review and restrict RBAC permissions"
+      },
+      {
+        "name": "ocp4-cis-scheduler-service-protected-by-rbac",
+        "check": "ocp4-cis-scheduler-service-protected-by-rbac",
+        "status": "PASS",
+        "description": "Verify that the scheduler API service is protected by RBAC\nDo not bind the scheduler service to non-loopback insecure addresses.",
+        "severity": "medium",
+        "summary": "Review and restrict RBAC permissions"
+      },
+      {
+        "name": "ocp4-e8-api-server-tls-cipher-suites",
+        "check": "ocp4-e8-api-server-tls-cipher-suites",
+        "status": "PASS",
+        "description": "Use Strong Cryptographic Ciphers on the API Server\nTo ensure that the API Server is configured to only use strong cryptographic ciphers, verify the openshift-kube-apiserver configmap contains the following set of ciphers, with no additions:\n\n\"servingInfo\":{\n ...\n \"cipherSuites\": [\n   \"TLS_AES_128_GCM_SHA256\",\n   \"TLS_AES_256_GCM_SHA384\",\n   \"TLS_CHACHA20_POLY1305_SHA256\",\n   \"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256\",\n   \"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256\",\n   \"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384\",\n   \"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384\",\n   \"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256\",\n   \"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256\",\n ],\n ...",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-e8-ocp-idp-no-htpasswd",
+        "check": "ocp4-e8-ocp-idp-no-htpasswd",
+        "status": "PASS",
+        "description": "Do Not Use htpasswd-based IdP\nFor users to interact with OpenShift Container Platform, they must first authenticate to the cluster. The authentication layer identifies the user associated with requests to the OpenShift Container Platform API. The authorization layer then uses information about the requesting user to determine if the request is allowed. Understanding authentication | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/latest/logging/cluster-logging-external.html )\n\nThe OpenShift Container Platform includes a built-in OAuth server for token-based authentication. Developers and administrators obtain OAuth access tokens to authenticate themselves to the API. It is recommended for an administrator to configure OAuth to specify an identity provider after the cluster is installed. User access to the cluster is managed through the identity provider. Understanding identity provider configuration | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/latest/authentication/understanding-identity-provider.html )\n\nHowever, not all Identity Providers supported by OpenShift provide the same level of capabilities. As an example, the htpasswd Identity Provider only checks the username and password match and provides no means of 2FA, account lockout or notification mechanism. This rule therefore only allows a subset of identity providers.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-e8-scc-limit-container-allowed-capabilities",
+        "check": "ocp4-e8-scc-limit-container-allowed-capabilities",
+        "status": "PASS",
+        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
+        "severity": "medium",
+        "summary": "Configure SecurityContextConstraints appropriately"
+      },
+      {
+        "name": "rhcos4-e8-master-auditd-data-retention-flush",
+        "check": "rhcos4-e8-master-auditd-data-retention-flush",
+        "status": "PASS",
+        "description": "Configure auditd flush priority\nThe auditd service can be configured to synchronously write audit event data to disk. Add or correct the following line in /etc/audit/auditd.conf to ensure that audit event data is fully synchronized with the log files on the disk:\n\nflush = incremental_async",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-auditd-freq",
+        "check": "rhcos4-e8-master-auditd-freq",
+        "status": "PASS",
+        "description": "Set number of records to cause an explicit flush to audit logs\nTo configure Audit daemon to issue an explicit flush to disk command after writing 50 records, set freq to 50 in /etc/audit/auditd.conf.",
+        "severity": "medium",
+        "summary": "Set number to of"
+      },
+      {
+        "name": "rhcos4-e8-master-auditd-local-events",
+        "check": "rhcos4-e8-master-auditd-local-events",
+        "status": "PASS",
+        "description": "Include Local Events in Audit Logs\nTo configure Audit daemon to include local events in Audit logs, set local_events to yes in /etc/audit/auditd.conf. This is the default setting.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-auditd-write-logs",
+        "check": "rhcos4-e8-master-auditd-write-logs",
+        "status": "PASS",
+        "description": "Write Audit Logs to the Disk\nTo configure Audit daemon to write Audit logs to the disk, set write_logs to yes in /etc/audit/auditd.conf. This is the default setting.",
+        "severity": "medium",
+        "summary": "Set write_logs to yes"
+      },
+      {
+        "name": "rhcos4-e8-master-configure-ssh-crypto-policy",
+        "check": "rhcos4-e8-master-configure-ssh-crypto-policy",
+        "status": "PASS",
+        "description": "Configure SSH to use System Crypto Policy\nCrypto Policies provide a centralized control over crypto algorithms usage of many packages. SSH is supported by crypto policy, but the SSH configuration may be set up to ignore it. To check that Crypto Policies settings are configured correctly, ensure that the CRYPTO_POLICY variable is either commented or not set at all in the /etc/sysconfig/sshd.",
+        "severity": "medium",
+        "summary": "Set crypto policy: update-crypto-policies --set DEFAULT:NO-SHA1"
+      },
+      {
+        "name": "rhcos4-e8-master-selinux-policytype",
+        "check": "rhcos4-e8-master-selinux-policytype",
+        "status": "PASS",
+        "description": "Configure SELinux Policy\nThe SELinux targeted policy is appropriate for general-purpose desktops and servers, as well as systems in many other roles. To configure the system to use this policy, add or correct the following line in /etc/selinux/config :\n\nSELINUXTYPE= targeted \n\nOther policies, such as mls , provide additional security labeling and greater confinement but are not compatible with many general-purpose use cases.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-disable-rhosts",
+        "check": "rhcos4-e8-master-sshd-disable-rhosts",
+        "status": "PASS",
+        "description": "Disable SSH Support for .rhosts Files\nSSH can emulate the behavior of the obsolete rsh command in allowing users to enable insecure access to their accounts via.rhosts files.\n\nThe default SSH configuration disables support for.rhosts. The appropriate configuration is used if no value is set for IgnoreRhosts.\n\nTo explicitly disable support for .rhosts files, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nIgnoreRhosts yes",
+        "severity": "medium",
+        "summary": "Set IgnoreRhosts yes in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-disable-root-login",
+        "check": "rhcos4-e8-master-sshd-disable-root-login",
+        "status": "PASS",
+        "description": "Disable SSH Root Login\nThe root user should never be allowed to login to a system directly over a network. To disable root login via SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPermitRootLogin no",
+        "severity": "medium",
+        "summary": "Set PermitRootLogin no in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-do-not-permit-user-env",
+        "check": "rhcos4-e8-master-sshd-do-not-permit-user-env",
+        "status": "PASS",
+        "description": "Do Not Allow SSH Environment Options\nEnsure that users are not able to override environment variables of the SSH daemon.\n\nThe default SSH configuration disables environment processing. The appropriate configuration is used if no value is set for PermitUserEnvironment.\n\nTo explicitly disable Environment options, add or correct the following /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPermitUserEnvironment no",
+        "severity": "medium",
+        "summary": "Set PermitUserEnvironment no in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-enable-strictmodes",
+        "check": "rhcos4-e8-master-sshd-enable-strictmodes",
+        "status": "PASS",
+        "description": "Enable Use of Strict Mode Checking\nSSHs StrictModes option checks file and ownership permissions in the user's home directory.ssh folder before accepting login. If world- writable permissions are found, logon is rejected.\n\nThe default SSH configuration has StrictModes enabled. The appropriate configuration is used if no value is set for StrictModes.\n\nTo explicitly enable StrictModes in SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nStrictModes yes",
+        "severity": "medium",
+        "summary": "Set StrictModes yes in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-print-last-log",
+        "check": "rhcos4-e8-master-sshd-print-last-log",
+        "status": "PASS",
+        "description": "Enable SSH Print Last Log\nEnsure that SSH will display the date and time of the last successful account logon.\n\nThe default SSH configuration enables print of the date and time of the last login. The appropriate configuration is used if no value is set for PrintLastLog.\n\nTo explicitly enable LastLog in SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPrintLastLog yes",
+        "severity": "medium",
+        "summary": "Set PrintLastLog yes in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-kptr-restrict",
+        "check": "rhcos4-e8-master-sysctl-kernel-kptr-restrict",
+        "status": "PASS",
+        "description": "Restrict Exposed Kernel Pointer Addresses Access\nTo set the runtime status of the kernel.kptr_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.kptr_restrict= 1 \n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.kptr_restrict = 1",
+        "severity": "medium",
+        "summary": "Set kernel.kptr_restrict=1 via sysctl"
+      },
+      {
+        "name": "rhcos4-e8-worker-auditd-data-retention-flush",
+        "check": "rhcos4-e8-worker-auditd-data-retention-flush",
+        "status": "PASS",
+        "description": "Configure auditd flush priority\nThe auditd service can be configured to synchronously write audit event data to disk. Add or correct the following line in /etc/audit/auditd.conf to ensure that audit event data is fully synchronized with the log files on the disk:\n\nflush = incremental_async",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-worker-auditd-freq",
+        "check": "rhcos4-e8-worker-auditd-freq",
+        "status": "PASS",
+        "description": "Set number of records to cause an explicit flush to audit logs\nTo configure Audit daemon to issue an explicit flush to disk command after writing 50 records, set freq to 50 in /etc/audit/auditd.conf.",
+        "severity": "medium",
+        "summary": "Set number to of"
+      },
+      {
+        "name": "rhcos4-e8-worker-auditd-local-events",
+        "check": "rhcos4-e8-worker-auditd-local-events",
+        "status": "PASS",
+        "description": "Include Local Events in Audit Logs\nTo configure Audit daemon to include local events in Audit logs, set local_events to yes in /etc/audit/auditd.conf. This is the default setting.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-worker-auditd-write-logs",
+        "check": "rhcos4-e8-worker-auditd-write-logs",
+        "status": "PASS",
+        "description": "Write Audit Logs to the Disk\nTo configure Audit daemon to write Audit logs to the disk, set write_logs to yes in /etc/audit/auditd.conf. This is the default setting.",
+        "severity": "medium",
+        "summary": "Set write_logs to yes"
+      },
+      {
+        "name": "rhcos4-e8-worker-configure-ssh-crypto-policy",
+        "check": "rhcos4-e8-worker-configure-ssh-crypto-policy",
+        "status": "PASS",
+        "description": "Configure SSH to use System Crypto Policy\nCrypto Policies provide a centralized control over crypto algorithms usage of many packages. SSH is supported by crypto policy, but the SSH configuration may be set up to ignore it. To check that Crypto Policies settings are configured correctly, ensure that the CRYPTO_POLICY variable is either commented or not set at all in the /etc/sysconfig/sshd.",
+        "severity": "medium",
+        "summary": "Set crypto policy: update-crypto-policies --set DEFAULT:NO-SHA1"
+      },
+      {
+        "name": "rhcos4-e8-worker-selinux-policytype",
+        "check": "rhcos4-e8-worker-selinux-policytype",
+        "status": "PASS",
+        "description": "Configure SELinux Policy\nThe SELinux targeted policy is appropriate for general-purpose desktops and servers, as well as systems in many other roles. To configure the system to use this policy, add or correct the following line in /etc/selinux/config :\n\nSELINUXTYPE= targeted \n\nOther policies, such as mls , provide additional security labeling and greater confinement but are not compatible with many general-purpose use cases.",
+        "severity": "medium",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-disable-rhosts",
+        "check": "rhcos4-e8-worker-sshd-disable-rhosts",
+        "status": "PASS",
+        "description": "Disable SSH Support for .rhosts Files\nSSH can emulate the behavior of the obsolete rsh command in allowing users to enable insecure access to their accounts via.rhosts files.\n\nThe default SSH configuration disables support for.rhosts. The appropriate configuration is used if no value is set for IgnoreRhosts.\n\nTo explicitly disable support for .rhosts files, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nIgnoreRhosts yes",
+        "severity": "medium",
+        "summary": "Set IgnoreRhosts yes in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-disable-root-login",
+        "check": "rhcos4-e8-worker-sshd-disable-root-login",
+        "status": "PASS",
+        "description": "Disable SSH Root Login\nThe root user should never be allowed to login to a system directly over a network. To disable root login via SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPermitRootLogin no",
+        "severity": "medium",
+        "summary": "Set PermitRootLogin no in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-do-not-permit-user-env",
+        "check": "rhcos4-e8-worker-sshd-do-not-permit-user-env",
+        "status": "PASS",
+        "description": "Do Not Allow SSH Environment Options\nEnsure that users are not able to override environment variables of the SSH daemon.\n\nThe default SSH configuration disables environment processing. The appropriate configuration is used if no value is set for PermitUserEnvironment.\n\nTo explicitly disable Environment options, add or correct the following /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPermitUserEnvironment no",
+        "severity": "medium",
+        "summary": "Set PermitUserEnvironment no in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-enable-strictmodes",
+        "check": "rhcos4-e8-worker-sshd-enable-strictmodes",
+        "status": "PASS",
+        "description": "Enable Use of Strict Mode Checking\nSSHs StrictModes option checks file and ownership permissions in the user's home directory.ssh folder before accepting login. If world- writable permissions are found, logon is rejected.\n\nThe default SSH configuration has StrictModes enabled. The appropriate configuration is used if no value is set for StrictModes.\n\nTo explicitly enable StrictModes in SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nStrictModes yes",
+        "severity": "medium",
+        "summary": "Set StrictModes yes in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-print-last-log",
+        "check": "rhcos4-e8-worker-sshd-print-last-log",
+        "status": "PASS",
+        "description": "Enable SSH Print Last Log\nEnsure that SSH will display the date and time of the last successful account logon.\n\nThe default SSH configuration enables print of the date and time of the last login. The appropriate configuration is used if no value is set for PrintLastLog.\n\nTo explicitly enable LastLog in SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nPrintLastLog yes",
+        "severity": "medium",
+        "summary": "Set PrintLastLog yes in sshd_config"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-kptr-restrict",
+        "check": "rhcos4-e8-worker-sysctl-kernel-kptr-restrict",
+        "status": "PASS",
+        "description": "Restrict Exposed Kernel Pointer Addresses Access\nTo set the runtime status of the kernel.kptr_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.kptr_restrict= 1 \n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.kptr_restrict = 1",
+        "severity": "medium",
+        "summary": "Set kernel.kptr_restrict=1 via sysctl"
+      }
+    ],
+    "low": [
+      {
+        "name": "ocp4-cis-api-server-audit-log-maxbackup",
+        "check": "ocp4-cis-api-server-audit-log-maxbackup",
+        "status": "PASS",
+        "description": "Configure the Kubernetes API Server Maximum Retained Audit Logs\nTo configure how many rotations of audit logs are retained, edit the openshift-kube-apiserver configmap and set the audit-log-maxbackup parameter to 10 or to an organizationally appropriate value:\n\n\"apiServerArguments\":{\n ...\n \"audit-log-maxbackup\": [10],\n ...",
+        "severity": "low",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-api-server-bind-address",
+        "check": "ocp4-cis-api-server-bind-address",
+        "status": "PASS",
+        "description": "Ensure that the bindAddress is set to a relevant secure port\nThe bindAddress is set by default to 0.0.0.0:6443 , and listening with TLS enabled.",
+        "severity": "low",
+        "summary": "Set to to a"
+      },
+      {
+        "name": "ocp4-cis-controller-insecure-port-disabled",
+        "check": "ocp4-cis-controller-insecure-port-disabled",
+        "status": "PASS",
+        "description": "Ensure Controller insecure port argument is unset\nTo ensure the Controller Manager service is bound to secure loopback address and a secure port, set the RotateKubeletServerCertificate option to true in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"port\": [\"0\"],\n...\n\nIt is also acceptable for a system to deprecate the insecure port:\n\n\"extendedArguments\": {\n...\n...",
+        "severity": "low",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-controller-secure-port",
+        "check": "ocp4-cis-controller-secure-port",
+        "status": "PASS",
+        "description": "Ensure Controller secure-port argument is set\nTo ensure the Controller Manager service is bound to secure loopback address using a secure port, set the RotateKubeletServerCertificate option to true in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"secure-port\": [\"10257\"],\n...",
+        "severity": "low",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "ocp4-cis-ocp-api-server-audit-log-maxbackup",
+        "check": "ocp4-cis-ocp-api-server-audit-log-maxbackup",
+        "status": "PASS",
+        "description": "Configure the OpenShift API Server Maximum Retained Audit Logs\nTo configure how many rotations of audit logs are retained, edit the openshift-apiserver configmap and set the audit-log-maxbackup parameter to 10 or to an organizationally appropriate value:\n\n\"apiServerArguments\":{\n ...\n \"audit-log-maxbackup\": [10],\n ...",
+        "severity": "low",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-auditd-log-format",
+        "check": "rhcos4-e8-master-auditd-log-format",
+        "status": "PASS",
+        "description": "Resolve information before writing to audit logs\nTo configure Audit daemon to resolve all uid, gid, syscall, architecture, and socket address information before writing the events to disk, set log_format to ENRICHED in /etc/audit/auditd.conf.",
+        "severity": "low",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-master-sshd-set-loglevel-info",
+        "check": "rhcos4-e8-master-sshd-set-loglevel-info",
+        "status": "PASS",
+        "description": "Set LogLevel to INFO\nThe INFO parameter specifies that record login and logout activity will be logged.\n\nThe default SSH configuration sets the log level to INFO. The appropriate configuration is used if no value is set for LogLevel.\n\nTo explicitly specify the log level in SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nLogLevel INFO",
+        "severity": "low",
+        "summary": "Configure sshd_config security settings"
+      },
+      {
+        "name": "rhcos4-e8-worker-auditd-log-format",
+        "check": "rhcos4-e8-worker-auditd-log-format",
+        "status": "PASS",
+        "description": "Resolve information before writing to audit logs\nTo configure Audit daemon to resolve all uid, gid, syscall, architecture, and socket address information before writing the events to disk, set log_format to ENRICHED in /etc/audit/auditd.conf.",
+        "severity": "low",
+        "summary": "Review and apply recommended configuration"
+      },
+      {
+        "name": "rhcos4-e8-worker-sshd-set-loglevel-info",
+        "check": "rhcos4-e8-worker-sshd-set-loglevel-info",
+        "status": "PASS",
+        "description": "Set LogLevel to INFO\nThe INFO parameter specifies that record login and logout activity will be logged.\n\nThe default SSH configuration sets the log level to INFO. The appropriate configuration is used if no value is set for LogLevel.\n\nTo explicitly specify the log level in SSH, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nLogLevel INFO",
+        "severity": "low",
+        "summary": "Configure sshd_config security settings"
       }
     ]
   },

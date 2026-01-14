@@ -304,6 +304,18 @@ def main():
     if data.get("manual_checks"):
         total += process_checks(data["manual_checks"])
 
+    print("\nProcessing PASSING HIGH checks...")
+    if data.get("passing_checks", {}).get("high"):
+        total += process_checks(data["passing_checks"]["high"])
+
+    print("\nProcessing PASSING MEDIUM checks...")
+    if data.get("passing_checks", {}).get("medium"):
+        total += process_checks(data["passing_checks"]["medium"])
+
+    print("\nProcessing PASSING LOW checks...")
+    if data.get("passing_checks", {}).get("low"):
+        total += process_checks(data["passing_checks"]["low"])
+
     print(f"\nWriting {total} summaries to {json_file}...")
     with open(json_file, 'w') as f:
         json.dump(data, f, indent=2)

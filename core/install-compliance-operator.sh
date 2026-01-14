@@ -161,12 +161,59 @@ CO_REPO_OWNER="ComplianceAsCode"
 CO_REPO_NAME="compliance-operator"
 # Allow environment override via COMPLIANCE_OPERATOR_REF
 CO_REF="${CO_REF:-${COMPLIANCE_OPERATOR_REF:-}}"
+# Allow forcing community operator via USE_COMMUNITY_OPERATOR=true
+USE_COMMUNITY="${USE_COMMUNITY_OPERATOR:-false}"
 
 get_latest_release_tag() {
 	curl -fsSL "https://api.github.com/repos/$CO_REPO_OWNER/$CO_REPO_NAME/releases/latest" 2>/dev/null |
 		grep -m1 '"tag_name"' |
 		sed -E 's/.*"tag_name"\s*:\s*"([^"]+)".*/\1/'
 }
+
+# ============================================================================
+# Red Hat Certified Operator Check
+# ============================================================================
+# Prefer the Red Hat certified operator over the community version when available.
+# The certified operator is more stable and doesn't use :latest (dev) images.
+USE_REDHAT_OPERATOR=false
+
+if [[ "$USE_COMMUNITY" == "true" ]]; then
+	echo "[INFO] USE_COMMUNITY_OPERATOR=true - skipping Red Hat certified operator check"
+else
+	echo "[INFO] Checking for Red Hat certified operator availability..."
+
+	# Check if redhat-operators catalog source exists
+	if oc get catalogsource redhat-operators -n openshift-marketplace &>/dev/null; then
+		echo "[INFO] ✅ redhat-operators catalog is available"
+
+		# Check if compliance-operator package is available from redhat-operators
+		RH_PACKAGE=$(oc get packagemanifests -n openshift-marketplace compliance-operator \
+			-o jsonpath='{.status.catalogSource}' 2>/dev/null || true)
+
+		if [[ "$RH_PACKAGE" == "redhat-operators" ]]; then
+			echo "[INFO] ✅ Compliance Operator available from Red Hat certified catalog"
+			USE_REDHAT_OPERATOR=true
+		elif [[ -n "$RH_PACKAGE" ]]; then
+			# Package exists but from different catalog - check if redhat-operators has it too
+			RH_CHECK=$(oc get packagemanifests -n openshift-marketplace -o json 2>/dev/null |
+				jq -r '.items[] | select(.metadata.name=="compliance-operator" and .status.catalogSource=="redhat-operators") | .metadata.name' || true)
+			if [[ -n "$RH_CHECK" ]]; then
+				echo "[INFO] ✅ Compliance Operator available from Red Hat certified catalog"
+				USE_REDHAT_OPERATOR=true
+			fi
+		fi
+	else
+		# Check if redhat-operators is disabled in OperatorHub config
+		RH_DISABLED=$(oc get operatorhub cluster -o jsonpath='{.status.sources[?(@.name=="redhat-operators")].disabled}' 2>/dev/null || true)
+		if [[ "$RH_DISABLED" == "true" ]]; then
+			echo "[WARN] redhat-operators catalog is disabled in OperatorHub"
+			echo "[INFO] To enable: oc patch operatorhub cluster --type=merge -p '{\"spec\":{\"sources\":[{\"name\":\"redhat-operators\",\"disabled\":false}]}}'"
+			echo "[INFO] Falling back to community operator..."
+		else
+			echo "[INFO] redhat-operators catalog not found, using community operator"
+		fi
+	fi
+fi
 
 # ============================================================================
 # ARM Architecture Check
@@ -232,9 +279,60 @@ echo "[INFO] Compliance Operator will use default SCCs (restricted-v2)"
 # The operator needs restricted-v2 SCC which auto-assigns UIDs from namespace range
 # Granting anyuid/privileged breaks pods with runAsNonRoot: true
 
-echo "[INFO] Creating CatalogSource with master node tolerations"
-echo "[INFO] Using catalog image tag: $CO_REF"
-cat <<EOF | oc apply -f -
+# ============================================================================
+# Install Operator - Red Hat Certified or Community
+# ============================================================================
+if [[ "$USE_REDHAT_OPERATOR" == "true" ]]; then
+	echo ""
+	echo "════════════════════════════════════════════════════════════════════"
+	echo "📦 Installing Red Hat Certified Compliance Operator"
+	echo "════════════════════════════════════════════════════════════════════"
+	echo ""
+	echo "[INFO] Using Red Hat certified operator from redhat-operators catalog"
+	echo "[INFO] This is more stable than the community version"
+	echo ""
+
+	# Create OperatorGroup
+	echo "[INFO] Creating OperatorGroup"
+	cat <<EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: compliance-operator
+  namespace: $NAMESPACE
+spec:
+  targetNamespaces:
+  - $NAMESPACE
+EOF
+
+	# Create Subscription to Red Hat certified operator
+	echo "[INFO] Creating Subscription to Red Hat certified operator"
+	cat <<EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: $SUBSCRIPTION_NAME
+  namespace: $NAMESPACE
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: $OPERATOR_NAME
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+
+else
+	echo ""
+	echo "════════════════════════════════════════════════════════════════════"
+	echo "📦 Installing Community Compliance Operator"
+	echo "════════════════════════════════════════════════════════════════════"
+	echo ""
+	echo "[INFO] Using community operator from upstream catalog"
+	echo "[INFO] Using catalog image tag: $CO_REF"
+	echo ""
+
+	echo "[INFO] Creating CatalogSource with master node tolerations"
+	cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -255,11 +353,12 @@ spec:
       effect: NoSchedule
 EOF
 
-echo "[INFO] Subscribing to Compliance Operator from Red Hat"
-oc apply -f "$BASE_RAW/config/catalog/operator-group.yaml"
+	echo "[INFO] Creating OperatorGroup"
+	oc apply -f "$BASE_RAW/config/catalog/operator-group.yaml"
 
-echo "[INFO] Creating Subscription for Compliance Operator"
-oc apply -f "$BASE_RAW/config/catalog/subscription.yaml"
+	echo "[INFO] Creating Subscription for Community Compliance Operator"
+	oc apply -f "$BASE_RAW/config/catalog/subscription.yaml"
+fi
 
 echo "[INFO] Waiting for Subscription to populate installedCSV..."
 for i in {1..30}; do

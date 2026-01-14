@@ -383,6 +383,70 @@ footer a {
   margin-top: 1rem;
 }
 
+/* Tabs */
+.tabs-container {
+  margin-top: 2rem;
+}
+
+.tab-input {
+  display: none;
+}
+
+.tab-label {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  margin-right: 0.25rem;
+  background: #e9ecef;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tab-label:hover {
+  background: #dee2e6;
+}
+
+.tab-label.tab-failing {
+  border-bottom: 3px solid transparent;
+}
+
+.tab-label.tab-passing {
+  border-bottom: 3px solid transparent;
+}
+
+#tab-failing:checked ~ .tab-label.tab-failing {
+  background: var(--color-card);
+  border-bottom: 3px solid var(--color-fail);
+  color: var(--color-fail);
+}
+
+#tab-passing:checked ~ .tab-label.tab-passing {
+  background: var(--color-card);
+  border-bottom: 3px solid var(--color-pass);
+  color: var(--color-pass);
+}
+
+.tab-content {
+  display: none;
+  background: var(--color-card);
+  padding: 1.5rem;
+  border-radius: 0 8px 8px 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#tab-failing:checked ~ #content-failing {
+  display: block;
+}
+
+#tab-passing:checked ~ #content-passing {
+  display: block;
+}
+
+.passing-table tr:hover {
+  background: #f0fff4;
+}
+
 /* Expandable check details */
 .check-details {
   cursor: pointer;

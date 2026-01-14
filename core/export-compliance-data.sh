@@ -162,6 +162,39 @@ MANUAL_CHECKS=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.status == "MA
 MANUAL_CHECK_COUNT=$(echo "$MANUAL_CHECKS" | jq 'length')
 echo -e "  MANUAL checks: ${YELLOW}${MANUAL_CHECK_COUNT}${NC}"
 
+# Process PASSING checks by severity
+echo -e "\n${BLUE}Processing passing checks by severity...${NC}"
+
+PASSING_HIGH=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "high" and .status == "PASS") | {
+    name: .metadata.name,
+    check: .metadata.name,
+    status: .status,
+    description: .description,
+    severity: .severity
+}]')
+PASSING_HIGH_COUNT=$(echo "$PASSING_HIGH" | jq 'length')
+echo -e "  HIGH severity passing: ${GREEN}${PASSING_HIGH_COUNT}${NC}"
+
+PASSING_MEDIUM=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "medium" and .status == "PASS") | {
+    name: .metadata.name,
+    check: .metadata.name,
+    status: .status,
+    description: .description,
+    severity: .severity
+}]')
+PASSING_MEDIUM_COUNT=$(echo "$PASSING_MEDIUM" | jq 'length')
+echo -e "  MEDIUM severity passing: ${GREEN}${PASSING_MEDIUM_COUNT}${NC}"
+
+PASSING_LOW=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "low" and .status == "PASS") | {
+    name: .metadata.name,
+    check: .metadata.name,
+    status: .status,
+    description: .description,
+    severity: .severity
+}]')
+PASSING_LOW_COUNT=$(echo "$PASSING_LOW" | jq 'length')
+echo -e "  LOW severity passing: ${GREEN}${PASSING_LOW_COUNT}${NC}"
+
 # Build the output JSON
 echo -e "\n${BLUE}Generating JSON output...${NC}"
 
@@ -178,6 +211,9 @@ OUTPUT_JSON=$(jq -n \
     --argjson medium "$MEDIUM_CHECKS" \
     --argjson low "$LOW_CHECKS" \
     --argjson manual_checks "$MANUAL_CHECKS" \
+    --argjson passing_high "$PASSING_HIGH" \
+    --argjson passing_medium "$PASSING_MEDIUM" \
+    --argjson passing_low "$PASSING_LOW" \
     '{
         version: $version,
         scan_date: $scan_date,
@@ -192,6 +228,11 @@ OUTPUT_JSON=$(jq -n \
             high: $high,
             medium: $medium,
             low: $low
+        },
+        passing_checks: {
+            high: $passing_high,
+            medium: $passing_medium,
+            low: $passing_low
         },
         manual_checks: $manual_checks
     }')

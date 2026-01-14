@@ -39,50 +39,85 @@ layout: default
     <span class="coverage-text">{{ coverage }}% Coverage</span>
   </div>
 
-  {% if version_data.remediations.high.size > 0 %}
-  <section class="remediation-section">
-    <h2><span class="severity-badge high">HIGH</span> Severity Failing Checks ({{ version_data.remediations.high.size }})</h2>
-    {% include remediation-table.html checks=version_data.remediations.high severity="high" %}
-  </section>
-  {% endif %}
+  <!-- Tab Navigation -->
+  <div class="tabs-container">
+    <input type="radio" id="tab-failing" name="tabs" class="tab-input" checked>
+    <label for="tab-failing" class="tab-label tab-failing">
+      Failing ({{ version_data.summary.failing }})
+    </label>
 
-  {% if version_data.remediations.medium.size > 0 %}
-  <section class="remediation-section">
-    <h2><span class="severity-badge medium">MEDIUM</span> Severity Failing Checks ({{ version_data.remediations.medium.size }})</h2>
-    {% include remediation-table.html checks=version_data.remediations.medium severity="medium" %}
-  </section>
-  {% endif %}
+    <input type="radio" id="tab-passing" name="tabs" class="tab-input">
+    <label for="tab-passing" class="tab-label tab-passing">
+      Passing ({{ version_data.summary.passing }})
+    </label>
 
-  {% if version_data.remediations.low.size > 0 %}
-  <section class="remediation-section">
-    <h2><span class="severity-badge low">LOW</span> Severity Failing Checks ({{ version_data.remediations.low.size }})</h2>
-    {% include remediation-table.html checks=version_data.remediations.low severity="low" %}
-  </section>
-  {% endif %}
+    <!-- Failing Tab Content -->
+    <div class="tab-content" id="content-failing">
+      {% if version_data.remediations.high.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge high">HIGH</span> Severity Failing Checks ({{ version_data.remediations.high.size }})</h2>
+        {% include remediation-table.html checks=version_data.remediations.high severity="high" %}
+      </section>
+      {% endif %}
 
-  {% if version_data.manual_checks.size > 0 %}
-  <section class="remediation-section">
-    <h2><span class="severity-badge manual">MANUAL</span> Checks Requiring Review ({{ version_data.manual_checks.size }})</h2>
-    <table class="remediation-table">
-      <thead>
-        <tr>
-          <th>Check Name</th>
-          <th>Severity</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for check in version_data.manual_checks %}
-        <tr>
-          <td><code>{{ check.name }}</code></td>
-          <td><span class="severity-badge {{ check.severity }}">{{ check.severity | upcase }}</span></td>
-          <td>{{ check.description | truncate: 100 }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </section>
-  {% endif %}
+      {% if version_data.remediations.medium.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge medium">MEDIUM</span> Severity Failing Checks ({{ version_data.remediations.medium.size }})</h2>
+        {% include remediation-table.html checks=version_data.remediations.medium severity="medium" %}
+      </section>
+      {% endif %}
+
+      {% if version_data.remediations.low.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge low">LOW</span> Severity Failing Checks ({{ version_data.remediations.low.size }})</h2>
+        {% include remediation-table.html checks=version_data.remediations.low severity="low" %}
+      </section>
+      {% endif %}
+
+      {% if version_data.manual_checks.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge manual">MANUAL</span> Checks Requiring Review ({{ version_data.manual_checks.size }})</h2>
+        {% include remediation-table.html checks=version_data.manual_checks severity="manual" %}
+      </section>
+      {% endif %}
+
+      {% if version_data.remediations.high.size == 0 and version_data.remediations.medium.size == 0 and version_data.remediations.low.size == 0 and version_data.manual_checks.size == 0 %}
+      <div class="no-data">
+        <p>No failing checks found.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Passing Tab Content -->
+    <div class="tab-content" id="content-passing">
+      {% if version_data.passing_checks.high.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge high">HIGH</span> Severity Passing Checks ({{ version_data.passing_checks.high.size }})</h2>
+        {% include passing-table.html checks=version_data.passing_checks.high %}
+      </section>
+      {% endif %}
+
+      {% if version_data.passing_checks.medium.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge medium">MEDIUM</span> Severity Passing Checks ({{ version_data.passing_checks.medium.size }})</h2>
+        {% include passing-table.html checks=version_data.passing_checks.medium %}
+      </section>
+      {% endif %}
+
+      {% if version_data.passing_checks.low.size > 0 %}
+      <section class="remediation-section">
+        <h2><span class="severity-badge low">LOW</span> Severity Passing Checks ({{ version_data.passing_checks.low.size }})</h2>
+        {% include passing-table.html checks=version_data.passing_checks.low %}
+      </section>
+      {% endif %}
+
+      {% if version_data.passing_checks.high.size == 0 and version_data.passing_checks.medium.size == 0 and version_data.passing_checks.low.size == 0 %}
+      <div class="no-data">
+        <p>No passing checks data available. Re-export compliance data to include passing checks.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 
   {% else %}
   <div class="no-data">

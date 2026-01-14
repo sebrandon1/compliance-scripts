@@ -1,0 +1,25 @@
+<table class="remediation-table passing-table">
+  <thead>
+    <tr>
+      <th>Check Name</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for check in include.checks %}
+    <tr>
+      <td>
+        <code>{{ check.name }}</code>
+        {% if check.summary %}
+        <br><small class="description">{{ check.summary }}</small>
+        {% endif %}
+      </td>
+      <td>
+        <span class="status-badge pass">
+          &#9989; PASS
+        </span>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
