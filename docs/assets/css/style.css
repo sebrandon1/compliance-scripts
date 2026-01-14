@@ -389,82 +389,92 @@ footer a {
 }
 
 .tab-nav {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0;
-  border-bottom: 2px solid var(--color-border);
-  padding-bottom: 0;
+  display: inline-flex;
+  background: #e9ecef;
+  border-radius: 12px;
+  padding: 6px;
+  gap: 4px;
+  margin-bottom: 1.5rem;
 }
 
 .tab-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem;
+  gap: 10px;
+  padding: 12px 24px;
   background: transparent;
   border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #6c757d;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .tab-btn:hover {
-  color: var(--color-text);
-  background: rgba(0,0,0,0.02);
+  color: #495057;
+  background: rgba(255,255,255,0.5);
 }
 
 .tab-btn.active {
-  color: var(--color-text);
-  border-bottom-color: #0d6efd;
+  background: white;
+  color: #212529;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .tab-btn[data-tab="failing"].active {
-  border-bottom-color: var(--color-fail);
+  color: var(--color-fail);
 }
 
 .tab-btn[data-tab="passing"].active {
-  border-bottom-color: var(--color-pass);
+  color: var(--color-pass);
 }
 
 .tab-icon {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .tab-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
-.tab-count.fail-count {
-  background: #fce4e4;
-  color: var(--color-fail);
+.tab-btn:not(.active) .tab-count {
+  background: rgba(0,0,0,0.1);
+  color: #6c757d;
 }
 
-.tab-count.pass-count {
-  background: #d4edda;
-  color: var(--color-pass);
+.tab-btn.active .fail-count {
+  background: var(--color-fail);
+  color: white;
+}
+
+.tab-btn.active .pass-count {
+  background: var(--color-pass);
+  color: white;
 }
 
 .tab-panel {
   display: none;
-  background: var(--color-card);
-  padding: 1.5rem;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  animation: fadeIn 0.2s ease;
 }
 
 .tab-panel.active {
   display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .passing-table tr:hover {
