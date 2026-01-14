@@ -1,28 +1,51 @@
 # Compliance Remediation Groupings
 
-This document catalogs all compliance remediations collected from the OpenShift Compliance Operator, organized by **actual Compliance Operator severity** (HIGH, MEDIUM, LOW).
+This document catalogs all compliance remediations collected from the OpenShift Compliance Operator, organized by severity (HIGH, MEDIUM, LOW).
 
-## Overview
+## Quick Summary
 
-From E8 (Essential Eight) and CIS benchmark scans, we identified **82 total remediations**:
-- **HIGH**: 6 files (3 unique settings)
-- **MEDIUM**: 72 files (36 unique settings)
-- **LOW**: 4 files (2 unique settings)
+From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
+
+| Severity | Groups | Settings | Status |
+|----------|--------|----------|--------|
+| **HIGH** | 3 groups | 3 unique | 2 In Progress, 1 Manual |
+| **MEDIUM** | 12 groups | 36 unique | 1 In Progress, 1 On Hold, 10 Pending |
+| **LOW** | 2 groups | 2 unique | 1 In Progress, 1 Pending |
+
+---
+
+## Remediation Status
+
+| Group | Category | Severity | Count | Status | Jira | PR |
+|-------|----------|----------|-------|--------|------|-----|
+| [H1](#h1-crypto-policy) | Crypto Policy | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
+| [H2](#h2-pam-empty-passwords) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
+| [H3](#h3-sshd-empty-passwords) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [M1](#m1-sshd-configuration) | SSHD Configuration | MEDIUM | 7 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [M2](#m2-kernel-hardening-sysctl) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
+| [M3](#m3-audit-rules---dac-modifications) | Audit DAC | MEDIUM | 2 | 🟡 Pending | - | - |
+| [M4](#m4-audit-rules---selinux) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | - | - |
+| [M5](#m5-audit-rules---kernel-modules) | Audit Modules | MEDIUM | 3 | 🟡 Pending | - | - |
+| [M6](#m6-audit-rules---time-modifications) | Audit Time | MEDIUM | 5 | 🟡 Pending | - | - |
+| [M7](#m7-audit-rules---login-monitoring) | Audit Auth | MEDIUM | 5 | 🟡 Pending | - | - |
+| [M8](#m8-audit-rules---network-config) | Audit Network | MEDIUM | 1 | 🟡 Pending | - | - |
+| [M9](#m9-auditd-configuration) | Auditd Config | MEDIUM | 1 | 🟡 Pending | - | - |
+| [M10](#m10-api-server-encryption) | API Encryption | MEDIUM | 2 | 🟡 Pending | - | - |
+| [M11](#m11-ingress-tls-ciphers) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | - | - |
+| [M12](#m12-audit-profile) | Audit Profile | MEDIUM | 1 | 🟡 Pending | - | - |
+| [L1](#l1-sshd-loglevel) | SSHD LogLevel | LOW | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [L2](#l2-sysctl-dmesg_restrict) | Sysctl dmesg | LOW | 1 | 🟡 Pending | - | - |
+
+**Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
 
 ---
 
 ## HIGH Severity Remediations
 
-> **Verification Note**: All HIGH severity remediations have been verified against the cluster.
-> - 3 auto-remediations collected (H1-H3)
-> - 2 manual checks exist (network policies, RBAC) - no auto-remediation available
-> - SSHD empty passwords check is PASSING but config included for explicit hardening
+<details open>
+<summary><strong>H1: Crypto Policy</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/529">PR #529</a></summary>
 
-### Group H1: Crypto Policy
-**Severity**: HIGH
 **File**: `75-crypto-policy-high.yaml`
-**Count**: 1 setting (master/worker)
-**Status**: In Progress - [PR #529](https://github.com/openshift-kni/telco-reference/pull/529)
 **Jira**: [CNF-21212](https://issues.redhat.com/browse/CNF-21212)
 
 | Setting | Value | Description |
@@ -33,13 +56,12 @@ From E8 (Essential Eight) and CIS benchmark scans, we identified **82 total reme
 - `high/rhcos4-e8-worker-configure-crypto-policy.yaml`
 - `high/rhcos4-e8-master-configure-crypto-policy.yaml`
 
----
+</details>
 
-### Group H2: PAM Empty Passwords
-**Severity**: HIGH
+<details open>
+<summary><strong>H2: PAM Empty Passwords</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/529">PR #529</a></summary>
+
 **File**: `75-pam-auth-high.yaml`
-**Count**: 1 setting (master/worker)
-**Status**: In Progress - [PR #529](https://github.com/openshift-kni/telco-reference/pull/529)
 **Jira**: [CNF-21212](https://issues.redhat.com/browse/CNF-21212)
 
 | Setting | Description |
@@ -50,13 +72,12 @@ From E8 (Essential Eight) and CIS benchmark scans, we identified **82 total reme
 - `high/rhcos4-e8-worker-no-empty-passwords.yaml`
 - `high/rhcos4-e8-master-no-empty-passwords.yaml`
 
----
+</details>
 
-### Group H3: SSHD Empty Passwords
-**Severity**: HIGH
+<details open>
+<summary><strong>H3: SSHD Empty Passwords</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
+
 **File**: `75-sshd-hardening.yaml` (consolidated with M1, L1)
-**Count**: 1 setting (master/worker)
-**Status**: In Progress - [PR #466](https://github.com/openshift-kni/telco-reference/pull/466)
 **Jira**: [CNF-19031](https://issues.redhat.com/browse/CNF-19031)
 
 | Setting | Value | Description |
@@ -69,27 +90,30 @@ From E8 (Essential Eight) and CIS benchmark scans, we identified **82 total reme
 
 > **Note**: This HIGH severity SSHD setting is consolidated into PR #466 along with MEDIUM (M1) and LOW (L1) SSHD settings.
 
----
+</details>
 
-### Manual HIGH Severity Checks (No Auto-Remediation)
+<details>
+<summary><strong>Manual HIGH Checks</strong> — No auto-remediation available</summary>
 
-These HIGH severity checks require manual intervention - no MachineConfig remediation available:
+These HIGH severity checks require manual intervention:
 
 | Check | Type | Description |
 |-------|------|-------------|
 | `ocp4-cis-configure-network-policies-namespaces` | CIS | Ensure all application namespaces have NetworkPolicy defined |
 | `ocp4-cis-rbac-least-privilege` | CIS | Review RBAC permissions for least privilege |
 
+</details>
+
 ---
 
 ## MEDIUM Severity Remediations
 
-### Group M1: SSHD Configuration (Medium)
-**Severity**: MEDIUM
+<details open>
+<summary><strong>M1: SSHD Configuration</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
+
 **File**: `75-sshd-hardening.yaml` (consolidated with H3, L1)
-**Count**: 7 settings (master/worker)
-**Status**: In Progress - [PR #466](https://github.com/openshift-kni/telco-reference/pull/466)
 **Jira**: [CNF-19031](https://issues.redhat.com/browse/CNF-19031)
+**Count**: 7 settings
 
 | Setting | Value | Description |
 |---------|-------|-------------|
@@ -101,7 +125,9 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 | StrictModes | yes | Enable strict mode checking |
 | PrintLastLog | yes | Display last login information |
 
-**Source Files**:
+<details>
+<summary>Source Files (7)</summary>
+
 - `medium/rhcos4-e8-worker-sshd-disable-root-login.yaml`
 - `medium/rhcos4-e8-worker-sshd-disable-gssapi-auth.yaml`
 - `medium/rhcos4-e8-worker-sshd-disable-rhosts.yaml`
@@ -110,14 +136,15 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 - `medium/rhcos4-e8-worker-sshd-enable-strictmodes.yaml`
 - `medium/rhcos4-e8-worker-sshd-print-last-log.yaml`
 
----
+</details>
+</details>
 
-### Group M2: Kernel Hardening (Sysctl)
-**Severity**: MEDIUM
+<details>
+<summary><strong>M2: Kernel Hardening (Sysctl)</strong> — ⚪ On Hold — PR #528 closed</summary>
+
 **File**: `75-sysctl-medium.yaml`
-**Count**: 4 settings (master/worker)
-**Status**: On Hold - PR #528 closed (focusing on HIGH severity first)
 **Jira**: [CNF-21196](https://issues.redhat.com/browse/CNF-21196)
+**Count**: 4 settings
 
 | Setting | Value | Description |
 |---------|-------|-------------|
@@ -126,34 +153,42 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 | kernel.yama.ptrace_scope | 1 | Restrict ptrace to parent-child processes |
 | net.core.bpf_jit_harden | 2 | Harden BPF JIT against spraying attacks |
 
-**Source Files**:
+<details>
+<summary>Source Files (4)</summary>
+
 - `medium/rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml`
 - `medium/rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled.yaml`
 - `medium/rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope.yaml`
 - `medium/rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden.yaml`
 
----
+</details>
+</details>
 
-### Group M3: Audit Rules - DAC Modifications
-**Severity**: MEDIUM
+<details>
+<summary><strong>M3: Audit Rules - DAC Modifications</strong> — 🟡 Pending</summary>
+
 **File**: `75-audit-dac-medium.yaml`
-**Count**: 2 settings (master/worker)
+**Count**: 2 settings
 
 | Rule | Description |
 |------|-------------|
 | chmod | Audit file permission changes via chmod |
 | chown | Audit file ownership changes via chown |
 
-**Source Files**:
+<details>
+<summary>Source Files (2)</summary>
+
 - `medium/rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-dac-modification-chown.yaml`
 
----
+</details>
+</details>
 
-### Group M4: Audit Rules - SELinux/Privilege Execution
-**Severity**: MEDIUM
+<details>
+<summary><strong>M4: Audit Rules - SELinux</strong> — 🟡 Pending</summary>
+
 **File**: `75-audit-privilege-medium.yaml`
-**Count**: 6 settings (master/worker)
+**Count**: 6 settings
 
 | Rule | Description |
 |------|-------------|
@@ -164,7 +199,9 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 | setsebool | Audit SELinux boolean changes |
 | seunshare | Audit SELinux unshare operations |
 
-**Source Files**:
+<details>
+<summary>Source Files (6)</summary>
+
 - `medium/rhcos4-e8-worker-audit-rules-execution-chcon.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-execution-restorecon.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-execution-semanage.yaml`
@@ -172,12 +209,14 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 - `medium/rhcos4-e8-worker-audit-rules-execution-setsebool.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-execution-seunshare.yaml`
 
----
+</details>
+</details>
 
-### Group M5: Audit Rules - Kernel Module Loading
-**Severity**: MEDIUM
+<details>
+<summary><strong>M5: Audit Rules - Kernel Modules</strong> — 🟡 Pending</summary>
+
 **File**: `75-audit-modules-medium.yaml`
-**Count**: 3 settings (master/worker)
+**Count**: 3 settings
 
 | Rule | Description |
 |------|-------------|
@@ -185,17 +224,21 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 | finit_module | Audit kernel module loading (finit) |
 | init_module | Audit kernel module loading (init) |
 
-**Source Files**:
+<details>
+<summary>Source Files (3)</summary>
+
 - `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-finit.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-init.yaml`
 
----
+</details>
+</details>
 
-### Group M6: Audit Rules - Time Modifications
-**Severity**: MEDIUM
+<details>
+<summary><strong>M6: Audit Rules - Time Modifications</strong> — 🟡 Pending</summary>
+
 **File**: `75-audit-time-medium.yaml`
-**Count**: 5 settings (master/worker)
+**Count**: 5 settings
 
 | Rule | Description |
 |------|-------------|
@@ -205,19 +248,23 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 | stime | Audit legacy time setting |
 | /etc/localtime | Watch for localtime file changes |
 
-**Source Files**:
+<details>
+<summary>Source Files (5)</summary>
+
 - `medium/rhcos4-e8-worker-audit-rules-time-adjtimex.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-time-clock-settime.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-time-settimeofday.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-time-stime.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-time-watch-localtime.yaml`
 
----
+</details>
+</details>
 
-### Group M7: Audit Rules - Login/Auth Monitoring
-**Severity**: MEDIUM
+<details>
+<summary><strong>M7: Audit Rules - Login Monitoring</strong> — 🟡 Pending</summary>
+
 **File**: `75-audit-auth-medium.yaml`
-**Count**: 5 settings (master/worker)
+**Count**: 5 settings
 
 | Rule | Description |
 |------|-------------|
@@ -227,19 +274,23 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 | sudoers | Monitor sudo configuration changes |
 | usergroup | Monitor /etc/passwd, /etc/group, /etc/shadow changes |
 
-**Source Files**:
+<details>
+<summary>Source Files (5)</summary>
+
 - `medium/rhcos4-e8-worker-audit-rules-login-events-faillock.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-login-events-lastlog.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-login-events-tallylog.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-sysadmin-actions.yaml`
 - `medium/rhcos4-e8-worker-audit-rules-usergroup-modification.yaml`
 
----
+</details>
+</details>
 
-### Group M8: Audit Rules - Network Configuration
-**Severity**: MEDIUM
+<details>
+<summary><strong>M8: Audit Rules - Network Config</strong> — 🟡 Pending</summary>
+
 **File**: `75-audit-network-medium.yaml`
-**Count**: 1 setting (master/worker)
+**Count**: 1 setting
 
 | Rule | Description |
 |------|-------------|
@@ -248,12 +299,13 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 **Source Files**:
 - `medium/rhcos4-e8-worker-audit-rules-networkconfig-modification.yaml`
 
----
+</details>
 
-### Group M9: Auditd Configuration
-**Severity**: MEDIUM
+<details>
+<summary><strong>M9: Auditd Configuration</strong> — 🟡 Pending</summary>
+
 **File**: `75-auditd-config-medium.yaml`
-**Count**: 1 setting (master/worker)
+**Count**: 1 setting
 
 | Setting | Value | Description |
 |---------|-------|-------------|
@@ -262,10 +314,11 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 **Source Files**:
 - `medium/rhcos4-e8-worker-auditd-name-format.yaml`
 
----
+</details>
 
-### Group M10: API Server Encryption (CRD)
-**Severity**: MEDIUM
+<details>
+<summary><strong>M10: API Server Encryption</strong> — 🟡 Pending</summary>
+
 **Type**: APIServer CRD
 **File**: `75-api-server-encryption-medium.yaml`
 **Count**: 2 remediations
@@ -278,10 +331,11 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 - `medium/ocp4-cis-api-server-encryption-provider-cipher.yaml`
 - `medium/ocp4-e8-api-server-encryption-provider-cipher.yaml`
 
----
+</details>
 
-### Group M11: Ingress TLS Ciphers (CRD)
-**Severity**: MEDIUM
+<details>
+<summary><strong>M11: Ingress TLS Ciphers</strong> — 🟡 Pending</summary>
+
 **Type**: IngressController CRD
 **File**: `75-ingress-tls-medium.yaml`
 **Count**: 1 remediation
@@ -293,10 +347,11 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 **Source Files**:
 - `medium/ocp4-cis-ingress-controller-tls-cipher-suites.yaml`
 
----
+</details>
 
-### Group M12: Audit Profile (CRD)
-**Severity**: MEDIUM
+<details>
+<summary><strong>M12: Audit Profile</strong> — 🟡 Pending</summary>
+
 **Type**: APIServer CRD
 **File**: `75-audit-profile-medium.yaml`
 **Count**: 1 remediation
@@ -308,15 +363,16 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 **Source Files**:
 - `medium/ocp4-cis-audit-profile-set.yaml`
 
+</details>
+
 ---
 
 ## LOW Severity Remediations
 
-### Group L1: SSHD LogLevel
-**Severity**: LOW
+<details open>
+<summary><strong>L1: SSHD LogLevel</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
+
 **File**: `75-sshd-hardening.yaml` (consolidated with H3, M1)
-**Count**: 1 setting (master/worker)
-**Status**: In Progress - [PR #466](https://github.com/openshift-kni/telco-reference/pull/466)
 **Jira**: [CNF-19031](https://issues.redhat.com/browse/CNF-19031)
 
 | Setting | Value | Description |
@@ -327,12 +383,12 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 - `low/rhcos4-e8-worker-sshd-set-loglevel-info.yaml`
 - `low/rhcos4-e8-master-sshd-set-loglevel-info.yaml`
 
----
+</details>
 
-### Group L2: Sysctl dmesg_restrict
-**Severity**: LOW
+<details>
+<summary><strong>L2: Sysctl dmesg_restrict</strong> — 🟡 Pending</summary>
+
 **File**: `75-sysctl-low.yaml`
-**Count**: 1 setting (master/worker)
 
 | Setting | Value | Description |
 |---------|-------|-------------|
@@ -342,51 +398,14 @@ These HIGH severity checks require manual intervention - no MachineConfig remedi
 - `low/rhcos4-e8-worker-sysctl-kernel-dmesg-restrict.yaml`
 - `low/rhcos4-e8-master-sysctl-kernel-dmesg-restrict.yaml`
 
----
-
-## Summary Table
-
-| Severity | Group | Category | Count | Type | Status | Jira | PR |
-|----------|-------|----------|-------|------|--------|------|-----|
-| HIGH | H1 | Crypto Policy | 1 | MachineConfig | In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| HIGH | H2 | PAM Empty Passwords | 1 | MachineConfig | In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| HIGH | H3 | SSHD Empty Passwords | 1 | MachineConfig | In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| HIGH | - | Network Policies | - | Manual | N/A | - | - |
-| HIGH | - | RBAC Least Privilege | - | Manual | N/A | - | - |
-| MEDIUM | M1 | SSHD Configuration | 7 | MachineConfig | In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| MEDIUM | M2 | Kernel Sysctl | 4 | MachineConfig | On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | PR #528 closed |
-| MEDIUM | M3 | Audit DAC | 2 | MachineConfig | Pending | - | - |
-| MEDIUM | M4 | Audit SELinux | 6 | MachineConfig | Pending | - | - |
-| MEDIUM | M5 | Audit Modules | 3 | MachineConfig | Pending | - | - |
-| MEDIUM | M6 | Audit Time | 5 | MachineConfig | Pending | - | - |
-| MEDIUM | M7 | Audit Auth | 5 | MachineConfig | Pending | - | - |
-| MEDIUM | M8 | Audit Network | 1 | MachineConfig | Pending | - | - |
-| MEDIUM | M9 | Auditd Config | 1 | MachineConfig | Pending | - | - |
-| MEDIUM | M10 | API Encryption | 2 | APIServer CRD | Pending | - | - |
-| MEDIUM | M11 | Ingress TLS | 1 | IngressController CRD | Pending | - | - |
-| MEDIUM | M12 | Audit Profile | 1 | APIServer CRD | Pending | - | - |
-| LOW | L1 | SSHD LogLevel | 1 | MachineConfig | In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| LOW | L2 | Sysctl dmesg | 1 | MachineConfig | Pending | - | - |
-
----
-
-## Jira Issues Tracking
-
-| Severity | Count | Groups | Jira | Notes |
-|----------|-------|--------|------|-------|
-| HIGH | 3 | H1, H2, H3 | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | All auto-remediations covered |
-| HIGH | 2 | Manual | N/A | Network Policies, RBAC (no auto-remediation) |
-| MEDIUM | 12 | M1-M12 | Pending | M1: CNF-19031, M2: CNF-21196 (on hold) |
-| LOW | 2 | L1, L2 | Pending | |
-| **Total** | **19** | | | |
+</details>
 
 ---
 
 ## Notes
 
 - **Severity Source**: Severity levels come directly from Compliance Operator's ComplianceCheckResult objects
-- **File Naming**: Use `75-<category>-<severity>.yaml` pattern (e.g., `75-sysctl-medium.yaml`)
+- **File Naming**: Use `75-<category>-<severity>.yaml` pattern
 - **SSHD Consolidation**: All SSHD settings (H3, M1, L1) consolidated into `75-sshd-hardening.yaml` in PR #466
-- **PR #528 Closed**: Was named "high" but contained only MEDIUM severity sysctl settings - closed
 - **PR #529**: Non-SSHD HIGH severity items (crypto-policy, PAM)
 - **PR #466**: All SSHD hardening (HIGH + MEDIUM + LOW)
