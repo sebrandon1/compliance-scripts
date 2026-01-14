@@ -12,7 +12,8 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
 <div class="version-list">
 {% assign versions = site.pages | where_exp: "page", "page.layout == 'version'" | sort: "version" | reverse %}
 {% for version_page in versions %}
-  {% assign data_file = "ocp-" | append: version_page.version %}
+  {% assign version_slug = version_page.version | replace: ".", "_" %}
+  {% assign data_file = "ocp-" | append: version_slug %}
   {% assign version_data = site.data[data_file] %}
   <div class="version-card">
     <h3><a href="{{ version_page.url | relative_url }}">OCP {{ version_page.version }}</a></h3>

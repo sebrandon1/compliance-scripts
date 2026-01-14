@@ -33,7 +33,9 @@ if [[ $# -lt 1 ]]; then
 fi
 
 OCP_VERSION="$1"
-OUTPUT_FILE="${OUTPUT_DIR}/ocp-${OCP_VERSION}.json"
+# Replace dots with underscores for Jekyll compatibility
+VERSION_SLUG="${OCP_VERSION//./_}"
+OUTPUT_FILE="${OUTPUT_DIR}/ocp-${VERSION_SLUG}.json"
 
 echo -e "${BLUE}=== Compliance Data Export ===${NC}"
 echo -e "OCP Version: ${GREEN}${OCP_VERSION}${NC}"

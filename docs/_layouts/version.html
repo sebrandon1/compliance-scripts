@@ -5,7 +5,8 @@ layout: default
 <div class="version-page">
   <h1>OCP {{ page.version }} Compliance Status</h1>
 
-  {% assign data_file = "ocp-" | append: page.version %}
+  {% assign version_slug = page.version | replace: ".", "_" %}
+  {% assign data_file = "ocp-" | append: version_slug %}
   {% assign version_data = site.data[data_file] %}
 
   {% if version_data %}
