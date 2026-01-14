@@ -1,0 +1,63 @@
+---
+layout: default
+---
+
+<div class="group-page">
+  <nav class="breadcrumb">
+    <a href="{{ site.baseurl }}/">Home</a> &raquo;
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}.html">OCP {{ page.version }}</a> &raquo;
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}/remediations.html">Remediations</a> &raquo;
+    <span>{{ page.group_id }}</span>
+  </nav>
+
+  <div class="group-header">
+    <h1>
+      <span class="severity-badge {{ page.severity | downcase }}">{{ page.severity }}</span>
+      {{ page.group_id }}: {{ page.title }}
+    </h1>
+
+    <div class="group-meta">
+      <span class="tracking-status {{ page.status | replace: ' ', '_' | downcase }}">
+        {% if page.status == "in_progress" %}🔵 In Progress
+        {% elsif page.status == "pending" %}🟡 Pending
+        {% elsif page.status == "on_hold" %}⚪ On Hold
+        {% elsif page.status == "complete" %}🟢 Complete
+        {% endif %}
+      </span>
+
+      {% if page.jira %}
+      <a href="https://issues.redhat.com/browse/{{ page.jira }}" class="jira-link">
+        {{ page.jira }}
+      </a>
+      {% endif %}
+
+      {% if page.pr %}
+      <a href="https://github.com/openshift-kni/telco-reference/pull/{{ page.pr }}" class="pr-link">
+        PR #{{ page.pr }}
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="group-content">
+    {{ content }}
+  </div>
+
+  <div class="group-nav">
+    {% if page.prev_group %}
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ page.prev_group }}.html" class="nav-prev">
+      &larr; {{ page.prev_group }}
+    </a>
+    {% endif %}
+
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}/remediations.html" class="nav-all">
+      All Groups
+    </a>
+
+    {% if page.next_group %}
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ page.next_group }}.html" class="nav-next">
+      {{ page.next_group }} &rarr;
+    </a>
+    {% endif %}
+  </div>
+</div>

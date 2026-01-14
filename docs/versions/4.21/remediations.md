@@ -4,9 +4,11 @@ title: OCP 4.21 Remediation Groupings
 
 # OCP 4.21 Remediation Groupings
 
-[← Back to OCP 4.21 Compliance Status](../4.21.html)
+[← Back to OCP 4.21 Compliance Status](../4.21.html) | [View Detailed Group Pages](groups/)
 
 This document catalogs all compliance remediations for **OCP 4.21**, collected from the OpenShift Compliance Operator and organized by severity (HIGH, MEDIUM, LOW).
+
+> **Tip**: Each group has a [dedicated page](groups/) with detailed implementation examples that you can link directly from PRs.
 
 ## Quick Summary
 
@@ -24,23 +26,23 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 | Group | Category | Severity | Count | Status | Jira | PR |
 |-------|----------|----------|-------|--------|------|-----|
-| [H1](#h1-crypto-policy) | Crypto Policy | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H2](#h2-pam-empty-passwords) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H3](#h3-sshd-empty-passwords) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) *(consolidated)* |
-| [M1](#m1-sshd-configuration) | SSHD Configuration | MEDIUM | 7 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| [M2](#m2-kernel-hardening-sysctl) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
-| [M3](#m3-audit-rules---dac-modifications) | Audit DAC | MEDIUM | 2 | 🟡 Pending | - | - |
-| [M4](#m4-audit-rules---selinux) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | - | - |
-| [M5](#m5-audit-rules---kernel-modules) | Audit Modules | MEDIUM | 3 | 🟡 Pending | - | - |
-| [M6](#m6-audit-rules---time-modifications) | Audit Time | MEDIUM | 5 | 🟡 Pending | - | - |
-| [M7](#m7-audit-rules---login-monitoring) | Audit Auth | MEDIUM | 5 | 🟡 Pending | - | - |
-| [M8](#m8-audit-rules---network-config) | Audit Network | MEDIUM | 1 | 🟡 Pending | - | - |
-| [M9](#m9-auditd-configuration) | Auditd Config | MEDIUM | 1 | 🟡 Pending | - | - |
-| [M10](#m10-api-server-encryption) | API Encryption | MEDIUM | 2 | 🟡 Pending | - | - |
-| [M11](#m11-ingress-tls-ciphers) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | - | - |
-| [M12](#m12-audit-profile) | Audit Profile | MEDIUM | 1 | 🟡 Pending | - | - |
-| [L1](#l1-sshd-loglevel) | SSHD LogLevel | LOW | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| [L2](#l2-sysctl-dmesg_restrict) | Sysctl dmesg | LOW | 1 | 🟡 Pending | - | - |
+| [H1](groups/H1.html) | Crypto Policy | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
+| [H2](groups/H2.html) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
+| [H3](groups/H3.html) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) *(consolidated)* |
+| [M1](groups/M1.html) | SSHD Configuration | MEDIUM | 7 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [M2](groups/M2.html) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
+| [M3](groups/M3.html) | Audit DAC | MEDIUM | 2 | 🟡 Pending | - | - |
+| [M4](groups/M4.html) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | - | - |
+| [M5](groups/M5.html) | Audit Modules | MEDIUM | 3 | 🟡 Pending | - | - |
+| [M6](groups/M6.html) | Audit Time | MEDIUM | 5 | 🟡 Pending | - | - |
+| [M7](groups/M7.html) | Audit Auth | MEDIUM | 5 | 🟡 Pending | - | - |
+| [M8](groups/M8.html) | Audit Network | MEDIUM | 1 | 🟡 Pending | - | - |
+| [M9](groups/M9.html) | Auditd Config | MEDIUM | 1 | 🟡 Pending | - | - |
+| [M10](groups/M10.html) | API Encryption | MEDIUM | 2 | 🟡 Pending | - | - |
+| [M11](groups/M11.html) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | - | - |
+| [M12](groups/M12.html) | Audit Profile | MEDIUM | 1 | 🟡 Pending | - | - |
+| [L1](groups/L1.html) | SSHD LogLevel | LOW | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [L2](groups/L2.html) | Sysctl dmesg | LOW | 1 | 🟡 Pending | - | - |
 
 **Status Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
 
