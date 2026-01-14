@@ -14,10 +14,21 @@
     {% assign tracking = site.data.tracking.remediations[base_name] %}
     <tr>
       <td>
-        <code>{{ check.name }}</code>
-        {% if check.description %}
-        <br><small class="description">{{ check.description | truncate: 80 }}</small>
-        {% endif %}
+        <details class="check-details">
+          <summary>
+            <code>{{ check.name }}</code>
+            <span class="expand-hint">click to see remediation</span>
+          </summary>
+          <div class="remediation-content">
+            {% if check.description %}
+            <div class="remediation-description">
+              {{ check.description | newline_to_br }}
+            </div>
+            {% else %}
+            <p><em>No remediation details available.</em></p>
+            {% endif %}
+          </div>
+        </details>
       </td>
       <td>
         <span class="status-badge {{ check.status | downcase }}">
