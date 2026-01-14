@@ -17,7 +17,11 @@
         <details class="check-details">
           <summary>
             <code>{{ check.name }}</code>
+            {% if check.summary %}
+            <span class="remediation-summary">{{ check.summary }}</span>
+            {% else %}
             <span class="expand-hint">click to see remediation</span>
+            {% endif %}
           </summary>
           <div class="remediation-content">
             {% if check.description %}
