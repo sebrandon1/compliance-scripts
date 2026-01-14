@@ -23,29 +23,29 @@ Each group below represents a logical set of related compliance checks that can 
 
 ## MEDIUM Severity
 
-| Group | Title | Status | Jira | PR |
-|-------|-------|--------|------|-----|
-| [M1](M1.html) | SSHD Configuration | 🟡 Pending | - | - |
-| [M2](M2.html) | Kernel Hardening (Sysctl) | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
-| [M3](M3.html) | Audit Rules - DAC Modifications | 🟡 Pending | - | - |
-| [M4](M4.html) | Audit Rules - SELinux | 🟡 Pending | - | - |
-| [M5](M5.html) | Audit Rules - Kernel Modules | 🟡 Pending | - | - |
-| [M6](M6.html) | Audit Rules - Time Modifications | 🟡 Pending | - | - |
-| [M7](M7.html) | Audit Rules - Login Monitoring | 🟡 Pending | - | - |
-| [M8](M8.html) | Audit Rules - Network Config | 🟡 Pending | - | - |
-| [M9](M9.html) | Auditd Configuration | 🟡 Pending | - | - |
-| [M10](M10.html) | API Server Encryption | 🟡 Pending | - | - |
-| [M11](M11.html) | Ingress TLS Ciphers | 🟡 Pending | - | - |
-| [M12](M12.html) | Audit Profile | 🟡 Pending | - | - |
+| Group | Title | Status | Compare | Jira | PR |
+|-------|-------|--------|---------|------|-----|
+| [M1](M1.html) | SSHD Configuration | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:m1-sshd-medium-hardening) | - | - |
+| [M2](M2.html) | Kernel Hardening (Sysctl) | ⚪ On Hold | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m2-kernel-sysctl) | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
+| [M3](M3.html) | Audit Rules - DAC Modifications | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m3-audit-dac) | - | - |
+| [M4](M4.html) | Audit Rules - SELinux | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m4-audit-selinux) | - | - |
+| [M5](M5.html) | Audit Rules - Kernel Modules | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m5-audit-modules) | - | - |
+| [M6](M6.html) | Audit Rules - Time Modifications | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m6-audit-time) | - | - |
+| [M7](M7.html) | Audit Rules - Login Monitoring | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m7-audit-login) | - | - |
+| [M8](M8.html) | Audit Rules - Network Config | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m8-audit-network) | - | - |
+| [M9](M9.html) | Auditd Configuration | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m9-auditd-config) | - | - |
+| [M10](M10.html) | API Server Encryption | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m10-api-encryption) | - | - |
+| [M11](M11.html) | Ingress TLS Ciphers | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m11-ingress-tls) | - | - |
+| [M12](M12.html) | Audit Profile | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m12-audit-profile) | - | - |
 
 ---
 
 ## LOW Severity
 
-| Group | Title | Status | Jira | PR |
-|-------|-------|--------|------|-----|
-| [L1](L1.html) | SSHD LogLevel | 🟡 Pending | - | - |
-| [L2](L2.html) | Sysctl dmesg_restrict | 🟡 Pending | - | - |
+| Group | Title | Status | Compare | Jira | PR |
+|-------|-------|--------|---------|------|-----|
+| [L1](L1.html) | SSHD LogLevel | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l1-sshd-loglevel) | - | - |
+| [L2](L2.html) | Sysctl dmesg_restrict | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l2-sysctl-dmesg) | - | - |
 
 ---
 
