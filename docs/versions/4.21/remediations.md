@@ -42,7 +42,12 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 | [L1](#l1-sshd-loglevel) | SSHD LogLevel | LOW | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
 | [L2](#l2-sysctl-dmesg_restrict) | Sysctl dmesg | LOW | 1 | 🟡 Pending | - | - |
 
-**Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
+**Status Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
+
+**Group IDs:** Groups are labeled by severity and sequence number:
+- **H** = HIGH severity (H1, H2, H3)
+- **M** = MEDIUM severity (M1-M12)
+- **L** = LOW severity (L1, L2)
 
 ---
 
