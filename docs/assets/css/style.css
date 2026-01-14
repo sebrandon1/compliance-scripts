@@ -383,63 +383,87 @@ footer a {
   margin-top: 1rem;
 }
 
-/* Tabs */
+/* Modern Tabs */
 .tabs-container {
   margin-top: 2rem;
 }
 
-.tab-input {
-  display: none;
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0;
 }
 
-.tab-label {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  margin-right: 0.25rem;
-  background: #e9ecef;
-  border-radius: 8px 8px 0 0;
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
   cursor: pointer;
+  font-size: 1rem;
   font-weight: 600;
-  transition: background 0.2s, color 0.2s;
+  color: #6c757d;
+  transition: all 0.2s ease;
 }
 
-.tab-label:hover {
-  background: #dee2e6;
+.tab-btn:hover {
+  color: var(--color-text);
+  background: rgba(0,0,0,0.02);
 }
 
-.tab-label.tab-failing {
-  border-bottom: 3px solid transparent;
+.tab-btn.active {
+  color: var(--color-text);
+  border-bottom-color: #0d6efd;
 }
 
-.tab-label.tab-passing {
-  border-bottom: 3px solid transparent;
+.tab-btn[data-tab="failing"].active {
+  border-bottom-color: var(--color-fail);
 }
 
-#tab-failing:checked ~ .tab-label.tab-failing {
-  background: var(--color-card);
-  border-bottom: 3px solid var(--color-fail);
+.tab-btn[data-tab="passing"].active {
+  border-bottom-color: var(--color-pass);
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tab-count.fail-count {
+  background: #fce4e4;
   color: var(--color-fail);
 }
 
-#tab-passing:checked ~ .tab-label.tab-passing {
-  background: var(--color-card);
-  border-bottom: 3px solid var(--color-pass);
+.tab-count.pass-count {
+  background: #d4edda;
   color: var(--color-pass);
 }
 
-.tab-content {
+.tab-panel {
   display: none;
   background: var(--color-card);
   padding: 1.5rem;
-  border-radius: 0 8px 8px 8px;
+  border-radius: 0 0 8px 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-#tab-failing:checked ~ #content-failing {
-  display: block;
-}
-
-#tab-passing:checked ~ #content-passing {
+.tab-panel.active {
   display: block;
 }
 

@@ -41,18 +41,21 @@ layout: default
 
   <!-- Tab Navigation -->
   <div class="tabs-container">
-    <input type="radio" id="tab-failing" name="tabs" class="tab-input" checked>
-    <label for="tab-failing" class="tab-label tab-failing">
-      Failing ({{ version_data.summary.failing }})
-    </label>
-
-    <input type="radio" id="tab-passing" name="tabs" class="tab-input">
-    <label for="tab-passing" class="tab-label tab-passing">
-      Passing ({{ version_data.summary.passing }})
-    </label>
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="failing" onclick="switchTab('failing')">
+        <span class="tab-icon">&#10060;</span>
+        Failing
+        <span class="tab-count fail-count">{{ version_data.summary.failing }}</span>
+      </button>
+      <button class="tab-btn" data-tab="passing" onclick="switchTab('passing')">
+        <span class="tab-icon">&#9989;</span>
+        Passing
+        <span class="tab-count pass-count">{{ version_data.summary.passing }}</span>
+      </button>
+    </div>
 
     <!-- Failing Tab Content -->
-    <div class="tab-content" id="content-failing">
+    <div class="tab-panel active" id="panel-failing">
       {% if version_data.remediations.high.size > 0 %}
       <section class="remediation-section">
         <h2><span class="severity-badge high">HIGH</span> Severity Failing Checks ({{ version_data.remediations.high.size }})</h2>
@@ -89,7 +92,7 @@ layout: default
     </div>
 
     <!-- Passing Tab Content -->
-    <div class="tab-content" id="content-passing">
+    <div class="tab-panel" id="panel-passing">
       {% if version_data.passing_checks.high.size > 0 %}
       <section class="remediation-section">
         <h2><span class="severity-badge high">HIGH</span> Severity Passing Checks ({{ version_data.passing_checks.high.size }})</h2>
@@ -126,5 +129,17 @@ layout: default
   </div>
   {% endif %}
 </div>
+
+<script>
+function switchTab(tabName) {
+  // Remove active class from all buttons and panels
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+  // Add active class to selected button and panel
+  document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
+  document.getElementById('panel-' + tabName).classList.add('active');
+}
+</script>
 
 {{ content }}
