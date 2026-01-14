@@ -11,7 +11,6 @@ layout: default
 
   {% if version_data %}
   <div class="scan-info">
-    <p><strong>Cluster:</strong> {{ version_data.cluster }}</p>
     <p><strong>Last Scan:</strong> {{ version_data.scan_date | date: "%Y-%m-%d %H:%M UTC" }}</p>
   </div>
 

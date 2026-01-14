@@ -60,8 +60,8 @@ if ! oc whoami &> /dev/null; then
     exit 1
 fi
 
-CLUSTER_NAME=$(oc whoami --show-server | sed 's|https://api\.||' | sed 's|:.*||')
-echo -e "Cluster: ${GREEN}${CLUSTER_NAME}${NC}"
+# Verify cluster connection (but don't expose cluster name in output)
+echo -e "Cluster: ${GREEN}connected${NC}"
 
 # Get current timestamp
 SCAN_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -165,11 +165,10 @@ echo -e "  MANUAL checks: ${YELLOW}${MANUAL_CHECK_COUNT}${NC}"
 # Build the output JSON
 echo -e "\n${BLUE}Generating JSON output...${NC}"
 
-# Create the JSON structure
+# Create the JSON structure (no cluster name to avoid leaking internal info)
 OUTPUT_JSON=$(jq -n \
     --arg version "$OCP_VERSION" \
     --arg scan_date "$SCAN_DATE" \
-    --arg cluster "$CLUSTER_NAME" \
     --argjson total "$TOTAL_CHECKS" \
     --argjson passing "$PASSING" \
     --argjson failing "$FAILING" \
@@ -182,7 +181,6 @@ OUTPUT_JSON=$(jq -n \
     '{
         version: $version,
         scan_date: $scan_date,
-        cluster: $cluster,
         summary: {
             total_checks: $total,
             passing: $passing,
