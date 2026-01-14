@@ -651,6 +651,27 @@ footer a {
   text-decoration: none;
 }
 
+.group-meta .compare-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
+.group-meta .compare-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+  text-decoration: none;
+  color: white;
+}
+
 .group-content {
   line-height: 1.7;
 }
