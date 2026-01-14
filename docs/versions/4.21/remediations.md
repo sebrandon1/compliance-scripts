@@ -48,7 +48,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 ## HIGH Severity Remediations
 
-<details open>
+<details markdown="1" open>
 <summary><strong>H1: Crypto Policy</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/529">PR #529</a></summary>
 
 **File**: `75-crypto-policy-high.yaml`
@@ -64,7 +64,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 </details>
 
-<details open>
+<details markdown="1" open>
 <summary><strong>H2: PAM Empty Passwords</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/529">PR #529</a></summary>
 
 **File**: `75-pam-auth-high.yaml`
@@ -80,7 +80,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 </details>
 
-<details open>
+<details markdown="1" open>
 <summary><strong>H3: SSHD Empty Passwords</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
 
 **File**: `75-sshd-hardening.yaml` (consolidated with M1, L1)
@@ -98,7 +98,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>Manual HIGH Checks</strong> — No auto-remediation available</summary>
 
 These HIGH severity checks require manual intervention:
@@ -114,7 +114,7 @@ These HIGH severity checks require manual intervention:
 
 ## MEDIUM Severity Remediations
 
-<details open>
+<details markdown="1" open>
 <summary><strong>M1: SSHD Configuration</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
 
 **File**: `75-sshd-hardening.yaml` (consolidated with H3, L1)
@@ -131,7 +131,7 @@ These HIGH severity checks require manual intervention:
 | StrictModes | yes | Enable strict mode checking |
 | PrintLastLog | yes | Display last login information |
 
-<details>
+<details markdown="1">
 <summary>Source Files (7)</summary>
 
 - `medium/rhcos4-e8-worker-sshd-disable-root-login.yaml`
@@ -145,7 +145,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M2: Kernel Hardening (Sysctl)</strong> — ⚪ On Hold — PR #528 closed</summary>
 
 **File**: `75-sysctl-medium.yaml`
@@ -159,7 +159,7 @@ These HIGH severity checks require manual intervention:
 | kernel.yama.ptrace_scope | 1 | Restrict ptrace to parent-child processes |
 | net.core.bpf_jit_harden | 2 | Harden BPF JIT against spraying attacks |
 
-<details>
+<details markdown="1">
 <summary>Source Files (4)</summary>
 
 - `medium/rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml`
@@ -170,7 +170,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M3: Audit Rules - DAC Modifications</strong> — 🟡 Pending</summary>
 
 **File**: `75-audit-dac-medium.yaml`
@@ -181,7 +181,7 @@ These HIGH severity checks require manual intervention:
 | chmod | Audit file permission changes via chmod |
 | chown | Audit file ownership changes via chown |
 
-<details>
+<details markdown="1">
 <summary>Source Files (2)</summary>
 
 - `medium/rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml`
@@ -190,7 +190,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M4: Audit Rules - SELinux</strong> — 🟡 Pending</summary>
 
 **File**: `75-audit-privilege-medium.yaml`
@@ -205,7 +205,7 @@ These HIGH severity checks require manual intervention:
 | setsebool | Audit SELinux boolean changes |
 | seunshare | Audit SELinux unshare operations |
 
-<details>
+<details markdown="1">
 <summary>Source Files (6)</summary>
 
 - `medium/rhcos4-e8-worker-audit-rules-execution-chcon.yaml`
@@ -218,7 +218,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M5: Audit Rules - Kernel Modules</strong> — 🟡 Pending</summary>
 
 **File**: `75-audit-modules-medium.yaml`
@@ -230,7 +230,7 @@ These HIGH severity checks require manual intervention:
 | finit_module | Audit kernel module loading (finit) |
 | init_module | Audit kernel module loading (init) |
 
-<details>
+<details markdown="1">
 <summary>Source Files (3)</summary>
 
 - `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml`
@@ -240,7 +240,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M6: Audit Rules - Time Modifications</strong> — 🟡 Pending</summary>
 
 **File**: `75-audit-time-medium.yaml`
@@ -254,7 +254,7 @@ These HIGH severity checks require manual intervention:
 | stime | Audit legacy time setting |
 | /etc/localtime | Watch for localtime file changes |
 
-<details>
+<details markdown="1">
 <summary>Source Files (5)</summary>
 
 - `medium/rhcos4-e8-worker-audit-rules-time-adjtimex.yaml`
@@ -266,7 +266,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M7: Audit Rules - Login Monitoring</strong> — 🟡 Pending</summary>
 
 **File**: `75-audit-auth-medium.yaml`
@@ -280,7 +280,7 @@ These HIGH severity checks require manual intervention:
 | sudoers | Monitor sudo configuration changes |
 | usergroup | Monitor /etc/passwd, /etc/group, /etc/shadow changes |
 
-<details>
+<details markdown="1">
 <summary>Source Files (5)</summary>
 
 - `medium/rhcos4-e8-worker-audit-rules-login-events-faillock.yaml`
@@ -292,7 +292,7 @@ These HIGH severity checks require manual intervention:
 </details>
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M8: Audit Rules - Network Config</strong> — 🟡 Pending</summary>
 
 **File**: `75-audit-network-medium.yaml`
@@ -307,7 +307,7 @@ These HIGH severity checks require manual intervention:
 
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M9: Auditd Configuration</strong> — 🟡 Pending</summary>
 
 **File**: `75-auditd-config-medium.yaml`
@@ -322,7 +322,7 @@ These HIGH severity checks require manual intervention:
 
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M10: API Server Encryption</strong> — 🟡 Pending</summary>
 
 **Type**: APIServer CRD
@@ -339,7 +339,7 @@ These HIGH severity checks require manual intervention:
 
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M11: Ingress TLS Ciphers</strong> — 🟡 Pending</summary>
 
 **Type**: IngressController CRD
@@ -355,7 +355,7 @@ These HIGH severity checks require manual intervention:
 
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>M12: Audit Profile</strong> — 🟡 Pending</summary>
 
 **Type**: APIServer CRD
@@ -375,7 +375,7 @@ These HIGH severity checks require manual intervention:
 
 ## LOW Severity Remediations
 
-<details open>
+<details markdown="1" open>
 <summary><strong>L1: SSHD LogLevel</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
 
 **File**: `75-sshd-hardening.yaml` (consolidated with H3, M1)
@@ -391,7 +391,7 @@ These HIGH severity checks require manual intervention:
 
 </details>
 
-<details>
+<details markdown="1">
 <summary><strong>L2: Sysctl dmesg_restrict</strong> — 🟡 Pending</summary>
 
 **File**: `75-sysctl-low.yaml`
