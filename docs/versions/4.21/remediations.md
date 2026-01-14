@@ -26,7 +26,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 |-------|----------|----------|-------|--------|------|-----|
 | [H1](#h1-crypto-policy) | Crypto Policy | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
 | [H2](#h2-pam-empty-passwords) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H3](#h3-sshd-empty-passwords) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [H3](#h3-sshd-empty-passwords) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) *(consolidated)* |
 | [M1](#m1-sshd-configuration) | SSHD Configuration | MEDIUM | 7 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
 | [M2](#m2-kernel-hardening-sysctl) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
 | [M3](#m3-audit-rules---dac-modifications) | Audit DAC | MEDIUM | 2 | 🟡 Pending | - | - |
