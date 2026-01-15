@@ -26,6 +26,34 @@
     </div>
   </main>
 
+  <!-- Floating Status Legend -->
+  <div class="floating-legend" id="floating-legend">
+    <button class="legend-toggle" onclick="toggleLegend()" title="Toggle Legend">?</button>
+    <div class="legend-content">
+      <div class="legend-header">Legend</div>
+      <div class="legend-section">
+        <div class="legend-title">Status</div>
+        <div class="legend-item"><span>🔵</span> In Progress</div>
+        <div class="legend-item"><span>🟡</span> Pending</div>
+        <div class="legend-item"><span>⚪</span> On Hold</div>
+        <div class="legend-item"><span>🟢</span> Complete</div>
+      </div>
+      <div class="legend-section">
+        <div class="legend-title">Severity</div>
+        <div class="legend-item"><span class="severity-dot high"></span> HIGH</div>
+        <div class="legend-item"><span class="severity-dot medium"></span> MEDIUM</div>
+        <div class="legend-item"><span class="severity-dot low"></span> LOW</div>
+        <div class="legend-item"><span class="severity-dot manual"></span> MANUAL</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  function toggleLegend() {
+    document.getElementById('floating-legend').classList.toggle('expanded');
+  }
+  </script>
+
   <footer>
     <div class="container">
       <p>Compliance Remediation Tracker |

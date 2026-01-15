@@ -24,25 +24,25 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 ## Remediation Status
 
-| Group | Category | Severity | Count | Status | Jira | PR |
-|-------|----------|----------|-------|--------|------|-----|
-| [H1](groups/H1.html) | Crypto Policy | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H2](groups/H2.html) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H3](groups/H3.html) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| [M1](groups/M1.html) | SSHD Configuration | MEDIUM | 7 | 🟡 Pending | - | - |
-| [M2](groups/M2.html) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
-| [M3](groups/M3.html) | Audit DAC | MEDIUM | 2 | 🟡 Pending | - | - |
-| [M4](groups/M4.html) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | - | - |
-| [M5](groups/M5.html) | Audit Modules | MEDIUM | 3 | 🟡 Pending | - | - |
-| [M6](groups/M6.html) | Audit Time | MEDIUM | 5 | 🟡 Pending | - | - |
-| [M7](groups/M7.html) | Audit Auth | MEDIUM | 5 | 🟡 Pending | - | - |
-| [M8](groups/M8.html) | Audit Network | MEDIUM | 1 | 🟡 Pending | - | - |
-| [M9](groups/M9.html) | Auditd Config | MEDIUM | 1 | 🟡 Pending | - | - |
-| [M10](groups/M10.html) | API Encryption | MEDIUM | 2 | 🟡 Pending | - | - |
-| [M11](groups/M11.html) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | - | - |
-| [M12](groups/M12.html) | Audit Profile | MEDIUM | 1 | 🟡 Pending | - | - |
-| [L1](groups/L1.html) | SSHD LogLevel | LOW | 1 | 🟡 Pending | - | - |
-| [L2](groups/L2.html) | Sysctl dmesg | LOW | 1 | 🟡 Pending | - | - |
+| Group | Category | Severity | Count | Status | Compare | Jira | PR |
+|-------|----------|----------|-------|--------|---------|------|-----|
+| [H1](groups/H1.html) | Crypto Policy | HIGH | 1 | 🔵 In Progress | - | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
+| [H2](groups/H2.html) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | - | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
+| [H3](groups/H3.html) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | - | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+| [M1](groups/M1.html) | SSHD Configuration | MEDIUM | 7 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:m1-sshd-medium-hardening) | - | - |
+| [M2](groups/M2.html) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m2-kernel-sysctl) | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
+| [M3](groups/M3.html) | Audit DAC | MEDIUM | 2 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m3-audit-dac) | - | - |
+| [M4](groups/M4.html) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m4-audit-selinux) | - | - |
+| [M5](groups/M5.html) | Audit Modules | MEDIUM | 3 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m5-audit-modules) | - | - |
+| [M6](groups/M6.html) | Audit Time | MEDIUM | 5 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m6-audit-time) | - | - |
+| [M7](groups/M7.html) | Audit Auth | MEDIUM | 5 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m7-audit-login) | - | - |
+| [M8](groups/M8.html) | Audit Network | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m8-audit-network) | - | - |
+| [M9](groups/M9.html) | Auditd Config | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m9-auditd-config) | - | - |
+| [M10](groups/M10.html) | API Encryption | MEDIUM | 2 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m10-api-encryption) | - | - |
+| [M11](groups/M11.html) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m11-ingress-tls) | - | - |
+| [M12](groups/M12.html) | Audit Profile | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m12-audit-profile) | - | - |
+| [L1](groups/L1.html) | SSHD LogLevel | LOW | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l1-sshd-loglevel) | - | - |
+| [L2](groups/L2.html) | Sysctl dmesg | LOW | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l2-sysctl-dmesg) | - | - |
 
 **Status Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
 
@@ -66,8 +66,8 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 | crypto-policy | DEFAULT:NO-SHA1 | System-wide crypto policy without SHA1 |
 
 **Source Files**:
-- `high/rhcos4-e8-worker-configure-crypto-policy.yaml`
-- `high/rhcos4-e8-master-configure-crypto-policy.yaml`
+- [`high/rhcos4-e8-worker-configure-crypto-policy.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/high/rhcos4-e8-worker-configure-crypto-policy.yaml)
+- [`high/rhcos4-e8-master-configure-crypto-policy.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/high/rhcos4-e8-master-configure-crypto-policy.yaml)
 
 </details>
 
@@ -82,8 +82,8 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 | no-empty-passwords | Disable nullok in PAM system-auth and password-auth |
 
 **Source Files**:
-- `high/rhcos4-e8-worker-no-empty-passwords.yaml`
-- `high/rhcos4-e8-master-no-empty-passwords.yaml`
+- [`high/rhcos4-e8-worker-no-empty-passwords.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/high/rhcos4-e8-worker-no-empty-passwords.yaml)
+- [`high/rhcos4-e8-master-no-empty-passwords.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/high/rhcos4-e8-master-no-empty-passwords.yaml)
 
 </details>
 
@@ -98,8 +98,8 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 | PermitEmptyPasswords | no | Prevent SSH login with empty passwords |
 
 **Source Files**:
-- `high/rhcos4-e8-worker-sshd-disable-empty-passwords.yaml`
-- `high/rhcos4-e8-master-sshd-disable-empty-passwords.yaml`
+- [`high/rhcos4-e8-worker-sshd-disable-empty-passwords.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/high/rhcos4-e8-worker-sshd-disable-empty-passwords.yaml)
+- [`high/rhcos4-e8-master-sshd-disable-empty-passwords.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/high/rhcos4-e8-master-sshd-disable-empty-passwords.yaml)
 
 > **Note**: This HIGH severity SSHD setting is consolidated into PR #466 along with MEDIUM (M1) and LOW (L1) SSHD settings.
 
@@ -141,13 +141,13 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (7)</summary>
 
-- `medium/rhcos4-e8-worker-sshd-disable-root-login.yaml`
-- `medium/rhcos4-e8-worker-sshd-disable-gssapi-auth.yaml`
-- `medium/rhcos4-e8-worker-sshd-disable-rhosts.yaml`
-- `medium/rhcos4-e8-worker-sshd-disable-user-known-hosts.yaml`
-- `medium/rhcos4-e8-worker-sshd-do-not-permit-user-env.yaml`
-- `medium/rhcos4-e8-worker-sshd-enable-strictmodes.yaml`
-- `medium/rhcos4-e8-worker-sshd-print-last-log.yaml`
+- [`medium/rhcos4-e8-worker-sshd-disable-root-login.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-disable-root-login.yaml)
+- [`medium/rhcos4-e8-worker-sshd-disable-gssapi-auth.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-disable-gssapi-auth.yaml)
+- [`medium/rhcos4-e8-worker-sshd-disable-rhosts.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-disable-rhosts.yaml)
+- [`medium/rhcos4-e8-worker-sshd-disable-user-known-hosts.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-disable-user-known-hosts.yaml)
+- [`medium/rhcos4-e8-worker-sshd-do-not-permit-user-env.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-do-not-permit-user-env.yaml)
+- [`medium/rhcos4-e8-worker-sshd-enable-strictmodes.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-enable-strictmodes.yaml)
+- [`medium/rhcos4-e8-worker-sshd-print-last-log.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sshd-print-last-log.yaml)
 
 </details>
 </details>
@@ -169,10 +169,10 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (4)</summary>
 
-- `medium/rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml`
-- `medium/rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled.yaml`
-- `medium/rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope.yaml`
-- `medium/rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden.yaml`
+- [`medium/rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sysctl-kernel-randomize-va-space.yaml)
+- [`medium/rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled.yaml)
+- [`medium/rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope.yaml)
+- [`medium/rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden.yaml)
 
 </details>
 </details>
@@ -191,8 +191,8 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (2)</summary>
 
-- `medium/rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-dac-modification-chown.yaml`
+- [`medium/rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-dac-modification-chmod.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-dac-modification-chown.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-dac-modification-chown.yaml)
 
 </details>
 </details>
@@ -215,12 +215,12 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (6)</summary>
 
-- `medium/rhcos4-e8-worker-audit-rules-execution-chcon.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-execution-restorecon.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-execution-semanage.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-execution-setfiles.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-execution-setsebool.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-execution-seunshare.yaml`
+- [`medium/rhcos4-e8-worker-audit-rules-execution-chcon.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-execution-chcon.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-execution-restorecon.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-execution-restorecon.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-execution-semanage.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-execution-semanage.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-execution-setfiles.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-execution-setfiles.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-execution-setsebool.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-execution-setsebool.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-execution-seunshare.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-execution-seunshare.yaml)
 
 </details>
 </details>
@@ -240,9 +240,9 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (3)</summary>
 
-- `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-finit.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-init.yaml`
+- [`medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-delete.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-finit.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-finit.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-init.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-kernel-module-loading-init.yaml)
 
 </details>
 </details>
@@ -264,11 +264,11 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (5)</summary>
 
-- `medium/rhcos4-e8-worker-audit-rules-time-adjtimex.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-time-clock-settime.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-time-settimeofday.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-time-stime.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-time-watch-localtime.yaml`
+- [`medium/rhcos4-e8-worker-audit-rules-time-adjtimex.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-time-adjtimex.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-time-clock-settime.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-time-clock-settime.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-time-settimeofday.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-time-settimeofday.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-time-stime.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-time-stime.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-time-watch-localtime.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-time-watch-localtime.yaml)
 
 </details>
 </details>
@@ -290,11 +290,11 @@ These HIGH severity checks require manual intervention:
 <details markdown="1">
 <summary>Source Files (5)</summary>
 
-- `medium/rhcos4-e8-worker-audit-rules-login-events-faillock.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-login-events-lastlog.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-login-events-tallylog.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-sysadmin-actions.yaml`
-- `medium/rhcos4-e8-worker-audit-rules-usergroup-modification.yaml`
+- [`medium/rhcos4-e8-worker-audit-rules-login-events-faillock.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-login-events-faillock.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-login-events-lastlog.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-login-events-lastlog.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-login-events-tallylog.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-login-events-tallylog.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-sysadmin-actions.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-sysadmin-actions.yaml)
+- [`medium/rhcos4-e8-worker-audit-rules-usergroup-modification.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-usergroup-modification.yaml)
 
 </details>
 </details>
@@ -310,7 +310,7 @@ These HIGH severity checks require manual intervention:
 | network_modification | Audit sethostname, setdomainname syscalls |
 
 **Source Files**:
-- `medium/rhcos4-e8-worker-audit-rules-networkconfig-modification.yaml`
+- [`medium/rhcos4-e8-worker-audit-rules-networkconfig-modification.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-audit-rules-networkconfig-modification.yaml)
 
 </details>
 
@@ -325,7 +325,7 @@ These HIGH severity checks require manual intervention:
 | name_format | hostname | Log hostname in audit records |
 
 **Source Files**:
-- `medium/rhcos4-e8-worker-auditd-name-format.yaml`
+- [`medium/rhcos4-e8-worker-auditd-name-format.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/rhcos4-e8-worker-auditd-name-format.yaml)
 
 </details>
 
@@ -341,8 +341,8 @@ These HIGH severity checks require manual intervention:
 | encryption.type | aescbc | Enable AES-CBC encryption at rest |
 
 **Source Files**:
-- `medium/ocp4-cis-api-server-encryption-provider-cipher.yaml`
-- `medium/ocp4-e8-api-server-encryption-provider-cipher.yaml`
+- [`medium/ocp4-cis-api-server-encryption-provider-cipher.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/ocp4-cis-api-server-encryption-provider-cipher.yaml)
+- [`medium/ocp4-e8-api-server-encryption-provider-cipher.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/ocp4-e8-api-server-encryption-provider-cipher.yaml)
 
 </details>
 
@@ -358,7 +358,7 @@ These HIGH severity checks require manual intervention:
 | tlsSecurityProfile | Custom TLS profile with specific cipher suites |
 
 **Source Files**:
-- `medium/ocp4-cis-ingress-controller-tls-cipher-suites.yaml`
+- [`medium/ocp4-cis-ingress-controller-tls-cipher-suites.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/ocp4-cis-ingress-controller-tls-cipher-suites.yaml)
 
 </details>
 
@@ -374,7 +374,7 @@ These HIGH severity checks require manual intervention:
 | audit.profile | WriteRequestBodies | Enhanced audit logging |
 
 **Source Files**:
-- `medium/ocp4-cis-audit-profile-set.yaml`
+- [`medium/ocp4-cis-audit-profile-set.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/medium/ocp4-cis-audit-profile-set.yaml)
 
 </details>
 
@@ -393,8 +393,8 @@ These HIGH severity checks require manual intervention:
 | LogLevel | INFO | Set SSH logging to INFO level |
 
 **Source Files**:
-- `low/rhcos4-e8-worker-sshd-set-loglevel-info.yaml`
-- `low/rhcos4-e8-master-sshd-set-loglevel-info.yaml`
+- [`low/rhcos4-e8-worker-sshd-set-loglevel-info.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/low/rhcos4-e8-worker-sshd-set-loglevel-info.yaml)
+- [`low/rhcos4-e8-master-sshd-set-loglevel-info.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/low/rhcos4-e8-master-sshd-set-loglevel-info.yaml)
 
 </details>
 
@@ -408,8 +408,8 @@ These HIGH severity checks require manual intervention:
 | kernel.dmesg_restrict | 1 | Restrict kernel log access to privileged users |
 
 **Source Files**:
-- `low/rhcos4-e8-worker-sysctl-kernel-dmesg-restrict.yaml`
-- `low/rhcos4-e8-master-sysctl-kernel-dmesg-restrict.yaml`
+- [`low/rhcos4-e8-worker-sysctl-kernel-dmesg-restrict.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/low/rhcos4-e8-worker-sysctl-kernel-dmesg-restrict.yaml)
+- [`low/rhcos4-e8-master-sysctl-kernel-dmesg-restrict.yaml`](https://github.com/sebrandon1/compliance-scripts/blob/main/complianceremediations/low/rhcos4-e8-master-sysctl-kernel-dmesg-restrict.yaml)
 
 </details>
 

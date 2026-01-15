@@ -53,7 +53,38 @@ layout: default
       <span class="quick-link-icon">&#128279;</span>
       Detailed Group Pages
     </a>
+    <button onclick="exportStatusJSON()" class="quick-link export-btn">
+      <span class="quick-link-icon">&#128230;</span>
+      Export JSON
+    </button>
   </div>
+
+  {% assign version_groups = site.pages | where: "layout", "group" | where: "version", page.version %}
+  <script id="group-data" type="application/json">
+  {
+    "version": "{{ page.version }}",
+    "exported_at": "{{ 'now' | date: '%Y-%m-%dT%H:%M:%SZ' }}",
+    "summary": {
+      "total_checks": {{ version_data.summary.total_checks }},
+      "passing": {{ version_data.summary.passing }},
+      "failing": {{ version_data.summary.failing }},
+      "manual": {{ version_data.summary.manual }},
+      "coverage_percent": {{ coverage }}
+    },
+    "groups": [
+      {% for group in version_groups %}
+      {
+        "id": "{{ group.group_id }}",
+        "title": "{{ group.title }}",
+        "severity": "{{ group.severity }}",
+        "status": "{{ group.status }}",
+        "jira": "{{ group.jira | default: '' }}",
+        "pr": "{{ group.pr | default: '' }}"
+      }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ]
+  }
+  </script>
 
   <!-- Tab Navigation -->
   <div class="tabs-container">
@@ -155,6 +186,24 @@ function switchTab(tabName) {
   // Add active class to selected button and panel
   document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
   document.getElementById('panel-' + tabName).classList.add('active');
+}
+
+function exportStatusJSON() {
+  var dataEl = document.getElementById('group-data');
+  if (!dataEl) {
+    alert('No data available to export');
+    return;
+  }
+  var data = JSON.parse(dataEl.textContent);
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'compliance-status-' + data.version + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 </script>
 
