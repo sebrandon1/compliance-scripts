@@ -12,8 +12,8 @@ on:
 jobs:
   test-compliance:
     runs-on: ubuntu-latest
-    # Only run on main branch and not from forks
-    if: github.repository_owner == 'sebrandon1'
+    # Only run on main branch, not from forks, and not from dependabot
+    if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
     permissions:
       contents: read
     steps:
