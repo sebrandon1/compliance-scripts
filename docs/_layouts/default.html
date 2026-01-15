@@ -26,11 +26,6 @@
           <a href="{{ '/' | relative_url }}">Dashboard</a>
           <a href="{{ '/REMEDIATION_GROUPINGS' | relative_url }}">Remediation Groups</a>
           <a href="https://github.com/sebrandon1/compliance-scripts" target="_blank">GitHub</a>
-          <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode (D)">
-            <span class="theme-icon-light">&#9728;</span>
-            <span class="theme-icon-dark">&#9790;</span>
-          </button>
-          <button class="keyboard-help-btn" onclick="toggleKeyboardHelp()" title="Keyboard shortcuts (?)">&#9000;</button>
         </div>
       </div>
     </nav>
@@ -246,10 +241,23 @@
 
   <footer>
     <div class="container">
-      <p>Compliance Remediation Tracker |
-        <a href="https://github.com/sebrandon1/compliance-scripts">Source</a> |
-        Built with Jekyll
-      </p>
+      <div class="footer-content">
+        <p>Compliance Remediation Tracker |
+          <a href="https://github.com/sebrandon1/compliance-scripts">Source</a> |
+          Built with Jekyll
+        </p>
+        <div class="footer-actions">
+          <button class="footer-btn" onclick="toggleTheme()" title="Toggle dark mode (D)">
+            <span class="theme-icon-light">&#9728;</span>
+            <span class="theme-icon-dark">&#9790;</span>
+            <span class="btn-label">Theme</span>
+          </button>
+          <button class="footer-btn" onclick="toggleKeyboardHelp()" title="Keyboard shortcuts (?)">
+            <span>&#9000;</span>
+            <span class="btn-label">Shortcuts</span>
+          </button>
+        </div>
+      </div>
     </div>
   </footer>
 </body>

@@ -1367,26 +1367,44 @@ button.quick-link {
   color: var(--color-pass);
 }
 
-/* ===== DARK MODE THEME TOGGLE ===== */
-.theme-toggle {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  cursor: pointer;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.2s;
+/* ===== FOOTER BUTTONS ===== */
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.footer-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.4rem;
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: 0.85rem;
+  transition: all 0.2s;
 }
 
-.theme-toggle:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.5);
+.footer-btn:hover {
+  background: var(--color-hover);
+  border-color: var(--color-link);
 }
 
+.footer-btn .btn-label {
+  font-size: 0.8rem;
+}
+
+/* Theme icon visibility */
 .theme-icon-light,
 .theme-icon-dark {
   line-height: 1;
@@ -1461,22 +1479,6 @@ button.quick-link {
 }
 
 /* ===== KEYBOARD SHORTCUTS ===== */
-.keyboard-help-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  cursor: pointer;
-  color: white;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.keyboard-help-btn:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.5);
-}
-
 .keyboard-help-modal {
   display: none;
   position: fixed;
