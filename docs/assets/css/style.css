@@ -855,13 +855,20 @@ button.quick-link {
 }
 
 .remediation-description {
-  font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.8rem;
-  line-height: 1.7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.8;
   color: #cdd6f4;
-  white-space: pre-wrap;
+  white-space: normal;
   word-wrap: break-word;
   margin: 0;
+}
+
+/* Format paragraphs within remediation content */
+.remediation-description br {
+  display: block;
+  content: "";
+  margin-top: 0.75em;
 }
 
 /* Scrollbar styling for remediation content */
