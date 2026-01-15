@@ -3,20 +3,24 @@
 # Ensure the script exits on any error
 set -e
 
-# Default directories
-source_dir="complianceremediations"
-machineconfig_dir="/Users/bpalm/Repositories/go/src/github.com/openshift-kni/telco-reference/telco-ran/configuration/machineconfigs"
-extramanifests_dir="/Users/bpalm/Repositories/go/src/github.com/openshift-kni/telco-reference/telco-ran/configuration/extra-manifests-builder"
+# Default directories (can be overridden via environment variables or CLI flags)
+source_dir="${REMEDIATION_DIR:-complianceremediations}"
+machineconfig_dir="${MACHINECONFIG_DIR:-./output/machineconfigs}"
+extramanifests_dir="${EXTRAMANIFESTS_DIR:-./output/extra-manifests}"
 
 usage() {
 	echo "Usage: $0 [-d source_dir] [-m machineconfig_dir] [-e extramanifests_dir] [-s severity[,severity...]] [-x]"
-	echo "  -d  Source directory for YAMLs (default: complianceremediations)"
-	echo "  -m  Destination directory for MachineConfigs (default: $machineconfig_dir)"
-	echo "  -e  Destination directory for extra manifests (default: $extramanifests_dir)"
+	echo ""
+	echo "Options:"
+	echo "  -d  Source directory for YAMLs (default: \$REMEDIATION_DIR or complianceremediations)"
+	echo "  -m  Destination directory for MachineConfigs (default: \$MACHINECONFIG_DIR or ./output/machineconfigs)"
+	echo "  -e  Destination directory for extra manifests (default: \$EXTRAMANIFESTS_DIR or ./output/extra-manifests)"
 	echo "  -s  Comma-separated severities to include: high,medium,low (case-insensitive)"
 	echo "      (Alias: -S)"
 	echo "  -x  Execute automated apply + health/performance tests for created files"
 	echo "  -h  Show this help message"
+	echo ""
+	echo "Environment variables: REMEDIATION_DIR, MACHINECONFIG_DIR, EXTRAMANIFESTS_DIR"
 	exit 1
 }
 

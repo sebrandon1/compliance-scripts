@@ -7,10 +7,18 @@ only specific flags/directives from a combined configuration file.
 """
 
 import os
-import yaml
+import sys
 import urllib.parse
 import argparse
 from typing import List, Set
+
+# Check for required dependencies
+try:
+    import yaml
+except ImportError:
+    print("ERROR: PyYAML not installed.", file=sys.stderr)
+    print("Install with: pip install pyyaml", file=sys.stderr)
+    sys.exit(1)
 
 
 def parse_config_content(encoded_source: str) -> List[str]:

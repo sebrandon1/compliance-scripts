@@ -23,7 +23,7 @@ BG_BLUE := \033[44m
 # ────────────────────────────────────────────────────────────────────────────────
 # 📋 Target Definitions
 # ────────────────────────────────────────────────────────────────────────────────
-.PHONY: all help install-compliance-operator apply-periodic-scan create-scan \
+.PHONY: all help preflight install-compliance-operator apply-periodic-scan create-scan \
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
@@ -61,7 +61,7 @@ help: banner ## 📖 Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(export-compliance|update-dashboard|serve-docs|install-jekyll)"
 	@echo ""
 	@echo "$(YELLOW)🧹 Utility Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(clean|help)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(clean|help|preflight)"
 	@echo ""
 	@echo "$(DIM)Usage: make <command>$(RESET)"
 	@echo ""
@@ -69,6 +69,10 @@ help: banner ## 📖 Show this help message
 # ────────────────────────────────────────────────────────────────────────────────
 # 🔧 Installation & Setup
 # ────────────────────────────────────────────────────────────────────────────────
+
+preflight: ## ✅ Check all dependencies and prerequisites
+	@./scripts/preflight-check.sh
+	@echo ""
 
 verify-images: ## 🔍 Verify container images are accessible before installation
 	@echo "$(BOLD)$(BLUE)🔍 Verifying container images...$(RESET)"

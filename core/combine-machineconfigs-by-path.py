@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
+"""
+Combine MachineConfig remediations by file path.
+
+This script merges multiple MachineConfig YAML files that target the same
+file path into a single combined MachineConfig.
+"""
 import os
+import sys
 import urllib.parse
-import yaml
 import argparse
 from collections import defaultdict
+
+# Check for required dependencies
+try:
+    import yaml
+except ImportError:
+    print("ERROR: PyYAML not installed.", file=sys.stderr)
+    print("Install with: pip install pyyaml", file=sys.stderr)
+    sys.exit(1)
 
 
 def safe_shortname(path):
