@@ -230,7 +230,8 @@ h2 {
 }
 
 /* Tables */
-.remediation-table {
+.remediation-table,
+table {
   width: 100%;
   border-collapse: collapse;
   background: var(--color-card);
@@ -241,29 +242,106 @@ h2 {
 }
 
 .remediation-table th,
-.remediation-table td {
-  padding: 1rem;
+.remediation-table td,
+table th,
+table td {
+  padding: 0.85rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
 
-.remediation-table th {
-  background: #f8f9fa;
+.remediation-table th,
+table th {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  color: #6c757d;
+  letter-spacing: 0.5px;
 }
 
-.remediation-table tr:hover {
+.remediation-table tr:hover,
+table tr:hover {
+  background: #f0f4ff;
+}
+
+/* Zebra striping */
+table tbody tr:nth-child(even),
+table tr:nth-child(even):not(:first-child) {
   background: #f8f9fa;
 }
 
-.remediation-table code {
+table tbody tr:nth-child(even):hover,
+table tr:nth-child(even):not(:first-child):hover {
+  background: #f0f4ff;
+}
+
+.remediation-table code,
+table code {
   background: #e9ecef;
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-size: 0.85rem;
+}
+
+/* Group ID styling - first column */
+table td:first-child a {
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Severity column styling */
+table td:nth-child(3) {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Status cell colors */
+table td:nth-child(5) {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Jira and PR link styling */
+table td a[href*="issues.redhat.com"],
+table td a[href*="/pull/"] {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+table td a[href*="issues.redhat.com"]:hover,
+table td a[href*="/pull/"]:hover {
+  background: #e9ecef;
+  text-decoration: none;
+}
+
+/* Compare link in table */
+table td a[href*="/compare/"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+table td a[href*="/compare/"]:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+  text-decoration: none;
 }
 
 .description {
