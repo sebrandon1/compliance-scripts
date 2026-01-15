@@ -3,6 +3,11 @@ layout: default
 ---
 
 <div class="version-page">
+  <nav class="breadcrumb">
+    <a href="{{ site.baseurl }}/">Home</a> &raquo;
+    <span>OCP {{ page.version }}</span>
+  </nav>
+
   <h1>OCP {{ page.version }} Compliance Status</h1>
 
   {% assign version_slug = page.version | replace: ".", "_" %}

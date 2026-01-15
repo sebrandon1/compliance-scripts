@@ -342,6 +342,18 @@ a:hover {
 .version-card .stat-value.pass { color: var(--color-pass); }
 .version-card .stat-value.fail { color: var(--color-fail); }
 
+.version-card .status-breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.version-card .status-breakdown span {
+  cursor: help;
+}
+
 /* Scan info */
 .scan-info {
   background: #e9ecef;
@@ -670,6 +682,17 @@ footer a {
   box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
   text-decoration: none;
   color: white;
+}
+
+.group-meta .last-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  background: #e9ecef;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #6c757d;
 }
 
 .group-content {
