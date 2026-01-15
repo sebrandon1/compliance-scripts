@@ -10,6 +10,20 @@ This document catalogs all compliance remediations for **OCP 4.21**, collected f
 
 > **Tip**: Each group has a [dedicated page](groups/) with detailed implementation examples that you can link directly from PRs.
 
+<div class="filter-bar">
+  <div class="filter-search">
+    <input type="text" id="table-search" placeholder="Search remediations..." onkeyup="filterTables()">
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-filter="all" onclick="setStatusFilter('all')">All</button>
+    <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">🟡 Pending</button>
+    <button class="filter-btn" data-filter="in_progress" onclick="setStatusFilter('in_progress')">🔵 In Progress</button>
+    <button class="filter-btn" data-filter="on_hold" onclick="setStatusFilter('on_hold')">⚪ On Hold</button>
+    <button class="filter-btn" data-filter="complete" onclick="setStatusFilter('complete')">🟢 Complete</button>
+  </div>
+  <div class="filter-counts" id="filter-counts"></div>
+</div>
+
 ## Quick Summary
 
 From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
@@ -422,3 +436,50 @@ These HIGH severity checks require manual intervention:
 - **SSHD Consolidation**: All SSHD settings (H3, M1, L1) consolidated into `75-sshd-hardening.yaml` in PR #466
 - **PR #529**: Non-SSHD HIGH severity items (crypto-policy, PAM)
 - **PR #466**: All SSHD hardening (HIGH + MEDIUM + LOW)
+
+<script>
+var currentFilter = 'all';
+var searchTerm = '';
+
+function setStatusFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
+  filterTables();
+}
+
+function filterTables() {
+  searchTerm = document.getElementById('table-search').value.toLowerCase();
+  var tables = document.querySelectorAll('table');
+  var visibleCount = 0;
+  var totalCount = 0;
+
+  tables.forEach(function(table) {
+    var rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
+    rows.forEach(function(row) {
+      if (row.querySelector('th')) return;
+      totalCount++;
+      var text = row.textContent.toLowerCase();
+      var statusMatch = text.match(/(pending|in progress|on hold|complete)/i);
+      var status = statusMatch ? statusMatch[0].toLowerCase() : '';
+
+      var matchesSearch = searchTerm === '' || text.includes(searchTerm);
+      var matchesFilter = currentFilter === 'all' ||
+        (currentFilter === 'pending' && status === 'pending') ||
+        (currentFilter === 'in_progress' && status === 'in progress') ||
+        (currentFilter === 'on_hold' && status === 'on hold') ||
+        (currentFilter === 'complete' && status === 'complete');
+
+      if (matchesSearch && matchesFilter) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
+  document.getElementById('filter-counts').textContent =
+    visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
+}
+</script>

@@ -9,6 +9,20 @@ title: OCP 4.21 Remediation Groups
 
 Each group below represents a logical set of related compliance checks that can be remediated together in a single MachineConfig or CRD.
 
+<div class="filter-bar">
+  <div class="filter-search">
+    <input type="text" id="table-search" placeholder="Search groups..." onkeyup="filterTables()">
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-filter="all" onclick="setStatusFilter('all')">All</button>
+    <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">🟡 Pending</button>
+    <button class="filter-btn" data-filter="in_progress" onclick="setStatusFilter('in_progress')">🔵 In Progress</button>
+    <button class="filter-btn" data-filter="on_hold" onclick="setStatusFilter('on_hold')">⚪ On Hold</button>
+    <button class="filter-btn" data-filter="complete" onclick="setStatusFilter('complete')">🟢 Complete</button>
+  </div>
+  <div class="filter-counts" id="filter-counts"></div>
+</div>
+
 ---
 
 ## HIGH Severity
@@ -70,13 +84,77 @@ Each group below represents a logical set of related compliance checks that can 
 
 Use these URLs in your PR descriptions:
 
-```
-https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/H1.html
-https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/M1.html
-```
+<div class="copy-box">
+  <code id="url-h1">https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/H1.html</code>
+  <button class="copy-btn" onclick="copyToClipboard('url-h1')" title="Copy to clipboard">📋</button>
+</div>
+<div class="copy-box">
+  <code id="url-m1">https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/M1.html</code>
+  <button class="copy-btn" onclick="copyToClipboard('url-m1')" title="Copy to clipboard">📋</button>
+</div>
 
 Example markdown for PR descriptions:
-```markdown
-This PR implements [H1: Crypto Policy](https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/H1.html)
-and [H2: PAM Empty Passwords](https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/H2.html).
-```
+<div class="copy-box">
+  <code id="example-md">This PR implements [H1: Crypto Policy](https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/H1.html) and [H2: PAM Empty Passwords](https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/H2.html).</code>
+  <button class="copy-btn" onclick="copyToClipboard('example-md')" title="Copy to clipboard">📋</button>
+</div>
+
+<script>
+var currentFilter = 'all';
+var searchTerm = '';
+
+function setStatusFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
+  filterTables();
+}
+
+function filterTables() {
+  searchTerm = document.getElementById('table-search').value.toLowerCase();
+  var tables = document.querySelectorAll('table');
+  var visibleCount = 0;
+  var totalCount = 0;
+
+  tables.forEach(function(table) {
+    var rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
+    rows.forEach(function(row) {
+      if (row.querySelector('th')) return; // Skip header rows
+      totalCount++;
+      var text = row.textContent.toLowerCase();
+      var statusCell = row.cells[2] ? row.cells[2].textContent : '';
+
+      var matchesSearch = searchTerm === '' || text.includes(searchTerm);
+      var matchesFilter = currentFilter === 'all' ||
+        (currentFilter === 'pending' && statusCell.includes('Pending')) ||
+        (currentFilter === 'in_progress' && statusCell.includes('In Progress')) ||
+        (currentFilter === 'on_hold' && statusCell.includes('On Hold')) ||
+        (currentFilter === 'complete' && statusCell.includes('Complete'));
+
+      if (matchesSearch && matchesFilter) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
+  document.getElementById('filter-counts').textContent =
+    visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
+}
+
+function copyToClipboard(elementId) {
+  var text = document.getElementById(elementId).textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = event.target;
+    var original = btn.textContent;
+    btn.textContent = '✓';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
