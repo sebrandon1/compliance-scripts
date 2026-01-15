@@ -26,10 +26,10 @@ TRACKING_FILE="${OUTPUT_DIR}/tracking.json"
 
 # Validate arguments
 if [[ $# -lt 1 ]]; then
-    echo -e "${RED}Error: OCP version required${NC}"
-    echo "Usage: $0 <ocp-version>"
-    echo "Example: $0 4.17"
-    exit 1
+	echo -e "${RED}Error: OCP version required${NC}"
+	echo "Usage: $0 <ocp-version>"
+	echo "Example: $0 4.17"
+	exit 1
 fi
 
 OCP_VERSION="$1"
@@ -43,21 +43,21 @@ echo -e "Namespace: ${NAMESPACE}"
 echo -e "Output: ${OUTPUT_FILE}"
 
 # Check prerequisites
-if ! command -v oc &> /dev/null; then
-    echo -e "${RED}Error: 'oc' command not found${NC}"
-    exit 1
+if ! command -v oc &>/dev/null; then
+	echo -e "${RED}Error: 'oc' command not found${NC}"
+	exit 1
 fi
 
-if ! command -v jq &> /dev/null; then
-    echo -e "${RED}Error: 'jq' command not found${NC}"
-    exit 1
+if ! command -v jq &>/dev/null; then
+	echo -e "${RED}Error: 'jq' command not found${NC}"
+	exit 1
 fi
 
 # Verify cluster connection
-if ! oc whoami &> /dev/null; then
-    echo -e "${RED}Error: Not logged into OpenShift cluster${NC}"
-    echo "Please set KUBECONFIG or run 'oc login'"
-    exit 1
+if ! oc whoami &>/dev/null; then
+	echo -e "${RED}Error: Not logged into OpenShift cluster${NC}"
+	echo "Please set KUBECONFIG or run 'oc login'"
+	exit 1
 fi
 
 # Verify cluster connection (but don't expose cluster name in output)
@@ -72,8 +72,8 @@ echo -e "\n${BLUE}Collecting ComplianceCheckResults...${NC}"
 CHECK_RESULTS=$(oc get compliancecheckresults -n "${NAMESPACE}" -o json 2>/dev/null)
 
 if [[ -z "$CHECK_RESULTS" ]] || [[ "$(echo "$CHECK_RESULTS" | jq '.items | length')" -eq 0 ]]; then
-    echo -e "${RED}Error: No ComplianceCheckResults found in namespace ${NAMESPACE}${NC}"
-    exit 1
+	echo -e "${RED}Error: No ComplianceCheckResults found in namespace ${NAMESPACE}${NC}"
+	exit 1
 fi
 
 TOTAL_CHECKS=$(echo "$CHECK_RESULTS" | jq '.items | length')
@@ -94,21 +94,21 @@ echo -e "  Skipped: ${SKIPPED}"
 # Load tracking data if exists
 TRACKING_DATA="{}"
 if [[ -f "$TRACKING_FILE" ]]; then
-    TRACKING_DATA=$(cat "$TRACKING_FILE")
-    echo -e "\n${BLUE}Loaded tracking data from ${TRACKING_FILE}${NC}"
+	TRACKING_DATA=$(cat "$TRACKING_FILE")
+	echo -e "\n${BLUE}Loaded tracking data from ${TRACKING_FILE}${NC}"
 fi
 
 # Function to get tracking info for a remediation
 get_tracking_info() {
-    local check_name="$1"
-    # Strip prefix like rhcos4-e8-worker- or ocp4-cis-
-    local base_name=$(echo "$check_name" | sed -E 's/^(rhcos4-e8|ocp4-cis|ocp4-e8)-(master|worker)-//')
+	local check_name="$1"
+	# Strip prefix like rhcos4-e8-worker- or ocp4-cis-
+	local base_name=$(echo "$check_name" | sed -E 's/^(rhcos4-e8|ocp4-cis|ocp4-e8)-(master|worker)-//')
 
-    local jira=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].jira // empty")
-    local pr=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].pr // empty")
-    local status=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].status // empty")
+	local jira=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].jira // empty")
+	local pr=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].pr // empty")
+	local status=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].status // empty")
 
-    echo "{\"jira\": \"${jira}\", \"pr\": \"${pr}\", \"tracking_status\": \"${status}\"}"
+	echo "{\"jira\": \"${jira}\", \"pr\": \"${pr}\", \"tracking_status\": \"${status}\"}"
 }
 
 echo -e "\n${BLUE}Processing remediations by severity...${NC}"
@@ -200,21 +200,21 @@ echo -e "\n${BLUE}Generating JSON output...${NC}"
 
 # Create the JSON structure (no cluster name to avoid leaking internal info)
 OUTPUT_JSON=$(jq -n \
-    --arg version "$OCP_VERSION" \
-    --arg scan_date "$SCAN_DATE" \
-    --argjson total "$TOTAL_CHECKS" \
-    --argjson passing "$PASSING" \
-    --argjson failing "$FAILING" \
-    --argjson manual "$MANUAL" \
-    --argjson skipped "$SKIPPED" \
-    --argjson high "$HIGH_CHECKS" \
-    --argjson medium "$MEDIUM_CHECKS" \
-    --argjson low "$LOW_CHECKS" \
-    --argjson manual_checks "$MANUAL_CHECKS" \
-    --argjson passing_high "$PASSING_HIGH" \
-    --argjson passing_medium "$PASSING_MEDIUM" \
-    --argjson passing_low "$PASSING_LOW" \
-    '{
+	--arg version "$OCP_VERSION" \
+	--arg scan_date "$SCAN_DATE" \
+	--argjson total "$TOTAL_CHECKS" \
+	--argjson passing "$PASSING" \
+	--argjson failing "$FAILING" \
+	--argjson manual "$MANUAL" \
+	--argjson skipped "$SKIPPED" \
+	--argjson high "$HIGH_CHECKS" \
+	--argjson medium "$MEDIUM_CHECKS" \
+	--argjson low "$LOW_CHECKS" \
+	--argjson manual_checks "$MANUAL_CHECKS" \
+	--argjson passing_high "$PASSING_HIGH" \
+	--argjson passing_medium "$PASSING_MEDIUM" \
+	--argjson passing_low "$PASSING_LOW" \
+	'{
         version: $version,
         scan_date: $scan_date,
         summary: {
@@ -239,7 +239,7 @@ OUTPUT_JSON=$(jq -n \
 
 # Write output file
 mkdir -p "$OUTPUT_DIR"
-echo "$OUTPUT_JSON" | jq '.' > "$OUTPUT_FILE"
+echo "$OUTPUT_JSON" | jq '.' >"$OUTPUT_FILE"
 
 echo -e "${GREEN}Successfully exported to ${OUTPUT_FILE}${NC}"
 

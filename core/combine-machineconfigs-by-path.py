@@ -172,8 +172,21 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
         description="Combine OpenShift MachineConfig remediations by file path, "
-                    "deduplicating contents. Moves originals to a subfolder if "
-                    "combined."
+                    "deduplicating contents. By default, moves originals to a subfolder.",
+        epilog="""
+Examples:
+  # Combine all MachineConfigs (default behavior - moves originals)
+  %(prog)s --src-dir complianceremediations --out-dir complianceremediations
+
+  # Combine without moving originals (idempotent - safe to run multiple times)
+  %(prog)s --src-dir complianceremediations --out-dir complianceremediations --no-move
+
+  # Preview what would be combined without making changes
+  %(prog)s --src-dir complianceremediations --dry-run
+
+  # Combine only high severity remediations
+  %(prog)s -s high --no-move
+"""
     )
     parser.add_argument(
         '--src-dir', default='complianceremediations',
@@ -192,6 +205,14 @@ def main():
         '--header', default='none', choices=['none', 'provenance', 'full'],
         help="Top-of-file header mode for generated files: 'none' (default), 'provenance' (one-line), or 'full' (list sources)"
     )
+    parser.add_argument(
+        '--no-move', action='store_true',
+        help="Don't move original files to combo/ folder (makes script idempotent)"
+    )
+    parser.add_argument(
+        '--dry-run', action='store_true',
+        help="Preview what would be combined without making any changes"
+    )
     args = parser.parse_args()
 
     src_dir = args.src_dir
@@ -209,8 +230,12 @@ def main():
             )
         severity_filter = set(requested)
     combo_dir = os.path.join(src_dir, "combo")
-    os.makedirs(combo_dir, exist_ok=True)
-    os.makedirs(out_dir, exist_ok=True)
+
+    if args.dry_run:
+        print("[DRY-RUN] Preview mode - no files will be modified")
+    else:
+        os.makedirs(combo_dir, exist_ok=True)
+        os.makedirs(out_dir, exist_ok=True)
 
     # Parse and group MachineConfig YAMLs by (file path, severity)
     combo_map = parse_machineconfig_files(src_dir)
@@ -222,16 +247,37 @@ def main():
             if sev in severity_filter
         }
 
-    # Write combined YAMLs for each (path, severity) with >1 source
+    # Count combinations that would be created
+    combo_count = 0
     for (path, severity), sources in combo_map.items():
         if len(sources) < 2:
-            continue  # Only combine if path appears more than once
-        write_combo_yaml(path, severity, sources, out_dir, header_mode=args.header)
+            continue
+        combo_count += 1
 
-    # Move originals that were combined to the combo/ subfolder
-    move_originals_to_combo(combo_map, src_dir, combo_dir)
+        if args.dry_run:
+            shortname = safe_shortname(path)
+            outname = f"{shortname}-{severity}-combo.yaml" if severity else f"{shortname}-combo.yaml"
+            print(f"[DRY-RUN] Would combine {len(sources)} files for {path} -> {outname}")
+            for src, _ in sources:
+                print(f"          - {src}")
+        else:
+            write_combo_yaml(path, severity, sources, out_dir, header_mode=args.header)
 
-    print(f"All combo files created in {out_dir}/.")
+    if args.dry_run:
+        print(f"\n[DRY-RUN] Would create {combo_count} combined file(s)")
+        if not args.no_move:
+            move_count = sum(1 for (_, _), sources in combo_map.items()
+                             if len(sources) >= 2 for _ in sources)
+            print(f"[DRY-RUN] Would move {move_count} original file(s) to combo/")
+        print("[DRY-RUN] Run without --dry-run to apply changes")
+    else:
+        # Move originals that were combined to the combo/ subfolder (unless --no-move)
+        if not args.no_move:
+            move_originals_to_combo(combo_map, src_dir, combo_dir)
+        else:
+            print("Skipping move of originals (--no-move specified)")
+
+        print(f"All combo files created in {out_dir}/.")
 
 
 if __name__ == "__main__":

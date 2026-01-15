@@ -27,7 +27,7 @@ BG_BLUE := \033[44m
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
-        export-compliance update-dashboard serve-docs install-jekyll
+        export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs
 
 # Default target
 all: help
@@ -113,8 +113,13 @@ collect-complianceremediations: ## 📥 Collect compliance remediation data
 
 combine-machineconfigs: ## 🧩 Combine overlapping MachineConfig remediations by file path
 	@echo "$(BOLD)$(BLUE)🧩 Combining MachineConfigs by file path...$(RESET)"
-	@python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none
+	@python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none --no-move
 	@echo "$(GREEN)✅ Combined MachineConfig YAMLs generated!$(RESET)"
+	@echo ""
+
+validate-machineconfigs: ## ✅ Validate MachineConfig YAML files before applying
+	@echo "$(BOLD)$(BLUE)✅ Validating MachineConfig files...$(RESET)"
+	@./scripts/validate-machineconfig.sh -d output/machineconfigs 2>/dev/null || ./scripts/validate-machineconfig.sh -d complianceremediations
 	@echo ""
 
 filter-machineconfigs: ## 🎯 Filter specific flags from combined MachineConfig (requires INPUT, OUTPUT, and FLAGS or FLAGS_FILE)
@@ -289,9 +294,9 @@ python-lint: ## 🐍 Lint Python files with flake8
 	  pip3 install --user --break-system-packages flake8 2>/dev/null || pip3 install --user flake8; \
 	fi
 	@if command -v flake8 >/dev/null 2>&1; then \
-	  flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
+	  flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv,docs/vendor || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
 	else \
-	  python3 -m flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
+	  python3 -m flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv,docs/vendor || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
 	fi
 	@echo "$(GREEN)✅ Python linting passed!$(RESET)"
 
@@ -304,7 +309,7 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	  exit 1; \
 	fi
 	@echo "$(DIM)  • Running shellcheck...$(RESET)"
-	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' | xargs shellcheck -e SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
+	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' -not -path './docs/vendor/*' | xargs shellcheck -e SC1091,SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
 	@if ! command -v shfmt >/dev/null 2>&1; then \
 	  echo "$(RED)❌ shfmt not found. Please install it:$(RESET)"; \
 	  echo "$(DIM)  macOS: brew install shfmt$(RESET)"; \

@@ -35,26 +35,52 @@ fi
 # LOGGING FUNCTIONS
 # ============================================================================
 
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $*"
+# Log levels: 0=quiet, 1=error, 2=warn, 3=info (default), 4=debug
+LOG_LEVEL="${LOG_LEVEL:-3}"
+
+# Convert named levels to numbers
+case "${LOG_LEVEL,,}" in
+    quiet|q)   LOG_LEVEL=0 ;;
+    error|e)   LOG_LEVEL=1 ;;
+    warn|w)    LOG_LEVEL=2 ;;
+    info|i)    LOG_LEVEL=3 ;;
+    debug|d)   LOG_LEVEL=4 ;;
+    [0-4])     ;; # Already a number
+    *)         LOG_LEVEL=3 ;; # Default to info
+esac
+
+log_error() {
+    [[ $LOG_LEVEL -ge 1 ]] && echo -e "${RED}[ERROR]${NC} $*" >&2
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $*"
+    [[ $LOG_LEVEL -ge 2 ]] && echo -e "${YELLOW}[WARN]${NC} $*"
 }
 
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $*" >&2
+log_info() {
+    [[ $LOG_LEVEL -ge 3 ]] && echo -e "${BLUE}[INFO]${NC} $*"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $*"
+    [[ $LOG_LEVEL -ge 3 ]] && echo -e "${GREEN}[SUCCESS]${NC} $*"
 }
 
 log_debug() {
-    if [[ "${DEBUG:-0}" == "1" ]]; then
-        echo -e "${CYAN}[DEBUG]${NC} $*"
-    fi
+    [[ $LOG_LEVEL -ge 4 ]] && echo -e "${CYAN}[DEBUG]${NC} $*"
+}
+
+# Log at a specific level (for programmatic use)
+# Usage: log 2 "This is a warning"
+log() {
+    local level="$1"
+    shift
+    case "$level" in
+        1|error) log_error "$@" ;;
+        2|warn)  log_warn "$@" ;;
+        3|info)  log_info "$@" ;;
+        4|debug) log_debug "$@" ;;
+        *)       log_info "$@" ;;
+    esac
 }
 
 # ============================================================================
@@ -179,6 +205,47 @@ confirm() {
         [yY][eE][sS]|[yY]) return 0 ;;
         *) return 1 ;;
     esac
+}
+
+# Retry a command with exponential backoff
+# Usage: retry 3 5 oc get pods
+#        (3 attempts, starting with 5 second delay)
+retry() {
+    local max_attempts="$1"
+    local delay="$2"
+    shift 2
+    local attempt=1
+
+    while true; do
+        if "$@"; then
+            return 0
+        fi
+
+        if [[ $attempt -ge $max_attempts ]]; then
+            log_error "Command failed after $max_attempts attempts: $*"
+            return 1
+        fi
+
+        log_warn "Attempt $attempt/$max_attempts failed, retrying in ${delay}s..."
+        sleep "$delay"
+        delay=$((delay * 2)) # Exponential backoff
+        attempt=$((attempt + 1))
+    done
+}
+
+# Print execution summary
+# Usage: print_summary "key1" "value1" "key2" "value2" ...
+print_summary() {
+    echo ""
+    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BOLD}  EXECUTION SUMMARY${NC}"
+    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    while [[ $# -ge 2 ]]; do
+        printf "  %-25s %s\n" "$1:" "$2"
+        shift 2
+    done
+    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
 }
 
 # ============================================================================

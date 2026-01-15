@@ -1,7 +1,27 @@
 #!/bin/bash
+# organize-machine-configs.sh - Organize MachineConfig files by topic and role
+#
+# Usage: ./core/organize-machine-configs.sh [OPTIONS]
+#
+# Options:
+#   -d  Source directory for YAMLs
+#   -m  Destination directory for MachineConfigs
+#   -e  Destination directory for extra manifests
+#   -s  Comma-separated severities to include
+#   --dry-run  Preview changes without creating files
+#   -x  Execute automated apply + health/performance tests
+#   -h  Show this help message
 
-# Ensure the script exits on any error
-set -e
+set -euo pipefail
+
+# Source common library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ -f "$SCRIPT_DIR/lib/common.sh" ]]; then
+	# shellcheck source=../lib/common.sh
+	source "$SCRIPT_DIR/lib/common.sh"
+	load_env
+	setup_cleanup
+fi
 
 # Default directories (can be overridden via environment variables or CLI flags)
 source_dir="${REMEDIATION_DIR:-complianceremediations}"
@@ -9,7 +29,9 @@ machineconfig_dir="${MACHINECONFIG_DIR:-./output/machineconfigs}"
 extramanifests_dir="${EXTRAMANIFESTS_DIR:-./output/extra-manifests}"
 
 usage() {
-	echo "Usage: $0 [-d source_dir] [-m machineconfig_dir] [-e extramanifests_dir] [-s severity[,severity...]] [-x]"
+	echo "Usage: $0 [-d source_dir] [-m machineconfig_dir] [-e extramanifests_dir] [-s severity[,severity...]] [--dry-run] [-x]"
+	echo ""
+	echo "Organize MachineConfig and other remediation YAMLs by topic and role."
 	echo ""
 	echo "Options:"
 	echo "  -d  Source directory for YAMLs (default: \$REMEDIATION_DIR or complianceremediations)"
@@ -17,6 +39,7 @@ usage() {
 	echo "  -e  Destination directory for extra manifests (default: \$EXTRAMANIFESTS_DIR or ./output/extra-manifests)"
 	echo "  -s  Comma-separated severities to include: high,medium,low (case-insensitive)"
 	echo "      (Alias: -S)"
+	echo "  --dry-run  Preview changes without creating files"
 	echo "  -x  Execute automated apply + health/performance tests for created files"
 	echo "  -h  Show this help message"
 	echo ""
@@ -26,11 +49,24 @@ usage() {
 
 SEVERITY_FILTER=""
 EXECUTE_TESTS=0
+DRY_RUN="${DRY_RUN:-false}"
 
-# Simple logger
-log() {
-	echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $*"
-}
+# Counters for summary
+COUNT_MC=0
+COUNT_OTHER=0
+COUNT_SKIPPED=0
+TOPICS_FOUND=()
+
+# Simple logger (fallback if common.sh not available)
+if ! type log_info &>/dev/null; then
+	log() {
+		echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] $*"
+	}
+	log_info() { log "[INFO] $*"; }
+	log_warn() { log "[WARN] $*"; }
+	log_error() { log "[ERROR] $*" >&2; }
+	log_success() { log "[SUCCESS] $*"; }
+fi
 
 # Ensure required tools are available when executing tests
 ensure_prereqs() {
@@ -168,6 +204,16 @@ run_automated_tests() {
 	echo "$summary"
 }
 
+# Parse long options first
+for arg in "$@"; do
+	case $arg in
+	--dry-run)
+		DRY_RUN=true
+		shift
+		;;
+	esac
+done
+
 while getopts "d:m:e:s:S:xh" opt; do
 	case $opt in
 	d) source_dir="$OPTARG" ;;
@@ -181,9 +227,19 @@ while getopts "d:m:e:s:S:xh" opt; do
 	esac
 done
 
+log_info "Organizing MachineConfig files..."
+log_info "  Source: $source_dir"
+log_info "  MachineConfig output: $machineconfig_dir"
+log_info "  Extra manifests output: $extramanifests_dir"
+if [[ "$DRY_RUN" == "true" ]]; then
+	log_info "[DRY-RUN] Preview mode - no files will be created"
+fi
+
 # Precheck and create destination directories if missing
-mkdir -p "$machineconfig_dir"
-mkdir -p "$extramanifests_dir"
+if [[ "$DRY_RUN" != "true" ]]; then
+	mkdir -p "$machineconfig_dir"
+	mkdir -p "$extramanifests_dir"
+fi
 
 # Initialize a variable to keep track of newly created file paths
 new_paths=""
@@ -271,7 +327,12 @@ for file in "${files_to_process[@]}"; do
 			topic="misc"
 		fi
 		topic_dir="$machineconfig_dir/$topic"
-		mkdir -p "$topic_dir"
+
+		# Track topics found
+		if [[ ! " ${TOPICS_FOUND[*]} " =~ \ ${topic}\  ]]; then
+			TOPICS_FOUND+=("$topic")
+		fi
+
 		# Determine the role (master or worker) based on the filename or file contents
 		role="unknown"
 
@@ -305,17 +366,36 @@ for file in "${files_to_process[@]}"; do
 				fi
 			fi
 		fi
+
+		if [[ "$DRY_RUN" == "true" ]]; then
+			log_info "[DRY-RUN] Would create: $topic_dir/$new_name (role: $role, topic: $topic)"
+			COUNT_MC=$((COUNT_MC + 1))
+			new_paths+="$topic_dir/$new_name"$'\n'
+			continue
+		fi
+
+		mkdir -p "$topic_dir"
 		# Update metadata.name and role label
 		yq ".metadata.name = \"$metadata_name\" | .metadata.labels.[\"machineconfiguration.openshift.io/role\"] = \"$role\"" "$file" >"$topic_dir/$new_name"
 		if ! yq e '.' "$topic_dir/$new_name" >/dev/null 2>&1; then
-			echo "Warning: Invalid YAML for the new file '$topic_dir/$new_name'. Skipping."
+			log_warn "Invalid YAML for the new file '$topic_dir/$new_name'. Skipping."
+			COUNT_SKIPPED=$((COUNT_SKIPPED + 1))
 			continue
 		fi
 		echo "New MachineConfig file created: $topic_dir/$new_name"
+		COUNT_MC=$((COUNT_MC + 1))
 		new_paths+="$topic_dir/$new_name"$'\n'
 	else
 		# For non-MachineConfig, organize by kind
 		kind_dir="$extramanifests_dir/$kind"
+
+		if [[ "$DRY_RUN" == "true" ]]; then
+			log_info "[DRY-RUN] Would create: $kind_dir/$new_name (kind: $kind)"
+			COUNT_OTHER=$((COUNT_OTHER + 1))
+			new_paths+="$kind_dir/$new_name"$'\n'
+			continue
+		fi
+
 		mkdir -p "$kind_dir"
 		if [[ "$kind" == "APIServer" ]]; then
 			# Always set metadata.name to 'cluster' for APIServer
@@ -325,10 +405,12 @@ for file in "${files_to_process[@]}"; do
 			yq ".metadata.name = \"$metadata_name\"" "$file" >"$kind_dir/$new_name"
 		fi
 		if ! yq e '.' "$kind_dir/$new_name" >/dev/null 2>&1; then
-			echo "Warning: Invalid YAML for the new file '$kind_dir/$new_name'. Skipping."
+			log_warn "Invalid YAML for the new file '$kind_dir/$new_name'. Skipping."
+			COUNT_SKIPPED=$((COUNT_SKIPPED + 1))
 			continue
 		fi
 		echo "New $kind file created: $kind_dir/$new_name"
+		COUNT_OTHER=$((COUNT_OTHER + 1))
 		new_paths+="$kind_dir/$new_name"$'\n'
 	fi
 done
@@ -450,10 +532,39 @@ else
 	echo "No new file paths were created."
 fi
 
-echo "All YAML files have been organized and copied to their respective directories."
+# Print execution summary
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  ORGANIZE MACHINE CONFIGS - SUMMARY"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if [[ "$DRY_RUN" == "true" ]]; then
+	printf "  %-25s %s\n" "Mode:" "DRY-RUN (no files written)"
+else
+	printf "  %-25s %s\n" "Mode:" "NORMAL"
+fi
+printf "  %-25s %d\n" "MachineConfigs created:" "$COUNT_MC"
+printf "  %-25s %d\n" "Other manifests created:" "$COUNT_OTHER"
+printf "  %-25s %d\n" "Skipped (invalid):" "$COUNT_SKIPPED"
+if [[ ${#TOPICS_FOUND[@]} -gt 0 ]]; then
+	printf "  %-25s %s\n" "Topics found:" "${TOPICS_FOUND[*]}"
+fi
+printf "  %-25s %s\n" "MachineConfig output:" "$machineconfig_dir"
+printf "  %-25s %s\n" "Extra manifests output:" "$extramanifests_dir"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+if [[ "$DRY_RUN" == "true" ]]; then
+	log_info "[DRY-RUN] No files were created. Run without --dry-run to apply changes."
+else
+	log_success "All YAML files have been organized and copied to their respective directories."
+fi
 
 # Execute automated tests if requested
 if [[ $EXECUTE_TESTS -eq 1 ]]; then
-	log "Automated execution requested (-x). Starting apply + health/performance tests."
-	run_automated_tests
+	if [[ "$DRY_RUN" == "true" ]]; then
+		log_warn "[DRY-RUN] Skipping automated tests in dry-run mode"
+	else
+		log_info "Automated execution requested (-x). Starting apply + health/performance tests."
+		run_automated_tests
+	fi
 fi
