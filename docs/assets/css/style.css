@@ -344,155 +344,169 @@ table td a[href*="/compare/"]:hover {
   text-decoration: none;
 }
 
-/* Status Table - enhanced styling */
-.status-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-card);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin: 1.5rem 0;
+/* Status Table - enhanced styling with high specificity */
+table.status-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: var(--color-card) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  margin: 1.5rem 0 !important;
+  table-layout: fixed;
 }
 
-.status-table thead th {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: white;
-  padding: 1rem;
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: none;
+table.status-table thead th {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  color: white !important;
+  padding: 1rem !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: none !important;
 }
 
-.status-table tbody tr {
+table.status-table tbody tr {
   transition: background 0.15s;
 }
 
-.status-table tbody tr:nth-child(even) {
+table.status-table tbody tr:nth-child(even) {
   background: #f8f9fa;
 }
 
-.status-table tbody tr:hover {
-  background: #e8f4ff;
+table.status-table tbody tr:hover {
+  background: #e8f4ff !important;
 }
 
-.status-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e9ecef;
-  vertical-align: middle;
+table.status-table td {
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid #e9ecef !important;
+  vertical-align: middle !important;
 }
 
-/* Group ID link */
-.group-id {
-  display: inline-block;
-  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #667eea;
-  text-decoration: none;
-  padding: 0.25rem 0.5rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border-radius: 4px;
-  transition: all 0.2s;
+/* Group ID link - high specificity */
+a.group-id {
+  display: inline-block !important;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  color: #667eea !important;
+  text-decoration: none !important;
+  padding: 0.25rem 0.5rem !important;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+  border-radius: 4px !important;
+  transition: all 0.2s !important;
+  -webkit-text-fill-color: #667eea !important;
+  -webkit-background-clip: padding-box !important;
 }
 
-.group-id:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  text-decoration: none;
+a.group-id:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important;
+  text-decoration: none !important;
   transform: translateY(-1px);
 }
 
-/* Severity pills */
-.severity-pill {
-  display: inline-block;
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.severity-pill.high {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-  color: white;
-}
-
-.severity-pill.medium {
-  background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);
-  color: white;
-}
-
-.severity-pill.low {
-  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
-  color: white;
-}
-
-/* Status pills */
-.status-pill {
-  display: inline-block;
-  padding: 0.3rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.status-pill.in-progress {
-  background: #cce5ff;
-  color: #004085;
-}
-
-.status-pill.pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.status-pill.on-hold {
-  background: #e9ecef;
-  color: #495057;
-}
-
-.status-pill.complete {
-  background: #d4edda;
-  color: #155724;
-}
-
-/* Jira and PR badges */
-.jira-badge, .pr-badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
+/* Status legend container */
+.status-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 2rem 0;
+  padding: 1rem;
   background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #495057;
-  text-decoration: none;
-  transition: all 0.2s;
+  border-radius: 8px;
 }
 
-.jira-badge:hover, .pr-badge:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-  text-decoration: none;
+/* Severity pills - high specificity */
+span.severity-pill {
+  display: inline-block !important;
+  padding: 0.25rem 0.6rem !important;
+  border-radius: 12px !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.3px !important;
 }
 
-/* Compare button in table */
-.compare-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  border-radius: 6px;
-  font-size: 1rem;
-  text-decoration: none;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+span.severity-pill.high {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+  color: white !important;
+}
+
+span.severity-pill.medium {
+  background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%) !important;
+  color: white !important;
+}
+
+span.severity-pill.low {
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%) !important;
+  color: white !important;
+}
+
+/* Status pills - high specificity */
+span.status-pill {
+  display: inline-block !important;
+  padding: 0.3rem 0.6rem !important;
+  border-radius: 12px !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+}
+
+span.status-pill.in-progress {
+  background: #cce5ff !important;
+  color: #004085 !important;
+}
+
+span.status-pill.pending {
+  background: #fff3cd !important;
+  color: #856404 !important;
+}
+
+span.status-pill.on-hold {
+  background: #e9ecef !important;
+  color: #495057 !important;
+}
+
+span.status-pill.complete {
+  background: #d4edda !important;
+  color: #155724 !important;
+}
+
+/* Jira and PR badges - high specificity */
+a.jira-badge, a.pr-badge {
+  display: inline-block !important;
+  padding: 0.25rem 0.5rem !important;
+  background: #f8f9fa !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 4px !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  color: #495057 !important;
+  text-decoration: none !important;
+  transition: all 0.2s !important;
+}
+
+a.jira-badge:hover, a.pr-badge:hover {
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+  text-decoration: none !important;
+}
+
+/* Compare button in table - high specificity */
+a.compare-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+  border-radius: 6px !important;
+  font-size: 1rem !important;
+  text-decoration: none !important;
+  transition: all 0.2s !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
 }
 
 .compare-btn:hover {
