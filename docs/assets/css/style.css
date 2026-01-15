@@ -344,6 +344,174 @@ table td a[href*="/compare/"]:hover {
   text-decoration: none;
 }
 
+/* Status Table - enhanced styling */
+.status-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin: 1.5rem 0;
+}
+
+.status-table thead th {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: none;
+}
+
+.status-table tbody tr {
+  transition: background 0.15s;
+}
+
+.status-table tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.status-table tbody tr:hover {
+  background: #e8f4ff;
+}
+
+.status-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+}
+
+/* Group ID link */
+.group-id {
+  display: inline-block;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #667eea;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.group-id:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+/* Severity pills */
+.severity-pill {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.severity-pill.high {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.severity-pill.medium {
+  background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%);
+  color: white;
+}
+
+.severity-pill.low {
+  background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+  color: white;
+}
+
+/* Status pills */
+.status-pill {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-pill.in-progress {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.status-pill.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-pill.on-hold {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.status-pill.complete {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Jira and PR badges */
+.jira-badge, .pr-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #495057;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.jira-badge:hover, .pr-badge:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  text-decoration: none;
+}
+
+/* Compare button in table */
+.compare-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border-radius: 6px;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.compare-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  text-decoration: none;
+}
+
+/* Status legend */
+.status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
 .description {
   color: #6c757d;
   display: block;

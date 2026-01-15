@@ -38,27 +38,199 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 
 ## Remediation Status
 
-| Group | Category | Severity | Count | Status | Compare | Jira | PR |
-|-------|----------|----------|-------|--------|---------|------|-----|
-| [H1](groups/H1.html) | Crypto Policy | HIGH | 1 | 🔵 In Progress | - | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H2](groups/H2.html) | PAM Empty Passwords | HIGH | 1 | 🔵 In Progress | - | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H3](groups/H3.html) | SSHD Empty Passwords | HIGH | 1 | 🔵 In Progress | - | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
-| [M1](groups/M1.html) | SSHD Configuration | MEDIUM | 7 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:m1-sshd-medium-hardening) | - | - |
-| [M2](groups/M2.html) | Kernel Sysctl | MEDIUM | 4 | ⚪ On Hold | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m2-kernel-sysctl) | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
-| [M3](groups/M3.html) | Audit DAC | MEDIUM | 2 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m3-audit-dac) | - | - |
-| [M4](groups/M4.html) | Audit SELinux | MEDIUM | 6 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m4-audit-selinux) | - | - |
-| [M5](groups/M5.html) | Audit Modules | MEDIUM | 3 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m5-audit-modules) | - | - |
-| [M6](groups/M6.html) | Audit Time | MEDIUM | 5 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m6-audit-time) | - | - |
-| [M7](groups/M7.html) | Audit Auth | MEDIUM | 5 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m7-audit-login) | - | - |
-| [M8](groups/M8.html) | Audit Network | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m8-audit-network) | - | - |
-| [M9](groups/M9.html) | Auditd Config | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m9-auditd-config) | - | - |
-| [M10](groups/M10.html) | API Encryption | MEDIUM | 2 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m10-api-encryption) | - | - |
-| [M11](groups/M11.html) | Ingress TLS | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m11-ingress-tls) | - | - |
-| [M12](groups/M12.html) | Audit Profile | MEDIUM | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m12-audit-profile) | - | - |
-| [L1](groups/L1.html) | SSHD LogLevel | LOW | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l1-sshd-loglevel) | - | - |
-| [L2](groups/L2.html) | Sysctl dmesg | LOW | 1 | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l2-sysctl-dmesg) | - | - |
+<table class="status-table">
+  <thead>
+    <tr>
+      <th style="width: 60px;">Group</th>
+      <th>Category</th>
+      <th style="width: 80px;">Severity</th>
+      <th style="width: 50px; text-align: center;">Count</th>
+      <th style="width: 110px;">Status</th>
+      <th style="width: 50px; text-align: center;">Compare</th>
+      <th style="width: 100px;">Jira</th>
+      <th style="width: 70px;">PR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="groups/H1.html" class="group-id">H1</a></td>
+      <td>Crypto Policy</td>
+      <td><span class="severity-pill high">HIGH</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
+      <td style="text-align: center;">-</td>
+      <td><a href="https://issues.redhat.com/browse/CNF-21212" class="jira-badge">CNF-21212</a></td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/529" class="pr-badge">#529</a></td>
+    </tr>
+    <tr>
+      <td><a href="groups/H2.html" class="group-id">H2</a></td>
+      <td>PAM Empty Passwords</td>
+      <td><span class="severity-pill high">HIGH</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
+      <td style="text-align: center;">-</td>
+      <td><a href="https://issues.redhat.com/browse/CNF-21212" class="jira-badge">CNF-21212</a></td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/529" class="pr-badge">#529</a></td>
+    </tr>
+    <tr>
+      <td><a href="groups/H3.html" class="group-id">H3</a></td>
+      <td>SSHD Empty Passwords</td>
+      <td><span class="severity-pill high">HIGH</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
+      <td style="text-align: center;">-</td>
+      <td><a href="https://issues.redhat.com/browse/CNF-19031" class="jira-badge">CNF-19031</a></td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/466" class="pr-badge">#466</a></td>
+    </tr>
+    <tr>
+      <td><a href="groups/M1.html" class="group-id">M1</a></td>
+      <td>SSHD Configuration</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">7</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:m1-sshd-medium-hardening" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M2.html" class="group-id">M2</a></td>
+      <td>Kernel Sysctl</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">4</td>
+      <td><span class="status-pill on-hold">⚪ On Hold</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m2-kernel-sysctl" class="compare-btn">📦</a></td>
+      <td><a href="https://issues.redhat.com/browse/CNF-21196" class="jira-badge">CNF-21196</a></td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M3.html" class="group-id">M3</a></td>
+      <td>Audit DAC</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">2</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m3-audit-dac" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M4.html" class="group-id">M4</a></td>
+      <td>Audit SELinux</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">6</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m4-audit-selinux" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M5.html" class="group-id">M5</a></td>
+      <td>Audit Modules</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">3</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m5-audit-modules" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M6.html" class="group-id">M6</a></td>
+      <td>Audit Time</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">5</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m6-audit-time" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M7.html" class="group-id">M7</a></td>
+      <td>Audit Auth</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">5</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m7-audit-login" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M8.html" class="group-id">M8</a></td>
+      <td>Audit Network</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m8-audit-network" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M9.html" class="group-id">M9</a></td>
+      <td>Auditd Config</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m9-auditd-config" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M10.html" class="group-id">M10</a></td>
+      <td>API Encryption</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">2</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m10-api-encryption" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M11.html" class="group-id">M11</a></td>
+      <td>Ingress TLS</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m11-ingress-tls" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/M12.html" class="group-id">M12</a></td>
+      <td>Audit Profile</td>
+      <td><span class="severity-pill medium">MEDIUM</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m12-audit-profile" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/L1.html" class="group-id">L1</a></td>
+      <td>SSHD LogLevel</td>
+      <td><span class="severity-pill low">LOW</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l1-sshd-loglevel" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><a href="groups/L2.html" class="group-id">L2</a></td>
+      <td>Sysctl dmesg</td>
+      <td><span class="severity-pill low">LOW</span></td>
+      <td style="text-align: center;">1</td>
+      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l2-sysctl-dmesg" class="compare-btn">📦</a></td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
 
-**Status Legend:** 🔵 In Progress | 🟡 Pending | ⚪ On Hold | 🟢 Complete
+<div class="status-legend">
+  <span class="status-pill in-progress">🔵 In Progress</span>
+  <span class="status-pill pending">🟡 Pending</span>
+  <span class="status-pill on-hold">⚪ On Hold</span>
+  <span class="status-pill complete">🟢 Complete</span>
+</div>
 
 **Group IDs:** Groups are labeled by severity and sequence number:
 - **H** = HIGH severity (H1, H2, H3)
