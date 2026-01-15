@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title | default: site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <script>
+    // Apply saved theme immediately to prevent flash
+    (function() {
+      var savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
 </head>
 <body>
   <header>
@@ -15,6 +26,11 @@
           <a href="{{ '/' | relative_url }}">Dashboard</a>
           <a href="{{ '/REMEDIATION_GROUPINGS' | relative_url }}">Remediation Groups</a>
           <a href="https://github.com/sebrandon1/compliance-scripts" target="_blank">GitHub</a>
+          <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode (D)">
+            <span class="theme-icon-light">&#9728;</span>
+            <span class="theme-icon-dark">&#9790;</span>
+          </button>
+          <button class="keyboard-help-btn" onclick="toggleKeyboardHelp()" title="Keyboard shortcuts (?)">&#9000;</button>
         </div>
       </div>
     </nav>
@@ -48,9 +64,183 @@
     </div>
   </div>
 
+  <!-- Keyboard Shortcuts Help Modal -->
+  <div class="keyboard-help-modal" id="keyboard-help-modal">
+    <div class="keyboard-help-content">
+      <div class="keyboard-help-header">
+        <h3>Keyboard Shortcuts</h3>
+        <button onclick="toggleKeyboardHelp()" class="close-btn">&times;</button>
+      </div>
+      <div class="keyboard-help-body">
+        <div class="shortcut-group">
+          <div class="shortcut-title">Navigation</div>
+          <div class="shortcut"><kbd>j</kbd> / <kbd>&#8595;</kbd> Next row</div>
+          <div class="shortcut"><kbd>k</kbd> / <kbd>&#8593;</kbd> Previous row</div>
+          <div class="shortcut"><kbd>Enter</kbd> Open selected / Expand details</div>
+          <div class="shortcut"><kbd>Esc</kbd> Clear selection / Close modal</div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-title">Actions</div>
+          <div class="shortcut"><kbd>/</kbd> Focus search</div>
+          <div class="shortcut"><kbd>d</kbd> Toggle dark mode</div>
+          <div class="shortcut"><kbd>?</kbd> Show this help</div>
+          <div class="shortcut"><kbd>g</kbd> <kbd>h</kbd> Go to home</div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-title">Filters</div>
+          <div class="shortcut"><kbd>1</kbd> Show all</div>
+          <div class="shortcut"><kbd>2</kbd> Pending only</div>
+          <div class="shortcut"><kbd>3</kbd> In Progress only</div>
+          <div class="shortcut"><kbd>4</kbd> Complete only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+  // Legend toggle
   function toggleLegend() {
     document.getElementById('floating-legend').classList.toggle('expanded');
+  }
+
+  // Dark mode toggle
+  function toggleTheme() {
+    var html = document.documentElement;
+    var currentTheme = html.getAttribute('data-theme');
+    var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  }
+
+  // Keyboard help toggle
+  function toggleKeyboardHelp() {
+    document.getElementById('keyboard-help-modal').classList.toggle('active');
+  }
+
+  // Keyboard shortcuts
+  var selectedRowIndex = -1;
+  var waitingForSecondKey = false;
+  var firstKey = '';
+
+  document.addEventListener('keydown', function(e) {
+    // Don't trigger shortcuts when typing in input fields
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      if (e.key === 'Escape') {
+        e.target.blur();
+      }
+      return;
+    }
+
+    // Handle two-key sequences (g + h for home)
+    if (waitingForSecondKey) {
+      if (firstKey === 'g' && e.key === 'h') {
+        window.location.href = '{{ "/" | relative_url }}';
+      }
+      waitingForSecondKey = false;
+      firstKey = '';
+      return;
+    }
+
+    switch(e.key) {
+      case '?':
+        e.preventDefault();
+        toggleKeyboardHelp();
+        break;
+      case 'Escape':
+        document.getElementById('keyboard-help-modal').classList.remove('active');
+        clearRowSelection();
+        break;
+      case 'd':
+        toggleTheme();
+        break;
+      case '/':
+        e.preventDefault();
+        var searchInput = document.getElementById('table-search');
+        if (searchInput) searchInput.focus();
+        break;
+      case 'j':
+      case 'ArrowDown':
+        e.preventDefault();
+        navigateRows(1);
+        break;
+      case 'k':
+      case 'ArrowUp':
+        e.preventDefault();
+        navigateRows(-1);
+        break;
+      case 'Enter':
+        activateSelectedRow();
+        break;
+      case 'g':
+        waitingForSecondKey = true;
+        firstKey = 'g';
+        setTimeout(function() { waitingForSecondKey = false; firstKey = ''; }, 1000);
+        break;
+      case '1':
+        clickFilterButton('all');
+        break;
+      case '2':
+        clickFilterButton('pending');
+        break;
+      case '3':
+        clickFilterButton('in_progress');
+        break;
+      case '4':
+        clickFilterButton('complete');
+        break;
+    }
+  });
+
+  function getVisibleRows() {
+    var rows = [];
+    document.querySelectorAll('table tbody tr, .status-table tbody tr').forEach(function(row) {
+      if (row.style.display !== 'none' && !row.querySelector('th')) {
+        rows.push(row);
+      }
+    });
+    return rows;
+  }
+
+  function navigateRows(direction) {
+    var rows = getVisibleRows();
+    if (rows.length === 0) return;
+
+    // Clear previous selection
+    rows.forEach(function(r) { r.classList.remove('keyboard-selected'); });
+
+    selectedRowIndex += direction;
+    if (selectedRowIndex < 0) selectedRowIndex = rows.length - 1;
+    if (selectedRowIndex >= rows.length) selectedRowIndex = 0;
+
+    rows[selectedRowIndex].classList.add('keyboard-selected');
+    rows[selectedRowIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearRowSelection() {
+    selectedRowIndex = -1;
+    document.querySelectorAll('.keyboard-selected').forEach(function(r) {
+      r.classList.remove('keyboard-selected');
+    });
+  }
+
+  function activateSelectedRow() {
+    var rows = getVisibleRows();
+    if (selectedRowIndex >= 0 && selectedRowIndex < rows.length) {
+      var row = rows[selectedRowIndex];
+      // Try to find a link or details element
+      var link = row.querySelector('a');
+      var details = row.querySelector('details');
+      if (details) {
+        details.open = !details.open;
+      } else if (link) {
+        link.click();
+      }
+    }
+  }
+
+  function clickFilterButton(filter) {
+    var btn = document.querySelector('[data-filter="' + filter + '"]');
+    if (btn) btn.click();
   }
   </script>
 
