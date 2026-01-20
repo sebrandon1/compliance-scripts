@@ -79,7 +79,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td style="text-align: center;">1</td>
       <td><span class="status-pill in-progress">🔵 In Progress</span></td>
       <td style="text-align: center;">-</td>
-      <td><a href="https://issues.redhat.com/browse/CNF-19031" class="jira-badge">CNF-19031</a></td>
+      <td><a href="https://issues.redhat.com/browse/CNF-21326" class="jira-badge">CNF-21326</a></td>
       <td><a href="https://github.com/openshift-kni/telco-reference/pull/466" class="pr-badge">#466</a></td>
     </tr>
     <tr>
@@ -277,7 +277,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
 <summary><strong>H3: SSHD Empty Passwords</strong> — 🔵 In Progress — <a href="https://github.com/openshift-kni/telco-reference/pull/466">PR #466</a></summary>
 
 **File**: `75-sshd-hardening.yaml` (consolidated with M1, L1)
-**Jira**: [CNF-19031](https://issues.redhat.com/browse/CNF-19031)
+**Jira**: [CNF-21326](https://issues.redhat.com/browse/CNF-21326)
 
 | Setting | Value | Description |
 |---------|-------|-------------|

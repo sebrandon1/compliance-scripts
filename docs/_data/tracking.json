@@ -17,7 +17,7 @@
       "description": "Disable nullok in PAM system-auth and password-auth"
     },
     "sshd-disable-empty-passwords": {
-      "jira": "CNF-19031",
+      "jira": "CNF-21326",
       "pr": "466",
       "status": "in_progress",
       "file": "75-sshd-hardening.yaml",
