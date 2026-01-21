@@ -2,6 +2,9 @@
 layout: default
 ---
 
+{% assign group = site.data.tracking.groups[page.group_id] %}
+{% assign meta = site.data.tracking.meta %}
+
 <div class="group-page">
   <nav class="breadcrumb">
     <a href="{{ site.baseurl }}/">Home</a> &raquo;
@@ -12,43 +15,45 @@ layout: default
 
   <div class="group-header">
     <h1>
-      <span class="severity-badge {{ page.severity | downcase }}">{{ page.severity }}</span>
-      {{ page.group_id }}: {{ page.title }}
-      {% if page.priority %}
-      <span class="priority-score p{{ page.priority }}" title="{{ page.priority_label }} Priority">P{{ page.priority }}</span>
+      <span class="severity-badge {{ group.severity | downcase }}">{{ group.severity }}</span>
+      {{ page.group_id }}: {{ group.title }}
+      {% if group.priority %}
+      <span class="priority-score p{{ group.priority }}" title="{{ group.priority_label }} Priority">P{{ group.priority }}</span>
       {% endif %}
     </h1>
 
     <div class="group-meta">
-      <span class="tracking-status {{ page.status | replace: ' ', '_' | downcase }}">
-        {% if page.status == "in_progress" %}🔵 In Progress
-        {% elsif page.status == "pending" %}🟡 Pending
-        {% elsif page.status == "on_hold" %}⚪ On Hold
-        {% elsif page.status == "complete" %}🟢 Complete
+      <span class="tracking-status {{ group.status | replace: ' ', '_' | downcase }}">
+        {% if group.status == "in_progress" %}In Progress
+        {% elsif group.status == "pending" %}Pending
+        {% elsif group.status == "on_hold" %}On Hold
+        {% elsif group.status == "complete" %}Complete
         {% endif %}
       </span>
 
-      {% if page.jira %}
-      <a href="https://issues.redhat.com/browse/{{ page.jira }}" class="jira-link">
-        {{ page.jira }}
+      {% if group.jira %}
+      <a href="{{ meta.jira_base_url }}{{ group.jira }}" class="jira-link">
+        {{ group.jira }}
+        {% if group.jira_status %}({{ group.jira_status }}){% endif %}
       </a>
       {% endif %}
 
-      {% if page.pr %}
-      <a href="https://github.com/openshift-kni/telco-reference/pull/{{ page.pr }}" class="pr-link">
-        PR #{{ page.pr }}
+      {% if group.pr %}
+      <a href="{{ meta.pr_base_url }}{{ group.pr }}" class="pr-link">
+        PR #{{ group.pr }}
+        {% if group.pr_state %}({{ group.pr_state }}){% endif %}
       </a>
       {% endif %}
 
-      {% if page.compare %}
-      <a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:{{ page.compare }}" class="compare-link">
-        📦 Compare Branch
+      {% if group.compare %}
+      <a href="{{ meta.compare_base_url }}{{ group.compare }}" class="compare-link">
+        Compare Branch
       </a>
       {% endif %}
 
-      {% if page.last_updated %}
+      {% if group.last_sync %}
       <span class="last-updated">
-        📅 Updated: {{ page.last_updated }}
+        Synced: {{ group.last_sync | date: "%Y-%m-%d" }}
       </span>
       {% endif %}
     </div>
@@ -59,9 +64,9 @@ layout: default
   </div>
 
   <div class="group-nav">
-    {% if page.prev_group %}
-    <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ page.prev_group }}.html" class="nav-prev">
-      &larr; {{ page.prev_group }}
+    {% if group.prev_group %}
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group.prev_group }}.html" class="nav-prev">
+      &larr; {{ group.prev_group }}
     </a>
     {% endif %}
 
@@ -69,9 +74,9 @@ layout: default
       All Groups
     </a>
 
-    {% if page.next_group %}
-    <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ page.next_group }}.html" class="nav-next">
-      {{ page.next_group }} &rarr;
+    {% if group.next_group %}
+    <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group.next_group }}.html" class="nav-next">
+      {{ group.next_group }} &rarr;
     </a>
     {% endif %}
   </div>
