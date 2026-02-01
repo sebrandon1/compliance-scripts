@@ -37,6 +37,23 @@ make generate-compliance-markdown
 make clean
 ```
 
+### Validation and Preflight
+```bash
+make preflight                     # Check all dependencies and prerequisites
+make verify-images                 # Verify container images are accessible
+make validate-machineconfigs       # Validate MachineConfig YAML files
+make filter-machineconfigs         # Filter specific flags from MachineConfigs
+make clean-complianceremediations  # Reset complianceremediations directory only
+```
+
+### Dashboard and Export
+```bash
+make export-compliance OCP_VERSION=X.XX   # Export compliance data to JSON
+make update-dashboard OCP_VERSION=X.XX    # Export and push to trigger dashboard rebuild
+make serve-docs                           # Serve Jekyll dashboard locally
+make install-jekyll                       # Install Jekyll dependencies
+```
+
 ## Architecture
 
 ### Script Organization
@@ -45,6 +62,10 @@ make clean
 - **`modular/`** - Modular MachineConfig tools using `.d` directory includes
 - **`lab-tools/`** - BeakerLab-specific utilities (cluster provisioning, kubeconfig fetch)
 - **`misc/`** - Helpers (network policies, pull secrets, loopback devices)
+- **`scripts/`** - Preflight checks and validation scripts
+- **`lib/`** - Shared library functions (`common.sh`)
+- **`docs/`** - Jekyll-based compliance dashboard (GitHub Pages)
+- **`curated-configs/`** - Curated configuration files
 
 ### Key Workflow
 1. `install-compliance-operator.sh` - Installs operator, auto-deploys HostPath CSI if needed
@@ -65,7 +86,7 @@ pip install -r requirements.txt
 
 ### Bash
 - Scripts use `shellcheck` and `shfmt` for linting
-- Excluded shellcheck codes: SC2034, SC2086, SC2001, SC2028, SC2129, SC2155
+- Excluded shellcheck codes: SC1091, SC2034, SC2086, SC2001, SC2028, SC2129, SC2155
 - Run `shfmt -w core utilities modular lab-tools misc` to auto-fix formatting
 
 ### Python
@@ -75,8 +96,13 @@ pip install -r requirements.txt
 ## Requirements
 - `oc` (OpenShift CLI) - for cluster operations
 - `yq` - YAML processing
-- `python3` with `pyyaml` - for Python scripts
+- `python3` with dependencies:
+  - `pyyaml` - YAML processing
+  - `requests` - HTTP library
+  - `beautifulsoup4` - HTML parsing
+  - `playwright` - Browser automation
 - `shellcheck` and `shfmt` - for bash linting
+- `jekyll` - for local dashboard development (optional)
 
 ## Troubleshooting
 
