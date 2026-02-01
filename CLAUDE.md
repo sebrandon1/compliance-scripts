@@ -77,3 +77,45 @@ pip install -r requirements.txt
 - `yq` - YAML processing
 - `python3` with `pyyaml` - for Python scripts
 - `shellcheck` and `shfmt` - for bash linting
+
+## Troubleshooting
+
+### CI Failures in `test-compliance` Workflow
+
+**"Some pods in 'openshift-marketplace' are not Ready" error**
+
+This can occur due to race conditions with the OpenShift marketplace operator's catalog reconciliation. The marketplace operator continuously refreshes catalog source pods, and a new pod might be created right after the readiness check passes. The script now ignores pods created less than 30 seconds ago to avoid this race condition.
+
+If you see this error:
+1. Check if the failing pods are very young (a few seconds old) - this indicates the catalog reconciliation race condition
+2. The fix is already in place to ignore recently created pods
+
+**CRC cluster startup issues**
+
+When running in GitHub Actions with CRC (CodeReady Containers):
+- Ensure `CRC_PULL_SECRET` secret is configured
+- CRC requires significant memory (10GB+ configured for CI)
+- The cluster may take 15-20 minutes to fully start
+- API server connection refused errors during startup are normal
+
+**ProfileBundle not VALID**
+
+The script waits up to 5 minutes for ProfileBundles to become VALID. If they remain in PENDING:
+1. Check if profile parser pods have ImagePullBackOff errors
+2. Verify the operator version supports your cluster architecture (ARM64 only supported in v1.7.0+)
+3. Check for storage issues - the operator needs a working StorageClass
+
+### Analyzing CI Failures
+
+To download and inspect full CI logs:
+```bash
+# Get run ID from GitHub Actions URL
+gh run view <run-id> --repo sebrandon1/compliance-scripts
+
+# Download full logs (not truncated)
+gh api repos/sebrandon1/compliance-scripts/actions/runs/<run-id>/logs > logs.zip
+unzip logs.zip -d gha-logs
+
+# Search for errors
+grep -i "error\|fail" gha-logs/*.txt
+```
