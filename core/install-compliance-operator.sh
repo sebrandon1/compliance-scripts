@@ -150,9 +150,38 @@ for i in {1..30}; do
 done
 
 # Final check - if pods are still not ready after timeout, fail
-FAILED_PODS=$(oc -n openshift-marketplace get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.conditions[?(@.type=="Ready")]}{.status}{end}{"\n"}{end}' 2>/dev/null | grep -v "True$" || true)
+# Ignore pods created less than 30 seconds ago to avoid race conditions with catalog reconciliation
+NOW_TS=$(date +%s)
+FAILED_PODS=""
+while IFS= read -r line; do
+	POD_NAME=$(echo "$line" | awk '{print $1}')
+	POD_PHASE=$(echo "$line" | awk '{print $2}')
+	POD_READY=$(echo "$line" | awk '{print $3}')
+
+	# Skip if pod name is empty
+	[[ -z "$POD_NAME" ]] && continue
+
+	# Check pod creation time
+	POD_CREATED=$(oc -n openshift-marketplace get pod "$POD_NAME" -o jsonpath='{.metadata.creationTimestamp}' 2>/dev/null || true)
+	if [[ -n "$POD_CREATED" ]]; then
+		# Convert ISO 8601 timestamp to epoch
+		POD_TS=$(date -d "$POD_CREATED" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$POD_CREATED" +%s 2>/dev/null || echo "0")
+		AGE=$((NOW_TS - POD_TS))
+		if [[ $AGE -lt 30 ]]; then
+			echo "[PRECHECK] Ignoring recently created pod '$POD_NAME' (${AGE}s old) - catalog reconciliation in progress"
+			continue
+		fi
+	fi
+
+	# Pod is old enough, check if it's not ready
+	if [[ "$POD_READY" != "True" ]]; then
+		FAILED_PODS="$FAILED_PODS $POD_NAME"
+	fi
+done < <(oc -n openshift-marketplace get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.conditions[?(@.type=="Ready")]}{.status}{end}{"\n"}{end}' 2>/dev/null || true)
+
 if [[ -n "$FAILED_PODS" ]]; then
-	echo "[ERROR] Some pods in 'openshift-marketplace' are not Ready. Current pod statuses:"
+	echo "[ERROR] Some pods in 'openshift-marketplace' are not Ready:$FAILED_PODS"
+	echo "[ERROR] Current pod statuses:"
 	oc -n openshift-marketplace get pods -o wide || true
 	exit 1
 fi
