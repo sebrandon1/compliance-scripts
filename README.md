@@ -12,6 +12,9 @@ This repository contains a set of scripts to help automate the collection, organ
 
 - [Compliance Operator GitHub Repository](https://github.com/ComplianceAsCode/compliance-operator)
 - [Compliance Operator Workshop Tutorials](https://github.com/ComplianceAsCode/compliance-operator/tree/master/doc/tutorials/workshop/content/exercises)
+- [Compliance Operator Dashboard](https://github.com/sebrandon1/compliance-operator-dashboard) — Sister repo: web UI that reimplements these scripts as a single-binary Go + React dashboard. Features should be paired between the two repos.
+
+> **Note on operator versioning:** There are two distribution channels with different version numbers. The **upstream/community** operator at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator) (latest: v1.7.0) is used by the install script's `--co-ref` flag. Clusters with `redhat-operators` in `openshift-marketplace` will install the **Red Hat certified** version instead, which uses its own versioning (e.g., v1.8.2). The Red Hat version is built internally and not publicly tagged on GitHub. The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
 
 ## Repository Structure
 
