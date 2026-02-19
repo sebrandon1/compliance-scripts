@@ -43,6 +43,13 @@ usage() {
 	echo "  --dry-run          Preview changes without applying"
 	echo "  -h, --help         Show this help message"
 	echo ""
+	echo "Available profiles:"
+	echo "  CIS:      ocp4-cis, ocp4-cis-1-7, ocp4-cis-node, ocp4-cis-node-1-7"
+	echo "  NIST:     ocp4-moderate, ocp4-moderate-rev-4, ocp4-moderate-node, ocp4-moderate-node-rev-4"
+	echo "            rhcos4-moderate, rhcos4-moderate-rev-4"
+	echo "  PCI-DSS:  ocp4-pci-dss, ocp4-pci-dss-3-2, ocp4-pci-dss-4-0"
+	echo "            ocp4-pci-dss-node, ocp4-pci-dss-node-3-2, ocp4-pci-dss-node-4-0"
+	echo ""
 	echo "Environment variables: COMPLIANCE_NAMESPACE, SCAN_PROFILE"
 	exit 0
 }

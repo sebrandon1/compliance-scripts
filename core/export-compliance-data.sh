@@ -102,7 +102,7 @@ fi
 get_tracking_info() {
 	local check_name="$1"
 	# Strip prefix like rhcos4-e8-worker- or ocp4-cis-
-	local base_name=$(echo "$check_name" | sed -E 's/^(rhcos4-e8|ocp4-cis|ocp4-e8)-(master|worker)-//')
+	local base_name=$(echo "$check_name" | sed -E 's/^(rhcos4-e8|rhcos4-moderate|ocp4-cis|ocp4-e8|ocp4-moderate|ocp4-pci-dss)(-[0-9-]+)?-(master|worker)-//')
 
 	local jira=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].jira // empty")
 	local pr=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].pr // empty")

@@ -33,7 +33,7 @@ DRY_RUN="${DRY_RUN:-false}"
 usage() {
 	echo "Usage: $0 [OPTIONS]"
 	echo ""
-	echo "Apply periodic compliance scan configuration (E8 + CIS profiles)."
+	echo "Apply periodic compliance scan configuration (CIS, NIST Moderate, PCI-DSS profiles)."
 	echo ""
 	echo "Options:"
 	echo "  -n, --namespace    Namespace for the scan (default: $NAMESPACE)"
@@ -187,6 +187,47 @@ settingsRef:
 EOF
 )
 
+# ScanSettingBinding for NIST 800-53 Moderate profiles
+MODERATE_BINDING_YAML=$(
+	cat <<EOF
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSettingBinding
+metadata:
+  name: periodic-moderate
+  namespace: $NAMESPACE
+profiles:
+  - name: ocp4-moderate
+    kind: Profile
+    apiGroup: compliance.openshift.io/v1alpha1
+  - name: rhcos4-moderate
+    kind: Profile
+    apiGroup: compliance.openshift.io/v1alpha1
+settingsRef:
+  name: periodic-setting
+  kind: ScanSetting
+  apiGroup: compliance.openshift.io/v1alpha1
+EOF
+)
+
+# ScanSettingBinding for PCI-DSS profiles
+PCIDSS_BINDING_YAML=$(
+	cat <<EOF
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSettingBinding
+metadata:
+  name: periodic-pci-dss
+  namespace: $NAMESPACE
+profiles:
+  - name: ocp4-pci-dss
+    kind: Profile
+    apiGroup: compliance.openshift.io/v1alpha1
+settingsRef:
+  name: periodic-setting
+  kind: ScanSetting
+  apiGroup: compliance.openshift.io/v1alpha1
+EOF
+)
+
 # Apply or dry-run resources
 if [[ "$DRY_RUN" == "true" ]]; then
 	echo "---"
@@ -195,6 +236,10 @@ if [[ "$DRY_RUN" == "true" ]]; then
 	echo "$E8_BINDING_YAML"
 	echo "---"
 	echo "$CIS_BINDING_YAML"
+	echo "---"
+	echo "$MODERATE_BINDING_YAML"
+	echo "---"
+	echo "$PCIDSS_BINDING_YAML"
 	echo "---"
 
 	log_info "[DRY-RUN] Validating ScanSetting..."
@@ -206,16 +251,26 @@ if [[ "$DRY_RUN" == "true" ]]; then
 	log_info "[DRY-RUN] Validating CIS ScanSettingBinding..."
 	echo "$CIS_BINDING_YAML" | oc apply --dry-run=server -f -
 
+	log_info "[DRY-RUN] Validating Moderate ScanSettingBinding..."
+	echo "$MODERATE_BINDING_YAML" | oc apply --dry-run=server -f -
+
+	log_info "[DRY-RUN] Validating PCI-DSS ScanSettingBinding..."
+	echo "$PCIDSS_BINDING_YAML" | oc apply --dry-run=server -f -
+
 	log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
 else
 	echo "$SCANSETTING_YAML" | oc apply -f -
 	echo "$E8_BINDING_YAML" | oc apply -f -
 	echo "$CIS_BINDING_YAML" | oc apply -f -
+	echo "$MODERATE_BINDING_YAML" | oc apply -f -
+	echo "$PCIDSS_BINDING_YAML" | oc apply -f -
 
 	log_success "ScanSetting 'periodic-setting' applied in namespace '$NAMESPACE'."
 	log_info "ScanSettingBindings created:"
-	echo "       - periodic-e8 (rhcos4-e8-master, rhcos4-e8-worker, ocp4-e8)"
+	echo "       - periodic-e8 (rhcos4-e8, ocp4-e8)"
 	echo "       - cis-scan (ocp4-cis)"
+	echo "       - periodic-moderate (ocp4-moderate, rhcos4-moderate)"
+	echo "       - periodic-pci-dss (ocp4-pci-dss)"
 	echo ""
 	log_info "To create an on-demand scan, run: ./core/create-scan.sh"
 fi
