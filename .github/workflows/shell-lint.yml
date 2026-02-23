@@ -6,6 +6,8 @@ on:
       - '**.sh'
       - 'Makefile'
 
+permissions: read-all
+
 jobs:
   bash-lint:
     runs-on: ubuntu-latest

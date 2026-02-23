@@ -7,6 +7,8 @@ on:
       - '**.sh'
       - 'Makefile'
 
+permissions: read-all
+
 jobs:
   python-lint:
     runs-on: ubuntu-latest
