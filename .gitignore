@@ -1,4 +1,5 @@
 complianceremediations/
+__pycache__/
 ComplianceCheckResults.md
 created_file_paths.txt
 generated-networkpolicies/
