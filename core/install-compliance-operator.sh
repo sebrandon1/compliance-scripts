@@ -248,7 +248,8 @@ fi
 # ARM Architecture Check
 # ============================================================================
 echo "[INFO] Checking cluster architecture..."
-ARM_NODES=$(oc get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}' 2>/dev/null | tr ' ' '\n' | grep -c "arm64" || echo "0")
+ARM_NODES=$(oc get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}' 2>/dev/null | tr ' ' '\n' | grep -c "arm64" || true)
+ARM_NODES=${ARM_NODES:-0}
 
 if [[ "$ARM_NODES" -gt 0 ]]; then
 	echo "[INFO] Detected $ARM_NODES ARM64 node(s) in cluster"
@@ -381,6 +382,31 @@ spec:
       operator: Exists
       effect: NoSchedule
 EOF
+
+	echo "[INFO] Waiting for CatalogSource to be READY..."
+	for i in {1..30}; do
+		CATALOG_STATE=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
+		if [[ "$CATALOG_STATE" == "READY" ]]; then
+			echo "[INFO] CatalogSource is READY"
+			break
+		fi
+		echo "[WAIT] CatalogSource not ready yet, state: $CATALOG_STATE ($i/30)"
+		sleep 10
+	done
+
+	if [[ "$CATALOG_STATE" != "READY" ]]; then
+		echo "[ERROR] CatalogSource did not become READY within 5 minutes. Checking status..."
+		echo ""
+		echo "CatalogSource details:"
+		oc describe catalogsource compliance-operator -n openshift-marketplace || true
+		echo ""
+		echo "CatalogSource pod status:"
+		oc get pods -n openshift-marketplace -l olm.catalogSource=compliance-operator || true
+		echo ""
+		echo "Pod logs (if available):"
+		oc logs -n openshift-marketplace -l olm.catalogSource=compliance-operator --tail=50 || true
+		exit 1
+	fi
 
 	echo "[INFO] Creating OperatorGroup"
 	oc apply -f "$BASE_RAW/config/catalog/operator-group.yaml"
