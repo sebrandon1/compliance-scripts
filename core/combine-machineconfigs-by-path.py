@@ -2,8 +2,20 @@
 """
 Combine MachineConfig remediations by file path.
 
-This script merges multiple MachineConfig YAML files that target the same
-file path into a single combined MachineConfig.
+Multiple compliance remediations often target the same file path (e.g., several
+rules writing to /etc/sysctl.d/99-compliance.conf). Applying them individually
+would cause conflicts because only the last MachineConfig wins per file path.
+This script merges all remediations that target the same file path into a single
+combined MachineConfig with deduplicated contents.
+
+For an alternative approach that uses .d directory includes (one file per rule),
+see modular/create-modular-configs.sh and model-context/MODULAR_APPROACH.md.
+
+Usage:
+    python3 core/combine-machineconfigs-by-path.py \\
+        --src-dir complianceremediations --out-dir complianceremediations \\
+        [--severity high,medium,low] [--header none|provenance|full] \\
+        [--no-move] [--dry-run]
 """
 import os
 import sys

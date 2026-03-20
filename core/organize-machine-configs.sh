@@ -1,6 +1,15 @@
 #!/bin/bash
 # organize-machine-configs.sh - Organize MachineConfig files by topic and role
 #
+# Categorizes collected remediation YAMLs into topic directories (sysctl, sshd,
+# misc) and separates MachineConfigs from other manifest kinds (e.g., APIServer).
+# Typically run after collect-complianceremediations.sh and optionally after
+# combine-machineconfigs-by-path.py or modular/create-modular-configs.sh.
+#
+# WARNING: The -x flag applies MachineConfigs directly to the connected cluster.
+# MachineConfig changes trigger rolling node reboots. Use --dry-run first to
+# preview what would be created, and review all YAML before applying.
+#
 # Usage: ./core/organize-machine-configs.sh [OPTIONS]
 #
 # Options:

@@ -1,12 +1,16 @@
 #!/bin/bash
 # export-compliance-data.sh
-# Exports Compliance Operator check results to JSON for GitHub Pages dashboard
+# Exports Compliance Operator check results to JSON for the GitHub Pages
+# compliance dashboard (https://sebrandon1.github.io/compliance-scripts/).
 #
-# Usage: ./export-compliance-data.sh <ocp-version>
-# Example: ./export-compliance-data.sh 4.17
+# Prerequisites:
+#   - Compliance scans must have completed on the connected cluster
+#   - oc must be logged in (KUBECONFIG set to target cluster)
+#
+# Usage: ./core/export-compliance-data.sh <ocp-version>
+# Example: ./core/export-compliance-data.sh 4.17
 #
 # Requires: oc, jq
-# Environment: KUBECONFIG must be set to target cluster
 
 set -euo pipefail
 

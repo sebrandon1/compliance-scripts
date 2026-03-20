@@ -75,6 +75,31 @@ make install-jekyll                       # Install Jekyll dependencies
 5. `organize-machine-configs.sh` - Categorize by topic (sysctl, sshd, etc.)
 6. `generate-compliance-markdown.sh` - Create compliance report
 
+### Workflow Dependencies and Wait Points
+
+| Step | Prerequisite | Wait for | Output |
+|------|-------------|----------|--------|
+| `install-compliance-operator.sh` | `oc` access to cluster | Pods Ready (~5 min), ProfileBundles VALID | Operator running in `openshift-compliance` |
+| `create-scan.sh` / `apply-periodic-scan.sh` | ProfileBundles VALID | ComplianceSuite DONE (~5-15 min) | CheckResults + Remediations in cluster |
+| `collect-complianceremediations.sh` | Scans completed | Immediate | YAML files in `complianceremediations/` |
+| `combine-machineconfigs-by-path.py` or `create-modular-configs.sh` | `complianceremediations/` populated | Immediate | Combined/modular YAML files |
+| `organize-machine-configs.sh` | Combined or raw remediations | Immediate | Categorized files in `output/` |
+| `generate-compliance-markdown.sh` | Scans completed, remediations collected | Immediate | `ComplianceCheckResults.md` |
+
+Useful commands for checking scan progress:
+```bash
+oc get compliancesuite -n openshift-compliance       # Check suite status (DONE/RUNNING)
+./utilities/monitor-inprogress-scans.sh --watch      # Live dashboard of scan progress
+oc get compliancecheckresult -n openshift-compliance  # View individual check results
+```
+
+### Safety Considerations
+
+- **MachineConfig changes trigger rolling node reboots.** Always review YAML before applying to a cluster.
+- Use `--dry-run` on `combine-machineconfigs-by-path.py` and `organize-machine-configs.sh` to preview changes.
+- The `-x` flag on `organize-machine-configs.sh` applies configs directly to the cluster — use with caution.
+- Non-MachineConfig remediations (e.g., APIServer) may also cause temporary service disruption.
+
 ### Python Environment
 ```bash
 python3 -m venv venv
