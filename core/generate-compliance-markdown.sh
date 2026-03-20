@@ -1,4 +1,18 @@
 #!/bin/bash
+# generate-compliance-markdown.sh - Generate a Markdown compliance report
+#
+# Queries all ComplianceCheckResult objects from the connected OpenShift cluster
+# and produces a Markdown table (ComplianceCheckResults.md) mapping each check
+# to its remediation file, severity, and pass/fail/manual result.
+#
+# Prerequisites:
+#   - Compliance scans must have completed (ComplianceCheckResults exist)
+#   - Remediations should be collected first (collect-complianceremediations.sh)
+#     so that file links resolve correctly
+#
+# Output: ComplianceCheckResults.md (in the current directory)
+#
+# Usage: ./core/generate-compliance-markdown.sh
 
 # Ensure the script exits on any error
 set -e

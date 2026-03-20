@@ -16,6 +16,46 @@ This repository contains a set of scripts to help automate the collection, organ
 
 > **Note on operator versioning:** There are two distribution channels with different version numbers. The **upstream/community** operator at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator) (latest: v1.7.0) is used by the install script's `--co-ref` flag. Clusters with `redhat-operators` in `openshift-marketplace` will install the **Red Hat certified** version instead, which uses its own versioning (e.g., v1.8.2). The Red Hat version is built internally and not publicly tagged on GitHub. The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
 
+## Compliance Operator Concepts
+
+The Compliance Operator uses several custom resources to manage compliance scanning. Understanding these helps you choose the right scripts and interpret results:
+
+- **ProfileBundle** — A bundle of compliance profiles shipped with the operator. Must reach `VALID` status before scans can run.
+- **Profile** — A specific compliance standard (e.g., CIS, E8, Moderate, PCI-DSS) within a ProfileBundle.
+- **ScanSetting** — Defines *how* to scan: schedule (cron), storage size, tolerations, and roles to scan.
+- **ScanSettingBinding** — Binds one or more Profiles to a ScanSetting, creating the actual scan.
+- **ComplianceSuite / ComplianceScan** — The running scan. A Suite contains multiple Scans (one per profile+role). Status progresses from `LAUNCHING` → `RUNNING` → `DONE`.
+- **ComplianceCheckResult** — Individual pass/fail/manual result for each compliance rule.
+- **ComplianceRemediation** — A remediation object (usually a MachineConfig) that can fix a failing check.
+- **MachineConfig** — An OpenShift resource that configures node-level settings (sysctl, sshd, audit rules, file contents). **Applying a MachineConfig triggers a rolling reboot of all nodes in the targeted MachineConfigPool.**
+
+## Choosing a Workflow
+
+### Scan Options
+
+| Option | Script | Schedule | Profiles |
+|--------|--------|----------|----------|
+| One-time scan | `create-scan.sh` | Runs once immediately | CIS (default) or `--recommended` for all 4 |
+| Periodic scan | `apply-periodic-scan.sh` | Daily (cron `0 1 * * *`) | E8, CIS, Moderate, PCI-DSS |
+
+### Post-Scan Workflow
+
+After scans complete, follow these steps:
+
+1. **Collect remediations** (always first): `./core/collect-complianceremediations.sh`
+2. **Process MachineConfigs** — choose one approach:
+   - **Modular** (recommended): `./modular/create-modular-configs.sh` — uses `.d` directory includes for per-rule files. See [model-context/MODULAR_APPROACH.md](model-context/MODULAR_APPROACH.md).
+   - **Combined**: `python3 core/combine-machineconfigs-by-path.py` — merges remediations targeting the same file path into single files.
+3. **Organize by topic**: `./core/organize-machine-configs.sh` — categorizes configs into sysctl, sshd, misc directories.
+4. **Generate report**: `./core/generate-compliance-markdown.sh` — creates a Markdown table of all check results.
+
+## Important Safety Notes
+
+- **MachineConfig changes trigger rolling node reboots.** Nodes in the targeted pool will reboot one at a time, which can take 10-45 minutes per pool depending on cluster size.
+- Use `--dry-run` on `combine-machineconfigs-by-path.py` and `organize-machine-configs.sh` to preview changes before writing files.
+- Always review generated YAML before applying to production clusters.
+- The `-x` flag on `organize-machine-configs.sh` applies configs directly to the connected cluster — do not use unless you intend to modify the cluster immediately.
+
 ## Repository Structure
 
 Scripts are organized into subdirectories:
@@ -431,6 +471,14 @@ pip3 install pyyaml
 - `python3` (with standard library; no extra packages required)
 
 ---
+
+## Troubleshooting
+
+For detailed troubleshooting guidance, see the [CLAUDE.md](CLAUDE.md#troubleshooting) file, which covers:
+
+- CI failures in the `test-compliance` workflow (marketplace race conditions, CRC startup)
+- ProfileBundle not reaching VALID status (image pull errors, ARM64 support, storage issues)
+- How to download and analyze full GitHub Actions CI logs
 
 ## Notes
 - Most scripts default to the `openshift-compliance` namespace but allow overriding via arguments.
