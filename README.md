@@ -43,10 +43,17 @@ The script will:
 
 **No user interaction required!** Just run and wait.
 
-Then run scans:
+Then run scans (pick one or both):
+
+**Option A: On-demand scan** — runs once immediately using the built-in `default` ScanSetting:
 ```bash
-./core/create-scan.sh           # CIS compliance scan
-./core/apply-periodic-scan.sh   # Periodic E8 scans
+./core/create-scan.sh                # Single CIS scan (default profile)
+./core/create-scan.sh --recommended  # Scan all 4 recommended profiles (CIS, Moderate, PCI-DSS)
+```
+
+**Option B: Periodic scans** — creates a daily scheduled scan (cron: `0 1 * * *`) with custom storage and tolerations, covering E8, CIS, Moderate, and PCI-DSS profiles:
+```bash
+./core/apply-periodic-scan.sh
 ```
 
 ### Alternative: Manual Two-Step

@@ -1,5 +1,13 @@
 #!/bin/bash
-# create-scan.sh - Create a compliance scan using ScanSettingBinding
+# create-scan.sh - Create an on-demand (one-time) compliance scan
+#
+# Creates a ScanSettingBinding that triggers an immediate scan using the
+# built-in "default" ScanSetting. By default it scans the ocp4-cis profile,
+# but you can specify any profile with --profile or scan all 4 recommended
+# profiles (CIS, Moderate, PCI-DSS) with --recommended.
+#
+# For recurring daily scans with custom storage and tolerations, use
+# apply-periodic-scan.sh instead.
 #
 # Usage: ./core/create-scan.sh [OPTIONS]
 #
@@ -7,6 +15,7 @@
 #   -n, --namespace    Namespace for the scan (default: openshift-compliance)
 #   -p, --profile      Profile to scan against (default: ocp4-cis)
 #   -s, --scan-name    Name of the scan (default: cis-scan)
+#   --recommended      Scan all 4 recommended profiles
 #   --dry-run          Preview changes without applying
 #   -h, --help         Show this help message
 

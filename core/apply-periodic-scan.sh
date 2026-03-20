@@ -1,11 +1,22 @@
 #!/bin/bash
-# apply-periodic-scan.sh - Apply periodic compliance scan configuration
+# apply-periodic-scan.sh - Set up recurring daily compliance scans
+#
+# Creates a custom "periodic-setting" ScanSetting with a daily cron schedule
+# (0 1 * * *), PVC-backed raw result storage, and node tolerations. Then
+# creates ScanSettingBindings for four profile groups:
+#   - E8        (rhcos4-e8, ocp4-e8)
+#   - CIS       (ocp4-cis)
+#   - Moderate  (ocp4-moderate, rhcos4-moderate)
+#   - PCI-DSS   (ocp4-pci-dss)
+#
+# For a one-time on-demand scan using the built-in "default" ScanSetting,
+# use create-scan.sh instead.
 #
 # Usage: ./core/apply-periodic-scan.sh [OPTIONS]
 #
 # Options:
 #   -n, --namespace    Namespace for the scan (default: openshift-compliance)
-#   --no-pvc           Skip PVC configuration
+#   --no-pvc           Skip PVC configuration for rawResultStorage
 #   --dry-run          Preview changes without applying
 #   -h, --help         Show this help message
 
