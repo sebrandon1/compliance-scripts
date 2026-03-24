@@ -39,7 +39,7 @@ fi
 LOG_LEVEL="${LOG_LEVEL:-3}"
 
 # Convert named levels to numbers
-case "${LOG_LEVEL,,}" in
+case "$(echo "${LOG_LEVEL}" | tr '[:upper:]' '[:lower:]')" in
     quiet|q)   LOG_LEVEL=0 ;;
     error|e)   LOG_LEVEL=1 ;;
     warn|w)    LOG_LEVEL=2 ;;

@@ -109,8 +109,23 @@ fi
 # MAIN
 # ============================================================================
 
+# ============================================================================
+# SNO DETECTION
+# ============================================================================
+NODE_COUNT=$(oc get nodes --no-headers 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$NODE_COUNT" -eq 1 ]]; then
+	IS_SNO=true
+	SCAN_ROLES="worker"
+	log_info "Detected Single Node OpenShift (SNO) - using worker role only"
+else
+	IS_SNO=false
+	SCAN_ROLES="worker master"
+fi
+
 log_info "Applying periodic scan configuration..."
 log_info "  Namespace: $NAMESPACE"
+log_info "  Topology: $([ "$IS_SNO" == "true" ] && echo "SNO (1 node)" || echo "Multi-node ($NODE_COUNT nodes)")"
+log_info "  Scan roles: $SCAN_ROLES"
 log_info "  PVC Storage: $([ "$NO_PVC" == "true" ] && echo "disabled" || echo "enabled (${SC_NAME:-auto})")"
 
 if [[ "$DRY_RUN" == "true" ]]; then
@@ -152,8 +167,7 @@ YML
 		fi
 	)
 roles:
-  - worker
-  - master
+$(for role in $SCAN_ROLES; do echo "  - $role"; done)
 EOF
 )
 
