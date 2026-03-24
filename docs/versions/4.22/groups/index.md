@@ -51,6 +51,24 @@ Each group below represents a logical set of related compliance checks that can 
 | [M9](M9.html) | Auditd Configuration | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m9-auditd-config) | - | - |
 | [M11](M11.html) | Ingress TLS Ciphers | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m11-ingress-tls) | - | - |
 | [M12](M12.html) | Audit Profile | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m12-audit-profile) | - | - |
+| [M13](M13.html) | Extended DAC Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M14](M14.html) | Identity File Access Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M15](M15.html) | File Deletion Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M16](M16.html) | Unsuccessful File Modification Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M17](M17.html) | Privileged Commands Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M18](M18.html) | Session & MAC Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M19](M19.html) | Usergroup Modification Audit | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M20](M20.html) | Auditd Data Retention | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M21](M21.html) | Kernel Module Blacklist | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M22](M22.html) | Network Sysctl Hardening | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M23](M23.html) | Kernel Sysctl Extended | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M24](M24.html) | CoreOS Kernel Arguments | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M25](M25.html) | Chrony/NTP Configuration | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M26](M26.html) | Systemd Hardening | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M27](M27.html) | SSHD Moderate Extensions | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M28](M28.html) | USBGuard | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M29](M29.html) | System Access Controls | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+| [M30](M30.html) | OAuth Configuration | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
 
 ---
 
@@ -66,7 +84,7 @@ Each group below represents a logical set of related compliance checks that can 
 ## Group Naming Convention
 
 - **H** = HIGH severity (H1, H2, H3)
-- **M** = MEDIUM severity (M1-M12)
+- **M** = MEDIUM severity (M1-M30)
 - **L** = LOW severity (L1, L2)
 
 ## Priority Legend
