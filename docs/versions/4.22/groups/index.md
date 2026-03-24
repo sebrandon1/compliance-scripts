@@ -5,7 +5,7 @@ title: OCP 4.22 Remediation Groups
 
 # OCP 4.22 Remediation Groups
 
-[← Back to OCP 4.22 Compliance Status](../4.21.html) | [View Summary](../remediations.html)
+[← Back to OCP 4.22 Compliance Status](../4.22.html) | [View Summary](../remediations.html)
 
 Each group below represents a logical set of related compliance checks that can be remediated together in a single MachineConfig or CRD.
 
@@ -39,18 +39,18 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Priority | Status | Compare | Jira | PR |
 |-------|-------|----------|--------|---------|------|-----|
-| [M1](M1.html) | SSHD Configuration | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:m1-sshd-medium-hardening) | - | - |
-| [M4](M4.html) | Audit Rules - SELinux | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m4-audit-selinux) | - | - |
-| [M6](M6.html) | Audit Rules - Time Modifications | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m6-audit-time) | - | - |
-| [M7](M7.html) | Audit Rules - Login Monitoring | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m7-audit-login) | - | - |
-| [M10](M10.html) | API Server Encryption | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m10-api-encryption) | - | - |
-| [M2](M2.html) | Kernel Hardening (Sysctl) | <span class="priority-score p3">P3</span> | ⚪ On Hold | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m2-kernel-sysctl) | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
-| [M3](M3.html) | Audit Rules - DAC Modifications | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m3-audit-dac) | - | - |
-| [M5](M5.html) | Audit Rules - Kernel Modules | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m5-audit-modules) | - | - |
-| [M8](M8.html) | Audit Rules - Network Config | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m8-audit-network) | - | - |
-| [M9](M9.html) | Auditd Configuration | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m9-auditd-config) | - | - |
-| [M11](M11.html) | Ingress TLS Ciphers | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m11-ingress-tls) | - | - |
-| [M12](M12.html) | Audit Profile | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m12-audit-profile) | - | - |
+| [M1](M1.html) | SSHD Configuration | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m1-sshd-medium) | - | - |
+| [M4](M4.html) | Audit Rules - SELinux | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m4-audit-selinux) | - | - |
+| [M6](M6.html) | Audit Rules - Time Modifications | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m6-audit-time) | - | - |
+| [M7](M7.html) | Audit Rules - Login Monitoring | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m7-audit-login) | - | - |
+| [M10](M10.html) | API Server Encryption | <span class="priority-score p2">P2</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m10-api-encryption) | - | - |
+| [M2](M2.html) | Kernel Hardening (Sysctl) | <span class="priority-score p3">P3</span> | ⚪ On Hold | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m2-kernel-sysctl) | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
+| [M3](M3.html) | Audit Rules - DAC Modifications | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m3-audit-dac) | - | - |
+| [M5](M5.html) | Audit Rules - Kernel Modules | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m5-audit-modules) | - | - |
+| [M8](M8.html) | Audit Rules - Network Config | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m8-audit-network) | - | - |
+| [M9](M9.html) | Auditd Configuration | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m9-auditd-config) | - | - |
+| [M11](M11.html) | Ingress TLS Ciphers | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m11-ingress-tls) | - | - |
+| [M12](M12.html) | Audit Profile | <span class="priority-score p3">P3</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m12-audit-profile) | - | - |
 
 ---
 
@@ -58,8 +58,8 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Priority | Status | Compare | Jira | PR |
 |-------|-------|----------|--------|---------|------|-----|
-| [L1](L1.html) | SSHD LogLevel | <span class="priority-score p4">P4</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l1-sshd-loglevel) | - | - |
-| [L2](L2.html) | Sysctl dmesg_restrict | <span class="priority-score p4">P4</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l2-sysctl-dmesg) | - | - |
+| [L1](L1.html) | SSHD LogLevel | <span class="priority-score p4">P4</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l1-sshd-loglevel) | - | - |
+| [L2](L2.html) | Sysctl dmesg_restrict | <span class="priority-score p4">P4</span> | 🟡 Pending | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l2-sysctl-dmesg) | - | - |
 
 ---
 

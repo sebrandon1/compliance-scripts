@@ -88,7 +88,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">7</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:m1-sshd-medium-hardening" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m1-sshd-medium" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -98,7 +98,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">4</td>
       <td><span class="status-pill on-hold">⚪ On Hold</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m2-kernel-sysctl" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m2-kernel-sysctl" class="compare-btn">📦</a></td>
       <td><a href="https://issues.redhat.com/browse/CNF-21196" class="jira-badge">CNF-21196</a></td>
       <td>-</td>
     </tr>
@@ -108,7 +108,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">2</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m3-audit-dac" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m3-audit-dac" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -118,7 +118,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">6</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m4-audit-selinux" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m4-audit-selinux" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -128,7 +128,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">3</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m5-audit-modules" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m5-audit-modules" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -138,7 +138,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">5</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m6-audit-time" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m6-audit-time" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -148,7 +148,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">5</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m7-audit-login" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m7-audit-login" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -158,7 +158,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">1</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m8-audit-network" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m8-audit-network" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -168,7 +168,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">1</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m9-auditd-config" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m9-auditd-config" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -178,7 +178,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">2</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m10-api-encryption" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m10-api-encryption" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -188,7 +188,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">1</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m11-ingress-tls" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m11-ingress-tls" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -198,7 +198,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">1</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/m12-audit-profile" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m12-audit-profile" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -208,7 +208,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill low">LOW</span></td>
       <td style="text-align: center;">1</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l1-sshd-loglevel" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l1-sshd-loglevel" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
@@ -218,7 +218,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td><span class="severity-pill low">LOW</span></td>
       <td style="text-align: center;">1</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
-      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.21/l2-sysctl-dmesg" class="compare-btn">📦</a></td>
+      <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l2-sysctl-dmesg" class="compare-btn">📦</a></td>
       <td>-</td>
       <td>-</td>
     </tr>
