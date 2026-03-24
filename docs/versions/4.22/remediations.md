@@ -89,7 +89,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td style="text-align: center;">7</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m1-sshd-medium" class="compare-btn">📦</a></td>
-      <td>-</td>
+      <td><a href="https://redhat.atlassian.net/browse/CNF-22620" class="jira-badge">CNF-22620</a></td>
       <td>-</td>
     </tr>
     <tr>
@@ -119,7 +119,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td style="text-align: center;">6</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m4-audit-selinux" class="compare-btn">📦</a></td>
-      <td>-</td>
+      <td><a href="https://redhat.atlassian.net/browse/CNF-22621" class="jira-badge">CNF-22621</a></td>
       <td>-</td>
     </tr>
     <tr>
@@ -139,7 +139,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td style="text-align: center;">5</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m6-audit-time" class="compare-btn">📦</a></td>
-      <td>-</td>
+      <td><a href="https://redhat.atlassian.net/browse/CNF-22622" class="jira-badge">CNF-22622</a></td>
       <td>-</td>
     </tr>
     <tr>
@@ -149,7 +149,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td style="text-align: center;">5</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m7-audit-login" class="compare-btn">📦</a></td>
-      <td>-</td>
+      <td><a href="https://redhat.atlassian.net/browse/CNF-22623" class="jira-badge">CNF-22623</a></td>
       <td>-</td>
     </tr>
     <tr>
@@ -179,7 +179,7 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td style="text-align: center;">2</td>
       <td><span class="status-pill pending">🟡 Pending</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m10-api-encryption" class="compare-btn">📦</a></td>
-      <td>-</td>
+      <td><a href="https://redhat.atlassian.net/browse/CNF-22624" class="jira-badge">CNF-22624</a></td>
       <td>-</td>
     </tr>
     <tr>
