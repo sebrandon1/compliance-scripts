@@ -87,10 +87,10 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td>SSHD Configuration</td>
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">7</td>
-      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m1-sshd-medium" class="compare-btn">📦</a></td>
       <td><a href="https://redhat.atlassian.net/browse/CNF-22620" class="jira-badge">CNF-22620</a></td>
-      <td>-</td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/674" class="pr-badge">#674</a></td>
     </tr>
     <tr>
       <td><a href="groups/M2.html" class="group-id">M2</a></td>
@@ -117,10 +117,10 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td>Audit SELinux</td>
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">6</td>
-      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m4-audit-selinux" class="compare-btn">📦</a></td>
       <td><a href="https://redhat.atlassian.net/browse/CNF-22621" class="jira-badge">CNF-22621</a></td>
-      <td>-</td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/675" class="pr-badge">#675</a></td>
     </tr>
     <tr>
       <td><a href="groups/M5.html" class="group-id">M5</a></td>
@@ -137,20 +137,20 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td>Audit Time</td>
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">5</td>
-      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m6-audit-time" class="compare-btn">📦</a></td>
       <td><a href="https://redhat.atlassian.net/browse/CNF-22622" class="jira-badge">CNF-22622</a></td>
-      <td>-</td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/676" class="pr-badge">#676</a></td>
     </tr>
     <tr>
       <td><a href="groups/M7.html" class="group-id">M7</a></td>
       <td>Audit Auth</td>
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">5</td>
-      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m7-audit-login" class="compare-btn">📦</a></td>
       <td><a href="https://redhat.atlassian.net/browse/CNF-22623" class="jira-badge">CNF-22623</a></td>
-      <td>-</td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/677" class="pr-badge">#677</a></td>
     </tr>
     <tr>
       <td><a href="groups/M8.html" class="group-id">M8</a></td>
@@ -177,10 +177,10 @@ From E8 (Essential Eight) and CIS benchmark scans: **82 total remediations**
       <td>API Encryption</td>
       <td><span class="severity-pill medium">MEDIUM</span></td>
       <td style="text-align: center;">2</td>
-      <td><span class="status-pill pending">🟡 Pending</span></td>
+      <td><span class="status-pill in-progress">🔵 In Progress</span></td>
       <td style="text-align: center;"><a href="https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/m10-api-encryption" class="compare-btn">📦</a></td>
       <td><a href="https://redhat.atlassian.net/browse/CNF-22624" class="jira-badge">CNF-22624</a></td>
-      <td>-</td>
+      <td><a href="https://github.com/openshift-kni/telco-reference/pull/678" class="pr-badge">#678</a></td>
     </tr>
     <tr>
       <td><a href="groups/M11.html" class="group-id">M11</a></td>
