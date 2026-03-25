@@ -65,16 +65,10 @@
         {% endif %}
       </td>
       <td>
-        {% if tracking.status %}
-        <span class="tracking-status {{ tracking.status }}">
-          {% case tracking.status %}
-            {% when "in_progress" %}In Progress
-            {% when "pending" %}Pending
-            {% when "on_hold" %}On Hold
-            {% when "done" %}Done
-            {% else %}{{ tracking.status }}
-          {% endcase %}
-        </span>
+        {% if rem %}
+        <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group_id }}.html" class="tracking-status {{ tracking.status }}">
+          {{ group_id }}: {{ tracking.title }}
+        </a>
         {% else %}
         <span class="tracking-status pending">Not Tracked</span>
         {% endif %}
