@@ -46,8 +46,38 @@ jobs:
       - name: Install Compliance Operator
         run: CO_REF=v1.7.0 make install-compliance-operator
 
-      - name: Deploy E8 scans
-        run: make apply-periodic-scan
+      - name: Deploy E8 scans (both master and worker roles)
+        run: |
+          cat <<'EOF' | oc apply -f -
+          apiVersion: compliance.openshift.io/v1alpha1
+          kind: ScanSetting
+          metadata:
+            name: nightly-setting
+            namespace: openshift-compliance
+          roles:
+            - worker
+            - master
+          scanTolerations:
+            - operator: Exists
+          schedule: "0 1 * * *"
+          ---
+          apiVersion: compliance.openshift.io/v1alpha1
+          kind: ScanSettingBinding
+          metadata:
+            name: nightly-e8
+            namespace: openshift-compliance
+          profiles:
+            - name: rhcos4-e8
+              kind: Profile
+              apiGroup: compliance.openshift.io/v1alpha1
+            - name: ocp4-e8
+              kind: Profile
+              apiGroup: compliance.openshift.io/v1alpha1
+          settingsRef:
+            name: nightly-setting
+            kind: ScanSetting
+            apiGroup: compliance.openshift.io/v1alpha1
+          EOF
 
       - name: Wait for scans to complete
         run: |
