@@ -76,7 +76,7 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Priority | Status | Tested | Compare | Jira | PR |
 |-------|-------|----------|--------|--------|---------|------|-----|
-| [L1](L1.html) | SSHD LogLevel | <span class="priority-score p4">P4</span> | 🟡 Pending | FAIL | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l1-sshd-loglevel) | - | - |
+| [L1](L1.html) | SSHD LogLevel | <span class="priority-score p4">P4</span> | 🟡 Pending | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l1-sshd-loglevel) | - | - |
 | [L2](L2.html) | Sysctl dmesg_restrict | <span class="priority-score p4">P4</span> | 🟡 Pending | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/4.22/l2-sysctl-dmesg) | - | - |
 
 ---
