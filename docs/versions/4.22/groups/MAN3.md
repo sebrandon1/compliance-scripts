@@ -14,8 +14,23 @@ These checks require reviewing how secrets are stored and consumed. They recomme
 
 ## Checks Requiring Manual Action
 
-| Check | Required Action |
-|-------|----------------|
-| `secrets-consider-external-storage` | Consider using an external secrets management system (e.g., Vault) |
-| `secrets-no-environment-variables` | Mount secrets as volumes instead of passing via environment variables |
+### `secrets-consider-external-storage`
+
+**Severity**: MEDIUM
+
+**Why this fails**: Consider external secret storage
+
+Consider the use of an external secrets storage and management system, instead of using Kubernetes Secrets directly, if you have more complex secret management needs. Ensure the solution requires authentication to access secrets, has auditing of access to and use of secrets, and encrypts secrets. Some solutions also make it easier to rotate secrets.
+
+---
+
+### `secrets-no-environment-variables`
+
+**Severity**: MEDIUM
+
+**Why this fails**: Do Not Use Environment Variables with Secrets
+
+Secrets should be mounted as data volumes instead of environment variables.
+
+---
 

@@ -14,10 +14,31 @@ These checks recommend placing audit and system logs on separate disk partitions
 
 ## Checks Requiring Manual Action
 
-| Check | Required Action |
-|-------|----------------|
-| `partition-for-var-log (master)` | Ensure /var/log is on a separate partition (master nodes) |
-| `partition-for-var-log (worker)` | Ensure /var/log is on a separate partition (worker nodes) |
-| `partition-for-var-log-audit (master)` | Ensure /var/log/audit is on a separate partition (master nodes) |
-| `partition-for-var-log-audit (worker)` | Ensure /var/log/audit is on a separate partition (worker nodes) |
+### `partition-for-var-log`
+
+**Severity**: LOW
+
+**Why this fails**: Ensure /var/log Located On Separate Partition
+
+System logs are stored in the /var/log directory.
+
+Partitioning Red Hat CoreOS is a Day 1 operation and cannot be changed afterwards. For documentation on how to add a MachineConfig manifest that specifies a separate /var/log partition, follow: https://docs.openshift.com/container-platform/latest/installing/installing_platform_agnostic/installing-platform-agnostic.html#installation-user-infra-machines-advanced_disk_installing-platform-agnostic
+
+Note that the Red Hat OpenShift documentation often...
+
+---
+
+### `partition-for-var-log-audit`
+
+**Severity**: LOW
+
+**Why this fails**: Ensure /var/log/audit Located On Separate Partition
+
+Audit logs are stored in the /var/log/audit directory.
+
+Partitioning Red Hat CoreOS is a Day 1 operation and cannot be changed afterwards. For documentation on how to add a MachineConfig manifest that specifies a separate /var/log/audit partition, follow: https://docs.openshift.com/container-platform/latest/installing/installing_platform_agnostic/installing-platform-agnostic.html#installation-user-infra-machines-advanced_disk_installing-platform-agnostic
+
+Note that the Red Hat OpenShift document...
+
+---
 
