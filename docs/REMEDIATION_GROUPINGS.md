@@ -6,9 +6,10 @@ This page provides links to remediation groupings organized by OCP version. Each
 
 ## Available Versions
 
-| OCP Version | Remediations | Status |
-|-------------|--------------|--------|
-| [**OCP 4.21**](versions/4.21/remediations.html) | 82 total | Active |
+| OCP Version | Groups | Remediations | Status |
+|-------------|--------|--------------|--------|
+| [**OCP 4.22**](versions/4.22/remediations.html) | 40 groups (33 tested) | 910 total | Active |
+| [**OCP 4.21**](versions/4.21/remediations.html) | 17 groups | 82 total | Active |
 
 ---
 
