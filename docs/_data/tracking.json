@@ -1158,6 +1158,751 @@
       "group": "MAN3",
       "file": null,
       "description": "Manual: Don't use env vars for secrets"
+    },
+    "audit-rules-dac-modification-chmod": {
+      "group": "M3",
+      "file": null,
+      "description": "Audit DAC chmod"
+    },
+    "audit-rules-dac-modification-chown": {
+      "group": "M3",
+      "file": null,
+      "description": "Audit DAC chown"
+    },
+    "audit-rules-execution-chcon": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux chcon"
+    },
+    "audit-rules-execution-restorecon": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux restorecon"
+    },
+    "audit-rules-execution-semanage": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux semanage"
+    },
+    "audit-rules-execution-setfiles": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux setfiles"
+    },
+    "audit-rules-execution-setsebool": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux setsebool"
+    },
+    "audit-rules-execution-seunshare": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux seunshare"
+    },
+    "audit-rules-kernel-module-loading-delete": {
+      "group": "M5",
+      "file": null,
+      "description": "Audit kernel module delete"
+    },
+    "audit-rules-kernel-module-loading-finit": {
+      "group": "M5",
+      "file": null,
+      "description": "Audit kernel module finit"
+    },
+    "audit-rules-kernel-module-loading-init": {
+      "group": "M5",
+      "file": null,
+      "description": "Audit kernel module init"
+    },
+    "audit-rules-time-adjtimex": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time adjtimex"
+    },
+    "audit-rules-time-clock-settime": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time clock_settime"
+    },
+    "audit-rules-time-settimeofday": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time settimeofday"
+    },
+    "audit-rules-time-stime": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time stime"
+    },
+    "audit-rules-time-watch-localtime": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time localtime"
+    },
+    "audit-rules-login-events-faillock": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login faillock"
+    },
+    "audit-rules-login-events-lastlog": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login lastlog"
+    },
+    "audit-rules-login-events-tallylog": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login tallylog"
+    },
+    "audit-rules-login-events": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login events"
+    },
+    "audit-rules-sysadmin-actions": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit sysadmin actions"
+    },
+    "audit-rules-usergroup-modification": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit usergroup modification"
+    },
+    "audit-rules-networkconfig-modification": {
+      "group": "M8",
+      "file": null,
+      "description": "Audit network config"
+    },
+    "auditd-name-format": {
+      "group": "M9",
+      "file": null,
+      "description": "Auditd name format"
+    },
+    "api-server-encryption-provider-cipher": {
+      "group": "M10",
+      "file": null,
+      "description": "API encryption"
+    },
+    "audit-profile-set": {
+      "group": "M12",
+      "file": null,
+      "description": "Audit profile"
+    },
+    "audit-log-forwarding-enabled": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: Audit log forwarding"
+    },
+    "audit-log-forwarding-uses-tls": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: Audit log forwarding TLS"
+    },
+    "idp-is-configured": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Configure identity provider"
+    },
+    "kubeadmin-removed": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Remove kubeadmin"
+    },
+    "banner-or-login-template-set": {
+      "group": "M29",
+      "file": null,
+      "description": "Login banner template"
+    },
+    "scc-drop-container-capabilities": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Drop container capabilities"
+    },
+    "scc-limit-container-allowed-capabilities": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit container capabilities"
+    },
+    "scc-limit-ipc-namespace": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit IPC namespace"
+    },
+    "scc-limit-net-raw-capability": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit NET_RAW"
+    },
+    "scc-limit-network-namespace": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit network namespace"
+    },
+    "scc-limit-process-id-namespace": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit PID namespace"
+    },
+    "general-configure-imagepolicywebhook": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Image provenance"
+    },
+    "no-direct-root-logins": {
+      "group": "M29",
+      "file": null,
+      "description": "No direct root logins"
+    },
+    "service-systemd-coredump-disabled": {
+      "group": "M26",
+      "file": null,
+      "description": "Systemd coredump disabled"
+    },
+    "directory-access-var-log-audit": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: Audit log access"
+    },
+    "partition-for-var-log": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: /var/log partition"
+    },
+    "partition-for-var-log-audit": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: /var/log/audit partition"
+    },
+    "bios-disable-usb-boot": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Disable USB boot"
+    },
+    "wireless-disable-in-bios": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Disable WiFi in BIOS"
+    },
+    "openshift-motd-exists": {
+      "group": "M29",
+      "file": null,
+      "description": "MOTD configuration"
+    },
+    "audit-rules-unsuccessful-file-modification-chown": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed chown"
+    },
+    "audit-rules-unsuccessful-file-modification-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed creat"
+    },
+    "audit-rules-unsuccessful-file-modification-fchmod": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchmod"
+    },
+    "audit-rules-unsuccessful-file-modification-fchmodat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchmodat"
+    },
+    "audit-rules-unsuccessful-file-modification-fchown": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchown"
+    },
+    "audit-rules-unsuccessful-file-modification-fchownat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchownat"
+    },
+    "audit-rules-unsuccessful-file-modification-fremovexattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fremovexattr"
+    },
+    "audit-rules-unsuccessful-file-modification-fsetxattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fsetxattr"
+    },
+    "audit-rules-unsuccessful-file-modification-ftruncate": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed ftruncate"
+    },
+    "audit-rules-unsuccessful-file-modification-lchown": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed lchown"
+    },
+    "audit-rules-unsuccessful-file-modification-lremovexattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed lremovexattr"
+    },
+    "audit-rules-unsuccessful-file-modification-lsetxattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed lsetxattr"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at-o-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at-o-creat"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at-o-trunc-write": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at-o-trunc-write"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at-rule-order": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at-rule-order"
+    },
+    "audit-rules-unsuccessful-file-modification-open-o-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-o-creat"
+    },
+    "audit-rules-unsuccessful-file-modification-open-o-trunc-write": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-o-trunc-write"
+    },
+    "audit-rules-unsuccessful-file-modification-open-rule-order": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-rule-order"
+    },
+    "audit-rules-unsuccessful-file-modification-openat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat"
+    },
+    "audit-rules-unsuccessful-file-modification-openat-o-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat-o-creat"
+    },
+    "audit-rules-unsuccessful-file-modification-openat-o-trunc-write": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat-o-trunc-write"
+    },
+    "audit-rules-unsuccessful-file-modification-openat-rule-order": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat-rule-order"
+    },
+    "audit-rules-unsuccessful-file-modification-removexattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed removexattr"
+    },
+    "audit-rules-unsuccessful-file-modification-rename": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed rename"
+    },
+    "audit-rules-unsuccessful-file-modification-renameat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed renameat"
+    },
+    "audit-rules-unsuccessful-file-modification-setxattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed setxattr"
+    },
+    "audit-rules-unsuccessful-file-modification-truncate": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed truncate"
+    },
+    "audit-rules-unsuccessful-file-modification-unlink": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed unlink"
+    },
+    "audit-rules-unsuccessful-file-modification-unlinkat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed unlinkat"
+    },
+    "audit-rules-privileged-commands-at": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged at"
+    },
+    "audit-rules-privileged-commands-chage": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged chage"
+    },
+    "audit-rules-privileged-commands-chsh": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged chsh"
+    },
+    "audit-rules-privileged-commands-crontab": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged crontab"
+    },
+    "audit-rules-privileged-commands-gpasswd": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged gpasswd"
+    },
+    "audit-rules-privileged-commands-newgidmap": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged newgidmap"
+    },
+    "audit-rules-privileged-commands-newgrp": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged newgrp"
+    },
+    "audit-rules-privileged-commands-newuidmap": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged newuidmap"
+    },
+    "audit-rules-privileged-commands-pam-timestamp-check": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged pam-timestamp-check"
+    },
+    "audit-rules-privileged-commands-postdrop": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged postdrop"
+    },
+    "audit-rules-privileged-commands-postqueue": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged postqueue"
+    },
+    "audit-rules-privileged-commands-pt-chown": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged pt-chown"
+    },
+    "audit-rules-privileged-commands-ssh-keysign": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged ssh-keysign"
+    },
+    "audit-rules-privileged-commands-sudoedit": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged sudoedit"
+    },
+    "audit-rules-privileged-commands-umount": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged umount"
+    },
+    "audit-rules-privileged-commands-unix-chkpwd": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged unix-chkpwd"
+    },
+    "audit-rules-privileged-commands-userhelper": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged userhelper"
+    },
+    "audit-rules-privileged-commands-usernetctl": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged usernetctl"
+    },
+    "kernel-module-atm-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable atm"
+    },
+    "kernel-module-can-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable can"
+    },
+    "kernel-module-cfg80211-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable cfg80211"
+    },
+    "kernel-module-cramfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable cramfs"
+    },
+    "kernel-module-firewire-core-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable firewire-core"
+    },
+    "kernel-module-freevxfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable freevxfs"
+    },
+    "kernel-module-hfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable hfs"
+    },
+    "kernel-module-hfsplus-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable hfsplus"
+    },
+    "kernel-module-iwlmvm-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable iwlmvm"
+    },
+    "kernel-module-iwlwifi-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable iwlwifi"
+    },
+    "kernel-module-jffs2-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable jffs2"
+    },
+    "kernel-module-mac80211-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable mac80211"
+    },
+    "kernel-module-squashfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable squashfs"
+    },
+    "kernel-module-tipc-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable tipc"
+    },
+    "kernel-module-udf-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable udf"
+    },
+    "sysctl-net-ipv4-conf-all-accept-source-route": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-accept-source-route"
+    },
+    "sysctl-net-ipv4-conf-all-log-martians": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-log-martians"
+    },
+    "sysctl-net-ipv4-conf-all-rp-filter": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-rp-filter"
+    },
+    "sysctl-net-ipv4-conf-all-secure-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-secure-redirects"
+    },
+    "sysctl-net-ipv4-conf-all-send-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-send-redirects"
+    },
+    "sysctl-net-ipv4-conf-default-accept-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-accept-redirects"
+    },
+    "sysctl-net-ipv4-conf-default-log-martians": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-log-martians"
+    },
+    "sysctl-net-ipv4-conf-default-rp-filter": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-rp-filter"
+    },
+    "sysctl-net-ipv4-conf-default-secure-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-secure-redirects"
+    },
+    "sysctl-net-ipv4-conf-default-send-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-send-redirects"
+    },
+    "sysctl-net-ipv4-icmp-echo-ignore-broadcasts": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-icmp-echo-ignore-broadcasts"
+    },
+    "sysctl-net-ipv4-icmp-ignore-bogus-error-responses": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-icmp-ignore-bogus-error-responses"
+    },
+    "sysctl-net-ipv6-conf-all-accept-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-all-accept-redirects"
+    },
+    "sysctl-net-ipv6-conf-all-accept-source-route": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-all-accept-source-route"
+    },
+    "sysctl-net-ipv6-conf-default-accept-ra": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-default-accept-ra"
+    },
+    "sysctl-net-ipv6-conf-default-accept-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-default-accept-redirects"
+    },
+    "sysctl-net-ipv6-conf-default-accept-source-route": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-default-accept-source-route"
+    },
+    "coreos-audit-backlog-limit-kernel-argument": {
+      "group": "M24",
+      "file": null,
+      "description": "CoreOS kernel arg"
+    },
+    "coreos-page-poison-kernel-argument": {
+      "group": "M24",
+      "file": null,
+      "description": "CoreOS kernel arg"
+    },
+    "coreos-vsyscall-kernel-argument": {
+      "group": "M24",
+      "file": null,
+      "description": "CoreOS kernel arg"
+    },
+    "chronyd-or-ntpd-set-maxpoll": {
+      "group": "M25",
+      "file": null,
+      "description": "Chrony config"
+    },
+    "chronyd-or-ntpd-specify-multiple-servers": {
+      "group": "M25",
+      "file": null,
+      "description": "Chrony config"
+    },
+    "acs-sensor-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: ACS sensor deployment"
+    },
+    "cluster-version-operator-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: CVO check"
+    },
+    "cluster-wide-proxy-set": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Cluster proxy configuration"
+    },
+    "container-security-operator-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Container security operator"
+    },
+    "default-ingress-ca-replaced": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Replace default ingress CA"
+    },
+    "enable-fips-mode": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Enable FIPS mode"
+    },
+    "file-integrity-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: File integrity operator"
+    },
+    "file-integrity-notification-enabled": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: File integrity notifications"
+    },
+    "fips-mode-enabled-on-all-nodes": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: FIPS on all nodes"
+    },
+    "ingress-controller-certificate": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Ingress controller certificate"
+    },
+    "machine-volume-encrypted": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Encrypt machine volumes"
+    },
+    "ocp-allowed-registries": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Configure allowed registries"
+    },
+    "ocp-allowed-registries-for-import": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Allowed registries for import"
+    },
+    "resource-requests-limits-in-daemonset": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Resource requests in daemonsets"
+    },
+    "resource-requests-quota": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Resource quotas"
+    },
+    "security-profiles-operator-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Security profiles operator"
+    },
+    "ingress-controller-tls-cipher-suites": {
+      "group": "M11",
+      "file": null,
+      "description": "Ingress TLS ciphers"
+    },
+    "alert-receiver-configured": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Configure alert receiver"
     }
   }
 }
