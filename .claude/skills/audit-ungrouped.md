@@ -2,15 +2,19 @@
 
 Find compliance remediations that aren't mapped to any group and suggest new groups.
 
+## Inputs
+
+None required. Operates on the local `complianceremediations/` directory and `docs/_data/tracking.json`. If `complianceremediations/` is empty, instruct the user to run `/scan-export` first.
+
 ## Workflow
 
 ### Step 1: Load Current Groups
 
-Read `docs/_data/tracking.json` to get all grouped check patterns from the `remediations` section.
+Read `docs/_data/tracking.json` — both the `groups` section (for group metadata) and the `remediations` section (for check-to-group mappings).
 
 ### Step 2: List All Collected Remediations
 
-Scan `complianceremediations/` for all YAML files (excluding combo files):
+Scan all YAML files (excluding `*-combo.yaml`):
 - `complianceremediations/*.yaml`
 - `complianceremediations/high/*.yaml`
 - `complianceremediations/medium/*.yaml`
@@ -21,42 +25,26 @@ Extract unique check names by stripping profile and role prefixes:
 - `rhcos4-moderate-worker-<check>.yaml` → `<check>`
 - `ocp4-cis-<check>.yaml` → `<check>`
 
+Dedup across profiles — same check from E8 and Moderate counts once.
+
 ### Step 3: Identify Ungrouped
 
-For each unique check name, check if it matches any pattern in `tracking.json` remediations. Report:
-
-```
-=== Grouped (X checks) ===
-- configure-crypto-policy → H1
-- no-empty-passwords → H2
-...
-
-=== Ungrouped (Y checks) ===
-- some-new-check (rhcos4-moderate, MEDIUM)
-- another-check (ocp4-cis, HIGH)
-...
-```
+Cross-reference check names against `tracking.json` remediations. Report grouped vs ungrouped counts.
 
 ### Step 4: Suggest New Groups
 
-Categorize ungrouped checks by type and suggest group names:
-- Audit rules → audit group
-- Sysctl → sysctl group
-- Kernel modules → module group
-- SSHD → SSHD group
-- etc.
-
-### Step 5: Report
-
-Present a table:
+Categorize ungrouped checks by type prefix and suggest group IDs:
 
 | Suggested Group | Title | Checks | Profile |
 |----------------|-------|--------|---------|
 | M31 | ... | 5 | rhcos4-moderate |
 
+### Step 5: Offer Next Steps
+
+Ask the user if they want to create any of the suggested groups using `/new-group`.
+
 ## Important Notes
 
-- Some checks overlap across profiles (same remediation, different profile prefix) — dedup by check suffix
-- CIS/PCI-DSS checks often duplicate E8/Moderate checks — only group unique remediations
-- `complianceremediations/medium/` only has E8 checks; Moderate checks are in root dir
+- `complianceremediations/medium/` only has E8 checks; Moderate checks are in the root dir
+- CIS/PCI-DSS checks often duplicate E8/Moderate — only group unique remediations
 - OCP-level checks (ocp4-*) are CRDs, not MachineConfigs

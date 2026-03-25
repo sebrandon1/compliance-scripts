@@ -7,42 +7,37 @@ Update a remediation group's status across all tracking surfaces when a PR merge
 The user provides:
 - Group ID (e.g., M1)
 - New status: `in_progress`, `complete`, `on_hold`, or `pending`
+- OCP version (e.g., 4.22) — defaults to latest version in `docs/versions/`
 
 ## Workflow
 
-### Step 1: Update tracking.json
+### Step 1: Verify Current State
 
-Edit `docs/_data/tracking.json`:
-- Set the group's `status` field
-- If completing: note the PR merge date
+Read `docs/_data/tracking.json` for the group's current status, Jira key, and PR number. Confirm the transition makes sense (e.g., don't mark complete if PR isn't merged).
 
-### Step 2: Update Dashboard Pages
+If marking `complete`, verify the PR is actually merged:
+```bash
+gh pr view <PR_NUMBER> --repo openshift-kni/telco-reference --json state
+```
 
-Edit `docs/versions/4.22/groups/index.md`:
-- Change the status emoji and text for the group's row
-- Status mapping:
-  - `pending` → `🟡 Pending`
-  - `in_progress` → `🔵 In Progress`
-  - `on_hold` → `⚪ On Hold`
-  - `complete` → `🟢 Complete`
+### Step 2: Update Files and Jira (parallel)
 
-Update `docs/versions/4.22/remediations.md` similarly if the group appears there.
+**File edits:**
+1. Update `tracking.json`: set `status` field
+2. Update `docs/versions/<VERSION>/groups/index.md`: change status emoji
+   - `pending` → `🟡 Pending`
+   - `in_progress` → `🔵 In Progress`
+   - `on_hold` → `⚪ On Hold`
+   - `complete` → `🟢 Complete`
+3. Update `docs/versions/<VERSION>/remediations.md` similarly (uses HTML `<span class="status-pill ...">`)
+4. Run `make lint`
 
-### Step 3: Update Jira
+**Jira updates (parallel):**
+If the group has a Jira key:
+1. Get available transitions via `jira_get_transitions` (do NOT hardcode transition IDs)
+2. Transition to the matching status
+3. If completing, add comment: "Remediation merged via PR #XXX"
 
-If the group has a Jira key in tracking.json:
-- Get available transitions: `jira_get_transitions`
-- Transition to matching status:
-  - `in_progress` → transition ID 21
-  - `complete` → transition ID 51 (Closed) with resolution Fixed
-- Add comment if completing: "Remediation merged via PR #XXX"
-
-### Step 4: Commit and Push
+### Step 3: Commit and Push
 
 Commit tracking/dashboard changes to compliance-scripts main.
-
-## Important Notes
-
-- When marking complete, verify the PR is actually merged first
-- Don't close Jiras without confirming the PR merged
-- The remediations.md file uses HTML table format, not markdown tables
