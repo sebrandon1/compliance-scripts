@@ -81,11 +81,26 @@ Each group below represents a logical set of related compliance checks that can 
 
 ---
 
+## Manual Checks (No Auto-Remediation)
+
+These checks require manual operator review — no MachineConfig or CRD can fix them automatically.
+
+| Group | Title | Checks | Priority | Status |
+|-------|-------|--------|----------|--------|
+| [MAN1](MAN1.html) | Workload Security | 15 | <span class="priority-score p3">P3</span> | 🟡 Pending |
+| [MAN2](MAN2.html) | RBAC & Access Control | 5 | <span class="priority-score p2">P2</span> | 🟡 Pending |
+| [MAN3](MAN3.html) | Secrets Management | 2 | <span class="priority-score p3">P3</span> | 🟡 Pending |
+| [MAN4](MAN4.html) | Audit Log Partitions | 4 | <span class="priority-score p4">P4</span> | 🟡 Pending |
+| [MAN5](MAN5.html) | Hardware/BIOS & Alerting | 5 | <span class="priority-score p4">P4</span> | 🟡 Pending |
+
+---
+
 ## Group Naming Convention
 
 - **H** = HIGH severity (H1, H2, H3)
 - **M** = MEDIUM severity (M1-M30)
 - **L** = LOW severity (L1, L2)
+- **MAN** = Manual checks (MAN1-MAN5)
 
 ## Priority Legend
 

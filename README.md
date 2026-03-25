@@ -6,7 +6,7 @@
 
 [![OCP 4.22 Compliance](https://img.shields.io/badge/OCP%204.22-34%25%20passing-yellow?style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/4.22.html)
 [![OCP 4.21 Compliance](https://img.shields.io/badge/OCP%204.21-49%25%20passing-yellow?style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/4.21.html)
-[![Remediation Groups](https://img.shields.io/badge/Groups-35%20tracked%20|%2033%20tested-blue?style=flat-square)](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
+[![Remediation Groups](https://img.shields.io/badge/Groups-40%20tracked%20|%2033%20tested-blue?style=flat-square)](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen?style=flat-square&logo=github)](https://sebrandon1.github.io/compliance-scripts/)
 
 This repository contains a set of scripts to help automate the collection, organization, and management of OpenShift Compliance Operator remediations and related resources.
