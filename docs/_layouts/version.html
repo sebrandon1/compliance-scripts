@@ -101,6 +101,21 @@ layout: default
       </button>
     </div>
 
+    <!-- Filter Bar -->
+    <div class="filter-bar" style="margin: 1rem 0;">
+      <div class="filter-search">
+        <input type="text" id="check-search" placeholder="Search checks..." onkeyup="filterChecks()">
+      </div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all" onclick="setCheckFilter('all')">All</button>
+        <button class="filter-btn" data-filter="has-jira" onclick="setCheckFilter('has-jira')">Has Jira</button>
+        <button class="filter-btn" data-filter="has-pr" onclick="setCheckFilter('has-pr')">Has PR</button>
+        <button class="filter-btn" data-filter="tracked" onclick="setCheckFilter('tracked')">Tracked</button>
+        <button class="filter-btn" data-filter="untracked" onclick="setCheckFilter('untracked')">Untracked</button>
+      </div>
+      <div class="filter-counts" id="check-filter-counts"></div>
+    </div>
+
     <!-- Failing Tab Content -->
     <div class="tab-panel active" id="panel-failing">
       {% if version_data.remediations.high.size > 0 %}
@@ -186,6 +201,57 @@ function switchTab(tabName) {
   // Add active class to selected button and panel
   document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
   document.getElementById('panel-' + tabName).classList.add('active');
+}
+
+var currentCheckFilter = 'all';
+var checkSearchTerm = '';
+
+function setCheckFilter(filter) {
+  currentCheckFilter = filter;
+  document.querySelectorAll('.filter-bar .filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelector('.filter-bar [data-filter="' + filter + '"]').classList.add('active');
+  filterChecks();
+}
+
+function filterChecks() {
+  checkSearchTerm = document.getElementById('check-search').value.toLowerCase();
+  var tables = document.querySelectorAll('.remediation-table');
+  var visibleCount = 0;
+  var totalCount = 0;
+
+  tables.forEach(function(table) {
+    var rows = table.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+      totalCount++;
+      var text = row.textContent.toLowerCase();
+      var jiraCell = row.cells[2] ? row.cells[2].textContent.trim() : '';
+      var prCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
+      var statusCell = row.cells[4] ? row.cells[4].textContent.trim() : '';
+
+      var hasJira = jiraCell !== '-' && jiraCell !== '';
+      var hasPR = prCell !== '-' && prCell !== '';
+      var isTracked = statusCell !== 'Not Tracked' && statusCell !== '';
+
+      var matchesSearch = checkSearchTerm === '' || text.includes(checkSearchTerm);
+      var matchesFilter = currentCheckFilter === 'all' ||
+        (currentCheckFilter === 'has-jira' && hasJira) ||
+        (currentCheckFilter === 'has-pr' && hasPR) ||
+        (currentCheckFilter === 'tracked' && isTracked) ||
+        (currentCheckFilter === 'untracked' && !isTracked);
+
+      if (matchesSearch && matchesFilter) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
+  var countsEl = document.getElementById('check-filter-counts');
+  if (countsEl) {
+    countsEl.textContent = visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
+  }
 }
 
 function exportStatusJSON() {
