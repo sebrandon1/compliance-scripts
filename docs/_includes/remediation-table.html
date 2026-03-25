@@ -11,7 +11,13 @@
   <tbody>
     {% for check in include.checks %}
     {% assign base_name = check.name | remove: "rhcos4-e8-worker-" | remove: "rhcos4-e8-master-" | remove: "rhcos4-moderate-worker-" | remove: "rhcos4-moderate-master-" | remove: "ocp4-cis-" | remove: "ocp4-e8-" | remove: "ocp4-moderate-" | remove: "ocp4-pci-dss-" %}
-    {% assign tracking = site.data.tracking.remediations[base_name] %}
+    {% assign rem = site.data.tracking.remediations[base_name] %}
+    {% if rem %}
+      {% assign group_id = rem.group %}
+      {% assign tracking = site.data.tracking.groups[group_id] %}
+    {% else %}
+      {% assign tracking = nil %}
+    {% endif %}
     <tr>
       <td>
         <details class="check-details">
