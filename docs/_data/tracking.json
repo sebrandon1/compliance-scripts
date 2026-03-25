@@ -688,6 +688,476 @@
       "group": "L2",
       "file": "75-sysctl-low.yaml",
       "description": "Restrict kernel log access to privileged users"
+    },
+    "audit-rules-dac-modification-fchmod": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchmod operations"
+    },
+    "audit-rules-dac-modification-fchmodat": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchmodat operations"
+    },
+    "audit-rules-dac-modification-fchown": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchown operations"
+    },
+    "audit-rules-dac-modification-fchownat": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchownat operations"
+    },
+    "audit-rules-dac-modification-fremovexattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fremovexattr operations"
+    },
+    "audit-rules-dac-modification-fsetxattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fsetxattr operations"
+    },
+    "audit-rules-dac-modification-lchown": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit lchown operations"
+    },
+    "audit-rules-dac-modification-lremovexattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit lremovexattr operations"
+    },
+    "audit-rules-dac-modification-lsetxattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit lsetxattr operations"
+    },
+    "audit-rules-dac-modification-removexattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit removexattr operations"
+    },
+    "audit-rules-dac-modification-setxattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit setxattr operations"
+    },
+    "audit-rules-etc-group-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/group access"
+    },
+    "audit-rules-etc-group-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/group access via openat"
+    },
+    "audit-rules-etc-group-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/group access via open_by_handle_at"
+    },
+    "audit-rules-etc-gshadow-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/gshadow access"
+    },
+    "audit-rules-etc-gshadow-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/gshadow access via openat"
+    },
+    "audit-rules-etc-gshadow-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/gshadow access via open_by_handle_at"
+    },
+    "audit-rules-etc-passwd-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/passwd access"
+    },
+    "audit-rules-etc-passwd-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/passwd access via openat"
+    },
+    "audit-rules-etc-passwd-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/passwd access via open_by_handle_at"
+    },
+    "audit-rules-etc-shadow-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/shadow access"
+    },
+    "audit-rules-etc-shadow-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/shadow access via openat"
+    },
+    "audit-rules-etc-shadow-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/shadow access via open_by_handle_at"
+    },
+    "audit-rules-file-deletion-events-rename": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit rename operations"
+    },
+    "audit-rules-file-deletion-events-renameat": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit renameat operations"
+    },
+    "audit-rules-file-deletion-events-rmdir": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit rmdir operations"
+    },
+    "audit-rules-file-deletion-events-unlink": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit unlink operations"
+    },
+    "audit-rules-file-deletion-events-unlinkat": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit unlinkat operations"
+    },
+    "audit-rules-unsuccessful-file-modification-chmod": {
+      "group": "M16",
+      "file": "75-m16-audit-unsuccessful.yaml",
+      "description": "Audit failed chmod"
+    },
+    "audit-rules-unsuccessful-file-modification-open": {
+      "group": "M16",
+      "file": "75-m16-audit-unsuccessful.yaml",
+      "description": "Audit failed open"
+    },
+    "audit-rules-privileged-commands-su": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit su execution"
+    },
+    "audit-rules-privileged-commands-sudo": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit sudo execution"
+    },
+    "audit-rules-privileged-commands-passwd": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit passwd execution"
+    },
+    "audit-rules-privileged-commands-mount": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit mount execution"
+    },
+    "audit-rules-session-events": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Audit session events"
+    },
+    "audit-rules-mac-modification": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Audit MAC policy changes"
+    },
+    "audit-rules-media-export": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Audit media export"
+    },
+    "audit-rules-immutable": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Make audit rules immutable"
+    },
+    "audit-rules-usergroup-modification-group": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/group"
+    },
+    "audit-rules-usergroup-modification-gshadow": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/gshadow"
+    },
+    "audit-rules-usergroup-modification-opasswd": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/opasswd"
+    },
+    "audit-rules-usergroup-modification-passwd": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/passwd"
+    },
+    "audit-rules-usergroup-modification-shadow": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/shadow"
+    },
+    "auditd-data-disk-error-action": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set disk error action"
+    },
+    "auditd-data-disk-full-action": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set disk full action"
+    },
+    "auditd-data-retention-admin-space-left-action": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set admin space-left action"
+    },
+    "auditd-data-retention-space-left": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set space-left threshold"
+    },
+    "kernel-module-bluetooth-disabled": {
+      "group": "M21",
+      "file": "75-m21-kernel-modules.yaml",
+      "description": "Disable Bluetooth"
+    },
+    "kernel-module-usb-storage-disabled": {
+      "group": "M21",
+      "file": "75-m21-kernel-modules.yaml",
+      "description": "Disable USB storage"
+    },
+    "kernel-module-sctp-disabled": {
+      "group": "M21",
+      "file": "75-m21-kernel-modules.yaml",
+      "description": "Disable SCTP"
+    },
+    "sysctl-net-ipv4-conf-all-accept-redirects": {
+      "group": "M22",
+      "file": "75-m22-net-sysctl.yaml",
+      "description": "Reject ICMP redirects"
+    },
+    "sysctl-net-ipv4-tcp-syncookies": {
+      "group": "M22",
+      "file": "75-m22-net-sysctl.yaml",
+      "description": "Enable TCP SYN cookies"
+    },
+    "sysctl-net-ipv6-conf-all-accept-ra": {
+      "group": "M22",
+      "file": "75-m22-net-sysctl.yaml",
+      "description": "Reject IPv6 router advertisements"
+    },
+    "sysctl-kernel-kexec-load-disabled": {
+      "group": "M23",
+      "file": "75-m23-kernel-sysctl-ext.yaml",
+      "description": "Disable kexec"
+    },
+    "sysctl-kernel-perf-event-paranoid": {
+      "group": "M23",
+      "file": "75-m23-kernel-sysctl-ext.yaml",
+      "description": "Restrict perf_event"
+    },
+    "sysctl-kernel-core-pattern": {
+      "group": "M23",
+      "file": "75-m23-kernel-sysctl-ext.yaml",
+      "description": "Disable core dumps"
+    },
+    "coreos-pti-kernel-argument": {
+      "group": "M24",
+      "file": "75-m24-coreos-kernel-args.yaml",
+      "description": "Enable PTI"
+    },
+    "coreos-audit-option": {
+      "group": "M24",
+      "file": "75-m24-coreos-kernel-args.yaml",
+      "description": "Enable audit"
+    },
+    "coreos-nousb-kernel-argument": {
+      "group": "M24",
+      "file": "75-m24-coreos-kernel-args.yaml",
+      "description": "Disable USB"
+    },
+    "chronyd-client-only": {
+      "group": "M25",
+      "file": "75-m25-chrony.yaml",
+      "description": "Restrict chrony to client mode"
+    },
+    "chronyd-no-chronyc-network": {
+      "group": "M25",
+      "file": "75-m25-chrony.yaml",
+      "description": "Disable chronyc network"
+    },
+    "disable-ctrlaltdel-burstaction": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable Ctrl-Alt-Del burst"
+    },
+    "disable-ctrlaltdel-reboot": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable Ctrl-Alt-Del reboot"
+    },
+    "coredump-disable-backtraces": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable coredump backtraces"
+    },
+    "coredump-disable-storage": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable coredump storage"
+    },
+    "disable-users-coredumps": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable user coredumps"
+    },
+    "sshd-set-idle-timeout": {
+      "group": "M27",
+      "file": "75-m27-sshd-moderate.yaml",
+      "description": "Set SSH idle timeout"
+    },
+    "sshd-set-keepalive": {
+      "group": "M27",
+      "file": "75-m27-sshd-moderate.yaml",
+      "description": "Set SSH keepalive"
+    },
+    "package-usbguard-installed": {
+      "group": "M28",
+      "file": "75-m28-usbguard.yaml",
+      "description": "Install USBGuard"
+    },
+    "service-usbguard-enabled": {
+      "group": "M28",
+      "file": "75-m28-usbguard.yaml",
+      "description": "Enable USBGuard"
+    },
+    "usbguard-allow-hid-and-hub": {
+      "group": "M28",
+      "file": "75-m28-usbguard.yaml",
+      "description": "Allow HID/hub USB devices"
+    },
+    "banner-etc-issue": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Set login banner"
+    },
+    "ensure-logrotate-activated": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Ensure logrotate active"
+    },
+    "service-debug-shell-disabled": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Disable debug shell"
+    },
+    "no-tmux-in-shells": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Restrict tmux in shells"
+    },
+    "oauth-or-oauthclient-inactivity-timeout": {
+      "group": "M30",
+      "file": "75-m30-oauth.yaml",
+      "description": "Set OAuth inactivity timeout"
+    },
+    "oauth-or-oauthclient-token-maxage": {
+      "group": "M30",
+      "file": "75-m30-oauth.yaml",
+      "description": "Set OAuth token max age"
+    },
+    "configure-network-policies-namespaces": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Configure network policies per namespace"
+    },
+    "rbac-least-privilege": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Review RBAC least privilege"
+    },
+    "rbac-limit-cluster-admin": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Limit cluster-admin usage"
+    },
+    "rbac-limit-secrets-access": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Restrict secrets access"
+    },
+    "rbac-pod-creation-access": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Minimize pod creation access"
+    },
+    "rbac-wildcard-use": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Minimize wildcard roles"
+    },
+    "accounts-restrict-service-account-tokens": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Restrict SA token automounting"
+    },
+    "accounts-unique-service-account": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Use unique service accounts"
+    },
+    "general-apply-scc": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Apply SCCs to pods"
+    },
+    "general-default-namespace-use": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Don't use default namespace"
+    },
+    "general-default-seccomp-profile": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Enable seccomp profiles"
+    },
+    "general-namespaces-in-use": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Use namespaces for isolation"
+    },
+    "scc-limit-privilege-escalation": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit privilege escalation"
+    },
+    "scc-limit-privileged-containers": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit privileged containers"
+    },
+    "scc-limit-root-containers": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit root containers"
+    },
+    "secrets-consider-external-storage": {
+      "group": "MAN3",
+      "file": null,
+      "description": "Manual: Use external secret storage"
+    },
+    "secrets-no-environment-variables": {
+      "group": "MAN3",
+      "file": null,
+      "description": "Manual: Don't use env vars for secrets"
     }
   }
 }
