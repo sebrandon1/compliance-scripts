@@ -44,6 +44,39 @@ layout: default
     <span class="coverage-text">{{ coverage }}% Coverage</span>
   </div>
 
+  <!-- Projected Coverage -->
+  <div class="summary-cards" style="margin-top: 1rem;">
+    <div class="card" style="border-left: 4px solid #2196F3;">
+      <h3>In Progress</h3>
+      <span class="number" id="in-progress-groups">
+        {% assign ip_count = 0 %}
+        {% for group in site.data.tracking.groups %}
+          {% if group[1].status == "in_progress" %}
+            {% assign ip_count = ip_count | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ip_count }} groups
+      </span>
+    </div>
+    <div class="card" style="border-left: 4px solid #4CAF50;">
+      <h3>Projected Coverage</h3>
+      <span class="number" id="projected-coverage">
+        {% assign fixable = 0 %}
+        {% for rem in site.data.tracking.remediations %}
+          {% assign group_id = rem[1].group %}
+          {% assign group = site.data.tracking.groups[group_id] %}
+          {% if group.status == "in_progress" %}
+            {% assign fixable = fixable | plus: 2 %}
+          {% endif %}
+        {% endfor %}
+        {% assign projected_passing = version_data.summary.passing | plus: fixable %}
+        {% assign projected_pct = projected_passing | times: 100 | divided_by: version_data.summary.total_checks %}
+        {{ projected_pct }}%
+      </span>
+      <div style="font-size: 0.8em; color: #666; margin-top: 0.25rem;">+{{ fixable }} checks if active PRs merge</div>
+    </div>
+  </div>
+
   <div class="quick-links">
     <a href="{{ site.baseurl }}/versions/{{ page.version }}/remediations.html" class="quick-link">
       <span class="quick-link-icon">&#128221;</span>
