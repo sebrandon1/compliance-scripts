@@ -208,6 +208,16 @@ full-workflow: banner install-compliance-operator apply-periodic-scan create-sca
 # 🧪 Testing & Validation
 # ────────────────────────────────────────────────────────────────────────────────
 
+validate-compliance: ## ✅ Validate compliance results against expected baseline
+	@echo "$(BOLD)$(BLUE)✅ Validating compliance results...$(RESET)"
+	@if [ -z "$(EXPECTED)" ]; then echo "Usage: make validate-compliance EXPECTED=tests/expected-results-4.21.json"; exit 1; fi
+	@./tests/validate-results.sh $(EXPECTED)
+
+generate-expected: ## 📋 Generate expected results from live cluster scan data
+	@echo "$(BOLD)$(BLUE)📋 Generating expected results...$(RESET)"
+	@if [ -z "$(OCP_VERSION)" ]; then echo "Usage: make generate-expected OCP_VERSION=4.22"; exit 1; fi
+	@./tests/generate-expected.sh $(OCP_VERSION)
+
 test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) on local cluster
 	@echo "$(BOLD)$(BLUE)🧪 Running compliance validation on local cluster...$(RESET)"
 	@echo ""
