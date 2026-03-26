@@ -105,6 +105,7 @@ jobs:
         run: |
           oc get compliancecheckresults -n openshift-compliance -o json > compliance-results-4.21.json || true
           oc get compliancesuite -n openshift-compliance -o yaml > compliance-suites-4.21.yaml || true
+          ./tests/generate-expected.sh 4.21 2>/dev/null && mv tests/expected-results-4.21.json actual-baseline-4.21.json || true
 
       - name: Upload results
         if: always()
@@ -114,3 +115,4 @@ jobs:
           path: |
             compliance-results-4.21.json
             compliance-suites-4.21.yaml
+            actual-baseline-4.21.json
