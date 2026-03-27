@@ -28,6 +28,8 @@ layout: default
         {% elsif group.status == "pending" %}Pending
         {% elsif group.status == "on_hold" %}On Hold
         {% elsif group.status == "complete" %}Complete
+        {% elsif group.status == "verified" %}Verified
+        {% elsif group.status == "partial" %}Partial
         {% endif %}
       </span>
 

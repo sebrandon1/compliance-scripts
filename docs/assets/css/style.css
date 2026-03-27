@@ -257,6 +257,16 @@ h2 {
   color: #155724;
 }
 
+.tracking-status.verified {
+  background: #c3e6cb;
+  color: #0b4f1c;
+}
+
+.tracking-status.partial {
+  background: #ffeeba;
+  color: #856404;
+}
+
 /* Tables */
 .remediation-table,
 table {
@@ -1679,6 +1689,16 @@ kbd {
 [data-theme="dark"] .tracking-status.done {
   background: rgba(74, 222, 128, 0.2);
   color: #4ade80;
+}
+
+[data-theme="dark"] .tracking-status.verified {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+[data-theme="dark"] .tracking-status.partial {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
 }
 
 /* Status pills dark mode */
