@@ -1,0 +1,90 @@
+name: Mirror Compliance Operator Images
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # Weekly on Monday at 4 AM UTC
+  workflow_dispatch:
+    inputs:
+      co_ref:
+        description: 'Compliance Operator version to mirror (e.g., v1.7.0, v1.8.2)'
+        required: false
+        default: ''
+
+permissions: read-all
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1'
+    strategy:
+      matrix:
+        co_ref: [v1.7.0, v1.8.2]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set CO_REF
+        id: ref
+        run: |
+          # Use manual input if provided, otherwise use matrix value
+          if [[ -n "${{ github.event.inputs.co_ref }}" ]]; then
+            echo "co_ref=${{ github.event.inputs.co_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "co_ref=${{ matrix.co_ref }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo
+
+      - name: Login to quay.io
+        run: |
+          skopeo login quay.io \
+            --username "${{ secrets.QUAY_USERNAME }}" \
+            --password "${{ secrets.QUAY_PASSWORD }}"
+
+      - name: Mirror images
+        run: |
+          CO_REF="${{ steps.ref.outputs.co_ref }}"
+          DATE=$(date +%Y-%m-%d)
+          IMAGES="compliance-operator k8scontent compliance-operator-catalog"
+
+          for img in $IMAGES; do
+            SRC="docker://ghcr.io/complianceascode/${img}:${CO_REF}"
+            DST="docker://quay.io/bapalm/${img}"
+
+            echo "Mirroring ${img}:${CO_REF}..."
+            if skopeo copy --all "$SRC" "${DST}:${CO_REF}" 2>/dev/null; then
+              echo "  Copied ${img}:${CO_REF}"
+            else
+              echo "  Tag ${CO_REF} not found on ghcr.io, trying :latest"
+              SRC="docker://ghcr.io/complianceascode/${img}:latest"
+              skopeo copy --all "$SRC" "${DST}:${CO_REF}"
+            fi
+
+            echo "  Adding timestamp tag: mirrored-${DATE}"
+            skopeo copy --all "${DST}:${CO_REF}" "${DST}:mirrored-${DATE}"
+          done
+
+      - name: Verify mirrors
+        run: |
+          CO_REF="${{ steps.ref.outputs.co_ref }}"
+          IMAGES="compliance-operator k8scontent compliance-operator-catalog"
+          FAILED=0
+
+          for img in $IMAGES; do
+            echo -n "  Checking quay.io/bapalm/${img}:${CO_REF}... "
+            if skopeo inspect --raw "docker://quay.io/bapalm/${img}:${CO_REF}" >/dev/null 2>&1; then
+              echo "OK"
+            else
+              echo "FAILED"
+              FAILED=$((FAILED + 1))
+            fi
+          done
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "ERROR: $FAILED image(s) failed verification"
+            exit 1
+          fi
+          echo "All mirrors verified!"

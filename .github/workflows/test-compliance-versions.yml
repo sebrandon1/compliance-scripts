@@ -1,0 +1,58 @@
+name: Test Compliance Operator Versions
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      co_ref:
+        description: 'Override CO_REF (leave empty to run matrix)'
+        required: false
+        default: ''
+
+permissions: read-all
+
+jobs:
+  test-compliance:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
+    strategy:
+      fail-fast: false
+      matrix:
+        co_ref: [v1.7.0, v1.8.2]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set CO_REF
+        id: ref
+        run: |
+          if [[ -n "${{ github.event.inputs.co_ref }}" ]]; then
+            echo "co_ref=${{ github.event.inputs.co_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "co_ref=${{ matrix.co_ref }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify CRC_PULL_SECRET is set
+        env:
+          CRC_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRC_PULL_SECRET}" ]; then
+            echo "CRC_PULL_SECRET secret is required but not set."
+            exit 1
+          fi
+
+      - name: Setup quick-ocp cluster
+        uses: palmsoftware/quick-ocp@v0.0.29
+        with:
+          ocpPullSecret: $OCP_PULL_SECRET
+          bundleCache: true
+          waitForOperatorsReady: true
+        env:
+          OCP_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
+
+      - name: Run compliance validation (CO ${{ steps.ref.outputs.co_ref }})
+        run: CO_REF=${{ steps.ref.outputs.co_ref }} make test-compliance
