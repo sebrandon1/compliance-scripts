@@ -276,7 +276,7 @@ fi
 # ============================================================================
 if [[ "$ARM_CLUSTER" == "true" ]]; then
 	# Check if version is earlier than v1.7.0 (which don't support ARM)
-	# v1.7.0 is the ONLY version that supports ARM64
+	# v1.7.0+ supports ARM64 (v1.7.0, v1.8.x, etc.)
 	if [[ "$CO_REF" =~ ^v1\.[0-6]\..*$ ]]; then
 		echo ""
 		echo "════════════════════════════════════════════════════════════════════"
@@ -288,8 +288,9 @@ if [[ "$ARM_CLUSTER" == "true" ]]; then
 		echo "Your cluster has $ARM_NODES ARM64 node(s)."
 		echo ""
 		echo "Options:"
-		echo "  1. Use v1.7.0 (the only ARM64-compatible version):"
+		echo "  1. Use v1.7.0 or later (ARM64-compatible versions):"
 		echo "     CO_REF=v1.7.0 $0"
+		echo "     CO_REF=v1.8.2 $0"
 		echo ""
 		echo "  2. Use an x86_64 cluster"
 		echo ""
@@ -361,6 +362,20 @@ else
 	echo "[INFO] Using catalog image tag: $CO_REF"
 	echo ""
 
+	# Determine catalog image: try upstream ghcr.io first, fall back to quay.io/bapalm mirror
+	CATALOG_IMAGE="ghcr.io/complianceascode/compliance-operator-catalog:$CO_REF"
+	MIRROR_IMAGE="quay.io/bapalm/compliance-operator-catalog:$CO_REF"
+
+	echo "[INFO] Checking if upstream catalog image is available..."
+	if command -v skopeo &>/dev/null && skopeo inspect --raw --no-creds "docker://$CATALOG_IMAGE" &>/dev/null 2>&1; then
+		echo "[INFO] Using upstream catalog image: $CATALOG_IMAGE"
+	elif command -v skopeo &>/dev/null && skopeo inspect --raw --no-creds "docker://$MIRROR_IMAGE" &>/dev/null 2>&1; then
+		echo "[INFO] Upstream image not found, using mirror: $MIRROR_IMAGE"
+		CATALOG_IMAGE="$MIRROR_IMAGE"
+	else
+		echo "[WARN] Could not verify image availability, attempting upstream: $CATALOG_IMAGE"
+	fi
+
 	echo "[INFO] Creating CatalogSource with master node tolerations"
 	cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
@@ -370,7 +385,7 @@ metadata:
   namespace: openshift-marketplace
 spec:
   displayName: Compliance Operator Upstream
-  image: ghcr.io/complianceascode/compliance-operator-catalog:$CO_REF
+  image: $CATALOG_IMAGE
   publisher: github.com/complianceascode/compliance-operator
   sourceType: grpc
   grpcPodConfig:
@@ -499,13 +514,17 @@ echo "[INFO] ✅ Supplemental RBAC applied"
 # CRD Updates - Ensure CRDs have all required fields
 # ============================================================================
 # The v1.7.0 CRDs are missing the 'scannerType' field that the operator expects.
-# Update the ComplianceScan CRD from master to fix "unknown field spec.scannerType" errors.
-echo "[INFO] Updating ComplianceScan CRD to include scannerType field..."
-SCAN_CRD_URL="https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/crd/bases/compliance.openshift.io_compliancescans.yaml"
-if oc apply -f "$SCAN_CRD_URL" 2>/dev/null; then
-	echo "[INFO] ✅ ComplianceScan CRD updated"
+# v1.8.0+ includes this field natively, so only patch for older versions.
+if [[ "$CO_REF" =~ ^v1\.[0-7]\..*$ ]] && [[ "$CO_REF" != "v1.8."* ]]; then
+	echo "[INFO] Updating ComplianceScan CRD to include scannerType field (needed for $CO_REF)..."
+	SCAN_CRD_URL="https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/crd/bases/compliance.openshift.io_compliancescans.yaml"
+	if oc apply -f "$SCAN_CRD_URL" 2>/dev/null; then
+		echo "[INFO] ✅ ComplianceScan CRD updated"
+	else
+		echo "[WARN] Could not update ComplianceScan CRD - scans may get stuck in PENDING"
+	fi
 else
-	echo "[WARN] Could not update ComplianceScan CRD - scans may get stuck in PENDING"
+	echo "[INFO] ✅ Version $CO_REF includes scannerType in CRD natively, skipping patch"
 fi
 
 # ============================================================================

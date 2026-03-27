@@ -15,7 +15,9 @@ This repository contains a set of scripts to help automate the collection, organ
 - [Compliance Operator Workshop Tutorials](https://github.com/ComplianceAsCode/compliance-operator/tree/master/doc/tutorials/workshop/content/exercises)
 - [Compliance Operator Dashboard](https://github.com/sebrandon1/compliance-operator-dashboard) — Sister repo: web UI that reimplements these scripts as a single-binary Go + React dashboard. Features should be paired between the two repos.
 
-> **Note on operator versioning:** There are two distribution channels with different version numbers. The **upstream/community** operator at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator) (latest: v1.7.0) is used by the install script's `--co-ref` flag. Clusters with `redhat-operators` in `openshift-marketplace` will install the **Red Hat certified** version instead, which uses its own versioning (e.g., v1.8.2). The Red Hat version is built internally and not publicly tagged on GitHub. The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
+> **Note on operator versioning:** There are two distribution channels with different version numbers. The **upstream/community** operator at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator) is used by the install script's `--co-ref` flag. Supported versions: v1.7.0 and v1.8.2. Clusters with `redhat-operators` in `openshift-marketplace` will install the **Red Hat certified** version instead, which uses its own versioning. The Red Hat version is built internally and not publicly tagged on GitHub. The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
+>
+> **Image mirroring:** Upstream images from `ghcr.io/complianceascode` are mirrored to `quay.io/bapalm` for reliability. The install script automatically falls back to the mirror if the upstream image tag is unavailable. To manually mirror images: `make mirror-images CO_REF=v1.8.2`. Mirrors are also updated weekly via CI.
 
 ## Compliance Operator Concepts
 
@@ -137,9 +139,10 @@ If no suitable storage is detected, the script will automatically:
 
 **Version pinning and overrides:**
 
-- `--co-ref <ref>`: Force a specific tag/branch for the Compliance Operator manifests (e.g., `v1.7.0`).
+- `--co-ref <ref>`: Force a specific tag/branch for the Compliance Operator manifests (e.g., `v1.7.0`, `v1.8.2`).
 - `COMPLIANCE_OPERATOR_REF` env var: Same as `--co-ref`.
 - Default when not provided: latest published release tag from GitHub [releases](https://github.com/ComplianceAsCode/compliance-operator/releases).
+- The install script automatically falls back to `quay.io/bapalm` mirror images if the upstream `ghcr.io` tag is unavailable.
 
 Examples:
 ```bash
@@ -148,9 +151,10 @@ Examples:
 
 # Pin to a specific release tag
 ./core/install-compliance-operator.sh --co-ref v1.7.0
+./core/install-compliance-operator.sh --co-ref v1.8.2
 
 # Or via environment variable
-COMPLIANCE_OPERATOR_REF=v1.7.0 ./core/install-compliance-operator.sh
+CO_REF=v1.8.2 make install-compliance-operator
 ```
 
 Readiness behavior:

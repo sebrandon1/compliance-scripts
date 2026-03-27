@@ -27,7 +27,8 @@ BG_BLUE := \033[44m
         collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
-        export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs
+        export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
+        mirror-images
 
 # Default target
 all: help
@@ -77,6 +78,35 @@ preflight: ## ✅ Check all dependencies and prerequisites
 verify-images: ## 🔍 Verify container images are accessible before installation
 	@echo "$(BOLD)$(BLUE)🔍 Verifying container images...$(RESET)"
 	@./utilities/verify-images.sh
+	@echo ""
+
+mirror-images: ## 🪞 Mirror compliance-operator images to quay.io/bapalm (requires CO_REF)
+	@if [ -z "$(CO_REF)" ]; then \
+	  echo "$(RED)❌ Error: CO_REF is required!$(RESET)"; \
+	  echo "$(YELLOW)Usage: make mirror-images CO_REF=v1.7.0$(RESET)"; \
+	  exit 1; \
+	fi
+	@if ! command -v skopeo >/dev/null 2>&1; then \
+	  echo "$(RED)❌ Error: skopeo is required for mirroring$(RESET)"; \
+	  echo "$(DIM)  macOS: brew install skopeo$(RESET)"; \
+	  echo "$(DIM)  Linux: dnf install skopeo$(RESET)"; \
+	  exit 1; \
+	fi
+	@echo "$(BOLD)$(BLUE)🪞 Mirroring compliance-operator images ($(CO_REF)) to quay.io/bapalm...$(RESET)"
+	@DATE=$$(date +%Y-%m-%d); \
+	IMAGES="compliance-operator k8scontent compliance-operator-catalog"; \
+	for img in $$IMAGES; do \
+	  SRC="docker://ghcr.io/complianceascode/$$img:$(CO_REF)"; \
+	  DST="docker://quay.io/bapalm/$$img"; \
+	  echo "$(DIM)  • $$img:$(CO_REF)$(RESET)"; \
+	  skopeo copy --all $$SRC $$DST:$(CO_REF) 2>/dev/null || \
+	    (echo "$(YELLOW)  ⚠️  Tag $(CO_REF) not found, trying :latest$(RESET)" && \
+	     SRC="docker://ghcr.io/complianceascode/$$img:latest" && \
+	     skopeo copy --all $$SRC $$DST:$(CO_REF)); \
+	  echo "$(DIM)  • $$img:mirrored-$$DATE$(RESET)"; \
+	  skopeo copy --all $$DST:$(CO_REF) $$DST:mirrored-$$DATE; \
+	done
+	@echo "$(GREEN)✅ Images mirrored to quay.io/bapalm!$(RESET)"
 	@echo ""
 
 install-compliance-operator: ## 🔧 Install the OpenShift Compliance Operator

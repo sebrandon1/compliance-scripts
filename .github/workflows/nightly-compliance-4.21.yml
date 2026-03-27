@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
+    inputs:
+      co_ref:
+        description: 'Compliance Operator version (e.g., v1.7.0, v1.8.2)'
+        required: false
+        default: 'v1.7.0'
 
 permissions: read-all
 
@@ -44,7 +49,7 @@ jobs:
           echo "$VERSION" | grep -q "4.21" || (echo "ERROR: Expected 4.21.x, got $VERSION" && exit 1)
 
       - name: Install Compliance Operator
-        run: CO_REF=v1.7.0 make install-compliance-operator
+        run: CO_REF=${{ github.event.inputs.co_ref || 'v1.7.0' }} make install-compliance-operator
 
       - name: Deploy E8 scans (both master and worker roles)
         run: |
