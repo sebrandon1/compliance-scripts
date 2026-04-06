@@ -37,6 +37,15 @@ COMPLIANCE_OPERATOR_IMAGES=(
 	"ghcr.io/complianceascode/compliance-operator-catalog:latest"
 )
 
+MIRROR_IMAGES=(
+	"quay.io/bapalm/compliance-operator:v1.7.0"
+	"quay.io/bapalm/k8scontent:v1.7.0"
+	"quay.io/bapalm/compliance-operator-catalog:v1.7.0"
+	"quay.io/bapalm/compliance-operator:v1.8.2"
+	"quay.io/bapalm/k8scontent:v1.8.2"
+	"quay.io/bapalm/compliance-operator-catalog:v1.8.2"
+)
+
 OPENSHIFT_MARKETPLACE_IMAGES=(
 	"registry.redhat.io/redhat/community-operator-index:v4.17"
 	"registry.redhat.io/redhat/community-operator-index:v4.18"
@@ -51,9 +60,10 @@ Usage: $(basename "$0") [options]
 Verify that required container images are accessible before deployment.
 
 Options:
-  --all              Check all images (compliance operator + marketplace)
+  --all              Check all images (compliance operator + marketplace + mirrors)
   --compliance       Check only compliance operator images (default)
   --marketplace      Check only OpenShift marketplace images
+  --mirrors          Check only quay.io/bapalm mirror images
   --registry <url>   Test connectivity to a specific registry
   --image <image>    Test a specific image
   --timeout <secs>   Timeout for each check (default: 30)
@@ -70,6 +80,7 @@ USAGE
 # Parse arguments
 CHECK_COMPLIANCE=true
 CHECK_MARKETPLACE=false
+CHECK_MIRRORS=false
 SPECIFIC_IMAGE=""
 SPECIFIC_REGISTRY=""
 
@@ -78,6 +89,7 @@ while [[ $# -gt 0 ]]; do
 	--all)
 		CHECK_COMPLIANCE=true
 		CHECK_MARKETPLACE=true
+		CHECK_MIRRORS=true
 		shift
 		;;
 	--compliance)
@@ -88,6 +100,12 @@ while [[ $# -gt 0 ]]; do
 	--marketplace)
 		CHECK_COMPLIANCE=false
 		CHECK_MARKETPLACE=true
+		shift
+		;;
+	--mirrors)
+		CHECK_COMPLIANCE=false
+		CHECK_MARKETPLACE=false
+		CHECK_MIRRORS=true
 		shift
 		;;
 	--registry)
@@ -269,6 +287,19 @@ if [[ "$CHECK_MARKETPLACE" == "true" && -z "$SPECIFIC_IMAGE" && -z "$SPECIFIC_RE
 	echo "OpenShift Marketplace Images:"
 	echo -e "${YELLOW}[NOTE] These require Red Hat registry authentication${NC}"
 	for image in "${OPENSHIFT_MARKETPLACE_IMAGES[@]}"; do
+		if test_image_manifest "$image"; then
+			((PASSED++))
+		else
+			((FAILED++))
+		fi
+	done
+	echo ""
+fi
+
+# Test mirror images
+if [[ "$CHECK_MIRRORS" == "true" && -z "$SPECIFIC_IMAGE" && -z "$SPECIFIC_REGISTRY" ]]; then
+	echo "Mirror Images (quay.io/bapalm):"
+	for image in "${MIRROR_IMAGES[@]}"; do
 		if test_image_manifest "$image"; then
 			((PASSED++))
 		else
