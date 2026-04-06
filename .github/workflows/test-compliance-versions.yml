@@ -1,12 +1,18 @@
 name: Test Compliance Operator Versions
 
 on:
+  schedule:
+    - cron: '0 4 * * *'
   pull_request:
     branches: [main]
   workflow_dispatch:
     inputs:
       co_ref:
         description: 'Override CO_REF (leave empty to run matrix)'
+        required: false
+        default: ''
+      ocp_version:
+        description: 'Override OCP version (leave empty to run matrix)'
         required: false
         default: ''
 
@@ -20,19 +26,25 @@ jobs:
       fail-fast: false
       matrix:
         co_ref: [v1.7.0, v1.8.2]
+        ocp_version: ['4.21']
     permissions:
       contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Set CO_REF
-        id: ref
+      - name: Set inputs
+        id: inputs
         run: |
           if [[ -n "${{ github.event.inputs.co_ref }}" ]]; then
             echo "co_ref=${{ github.event.inputs.co_ref }}" >> "$GITHUB_OUTPUT"
           else
             echo "co_ref=${{ matrix.co_ref }}" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ -n "${{ github.event.inputs.ocp_version }}" ]]; then
+            echo "ocp_version=${{ github.event.inputs.ocp_version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ocp_version=${{ matrix.ocp_version }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Verify CRC_PULL_SECRET is set
@@ -45,14 +57,52 @@ jobs:
             exit 1
           fi
 
-      - name: Setup quick-ocp cluster
+      - name: Setup quick-ocp cluster (OCP ${{ steps.inputs.outputs.ocp_version }})
         uses: palmsoftware/quick-ocp@v0.0.29
         with:
           ocpPullSecret: $OCP_PULL_SECRET
+          desiredOCPVersion: ${{ steps.inputs.outputs.ocp_version }}
           bundleCache: true
           waitForOperatorsReady: true
         env:
           OCP_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
 
-      - name: Run compliance validation (CO ${{ steps.ref.outputs.co_ref }})
-        run: CO_REF=${{ steps.ref.outputs.co_ref }} make test-compliance
+      - name: Verify cluster version
+        run: |
+          oc get clusterversion
+          VERSION=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+          echo "Cluster version: $VERSION"
+          OCP_MAJOR_MINOR=${{ steps.inputs.outputs.ocp_version }}
+          echo "$VERSION" | grep -q "$OCP_MAJOR_MINOR" || (echo "ERROR: Expected ${OCP_MAJOR_MINOR}.x, got $VERSION" && exit 1)
+
+      - name: Run compliance validation (CO ${{ steps.inputs.outputs.co_ref }}, OCP ${{ steps.inputs.outputs.ocp_version }})
+        run: CO_REF=${{ steps.inputs.outputs.co_ref }} make test-compliance
+
+      - name: Validate E8 results against baseline
+        run: |
+          OCP_VERSION=${{ steps.inputs.outputs.ocp_version }}
+          EXPECTED="tests/expected-results-${OCP_VERSION}.json"
+          if [ -f "$EXPECTED" ]; then
+            ./tests/validate-results.sh "$EXPECTED"
+          else
+            echo "No baseline found at $EXPECTED, skipping validation"
+          fi
+
+      - name: Export results artifact
+        if: always()
+        run: |
+          OCP_VERSION=${{ steps.inputs.outputs.ocp_version }}
+          CO_REF=${{ steps.inputs.outputs.co_ref }}
+          oc get compliancecheckresults -n openshift-compliance -o json > "compliance-results-${OCP_VERSION}-${CO_REF}.json" || true
+          oc get compliancesuite -n openshift-compliance -o yaml > "compliance-suites-${OCP_VERSION}-${CO_REF}.yaml" || true
+          ./tests/generate-expected.sh "$OCP_VERSION" 2>/dev/null && mv "tests/expected-results-${OCP_VERSION}.json" "actual-baseline-${OCP_VERSION}-${CO_REF}.json" || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: compliance-results-${{ steps.inputs.outputs.ocp_version }}-${{ steps.inputs.outputs.co_ref }}
+          path: |
+            compliance-results-*.json
+            compliance-suites-*.yaml
+            actual-baseline-*.json
