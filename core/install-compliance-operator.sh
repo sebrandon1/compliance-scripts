@@ -373,7 +373,8 @@ else
 		echo "[INFO] Upstream image not found, using mirror: $MIRROR_IMAGE"
 		CATALOG_IMAGE="$MIRROR_IMAGE"
 	else
-		echo "[WARN] Could not verify image availability, attempting upstream: $CATALOG_IMAGE"
+		echo "[WARN] skopeo not available to verify images, using mirror: $MIRROR_IMAGE"
+		CATALOG_IMAGE="$MIRROR_IMAGE"
 	fi
 
 	echo "[INFO] Creating CatalogSource with master node tolerations"
