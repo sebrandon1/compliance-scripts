@@ -30,6 +30,13 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check Red Hat Status
+        uses: palmsoftware/redhat-status@v0
+        with:
+          components: |
+            api.openshift.com
+            developers.redhat.com
+
       - name: Checkout repository
         uses: actions/checkout@v6
 
