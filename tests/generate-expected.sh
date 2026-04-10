@@ -42,14 +42,13 @@ fi
 
 echo "Found $TOTAL ComplianceCheckResults"
 
-# Build expected results JSON — include all E8 checks
+# Build expected results JSON — include ALL compliance check results
 echo "$RESULTS" | jq --arg version "$VERSION" --arg cluster "$CLUSTER_VERSION" '{
   version: $version,
-  profile: "E8 (rhcos4-e8, ocp4-e8)",
+  profiles: "all (E8, CIS, Moderate, PCI-DSS)",
   generated_from: ("Live cluster " + $cluster + " on " + (now | strftime("%Y-%m-%d"))),
   expected: (
     [.items[]
-     | select(.metadata.name | test("^(rhcos4-e8|ocp4-e8)"))
      | {(.metadata.name): .status}
     ] | add // {}
   )
@@ -58,12 +57,14 @@ echo "$RESULTS" | jq --arg version "$VERSION" --arg cluster "$CLUSTER_VERSION" '
 CHECKS=$(jq '.expected | length' "$OUTPUT")
 FAIL=$(jq '[.expected[] | select(. == "FAIL")] | length' "$OUTPUT")
 PASS=$(jq '[.expected[] | select(. == "PASS")] | length' "$OUTPUT")
+MANUAL=$(jq '[.expected[] | select(. == "MANUAL")] | length' "$OUTPUT")
 
 echo ""
 echo "Written to: $OUTPUT"
-echo "  E8 checks: $CHECKS"
+echo "  Total checks: $CHECKS"
 echo "  FAIL: $FAIL"
 echo "  PASS: $PASS"
+echo "  MANUAL: $MANUAL"
 echo ""
 echo "To validate against this baseline:"
 echo "  make validate-compliance EXPECTED=$OUTPUT"

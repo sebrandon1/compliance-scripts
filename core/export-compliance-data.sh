@@ -102,100 +102,61 @@ if [[ -f "$TRACKING_FILE" ]]; then
 	echo -e "\n${BLUE}Loaded tracking data from ${TRACKING_FILE}${NC}"
 fi
 
-# Function to get tracking info for a remediation
-get_tracking_info() {
-	local check_name="$1"
-	# Strip prefix like rhcos4-e8-worker- or ocp4-cis-
-	local base_name=$(echo "$check_name" | sed -E 's/^(rhcos4-e8|rhcos4-moderate|ocp4-cis|ocp4-e8|ocp4-moderate|ocp4-pci-dss)(-[0-9-]+)?-(master|worker)-//')
-
-	local jira=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].jira // empty")
-	local pr=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].pr // empty")
-	local status=$(echo "$TRACKING_DATA" | jq -r ".remediations[\"${base_name}\"].status // empty")
-
-	echo "{\"jira\": \"${jira}\", \"pr\": \"${pr}\", \"tracking_status\": \"${status}\"}"
-}
-
 echo -e "\n${BLUE}Processing remediations by severity...${NC}"
 
-# Process HIGH severity failing checks
-# Note: .severity is a top-level field, .status is the result string
-HIGH_CHECKS=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "high" and .status == "FAIL") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
+# Helper: extract profile from check name
+# e.g., "ocp4-cis-foo" -> "CIS", "rhcos4-e8-master-foo" -> "E8"
+PROFILE_JQ='def extract_profile:
+  if test("^ocp4-cis") then "CIS"
+  elif test("^ocp4-e8") then "E8"
+  elif test("^ocp4-moderate") then "Moderate"
+  elif test("^ocp4-pci-dss") then "PCI-DSS"
+  elif test("^rhcos4-e8") then "E8"
+  elif test("^rhcos4-moderate") then "Moderate"
+  else "Unknown"
+  end;'
 
+# Query checks by jq filter expression
+query_checks() {
+	local filter="$1"
+	echo "$CHECK_RESULTS" | jq -c "${PROFILE_JQ}"'[.items[] | select('"$filter"') | {
+	    name: .metadata.name,
+	    check: .metadata.name,
+	    status: .status,
+	    description: .description,
+	    severity: .severity,
+	    profile: (.metadata.name | extract_profile)
+	}]'
+}
+
+# Note: .severity is a top-level field, .status is the result string
+HIGH_CHECKS=$(query_checks '.severity == "high" and .status == "FAIL"')
 HIGH_COUNT=$(echo "$HIGH_CHECKS" | jq 'length')
 echo -e "  HIGH severity failing: ${RED}${HIGH_COUNT}${NC}"
 
-# Process MEDIUM severity failing checks
-MEDIUM_CHECKS=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "medium" and .status == "FAIL") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
-
+MEDIUM_CHECKS=$(query_checks '.severity == "medium" and .status == "FAIL"')
 MEDIUM_COUNT=$(echo "$MEDIUM_CHECKS" | jq 'length')
 echo -e "  MEDIUM severity failing: ${YELLOW}${MEDIUM_COUNT}${NC}"
 
-# Process LOW severity failing checks
-LOW_CHECKS=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "low" and .status == "FAIL") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
-
+LOW_CHECKS=$(query_checks '.severity == "low" and .status == "FAIL"')
 LOW_COUNT=$(echo "$LOW_CHECKS" | jq 'length')
 echo -e "  LOW severity failing: ${BLUE}${LOW_COUNT}${NC}"
 
-# Process MANUAL checks
-MANUAL_CHECKS=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.status == "MANUAL") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
-
+MANUAL_CHECKS=$(query_checks '.status == "MANUAL"')
 MANUAL_CHECK_COUNT=$(echo "$MANUAL_CHECKS" | jq 'length')
 echo -e "  MANUAL checks: ${YELLOW}${MANUAL_CHECK_COUNT}${NC}"
 
-# Process PASSING checks by severity
 echo -e "\n${BLUE}Processing passing checks by severity...${NC}"
 
-PASSING_HIGH=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "high" and .status == "PASS") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
+PASSING_HIGH=$(query_checks '.severity == "high" and .status == "PASS"')
 PASSING_HIGH_COUNT=$(echo "$PASSING_HIGH" | jq 'length')
 echo -e "  HIGH severity passing: ${GREEN}${PASSING_HIGH_COUNT}${NC}"
 
-PASSING_MEDIUM=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "medium" and .status == "PASS") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
+PASSING_MEDIUM=$(query_checks '.severity == "medium" and .status == "PASS"')
 PASSING_MEDIUM_COUNT=$(echo "$PASSING_MEDIUM" | jq 'length')
 echo -e "  MEDIUM severity passing: ${GREEN}${PASSING_MEDIUM_COUNT}${NC}"
 
-PASSING_LOW=$(echo "$CHECK_RESULTS" | jq -c '[.items[] | select(.severity == "low" and .status == "PASS") | {
-    name: .metadata.name,
-    check: .metadata.name,
-    status: .status,
-    description: .description,
-    severity: .severity
-}]')
+PASSING_LOW=$(query_checks '.severity == "low" and .status == "PASS"')
 PASSING_LOW_COUNT=$(echo "$PASSING_LOW" | jq 'length')
 echo -e "  LOW severity passing: ${GREEN}${PASSING_LOW_COUNT}${NC}"
 

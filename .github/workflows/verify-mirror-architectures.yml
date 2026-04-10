@@ -1,0 +1,28 @@
+name: Verify Mirror Architectures
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * *' # Daily at 6 AM UTC (after mirror workflow at 4 AM)
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo
+
+      - name: Verify mirror image architectures
+        run: ./utilities/verify-mirror-architectures.sh

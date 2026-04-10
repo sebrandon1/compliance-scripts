@@ -291,16 +291,16 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@oc -n openshift-compliance get compliancesuite periodic-e8 || (echo "$(RED)❌ ComplianceSuite periodic-e8 not found!$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ ComplianceSuite periodic-e8 exists!$(RESET)"
 	@echo ""
-	@echo "$(BOLD)$(MAGENTA)Step 8/9: Creating CIS scan...$(RESET)"
+	@echo "$(BOLD)$(MAGENTA)Step 8/9: Creating compliance scans (all profiles)...$(RESET)"
 	@./core/create-scan.sh
-	@echo "$(GREEN)✅ CIS scan created!$(RESET)"
+	@echo "$(GREEN)✅ Compliance scans created!$(RESET)"
 	@echo ""
-	@echo "$(BOLD)$(MAGENTA)Step 9/9: Asserting on-demand CIS scan resources exist...$(RESET)"
+	@echo "$(BOLD)$(MAGENTA)Step 9/9: Asserting on-demand scan resources exist...$(RESET)"
 	@oc -n openshift-compliance get scansetting default || (echo "$(RED)❌ ScanSetting default not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get scansettingbinding cis-scan || (echo "$(RED)❌ ScanSettingBinding cis-scan not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get profile ocp4-cis || (echo "$(RED)❌ Profile ocp4-cis not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get compliancesuite cis-scan || (echo "$(RED)❌ ComplianceSuite cis-scan not found!$(RESET)" && exit 1)
-	@echo "$(GREEN)✅ CIS scan resources exist!$(RESET)"
+	@for profile in ocp4-e8 rhcos4-e8 ocp4-cis ocp4-moderate ocp4-pci-dss rhcos4-moderate; do \
+		oc -n openshift-compliance get scansettingbinding $${profile}-scan || (echo "$(RED)❌ ScanSettingBinding $${profile}-scan not found!$(RESET)" && exit 1); \
+	done
+	@echo "$(GREEN)✅ All scan resources exist!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(BG_GREEN)$(WHITE)"
 	@echo "  ╔═════════════════════════════════════════════════════════════╗"
@@ -314,8 +314,8 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo "$(DIM)  ✓ Periodic scan configuration applied$(RESET)"
 	@echo "$(DIM)  ✓ Periodic scan resources and profiles exist$(RESET)"
 	@echo "$(DIM)  ✓ ComplianceSuite periodic-e8 created$(RESET)"
-	@echo "$(DIM)  ✓ CIS scan created$(RESET)"
-	@echo "$(DIM)  ✓ CIS scan resources and ComplianceSuite exist$(RESET)"
+	@echo "$(DIM)  ✓ All compliance scans created (E8, CIS, Moderate, PCI-DSS)$(RESET)"
+	@echo "$(DIM)  ✓ All scan resources and ComplianceSuites exist$(RESET)"
 	@echo ""
 
 # ────────────────────────────────────────────────────────────────────────────────
