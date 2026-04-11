@@ -429,6 +429,10 @@ EOF
 
 	echo "[INFO] Creating Subscription for Community Compliance Operator"
 	oc apply -f "$BASE_RAW/config/catalog/subscription.yaml"
+
+	echo "[INFO] Patching Subscription with extended bundle unpack timeout (30m)"
+	oc patch subscription "$SUBSCRIPTION_NAME" -n "$NAMESPACE" --type merge \
+		-p '{"spec":{"config":{"env":[],"bundleUnpackTimeout":"30m"}}}' 2>/dev/null || true
 fi
 
 echo "[INFO] Waiting for Subscription to populate installedCSV..."
@@ -514,18 +518,14 @@ echo "[INFO] ✅ Supplemental RBAC applied"
 # ============================================================================
 # CRD Updates - Ensure CRDs have all required fields
 # ============================================================================
-# The v1.7.0 CRDs are missing the 'scannerType' field that the operator expects.
-# v1.8.0+ includes this field natively, so only patch for older versions.
-if [[ "$CO_REF" =~ ^v1\.[0-7]\..*$ ]] && [[ "$CO_REF" != "v1.8."* ]]; then
-	echo "[INFO] Updating ComplianceScan CRD to include scannerType field (needed for $CO_REF)..."
-	SCAN_CRD_URL="https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/config/crd/bases/compliance.openshift.io_compliancescans.yaml"
-	if oc apply -f "$SCAN_CRD_URL" 2>/dev/null; then
-		echo "[INFO] ✅ ComplianceScan CRD updated"
-	else
-		echo "[WARN] Could not update ComplianceScan CRD - scans may get stuck in PENDING"
-	fi
+# Update ComplianceScan CRD from the same release tag to keep CRD/operator in sync.
+# Using 'master' branch CRD can introduce fields the operator binary doesn't recognize.
+echo "[INFO] Updating ComplianceScan CRD from $CO_REF..."
+SCAN_CRD_URL="https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/$CO_REF/config/crd/bases/compliance.openshift.io_compliancescans.yaml"
+if oc apply -f "$SCAN_CRD_URL" 2>/dev/null; then
+	echo "[INFO] ✅ ComplianceScan CRD updated from $CO_REF"
 else
-	echo "[INFO] ✅ Version $CO_REF includes scannerType in CRD natively, skipping patch"
+	echo "[WARN] Could not update ComplianceScan CRD from $CO_REF - scans may get stuck in PENDING"
 fi
 
 # ============================================================================

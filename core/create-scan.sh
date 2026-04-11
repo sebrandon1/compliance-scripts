@@ -1,10 +1,10 @@
 #!/bin/bash
 # create-scan.sh - Create an on-demand (one-time) compliance scan
 #
-# Creates a ScanSettingBinding that triggers an immediate scan using the
-# built-in "default" ScanSetting. By default it scans the ocp4-cis profile,
-# but you can specify any profile with --profile or scan all 4 recommended
-# profiles (CIS, Moderate, PCI-DSS) with --recommended.
+# Creates ScanSettingBindings that trigger immediate scans using the
+# built-in "default" ScanSetting. By default it scans all compliance
+# profiles (E8, CIS, Moderate, PCI-DSS) for broad coverage.
+# Use --profile to scan a single profile instead.
 #
 # For recurring daily scans with custom storage and tolerations, use
 # apply-periodic-scan.sh instead.
@@ -13,9 +13,8 @@
 #
 # Options:
 #   -n, --namespace    Namespace for the scan (default: openshift-compliance)
-#   -p, --profile      Profile to scan against (default: ocp4-cis)
-#   -s, --scan-name    Name of the scan (default: cis-scan)
-#   --recommended      Scan all 4 recommended profiles
+#   -p, --profile      Scan a single profile instead of all profiles
+#   -s, --scan-name    Name of the scan (only used with --profile)
 #   --dry-run          Preview changes without applying
 #   -h, --help         Show this help message
 
@@ -36,39 +35,34 @@ fi
 
 # Defaults (can be overridden by .env or CLI flags)
 NAMESPACE="${COMPLIANCE_NAMESPACE:-openshift-compliance}"
-PROFILE="${SCAN_PROFILE:-ocp4-cis}"
-SCAN_NAME="cis-scan"
+PROFILE=""
+SCAN_NAME=""
 DRY_RUN=false
-RECOMMENDED=false
 
-# Recommended profiles for broad compliance coverage
-RECOMMENDED_PROFILES=("ocp4-cis" "ocp4-moderate" "ocp4-pci-dss" "rhcos4-moderate")
+# All compliance profiles for broad coverage
+ALL_PROFILES=("ocp4-e8" "rhcos4-e8" "ocp4-cis" "ocp4-moderate" "ocp4-pci-dss" "rhcos4-moderate")
 
 usage() {
 	echo "Usage: $0 [OPTIONS]"
 	echo ""
-	echo "Create a compliance scan using ScanSettingBinding."
+	echo "Create compliance scans using ScanSettingBindings."
+	echo "By default, scans ALL profiles (E8, CIS, Moderate, PCI-DSS)."
+	echo "Use --profile to scan a single profile instead."
 	echo ""
 	echo "Options:"
 	echo "  -n, --namespace    Namespace for the scan (default: $NAMESPACE)"
-	echo "  -p, --profile      Profile to scan against (default: $PROFILE)"
-	echo "  -s, --scan-name    Name of the scan (default: $SCAN_NAME)"
-	echo "  --recommended      Scan all 4 recommended profiles (CIS, Moderate, PCI-DSS)"
+	echo "  -p, --profile      Scan a single profile instead of all"
+	echo "  -s, --scan-name    Name of the scan (only used with --profile)"
 	echo "  --dry-run          Preview changes without applying"
 	echo "  -h, --help         Show this help message"
 	echo ""
-	echo "Recommended profiles (used with --recommended):"
+	echo "Default profiles (all scanned unless --profile is specified):"
+	echo "  ocp4-e8             Essential Eight (platform)"
+	echo "  rhcos4-e8           Essential Eight (node)"
 	echo "  ocp4-cis            CIS Benchmark (platform)"
 	echo "  ocp4-moderate       NIST 800-53 Moderate (platform)"
 	echo "  ocp4-pci-dss        PCI-DSS (platform)"
 	echo "  rhcos4-moderate     NIST 800-53 Moderate (node)"
-	echo ""
-	echo "Available profiles:"
-	echo "  CIS:      ocp4-cis, ocp4-cis-1-7, ocp4-cis-node, ocp4-cis-node-1-7"
-	echo "  NIST:     ocp4-moderate, ocp4-moderate-rev-4, ocp4-moderate-node, ocp4-moderate-node-rev-4"
-	echo "            rhcos4-moderate, rhcos4-moderate-rev-4"
-	echo "  PCI-DSS:  ocp4-pci-dss, ocp4-pci-dss-3-2, ocp4-pci-dss-4-0"
-	echo "            ocp4-pci-dss-node, ocp4-pci-dss-node-3-2, ocp4-pci-dss-node-4-0"
 	echo ""
 	echo "Environment variables: COMPLIANCE_NAMESPACE, SCAN_PROFILE"
 	exit 0
@@ -88,10 +82,6 @@ while [[ $# -gt 0 ]]; do
 	-s | --scan-name)
 		SCAN_NAME="$2"
 		shift 2
-		;;
-	--recommended)
-		RECOMMENDED=true
-		shift
 		;;
 	--dry-run)
 		DRY_RUN=true
@@ -148,31 +138,9 @@ EOYAML
 # MAIN
 # ============================================================================
 
-if [[ "$RECOMMENDED" == "true" ]]; then
-	log_info "Creating scans for all recommended profiles..."
-	log_info "  Namespace: $NAMESPACE"
-	log_info "  Profiles: ${RECOMMENDED_PROFILES[*]}"
-
-	for profile in "${RECOMMENDED_PROFILES[@]}"; do
-		scan_name="${profile}-scan"
-		log_info "  Creating scan: $scan_name (profile: $profile)"
-		create_scan_binding "$scan_name" "$profile"
-	done
-
-	if [[ "$DRY_RUN" == "true" ]]; then
-		log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
-	else
-		log_success "All recommended scans created in namespace '$NAMESPACE'."
-		echo ""
-		log_info "Scans created:"
-		for profile in "${RECOMMENDED_PROFILES[@]}"; do
-			echo "       - ${profile}-scan ($profile)"
-		done
-		echo ""
-		log_info "Check the scan status with:"
-		echo "  oc get compliancescan -n $NAMESPACE"
-	fi
-else
+if [[ -n "$PROFILE" ]]; then
+	# Single profile mode
+	SCAN_NAME="${SCAN_NAME:-${PROFILE}-scan}"
 	log_info "Creating ScanSettingBinding..."
 	log_info "  Namespace: $NAMESPACE"
 	log_info "  Profile: $PROFILE"
@@ -184,6 +152,31 @@ else
 		log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
 	else
 		log_success "ScanSettingBinding '$SCAN_NAME' created in namespace '$NAMESPACE'."
+		echo ""
+		log_info "Check the scan status with:"
+		echo "  oc get compliancescan -n $NAMESPACE"
+	fi
+else
+	# Default: scan all profiles
+	log_info "Creating scans for all compliance profiles..."
+	log_info "  Namespace: $NAMESPACE"
+	log_info "  Profiles: ${ALL_PROFILES[*]}"
+
+	for profile in "${ALL_PROFILES[@]}"; do
+		scan_name="${profile}-scan"
+		log_info "  Creating scan: $scan_name (profile: $profile)"
+		create_scan_binding "$scan_name" "$profile"
+	done
+
+	if [[ "$DRY_RUN" == "true" ]]; then
+		log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
+	else
+		log_success "All compliance scans created in namespace '$NAMESPACE'."
+		echo ""
+		log_info "Scans created:"
+		for profile in "${ALL_PROFILES[@]}"; do
+			echo "       - ${profile}-scan ($profile)"
+		done
 		echo ""
 		log_info "Check the scan status with:"
 		echo "  oc get compliancescan -n $NAMESPACE"

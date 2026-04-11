@@ -23,7 +23,8 @@ jobs:
     outputs:
       co_ref: ${{ steps.detect.outputs.co_ref }}
       needs_mirror: ${{ steps.detect.outputs.needs_mirror }}
-      upstream_exists: ${{ steps.detect.outputs.upstream_exists }}
+      upstream_catalog_exists: ${{ steps.detect.outputs.upstream_catalog_exists }}
+      upstream_bundle_exists: ${{ steps.detect.outputs.upstream_bundle_exists }}
     steps:
       - name: Detect latest release
         id: detect
@@ -53,10 +54,19 @@ jobs:
           # Check if upstream catalog image exists
           if skopeo inspect --raw --no-creds "docker://ghcr.io/complianceascode/compliance-operator-catalog:${CO_REF}" >/dev/null 2>&1; then
             echo "Upstream catalog image exists"
-            echo "upstream_exists=true" >> "$GITHUB_OUTPUT"
+            echo "upstream_catalog_exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "Upstream catalog image not found, will build from source"
-            echo "upstream_exists=false" >> "$GITHUB_OUTPUT"
+            echo "upstream_catalog_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Check if upstream bundle image exists
+          if skopeo inspect --raw --no-creds "docker://ghcr.io/complianceascode/compliance-operator-bundle:${CO_REF}" >/dev/null 2>&1; then
+            echo "Upstream bundle image exists"
+            echo "upstream_bundle_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Upstream bundle image not found, will build from source"
+            echo "upstream_bundle_exists=false" >> "$GITHUB_OUTPUT"
           fi
 
   mirror:
@@ -72,44 +82,71 @@ jobs:
           components: |
             Quay.io
 
-      - name: Login to quay.io
+      - name: Login to quay.io (skopeo)
         run: |
           skopeo login quay.io \
-            --username "${{ secrets.QUAY_USERNAME }}" \
-            --password "${{ secrets.QUAY_PASSWORD }}"
+            --username "${{ secrets.QUAY_ROBOT_USERNAME }}" \
+            --password "${{ secrets.QUAY_ROBOT_TOKEN }}"
 
-      - name: Mirror upstream catalog (if available)
-        if: needs.detect-release.outputs.upstream_exists == 'true'
+      - name: Set up Docker Buildx for multi-arch builds
+        if: needs.detect-release.outputs.upstream_catalog_exists == 'false' || needs.detect-release.outputs.upstream_bundle_exists == 'false'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU
+        if: needs.detect-release.outputs.upstream_catalog_exists == 'false' || needs.detect-release.outputs.upstream_bundle_exists == 'false'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Login to quay.io (Docker)
+        if: needs.detect-release.outputs.upstream_catalog_exists == 'false' || needs.detect-release.outputs.upstream_bundle_exists == 'false'
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_ROBOT_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
+      # ── Bundle Image ──
+
+      - name: Mirror upstream bundle (if available)
+        if: needs.detect-release.outputs.upstream_bundle_exists == 'true'
         run: |
           CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Copying upstream catalog image for ${CO_REF}..."
+          echo "Copying upstream bundle image for ${CO_REF} (all architectures)..."
+          skopeo copy --all \
+            "docker://ghcr.io/complianceascode/compliance-operator-bundle:${CO_REF}" \
+            "docker://quay.io/bapalm/compliance-operator-bundle:${CO_REF}"
+
+      - name: Checkout compliance-operator source (if needed)
+        if: needs.detect-release.outputs.upstream_bundle_exists == 'false' || needs.detect-release.outputs.upstream_catalog_exists == 'false'
+        run: |
+          git clone --depth 1 --branch "${{ needs.detect-release.outputs.co_ref }}" \
+            https://github.com/ComplianceAsCode/compliance-operator.git co-src
+
+      - name: Build and push bundle (if upstream missing)
+        if: needs.detect-release.outputs.upstream_bundle_exists == 'false'
+        uses: docker/build-push-action@v6
+        with:
+          context: co-src
+          file: co-src/bundle.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: quay.io/bapalm/compliance-operator-bundle:${{ needs.detect-release.outputs.co_ref }}
+
+      # ── Catalog Image ──
+
+      - name: Mirror upstream catalog (if available)
+        if: needs.detect-release.outputs.upstream_catalog_exists == 'true'
+        run: |
+          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+          echo "Copying upstream catalog image for ${CO_REF} (all architectures)..."
           skopeo copy --all \
             "docker://ghcr.io/complianceascode/compliance-operator-catalog:${CO_REF}" \
             "docker://quay.io/bapalm/compliance-operator-catalog:${CO_REF}"
 
       - name: Build catalog from source (if upstream missing)
-        if: needs.detect-release.outputs.upstream_exists == 'false'
+        if: needs.detect-release.outputs.upstream_catalog_exists == 'false'
         run: |
           CO_REF="${{ needs.detect-release.outputs.co_ref }}"
           echo "Building catalog image from source for ${CO_REF}..."
-
-          # Clone at the release tag
-          git clone --depth 1 --branch "${CO_REF}" \
-            https://github.com/ComplianceAsCode/compliance-operator.git co-src
-
-          # Build and push the bundle image (FROM scratch, arch-independent)
-          echo "Building bundle image..."
-          buildah manifest create "quay.io/bapalm/compliance-operator-bundle:${CO_REF}"
-          for ARCH in amd64 arm64; do
-            buildah bud --platform "linux/${ARCH}" \
-              --manifest "quay.io/bapalm/compliance-operator-bundle:${CO_REF}" \
-              -f co-src/bundle.Dockerfile co-src
-          done
-
-          echo "Pushing bundle image..."
-          buildah manifest push --all \
-            "quay.io/bapalm/compliance-operator-bundle:${CO_REF}" \
-            "docker://quay.io/bapalm/compliance-operator-bundle:${CO_REF}"
 
           # Install opm
           OPM_VERSION=$(grep -oP 'OPM_VERSION\?\=\K[0-9.]+' co-src/Makefile || echo "1.39.0")
@@ -139,35 +176,44 @@ jobs:
           LABEL operators.operatorframework.io.index.configs.v1=/configs
           DEOF
 
-          # Build multi-arch catalog image
-          echo "Building catalog image..."
-          buildah manifest create "quay.io/bapalm/compliance-operator-catalog:${CO_REF}"
-          for ARCH in amd64 arm64; do
-            buildah bud --platform "linux/${ARCH}" \
-              --manifest "quay.io/bapalm/compliance-operator-catalog:${CO_REF}" \
-              -f build/Dockerfile build
-          done
+      - name: Build and push catalog (if upstream missing)
+        if: needs.detect-release.outputs.upstream_catalog_exists == 'false'
+        uses: docker/build-push-action@v6
+        with:
+          context: build
+          file: build/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: quay.io/bapalm/compliance-operator-catalog:${{ needs.detect-release.outputs.co_ref }}
 
-          echo "Pushing catalog image..."
-          buildah manifest push --all \
-            "quay.io/bapalm/compliance-operator-catalog:${CO_REF}" \
-            "docker://quay.io/bapalm/compliance-operator-catalog:${CO_REF}"
+      # ── Verification ──
 
-      - name: Verify mirror
+      - name: Verify all mirror images
         run: |
           CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Verifying quay.io/bapalm/compliance-operator-catalog:${CO_REF}..."
-          skopeo inspect --raw "docker://quay.io/bapalm/compliance-operator-catalog:${CO_REF}" | \
-            python3 -c "
+          FAILED=0
+
+          for IMAGE_TYPE in compliance-operator-bundle compliance-operator-catalog; do
+            IMAGE="quay.io/bapalm/${IMAGE_TYPE}:${CO_REF}"
+            echo "Verifying ${IMAGE}..."
+            skopeo inspect --raw --no-creds "docker://${IMAGE}" 2>/dev/null | \
+              python3 -c "
           import sys, json
           m = json.load(sys.stdin)
-          manifests = m.get('manifests', [])
-          print(f'Manifest list with {len(manifests)} entries:')
-          for p in manifests:
-              plat = p.get('platform', {})
-              print(f'  {plat.get(\"os\", \"unknown\")}/{plat.get(\"architecture\", \"unknown\")}')
-          if len(manifests) < 2:
-              print('ERROR: Expected at least 2 architectures')
-              sys.exit(1)
-          print('Verification passed!')
-          "
+          arches = sorted(set(p['platform']['architecture'] for p in m.get('manifests', []) if p.get('platform', {}).get('architecture')))
+          print(f'  Architectures: {arches}')
+          for required in ['amd64', 'arm64']:
+              if required not in arches:
+                  print(f'  ERROR: missing {required}')
+                  sys.exit(1)
+          print(f'  OK')
+          " || FAILED=1
+          done
+
+          if [[ $FAILED -ne 0 ]]; then
+            echo ""
+            echo "ERROR: One or more mirror images are missing required architectures"
+            exit 1
+          fi
+          echo ""
+          echo "All mirror images verified with amd64 and arm64!"
