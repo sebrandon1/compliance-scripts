@@ -90,7 +90,7 @@ jobs:
 
       - name: Set up Docker Buildx for multi-arch builds
         if: needs.detect-release.outputs.upstream_catalog_exists == 'false' || needs.detect-release.outputs.upstream_bundle_exists == 'false'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Set up QEMU
         if: needs.detect-release.outputs.upstream_catalog_exists == 'false' || needs.detect-release.outputs.upstream_bundle_exists == 'false'
