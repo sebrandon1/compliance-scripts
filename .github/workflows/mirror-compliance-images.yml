@@ -123,7 +123,7 @@ jobs:
 
       - name: Build and push bundle (if upstream missing)
         if: needs.detect-release.outputs.upstream_bundle_exists == 'false'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: co-src
           file: co-src/bundle.Dockerfile
@@ -178,7 +178,7 @@ jobs:
 
       - name: Build and push catalog (if upstream missing)
         if: needs.detect-release.outputs.upstream_catalog_exists == 'false'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: build
           file: build/Dockerfile
