@@ -65,7 +65,7 @@ jobs:
           fi
 
       - name: Setup quick-ocp cluster (OCP ${{ steps.inputs.outputs.ocp_version }})
-        uses: palmsoftware/quick-ocp@v0.0.30
+        uses: palmsoftware/quick-ocp@v0.0.31
         with:
           ocpPullSecret: $OCP_PULL_SECRET
           desiredOCPVersion: ${{ steps.inputs.outputs.ocp_version }}
