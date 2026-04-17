@@ -8,35 +8,31 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
 VERSION="${1:?Usage: $0 <OCP_VERSION> (e.g., 4.21, 4.22)}"
 OUTPUT="tests/expected-results-${VERSION}.json"
 
-if ! command -v jq &>/dev/null; then
-	echo "ERROR: jq is required but not installed"
-	exit 1
-fi
+require_cmd jq
+require_cluster
 
-echo "Generating expected results for OCP $VERSION"
+log_info "Generating expected results for OCP $VERSION"
 echo ""
-
-# Verify cluster connectivity
-if ! oc get clusterversion &>/dev/null; then
-	echo "ERROR: Cannot connect to cluster. Set KUBECONFIG or oc login first."
-	exit 1
-fi
 
 CLUSTER_VERSION=$(oc get clusterversion version -o jsonpath='{.status.desired.version}' 2>/dev/null)
 echo "Cluster version: $CLUSTER_VERSION"
 
 # Get all ComplianceCheckResults
-RESULTS=$(oc get compliancecheckresults -n openshift-compliance -o json 2>/dev/null)
+RESULTS=$(oc get compliancecheckresults -n "$DEFAULT_COMPLIANCE_NAMESPACE" -o json 2>/dev/null)
 TOTAL=$(echo "$RESULTS" | jq '.items | length')
 
 if [[ "$TOTAL" -eq 0 ]]; then
-	echo "ERROR: No ComplianceCheckResults found. Run compliance scans first."
-	echo "  make install-compliance-operator"
-	echo "  make apply-periodic-scan"
-	echo "  (wait for scans to complete)"
+	log_error "No ComplianceCheckResults found. Run compliance scans first."
+	log_error "  make install-compliance-operator"
+	log_error "  make apply-periodic-scan"
+	log_error "  (wait for scans to complete)"
 	exit 1
 fi
 

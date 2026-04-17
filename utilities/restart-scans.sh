@@ -1,7 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-NAMESPACE="openshift-compliance"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
+NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
 WATCH=false
 ALL=false
 declare -a SCANS
@@ -46,7 +50,7 @@ while [[ $# -gt 0 ]]; do
 		break
 		;;
 	-*)
-		echo "[ERROR] Unknown flag: $1"
+		log_error "Unknown flag: $1"
 		usage
 		exit 1
 		;;
@@ -62,14 +66,14 @@ if [[ "${#SCANS[@]}" -eq 0 ]]; then
 	ALL=true
 fi
 
-echo "[PRECHECK] Verifying namespace '$NAMESPACE' exists..."
+log_info "Verifying namespace '$NAMESPACE' exists..."
 if ! oc get ns "$NAMESPACE" &>/dev/null; then
-	echo "[ERROR] Namespace '$NAMESPACE' not found. Ensure you're connected to an OpenShift cluster."
+	log_error "Namespace '$NAMESPACE' not found. Ensure you're connected to an OpenShift cluster."
 	exit 1
 fi
 
 if [[ "$ALL" == true ]]; then
-	echo "[INFO] Restarting all ComplianceScans in namespace '$NAMESPACE'..."
+	log_info "Restarting all ComplianceScans in namespace '$NAMESPACE'..."
 	SCANS_OUTPUT=$(oc -n "$NAMESPACE" get compliancescan -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
 	SCANS=()
 	if [[ -n "$SCANS_OUTPUT" ]]; then
@@ -78,27 +82,27 @@ if [[ "$ALL" == true ]]; then
 		done <<<"$SCANS_OUTPUT"
 	fi
 	if [[ "${#SCANS[@]}" -eq 0 ]]; then
-		echo "[WARN] No ComplianceScans found in '$NAMESPACE'. Nothing to restart."
+		log_warn "No ComplianceScans found in '$NAMESPACE'. Nothing to restart."
 		exit 0
 	fi
 fi
 
-echo "[INFO] Requesting rescan for ${#SCANS[@]} scan(s) in '$NAMESPACE'..."
+log_info "Requesting rescan for ${#SCANS[@]} scan(s) in '$NAMESPACE'..."
 for scan in "${SCANS[@]}"; do
 	if ! oc -n "$NAMESPACE" get compliancescan "$scan" &>/dev/null; then
-		echo "[WARN] ComplianceScan '$scan' not found in namespace '$NAMESPACE'; skipping."
+		log_warn "ComplianceScan '$scan' not found in namespace '$NAMESPACE'; skipping."
 		continue
 	fi
-	echo "[ACTION] Annotating 'compliancescan/$scan' with compliance.openshift.io/rescan="
+	log_info "Annotating 'compliancescan/$scan' with compliance.openshift.io/rescan="
 	oc -n "$NAMESPACE" annotate "compliancescan/$scan" compliance.openshift.io/rescan= --overwrite=true
 done
 
 if [[ "$WATCH" == true ]]; then
-	echo "[INFO] Watching ComplianceScans in '$NAMESPACE'... (Ctrl+C to exit)"
+	log_info "Watching ComplianceScans in '$NAMESPACE'... (Ctrl+C to exit)"
 	oc -n "$NAMESPACE" get compliancescan -w | cat
 else
-	echo "[INFO] Current ComplianceScan statuses:"
+	log_info "Current ComplianceScan statuses:"
 	oc -n "$NAMESPACE" get compliancescan | cat
 fi
 
-echo "[SUCCESS] Rescan requests submitted."
+log_success "Rescan requests submitted."

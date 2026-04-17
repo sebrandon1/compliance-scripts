@@ -11,22 +11,9 @@
 
 set -euo pipefail
 
-# Source common library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -f "$SCRIPT_DIR/lib/common.sh" ]]; then
-	# shellcheck source=../lib/common.sh
-	source "$SCRIPT_DIR/lib/common.sh"
-else
-	# Fallback if common.sh doesn't exist
-	log_info() { echo "[INFO] $*"; }
-	log_warn() { echo "[WARN] $*"; }
-	log_error() { echo "[ERROR] $*" >&2; }
-	log_success() { echo "[SUCCESS] $*"; }
-	require_cmd() { for cmd in "$@"; do command -v "$cmd" &>/dev/null || {
-		echo "Error: '$cmd' not found"
-		exit 1
-	}; done; }
-fi
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
 
 # Check required dependencies
 require_cmd yq

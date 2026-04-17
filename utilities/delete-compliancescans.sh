@@ -1,7 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-NAMESPACE="openshift-compliance"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
+NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
 FILTER=""
 DELETE_SUITE=false
 DELETE_SSB=false
@@ -39,14 +43,14 @@ while [[ $# -gt 0 ]]; do
 		exit 0
 		;;
 	*)
-		echo "[ERROR] Unknown argument: $1"
+		log_error "Unknown argument: $1"
 		usage
 		exit 1
 		;;
 	esac
 done
 
-echo "[INFO] Deleting ComplianceScan objects in namespace '$NAMESPACE'"
+log_info "Deleting ComplianceScan objects in namespace '$NAMESPACE'"
 
 # Gather scans, optionally filter by substring
 SCANS=$(oc get compliancescan -n "$NAMESPACE" -o name 2>/dev/null || true)
@@ -55,11 +59,11 @@ if [[ -n "$FILTER" && -n "$SCANS" ]]; then
 fi
 
 if [[ -z "$SCANS" ]]; then
-	echo "[INFO] No ComplianceScan objects found to delete."
+	log_info "No ComplianceScan objects found to delete."
 	exit 0
 fi
 
-echo "[INFO] Target scans:"
+log_info "Target scans:"
 echo "$SCANS" | sed 's/^/\t- /'
 
 # Optionally find related ComplianceSuite names via ownerReferences
@@ -78,12 +82,12 @@ if [[ "$DELETE_SUITE" == true || "$DELETE_SSB" == true ]]; then
 fi
 
 # Delete scans first
-echo "[INFO] Deleting ComplianceScan objects..."
+log_info "Deleting ComplianceScan objects..."
 oc delete $SCANS -n "$NAMESPACE" --ignore-not-found=true
 
 # Optionally delete related suites to prevent immediate recreation
 if [[ "$DELETE_SUITE" == true && -n "$SUITES" ]]; then
-	echo "[INFO] Deleting related ComplianceSuite objects:"
+	log_info "Deleting related ComplianceSuite objects:"
 	echo "$SUITES" | sed 's/^/\t- /'
 	for s in $SUITES; do
 		oc delete compliancesuite "$s" -n "$NAMESPACE" --ignore-not-found=true || true
@@ -92,7 +96,7 @@ fi
 
 # Optionally delete SSBs matching suite names (create-scan.sh uses SSB name as scan binding)
 if [[ "$DELETE_SSB" == true && -n "$SUITES" ]]; then
-	echo "[INFO] Deleting ScanSettingBinding objects matching suite names:"
+	log_info "Deleting ScanSettingBinding objects matching suite names:"
 	echo "$SUITES" | sed 's/^/\t- /'
 	for s in $SUITES; do
 		oc delete scansettingbinding "$s" -n "$NAMESPACE" --ignore-not-found=true || true
@@ -100,19 +104,19 @@ if [[ "$DELETE_SSB" == true && -n "$SUITES" ]]; then
 fi
 
 # Wait for scans to be gone (best-effort)
-echo "[INFO] Waiting for ComplianceScan objects to be deleted..."
+log_info "Waiting for ComplianceScan objects to be deleted..."
 for i in {1..30}; do
 	REMAINING=$(oc get compliancescan -n "$NAMESPACE" -o name 2>/dev/null || true)
 	if [[ -n "$FILTER" && -n "$REMAINING" ]]; then
 		REMAINING=$(echo "$REMAINING" | grep "$FILTER" || true)
 	fi
 	if [[ -z "$REMAINING" ]]; then
-		echo "[SUCCESS] ComplianceScan objects have been deleted."
+		log_success "ComplianceScan objects have been deleted."
 		exit 0
 	fi
 	sleep 2
 done
 
-echo "[WARN] Some ComplianceScan objects may still remain or be re-created by a ComplianceSuite."
-echo "[HINT] Re-run with --delete-suite to remove suites, or --delete-ssb to remove the binding."
+log_warn "Some ComplianceScan objects may still remain or be re-created by a ComplianceSuite."
+log_info "Re-run with --delete-suite to remove suites, or --delete-ssb to remove the binding."
 exit 0

@@ -24,20 +24,12 @@ set -euo pipefail
 
 # Source common library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -f "$SCRIPT_DIR/lib/common.sh" ]]; then
-	# shellcheck source=../lib/common.sh
-	source "$SCRIPT_DIR/lib/common.sh"
-	load_env
-else
-	# Fallback if common.sh doesn't exist
-	log_info() { echo "[INFO] $*"; }
-	log_error() { echo "[ERROR] $*" >&2; }
-	log_success() { echo "[SUCCESS] $*"; }
-	DRY_RUN=false
-fi
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+load_env
 
 # Defaults (can be overridden by .env or CLI flags)
-NAMESPACE="${COMPLIANCE_NAMESPACE:-openshift-compliance}"
+NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 NO_PVC="${NO_PVC:-false}"
 DRY_RUN="${DRY_RUN:-false}"
 
@@ -87,18 +79,7 @@ done
 
 if [[ "${NO_PVC}" != "true" ]]; then
 	if [[ -z "${SC_NAME:-}" ]]; then
-		# First, try to get the default StorageClass
-		SC_NAME=$(oc get sc -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || true)
-
-		# If no default, prefer crc-csi-hostpath-provisioner (recommended for CRC)
-		if [[ -z "${SC_NAME:-}" ]] && oc get sc crc-csi-hostpath-provisioner &>/dev/null; then
-			SC_NAME=crc-csi-hostpath-provisioner
-		fi
-
-		# Fall back to any available StorageClass
-		if [[ -z "${SC_NAME:-}" ]]; then
-			SC_NAME=$(oc get sc -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
-		fi
+		SC_NAME=$(get_default_storage_class)
 	fi
 	# Storage defaults aligned with CRD defaults
 	RAW_SIZE="${RAW_SIZE:-1Gi}"
@@ -261,49 +242,15 @@ else
 	log_warn "E8 profiles not available on this cluster, skipping periodic-e8 binding"
 fi
 
-# Apply or dry-run resources
-if [[ "$DRY_RUN" == "true" ]]; then
-	echo "---"
-	echo "$SCANSETTING_YAML"
-	if [[ "$E8_AVAILABLE" == "true" ]]; then
-		echo "---"
-		echo "$E8_BINDING_YAML"
-	fi
-	echo "---"
-	echo "$CIS_BINDING_YAML"
-	echo "---"
-	echo "$MODERATE_BINDING_YAML"
-	echo "---"
-	echo "$PCIDSS_BINDING_YAML"
-	echo "---"
+echo "$SCANSETTING_YAML" | apply_inline
+if [[ "$E8_AVAILABLE" == "true" ]]; then
+	echo "$E8_BINDING_YAML" | apply_inline
+fi
+echo "$CIS_BINDING_YAML" | apply_inline
+echo "$MODERATE_BINDING_YAML" | apply_inline
+echo "$PCIDSS_BINDING_YAML" | apply_inline
 
-	log_info "[DRY-RUN] Validating ScanSetting..."
-	echo "$SCANSETTING_YAML" | oc apply --dry-run=server -f -
-
-	if [[ "$E8_AVAILABLE" == "true" ]]; then
-		log_info "[DRY-RUN] Validating E8 ScanSettingBinding..."
-		echo "$E8_BINDING_YAML" | oc apply --dry-run=server -f -
-	fi
-
-	log_info "[DRY-RUN] Validating CIS ScanSettingBinding..."
-	echo "$CIS_BINDING_YAML" | oc apply --dry-run=server -f -
-
-	log_info "[DRY-RUN] Validating Moderate ScanSettingBinding..."
-	echo "$MODERATE_BINDING_YAML" | oc apply --dry-run=server -f -
-
-	log_info "[DRY-RUN] Validating PCI-DSS ScanSettingBinding..."
-	echo "$PCIDSS_BINDING_YAML" | oc apply --dry-run=server -f -
-
-	log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
-else
-	echo "$SCANSETTING_YAML" | oc apply -f -
-	if [[ "$E8_AVAILABLE" == "true" ]]; then
-		echo "$E8_BINDING_YAML" | oc apply -f -
-	fi
-	echo "$CIS_BINDING_YAML" | oc apply -f -
-	echo "$MODERATE_BINDING_YAML" | oc apply -f -
-	echo "$PCIDSS_BINDING_YAML" | oc apply -f -
-
+if [[ "$DRY_RUN" != "true" ]]; then
 	log_success "ScanSetting 'periodic-setting' applied in namespace '$NAMESPACE'."
 	log_info "ScanSettingBindings created:"
 	if [[ "$E8_AVAILABLE" == "true" ]]; then

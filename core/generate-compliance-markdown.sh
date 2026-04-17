@@ -14,43 +14,29 @@
 #
 # Usage: ./core/generate-compliance-markdown.sh
 
-# Ensure the script exits on any error
-set -e
+set -euo pipefail
 
-# Check if the 'oc' command-line client is installed
-if ! command -v oc &>/dev/null; then
-	echo "Error: 'oc' command-line client is not installed. Please install it and try again."
-	exit 1
-fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
 
-# Output Markdown file
+require_cmd oc
+
 output_file="ComplianceCheckResults.md"
 
-# Fetch all ComplianceCheckResult objects
 compliance_results=$(oc get compliancecheckresult -A)
 
-# Start writing the Markdown file
-echo "# Compliance Check Results" >"$output_file"
-echo "" >>"$output_file"
+fail_rows=""
+pass_rows=""
+manual_rows=""
 
-echo "## FAIL Results" >>"$output_file"
-echo "| Namespace | Name | Result | Severity | File |" >>"$output_file"
-echo "|-----------|------|--------|----------|------|" >>"$output_file"
-
-# Parse the ComplianceCheckResult output and map to files
 while IFS= read -r line; do
-	# Skip the header line
-	if [[ "$line" == *"NAMESPACE"* ]]; then
-		continue
-	fi
-
-	# Extract fields from the line
+	[[ "$line" == *"NAMESPACE"* ]] && continue
 	namespace=$(echo "$line" | awk '{print $1}')
 	name=$(echo "$line" | awk '{print $2}')
 	result=$(echo "$line" | awk '{print $3}')
 	severity=$(echo "$line" | awk '{print $4}')
 
-	# Check if a corresponding file exists
 	file="complianceremediations/$name.yaml"
 	if [[ -f "$file" ]]; then
 		file_link="[$name.yaml]($file)"
@@ -58,71 +44,32 @@ while IFS= read -r line; do
 		file_link="N/A"
 	fi
 
-	# Append rows to the appropriate section based on the result
-	if [[ "$result" == "FAIL" ]]; then
-		echo "| $namespace | $name | $result | $severity | $file_link |" >>"$output_file"
-	fi
+	row="| $namespace | $name | $result | $severity | $file_link |"
+	case "$result" in
+	FAIL) fail_rows+="$row"$'\n' ;;
+	PASS) pass_rows+="$row"$'\n' ;;
+	MANUAL) manual_rows+="$row"$'\n' ;;
+	esac
 done <<<"$compliance_results"
 
-echo "" >>"$output_file"
-echo "## PASS Results" >>"$output_file"
-echo "| Namespace | Name | Result | Severity | File |" >>"$output_file"
-echo "|-----------|------|--------|----------|------|" >>"$output_file"
+{
+	echo "# Compliance Check Results"
+	echo ""
+	echo "## FAIL Results"
+	echo "| Namespace | Name | Result | Severity | File |"
+	echo "|-----------|------|--------|----------|------|"
+	printf "%s" "$fail_rows"
+	echo ""
+	echo "## PASS Results"
+	echo "| Namespace | Name | Result | Severity | File |"
+	echo "|-----------|------|--------|----------|------|"
+	printf "%s" "$pass_rows"
+	echo ""
+	echo "## MANUAL Results"
+	echo "| Namespace | Name | Result | Severity | File |"
+	echo "|-----------|------|--------|----------|------|"
+	printf "%s" "$manual_rows"
+	echo ""
+} >"$output_file"
 
-while IFS= read -r line; do
-	# Skip the header line
-	if [[ "$line" == *"NAMESPACE"* ]]; then
-		continue
-	fi
-
-	# Extract fields from the line
-	namespace=$(echo "$line" | awk '{print $1}')
-	name=$(echo "$line" | awk '{print $2}')
-	result=$(echo "$line" | awk '{print $3}')
-	severity=$(echo "$line" | awk '{print $4}')
-
-	# Check if a corresponding file exists
-	file="complianceremediations/$name.yaml"
-	if [[ -f "$file" ]]; then
-		file_link="[$name.yaml]($file)"
-	else
-		file_link="N/A"
-	fi
-
-	if [[ "$result" == "PASS" ]]; then
-		echo "| $namespace | $name | $result | $severity | $file_link |" >>"$output_file"
-	fi
-done <<<"$compliance_results"
-
-echo "" >>"$output_file"
-echo "## MANUAL Results" >>"$output_file"
-echo "| Namespace | Name | Result | Severity | File |" >>"$output_file"
-echo "|-----------|------|--------|----------|------|" >>"$output_file"
-
-while IFS= read -r line; do
-	# Skip the header line
-	if [[ "$line" == *"NAMESPACE"* ]]; then
-		continue
-	fi
-
-	# Extract fields from the line
-	namespace=$(echo "$line" | awk '{print $1}')
-	name=$(echo "$line" | awk '{print $2}')
-	result=$(echo "$line" | awk '{print $3}')
-	severity=$(echo "$line" | awk '{print $4}')
-
-	# Check if a corresponding file exists
-	file="complianceremediations/$name.yaml"
-	if [[ -f "$file" ]]; then
-		file_link="[$name.yaml]($file)"
-	else
-		file_link="N/A"
-	fi
-
-	if [[ "$result" == "MANUAL" ]]; then
-		echo "| $namespace | $name | $result | $severity | $file_link |" >>"$output_file"
-	fi
-done <<<"$compliance_results"
-
-echo "" >>"$output_file"
 echo "Markdown file '$output_file' has been created."

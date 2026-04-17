@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
 usage() {
 	echo "Usage: $0 [--apply] [--out-dir DIR] [--exclude-regex REGEX] [--namespaces ns1,ns2]"
 	echo "\nOptions:"
@@ -11,15 +15,8 @@ usage() {
 	echo "  -h, --help          Show this help message"
 }
 
-if ! command -v oc >/dev/null 2>&1; then
-	echo "[ERROR] 'oc' CLI is required. Please install and login to your cluster."
-	exit 1
-fi
-
-if ! oc whoami >/dev/null 2>&1; then
-	echo "[ERROR] Unable to connect to the cluster. Please run 'oc login' and retry."
-	exit 1
-fi
+require_cmd oc
+require_cluster
 
 APPLY=0
 OUT_DIR="generated-networkpolicies"
@@ -49,7 +46,7 @@ while [[ $# -gt 0 ]]; do
 		exit 0
 		;;
 	*)
-		echo "[ERROR] Unknown option: $1"
+		log_error "Unknown option: $1"
 		usage
 		exit 1
 		;;

@@ -9,17 +9,18 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
 EXPECTED_FILE="${1:?Usage: $0 <expected-results.json>}"
 
 if [[ ! -f "$EXPECTED_FILE" ]]; then
-	echo "ERROR: Expected results file not found: $EXPECTED_FILE"
+	log_error "Expected results file not found: $EXPECTED_FILE"
 	exit 1
 fi
 
-if ! command -v jq &>/dev/null; then
-	echo "ERROR: jq is required but not installed"
-	exit 1
-fi
+require_cmd jq
 
 VERSION=$(jq -r '.version' "$EXPECTED_FILE")
 PROFILE_FILTER=$(jq -r '.profile // ""' "$EXPECTED_FILE")
@@ -28,7 +29,7 @@ echo "Expected results file: $EXPECTED_FILE"
 echo ""
 
 # Get actual results from cluster
-ACTUAL=$(oc get compliancecheckresults -n openshift-compliance -o json 2>/dev/null)
+ACTUAL=$(oc get compliancecheckresults -n "$DEFAULT_COMPLIANCE_NAMESPACE" -o json 2>/dev/null)
 ACTUAL_COUNT=$(echo "$ACTUAL" | jq '.items | length')
 echo "Found $ACTUAL_COUNT ComplianceCheckResults in cluster"
 echo ""

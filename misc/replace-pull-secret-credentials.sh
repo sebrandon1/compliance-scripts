@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
 show_usage() {
 	echo "Usage: $0 --pull-secret /path/to/pull-secret.json [--kubeconfig /path/to/kubeconfig] [--mode merge|replace]" >&2
 	echo "Optional: --namespace openshift-config --secret-name pull-secret --no-verify" >&2
@@ -55,32 +59,25 @@ if [[ -n "$KUBECONFIG_ARG" ]]; then
 	export KUBECONFIG="$KUBECONFIG_ARG"
 fi
 
-if ! command -v oc >/dev/null 2>&1; then
-	echo "[ERROR] oc CLI not found in PATH." >&2
-	exit 1
-fi
+require_cmd oc
 
 if [[ -z "$PULL_SECRET_FILE" ]]; then
-	echo "[ERROR] --pull-secret is required" >&2
+	log_error "--pull-secret is required"
 	show_usage
 	exit 1
 fi
 
 if [[ ! -s "$PULL_SECRET_FILE" ]]; then
-	echo "[ERROR] Provided pull-secret file not found or empty: $PULL_SECRET_FILE" >&2
+	log_error "Provided pull-secret file not found or empty: $PULL_SECRET_FILE"
 	exit 1
 fi
 
 if [[ "$MODE" != "merge" && "$MODE" != "replace" ]]; then
-	echo "[ERROR] --mode must be 'merge' or 'replace'" >&2
+	log_error "--mode must be 'merge' or 'replace'"
 	exit 1
 fi
 
-# Verify cluster access early
-if ! oc whoami >/dev/null 2>&1; then
-	echo "[ERROR] Cannot access cluster with current kubeconfig. Set --kubeconfig or KUBECONFIG." >&2
-	exit 1
-fi
+require_cluster
 
 TS=$(date +%Y%m%d%H%M%S)
 TMPDIR=$(mktemp -d "/tmp/psecret.XXXXXX")
@@ -88,17 +85,14 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 BACKUP="/tmp/${SECRET_NAME}-backup-${TS}.json"
 
-echo "[INFO] Backing up existing secret '$SECRET_NAME' from namespace '$NAMESPACE' to $BACKUP"
+log_info "Backing up existing secret '$SECRET_NAME' from namespace '$NAMESPACE' to $BACKUP"
 oc extract "secret/${SECRET_NAME}" -n "$NAMESPACE" --to="$TMPDIR" >/dev/null
 cp "$TMPDIR/.dockerconfigjson" "$BACKUP"
 
 SOURCE_FOR_UPDATE="$PULL_SECRET_FILE"
 
 if [[ "$MODE" == "merge" ]]; then
-	if ! command -v python3 >/dev/null 2>&1; then
-		echo "[ERROR] python3 is required for merge mode. Install python3 or use --mode replace." >&2
-		exit 1
-	fi
+	require_cmd python3
 	CURRENT_JSON="$TMPDIR/current.json"
 	MERGED_JSON="$TMPDIR/merged.json"
 	cp "$BACKUP" "$CURRENT_JSON"
@@ -117,12 +111,12 @@ with open(out_path, "w") as f:
 	json.dump(a, f)
 PY
 
-	echo "[INFO] Merging new credentials into existing secret data"
+	log_info "Merging new credentials into existing secret data"
 	python3 "$TMPDIR/merge_pull_secret.py" "$CURRENT_JSON" "$PULL_SECRET_FILE" "$MERGED_JSON"
 	SOURCE_FOR_UPDATE="$MERGED_JSON"
 fi
 
-echo "[INFO] Updating cluster secret '$SECRET_NAME' in namespace '$NAMESPACE'"
+log_info "Updating cluster secret '$SECRET_NAME' in namespace '$NAMESPACE'"
 oc set data "secret/${SECRET_NAME}" -n "$NAMESPACE" --from-file=.dockerconfigjson="$SOURCE_FOR_UPDATE" >/dev/null
 oc -n "$NAMESPACE" patch "secret/${SECRET_NAME}" --type merge -p '{"type":"kubernetes.io/dockerconfigjson"}' >/dev/null || true
 
@@ -130,7 +124,7 @@ if [[ "$VERIFY" == true ]]; then
 	VERIFYDIR=$(mktemp -d "/tmp/psecretv.XXXXXX")
 	trap 'rm -rf "$TMPDIR" "$VERIFYDIR"' EXIT
 	oc extract "secret/${SECRET_NAME}" -n "$NAMESPACE" --to="$VERIFYDIR" >/dev/null
-	echo "[INFO] Registries in updated secret:"
+	log_info "Registries in updated secret:"
 	if command -v python3 >/dev/null 2>&1; then
 		python3 - "$VERIFYDIR/.dockerconfigjson" <<'PY'
 import json, sys

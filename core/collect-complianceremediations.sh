@@ -14,32 +14,9 @@ set -euo pipefail
 
 # Source common library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -f "$SCRIPT_DIR/lib/common.sh" ]]; then
-	# shellcheck source=../lib/common.sh
-	source "$SCRIPT_DIR/lib/common.sh"
-	load_env
-else
-	# Fallback if common.sh doesn't exist
-	log_info() { echo "[INFO] $*"; }
-	log_warn() { echo "[WARN] $*"; }
-	log_error() { echo "[ERROR] $*" >&2; }
-	log_success() { echo "[SUCCESS] $*"; }
-	require_cmd() { for cmd in "$@"; do command -v "$cmd" &>/dev/null || {
-		echo "Error: '$cmd' not found"
-		exit 1
-	}; done; }
-	require_cluster() { oc whoami &>/dev/null || {
-		echo "Error: Not connected to cluster"
-		exit 1
-	}; }
-	print_summary() {
-		echo "Summary:"
-		while [[ $# -ge 2 ]]; do
-			echo "  $1: $2"
-			shift 2
-		done
-	}
-fi
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+load_env
 
 # Check required dependencies
 require_cmd oc yq
@@ -48,7 +25,7 @@ require_cmd oc yq
 require_cluster
 
 # Defaults (can be overridden by .env or CLI flags)
-NAMESPACE="${COMPLIANCE_NAMESPACE:-openshift-compliance}"
+NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 DESTINATION_DIR="${REMEDIATION_DIR:-complianceremediations}"
 SEVERITY_FILTER="${SEVERITY_FILTER:-}"
 CLEAN_OUTPUT=0
@@ -229,22 +206,12 @@ else
 fi
 
 # Print summary
-if type print_summary &>/dev/null; then
-	print_summary \
-		"Total processed" "$count_total" \
-		"Valid collected" "$count_valid" \
-		"Invalid skipped" "$count_invalid" \
-		"Severity filtered" "$count_skipped_severity" \
-		"Output directory" "$DESTINATION_DIR"
-else
-	echo -e "\n[SUMMARY]"
-	echo "Total complianceremediation objects processed: $count_total"
-	echo "Valid YAMLs collected: $count_valid"
-	echo "Invalid YAMLs skipped: $count_invalid"
-	if [[ -n "$SEVERITY_FILTER" ]]; then
-		echo "Skipped due to severity filter ($SEVERITY_FILTER): $count_skipped_severity"
-	fi
-fi
+print_summary \
+	"Total processed" "$count_total" \
+	"Valid collected" "$count_valid" \
+	"Invalid skipped" "$count_invalid" \
+	"Severity filtered" "$count_skipped_severity" \
+	"Output directory" "$DESTINATION_DIR"
 
 echo ""
 log_info "Kinds found in collected objects:"
