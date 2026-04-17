@@ -9,526 +9,383 @@
 [![Remediation Groups](https://img.shields.io/badge/Groups-40%20tracked%20|%2033%20tested-blue?style=flat-square)](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen?style=flat-square&logo=github)](https://sebrandon1.github.io/compliance-scripts/)
 
-This repository contains a set of scripts to help automate the collection, organization, and management of OpenShift Compliance Operator remediations and related resources.
-
-- [Compliance Operator GitHub Repository](https://github.com/ComplianceAsCode/compliance-operator)
-- [Compliance Operator Workshop Tutorials](https://github.com/ComplianceAsCode/compliance-operator/tree/master/doc/tutorials/workshop/content/exercises)
-- [Compliance Operator Dashboard](https://github.com/sebrandon1/compliance-operator-dashboard) — Sister repo: web UI that reimplements these scripts as a single-binary Go + React dashboard. Features should be paired between the two repos.
-
-> **Note on operator versioning:** There are two distribution channels with different version numbers. The **upstream/community** operator at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator) is used by the install script's `--co-ref` flag. Supported versions: v1.7.0 and v1.8.2. Clusters with `redhat-operators` in `openshift-marketplace` will install the **Red Hat certified** version instead, which uses its own versioning. The Red Hat version is built internally and not publicly tagged on GitHub. The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
->
-> **Image mirroring:** Upstream images from `ghcr.io/complianceascode` are mirrored to `quay.io/bapalm` for reliability. The install script automatically falls back to the mirror if the upstream image tag is unavailable. To manually mirror images: `make mirror-images CO_REF=v1.8.2`. Mirrors are also updated weekly via CI.
-
-## Compliance Operator Concepts
-
-The Compliance Operator uses several custom resources to manage compliance scanning. Understanding these helps you choose the right scripts and interpret results:
-
-- **ProfileBundle** — A bundle of compliance profiles shipped with the operator. Must reach `VALID` status before scans can run.
-- **Profile** — A specific compliance standard (e.g., CIS, E8, Moderate, PCI-DSS) within a ProfileBundle.
-- **ScanSetting** — Defines *how* to scan: schedule (cron), storage size, tolerations, and roles to scan.
-- **ScanSettingBinding** — Binds one or more Profiles to a ScanSetting, creating the actual scan.
-- **ComplianceSuite / ComplianceScan** — The running scan. A Suite contains multiple Scans (one per profile+role). Status progresses from `LAUNCHING` → `RUNNING` → `DONE`.
-- **ComplianceCheckResult** — Individual pass/fail/manual result for each compliance rule.
-- **ComplianceRemediation** — A remediation object (usually a MachineConfig) that can fix a failing check.
-- **MachineConfig** — An OpenShift resource that configures node-level settings (sysctl, sshd, audit rules, file contents). **Applying a MachineConfig triggers a rolling reboot of all nodes in the targeted MachineConfigPool.**
-
-## Choosing a Workflow
-
-### Scan Options
-
-| Option | Script | Schedule | Profiles |
-|--------|--------|----------|----------|
-| One-time scan | `create-scan.sh` | Runs once immediately | CIS (default) or `--recommended` for all 4 |
-| Periodic scan | `apply-periodic-scan.sh` | Daily (cron `0 1 * * *`) | E8, CIS, Moderate, PCI-DSS |
-
-### Post-Scan Workflow
-
-After scans complete, follow these steps:
-
-1. **Collect remediations** (always first): `./core/collect-complianceremediations.sh`
-2. **Process MachineConfigs** — choose one approach:
-   - **Modular** (recommended): `./modular/create-modular-configs.sh` — uses `.d` directory includes for per-rule files. See [model-context/MODULAR_APPROACH.md](model-context/MODULAR_APPROACH.md).
-   - **Combined**: `python3 core/combine-machineconfigs-by-path.py` — merges remediations targeting the same file path into single files.
-3. **Organize by topic**: `./core/organize-machine-configs.sh` — categorizes configs into sysctl, sshd, misc directories.
-4. **Generate report**: `./core/generate-compliance-markdown.sh` — creates a Markdown table of all check results.
-
-## Important Safety Notes
-
-- **MachineConfig changes trigger rolling node reboots.** Nodes in the targeted pool will reboot one at a time, which can take 10-45 minutes per pool depending on cluster size.
-- Use `--dry-run` on `combine-machineconfigs-by-path.py` and `organize-machine-configs.sh` to preview changes before writing files.
-- Always review generated YAML before applying to production clusters.
-- The `-x` flag on `organize-machine-configs.sh` applies configs directly to the connected cluster — do not use unless you intend to modify the cluster immediately.
-
-## Repository Structure
-
-Scripts are organized into subdirectories:
-
-- **`core/`** - Main compliance workflow scripts
-- **`utilities/`** - Cleanup and management utilities
-- **`modular/`** - Modular configuration tools
-- **`lab-tools/`** - Environment-specific utilities
-- **`misc/`** - Miscellaneous helpers
+OpenShift clusters must meet compliance standards like CIS, E8, Moderate, and PCI-DSS. The [Compliance Operator](https://github.com/ComplianceAsCode/compliance-operator) scans clusters for violations and generates remediation objects (usually MachineConfigs) to fix them. This repository automates the full workflow: installing the operator, running scans, collecting remediations, merging overlapping MachineConfigs, organizing them by topic, and generating compliance reports. A [live dashboard](https://sebrandon1.github.io/compliance-scripts/) tracks remediation progress across OCP versions.
 
 ## Quick Start
 
-### Recommended: Single Command (Fully Automated)
+### Fully Automated (Recommended)
 
 ```bash
-# This handles everything automatically - no prompts needed!
-./core/install-compliance-operator.sh
-```
-
-The script will:
-1. ✅ Check for suitable storage
-2. ✅ **Automatically deploy** HostPath CSI if needed (same as CRC uses)
-3. ✅ Install Compliance Operator
-4. ✅ Wait for everything to be ready
-
-**No user interaction required!** Just run and wait.
-
-Then run scans (pick one or both):
-
-**Option A: On-demand scan** — runs once immediately using the built-in `default` ScanSetting:
-```bash
-./core/create-scan.sh                # Single CIS scan (default profile)
-./core/create-scan.sh --recommended  # Scan all 4 recommended profiles (CIS, Moderate, PCI-DSS)
-```
-
-**Option B: Periodic scans** — creates a daily scheduled scan (cron: `0 1 * * *`) with custom storage and tolerations, covering E8, CIS, Moderate, and PCI-DSS profiles:
-```bash
-./core/apply-periodic-scan.sh
-```
-
-### Alternative: Manual Two-Step
-
-If you prefer to deploy storage manually first:
-
-```bash
-./utilities/deploy-hostpath-csi.sh        # Deploy storage (same as CRC)
-./core/install-compliance-operator.sh     # Install operator
-./core/create-scan.sh                     # Run scans
-```
-
----
-
-## Scripts Overview
-
-### Core Workflow Scripts (`core/`)
-
-These scripts form the main compliance workflow:
-
-#### 1. install-compliance-operator.sh
-Installs the Compliance Operator in the `openshift-compliance` namespace. Waits for the operator to be fully installed and ready.
-
-**Fully automated:** The script automatically checks for suitable storage and deploys the HostPath CSI driver if needed - no prompts required!
-
-- [Compliance Operator Install Docs](https://github.com/ComplianceAsCode/compliance-operator#installation)
-  - By default this script resolves and uses the latest release tag from the Compliance Operator [releases page](https://github.com/ComplianceAsCode/compliance-operator/releases). If the GitHub API cannot be reached or is rate-limited, it falls back to `master`.
-
-**Usage:**
-```bash
-./core/install-compliance-operator.sh
-```
-
-**Automatic storage detection:**
-If no suitable storage is detected, the script will automatically:
-- Deploy KubeVirt HostPath CSI driver (same as CRC uses)
-- Set it as the default StorageClass
-- Continue with operator installation
-- No user interaction needed!
-
-**Version pinning and overrides:**
-
-- `--co-ref <ref>`: Force a specific tag/branch for the Compliance Operator manifests (e.g., `v1.7.0`, `v1.8.2`).
-- `COMPLIANCE_OPERATOR_REF` env var: Same as `--co-ref`.
-- Default when not provided: latest published release tag from GitHub [releases](https://github.com/ComplianceAsCode/compliance-operator/releases).
-- The install script automatically falls back to `quay.io/bapalm` mirror images if the upstream `ghcr.io` tag is unavailable.
-
-Examples:
-```bash
-# Use the latest release (default behavior)
+# Install the operator (auto-deploys storage if needed)
 ./core/install-compliance-operator.sh
 
-# Pin to a specific release tag
-./core/install-compliance-operator.sh --co-ref v1.7.0
-./core/install-compliance-operator.sh --co-ref v1.8.2
+# Scan all 4 profiles
+./core/create-scan.sh --recommended
 
-# Or via environment variable
-CO_REF=v1.8.2 make install-compliance-operator
-```
-
-Readiness behavior:
-- After subscribing and installing, the script waits for the operator's non-completed pods in `openshift-compliance` to reach Ready (up to 5 minutes). If not all pods become Ready within the timeout, it prints current pod statuses and continues.
-
----
-
-#### 2. apply-periodic-scan.sh
-Applies a periodic ScanSetting and ScanSettingBinding for the `rhcos4-e8` and `ocp4-e8` profiles.
-
-**Usage:**
-```bash
-./core/apply-periodic-scan.sh
-```
-
----
-
-#### 3. create-scan.sh
-Creates a basic ScanSettingBinding for the `ocp4-cis` profile.
-
-**Usage:**
-```bash
-./core/create-scan.sh
-```
-
----
-
-#### 4. collect-complianceremediations.sh
-Collects all `complianceremediation` objects from the specified namespace (default: `openshift-compliance`), extracts their YAML, and saves them to the `complianceremediations/` directory. Supports optional severity filtering and a fresh run.
-
-**Usage:**
-```bash
-./core/collect-complianceremediations.sh [-n|--namespace NAMESPACE] [-s|--severity high,medium,low] [-f|--fresh]
-```
-– `-n, --namespace` Namespace for complianceremediation objects (default: openshift-compliance)
-– `-s, --severity` Comma-separated severities to include: high,medium,low
-– `-f, --fresh` Remove existing output directory before collecting
-– `-h, --help` Show help
-
----
-
-#### 5. organize-machine-configs.sh
-Organizes all YAMLs in a source directory (default: `complianceremediations/`) that are `kind: MachineConfig` by topic (e.g., sysctl, sshd) and copies them to the appropriate destination directory. The script now accepts parameters to override the source and destination directories.
-
-**Usage:**
-```bash
-./core/organize-machine-configs.sh -d complianceremediations -m /path/to/machineconfigs -e /path/to/extra-manifests -s high,medium,low [-x]
-```
-- `-d`  Source directory for YAMLs (default: complianceremediations)
-- `-m`  Destination directory for MachineConfigs
-- `-e`  Destination directory for extra manifests
-- `-s`  Comma-separated severities to include (alias: `-S`)
-- `-x`  Execute automated apply + health/perf tests for created files
-- `-h`  Show help message
-
-If not specified, the script uses the default directory values set at the top of the script.
-
----
-
-#### 6. generate-compliance-markdown.sh
-Generates a Markdown report mapping ComplianceCheckResult objects to their corresponding remediation files, including severity and result, sorted by result type.
-
-**Usage:**
-```bash
+# Collect and process results
+./core/collect-complianceremediations.sh
+python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations
+./core/organize-machine-configs.sh
 ./core/generate-compliance-markdown.sh
 ```
 
----
-
-#### 7. combine-machineconfigs-by-path.py
-Scans all YAML files in a source directory for `kind: MachineConfig` and combines any that target the same file path.
-
-**Usage:**
-```bash
-python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations [--severity high,medium,low] [--header none|provenance|full]
-```
-
----
-
-### Utility Scripts (`utilities/`)
-
-These scripts help manage and clean up compliance resources:
-
-#### 1. deploy-hostpath-csi.sh
-Deploys the **KubeVirt HostPath CSI driver** - the same storage provisioner used by CRC.
-
-**Usage:**
-```bash
-./utilities/deploy-hostpath-csi.sh
-```
-
----
-
-#### 2. delete-compliance-operator.sh
-Deletes the Compliance Operator, its resources, and the `openshift-compliance` namespace.
-
-**Usage:**
-```bash
-./utilities/delete-compliance-operator.sh
-```
-
----
-
-#### 3. delete-scans.sh
-Removes the periodic `ScanSetting`/`ScanSettingBinding` and associated PVCs.
-
-**Usage:**
-```bash
-./utilities/delete-scans.sh [--namespace NAMESPACE] [--include-cis]
-```
-
----
-
-#### 4. delete-compliancescans.sh
-Deletes `ComplianceScan` objects, optionally filtering by substring.
-
-**Usage:**
-```bash
-./utilities/delete-compliancescans.sh [-n|--namespace NAMESPACE] [--filter SUBSTRING] [--delete-suite] [--delete-ssb]
-```
-
----
-
-#### 5. restart-scans.sh
-Requests re-scan of one or more `ComplianceScan` resources via annotation.
-
-**Usage:**
-```bash
-./utilities/restart-scans.sh [--namespace NAMESPACE] [--watch] (--all | --scan NAME [--scan NAME ...] | NAME [NAME ...])
-```
-
----
-
-#### 6. monitor-inprogress-scans.sh
-Convenience dashboard to view scans, suites, pods, PVCs, and events.
-
-**Usage:**
-```bash
-./utilities/monitor-inprogress-scans.sh [-n|--namespace NAMESPACE] [--watch] [--interval SECONDS] [--filter SUBSTRING]
-```
-
----
-
-#### 7. delete-hostpath-csi.sh
-Cleans up all resources created by deploy-hostpath-csi.sh.
-
-**Usage:**
-```bash
-./utilities/delete-hostpath-csi.sh
-```
-
----
-
-#### 8. force-delete-namespace.sh
-Force deletes a namespace and all its resources (use with caution).
-
-**Usage:**
-```bash
-./utilities/force-delete-namespace.sh <namespace>
-```
-
----
-
-### Modular Configuration Tools (`modular/`)
-
-#### 1. split-machineconfigs-modular.py
-Creates modular MachineConfig files using `.d` directory includes.
-
-**Usage:**
-```bash
-python3 modular/split-machineconfigs-modular.py --src-dir complianceremediations --out-dir complianceremediations/modular [-s high,medium,low]
-```
-
----
-
-#### 2. create-modular-configs.sh
-User-friendly wrapper script for `split-machineconfigs-modular.py`.
-
-**Usage:**
-```bash
-./modular/create-modular-configs.sh [-s severity] [-i input-dir] [-o output-dir]
-```
-
----
-
-### Miscellaneous Utilities (`misc/`)
-
-#### 1. generate-network-policies.sh
-Generates a default-deny `NetworkPolicy` for selected namespaces. By default, previews YAMLs to `./generated-networkpolicies`. Can apply directly with `--apply`.
-
-**Usage:**
-```bash
-./misc/generate-network-policies.sh [--apply] [--out-dir DIR] [--exclude-regex REGEX] [--namespaces ns1,ns2]
-```
-- `--apply` Apply to cluster (default: preview only)
-- `--out-dir` Output directory when previewing (default: generated-networkpolicies)
-- `--exclude-regex` Regex of namespaces to skip (default excludes system namespaces)
-- `--namespaces` Comma-separated explicit namespaces to target
-- `-h, --help` Show help
-
----
-
-#### 2. deploy-loopback-ds.sh
-Deploys a privileged DaemonSet on every node that creates and attaches a file-backed loop device (default: `/dev/loop0`) and can optionally patch LVMS `LVMCluster` to reference it. Useful for lab clusters without spare disks.
-
-**Usage:**
-```bash
-./misc/deploy-loopback-ds.sh [--namespace NS] [--device /dev/loopX] [--size-gib N] [--skip-patch] [--no-auto-detect] [--wait-timeout 300s]
-```
-- `--namespace` Target namespace for resources (default: `openshift-storage`)
-- `--device` Loop device path to target (default: `/dev/loop0`)
-- `--size-gib` Backing file size in GiB (default: `10`)
-- `--skip-patch` Do not patch LVMS `LVMCluster` after deploy
-- `--no-auto-detect` Skip post-rollout device auto-detection
-- `--wait-timeout` DaemonSet rollout wait timeout (default: `300s`)
-
----
-
-#### 3. replace-pull-secret-credentials.sh
-Backs up and updates the cluster-wide pull secret in `openshift-config/secret/pull-secret`.
-
-**Usage:**
-```bash
-./misc/replace-pull-secret-credentials.sh --pull-secret /path/to/pull-secret.json [--kubeconfig /path/to/kubeconfig] [--mode merge|replace]
-```
-
----
-
-#### 4. apply-remediations-by-severity.sh
-Applies combined remediation YAMLs for a single severity.
-
-**Usage:**
-```bash
-./misc/apply-remediations-by-severity.sh <severity>
-```
-
----
-
-#### 5. create-source-comments.py
-Scans all YAML files for `kind: MachineConfig` and decodes base64 `source: data:,...` lines, inserting human-readable comments.
-
-**Usage:**
-```bash
-python3 misc/create-source-comments.py
-```
-
----
-
-### Lab-Specific Tools (`lab-tools/`)
-
-#### 1. reprovision-cluster.py
-Reprovisions BeakerLab clusters with a specific OCP version.
-
-**Usage:**
-```bash
-python3 lab-tools/reprovision-cluster.py <OCP_VERSION> --email <EMAIL> --kerberos-id <ID> --env <ENV>
-```
-
----
-
-#### 2. fetch-kubeconfig.py
-Fetches a kubeconfig from remote BeakerLab clusters.
-
-**Usage:**
-```bash
-python3 lab-tools/fetch-kubeconfig.py --env cnfdc3 [--wait]
-```
-
----
-
-#### 3. compare-clusters.sh
-Compares two OpenShift clusters to identify permission differences.
-
-**Usage:**
-```bash
-./lab-tools/compare-clusters.sh <crc-kubeconfig> <remote-kubeconfig>
-```
-
----
-
-## Documentation
-
-### model-context/
-The `model-context/` directory contains comprehensive documentation about the modular MachineConfig implementation:
-
-- **MODULAR_APPROACH.md** - User-facing guide explaining the modular approach, benefits, and usage
-- **IMPLEMENTATION_SUMMARY.md** - Technical implementation details and design decisions
-- **COMPARISON.md** - Comparison with [PR #439](https://github.com/openshift-kni/telco-reference/pull/439) from telco-reference
-- **README.md** - Index and guide for the documentation
-
-This documentation is designed to provide context for AI models, onboarding new developers, and preserving design decisions.
-
----
-
-## Python Virtual Environment
-
-It is recommended to use a Python virtual environment when running the Python scripts. To set up a venv and install dependencies:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip3 install pyyaml
-```
-
----
-
-## Directory Structure
-- `complianceremediations/` — Collected remediation YAMLs (auto-generated, ignored by git)
-- `generated-networkpolicies/` — Generated NetworkPolicy YAMLs (preview mode, ignored by git)
-- `created_file_paths.txt` — List of generated file paths (ignored by git)
-- `testing-plan.md` — Testing plan generated by organize script
-- `ComplianceCheckResults.md` — Markdown report of compliance check results (auto-generated, ignored by git)
-
----
-
-## Requirements
-- `oc` (OpenShift CLI)
-- `yq` (YAML processor)
-- `python3` (with standard library; no extra packages required)
-
----
-
-## Troubleshooting
-
-For detailed troubleshooting guidance, see the [CLAUDE.md](CLAUDE.md#troubleshooting) file, which covers:
-
-- CI failures in the `test-compliance` workflow (marketplace race conditions, CRC startup)
-- ProfileBundle not reaching VALID status (image pull errors, ARM64 support, storage issues)
-- How to download and analyze full GitHub Actions CI logs
-
-## Notes
-- Most scripts default to the `openshift-compliance` namespace but allow overriding via arguments.
-- Always review generated YAML and Markdown files before applying or merging into production.
-
-## Automation with Makefile
-
-A `Makefile` is provided to automate the full compliance workflow or run individual steps. This is the recommended way to run the process end-to-end.
-
-### Full Workflow
-
-To run the entire compliance process from install to report generation:
+Or run everything in one command:
 
 ```bash
 make full-workflow
 ```
 
-Recommended order of operations:
-- core/install-compliance-operator.sh
-- core/apply-periodic-scan.sh
-- core/create-scan.sh
-- core/collect-complianceremediations.sh
-- **Option A (Modular - Recommended):**
-  - modular/create-modular-configs.sh         ← creates modular .d directory files
-  - core/organize-machine-configs.sh          ← organizes the modular outputs
-- **Option B (Combo):**
-  - core/combine-machineconfigs-by-path.py    ← combines overlapping MachineConfigs
-  - core/organize-machine-configs.sh          ← organizes the combined outputs
-- core/generate-compliance-markdown.sh
+Run `make help` to see all available targets. See [Individual Make Targets](#individual-make-targets) for the full list.
 
-The `make full-workflow` target runs these steps in order, using the combo approach (Option B) by default.
+### Scan Options
 
-### Individual Steps
+| Option | Command | Schedule | Profiles |
+|--------|---------|----------|----------|
+| On-demand scan | `./core/create-scan.sh` | Runs once | CIS (default) |
+| On-demand, all profiles | `./core/create-scan.sh --recommended` | Runs once | CIS, Moderate, PCI-DSS |
+| Periodic scan | `./core/apply-periodic-scan.sh` | Daily (`0 1 * * *`) | E8, CIS, Moderate, PCI-DSS |
 
-You can also run each step individually:
+### Post-Scan Processing
+
+After scans complete, choose one approach for processing MachineConfigs:
+
+- **Combined** (default, used by `make full-workflow`): `python3 core/combine-machineconfigs-by-path.py` merges remediations targeting the same file path into single files.
+- **Modular**: `./modular/create-modular-configs.sh` uses `.d` directory includes for per-rule files. See [MODULAR_APPROACH.md](model-context/MODULAR_APPROACH.md).
+
+Then organize and report:
 
 ```bash
-make install-compliance-operator
-make apply-periodic-scan
-make create-scan
-make collect-complianceremediations
-make combine-machineconfigs
-make organize-machine-configs
-make generate-compliance-markdown
-make clean  # Remove generated files
+./core/organize-machine-configs.sh          # Categorize by topic (sysctl, sshd, etc.)
+./core/generate-compliance-markdown.sh      # Create Markdown report of all results
 ```
 
-See the Makefile for all available targets and details.
+## Safety Notes
+
+- **MachineConfig changes trigger rolling node reboots.** Nodes reboot one at a time, which can take 10-45 minutes per pool.
+- Use `--dry-run` on `combine-machineconfigs-by-path.py` and `organize-machine-configs.sh` to preview changes before writing files.
+- Always review generated YAML before applying to production clusters.
+- The `-x` flag on `organize-machine-configs.sh` applies configs directly to the connected cluster.
+
+## Requirements
+
+| Tool | Needed for | Install |
+|------|-----------|---------|
+| `oc` | All cluster operations | [OpenShift CLI docs](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html) |
+| `yq` | YAML processing in scripts | `brew install yq` / `go install github.com/mikefarah/yq/v4@latest` |
+| `python3` | Combining MachineConfigs, lab tools | Included with most systems |
+| `pyyaml` | Python scripts | `pip3 install pyyaml` |
+| `requests`, `beautifulsoup4`, `playwright` | Lab tools (`lab-tools/`) | `pip3 install -r requirements.txt` |
+| `shellcheck`, `shfmt` | Linting (`make lint`) | `brew install shellcheck shfmt` |
+| `flake8` | Python linting | `pip3 install flake8` |
+| `jekyll` | Local dashboard dev (`make serve-docs`) | `make install-jekyll` |
+
+Python virtual environment setup:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+## Repository Structure
+
+```
+core/               Main compliance workflow scripts
+utilities/          Cleanup and management utilities
+modular/            Modular MachineConfig tools using .d directory includes
+lab-tools/          BeakerLab-specific utilities (provisioning, kubeconfig)
+misc/               Helpers (network policies, pull secrets, loopback devices)
+scripts/            Preflight checks and validation scripts
+lib/                Shared library functions (common.sh)
+docs/               Jekyll-based compliance dashboard (GitHub Pages)
+curated-configs/    Curated configuration files
+model-context/      Documentation for modular MachineConfig design
+```
+
+Generated output (git-ignored):
+- `complianceremediations/` -- Collected remediation YAMLs
+- `generated-networkpolicies/` -- NetworkPolicy YAMLs from preview mode
+- `ComplianceCheckResults.md` -- Compliance report
+- `created_file_paths.txt` -- List of generated file paths
+
+## Compliance Operator Concepts
+
+The Compliance Operator uses several custom resources to manage scanning:
+
+- **ProfileBundle** -- A bundle of compliance profiles shipped with the operator. Must reach `VALID` status before scans can run.
+- **Profile** -- A specific compliance standard (e.g., CIS, E8, Moderate, PCI-DSS) within a ProfileBundle.
+- **ScanSetting** -- Defines how to scan: schedule, storage size, tolerations, and roles.
+- **ScanSettingBinding** -- Binds Profiles to a ScanSetting, creating the actual scan.
+- **ComplianceSuite / ComplianceScan** -- The running scan. Status progresses: `LAUNCHING` -> `RUNNING` -> `DONE`.
+- **ComplianceCheckResult** -- Individual pass/fail/manual result for each rule.
+- **ComplianceRemediation** -- A remediation object (usually a MachineConfig) that can fix a failing check.
+- **MachineConfig** -- An OpenShift resource that configures node-level settings. Applying one triggers a rolling reboot of all nodes in the targeted MachineConfigPool.
+
+## Scripts Reference
+
+### Core Workflow (`core/`)
+
+**install-compliance-operator.sh** -- Installs the Compliance Operator in `openshift-compliance`. Automatically detects whether storage is available and deploys the HostPath CSI driver if needed.
+
+```bash
+./core/install-compliance-operator.sh
+./core/install-compliance-operator.sh --co-ref v1.7.0    # Pin to a specific version
+CO_REF=v1.8.2 make install-compliance-operator            # Via environment variable
+```
+
+After installing, the script waits up to 5 minutes for pods to reach Ready and for ProfileBundles to become `VALID`.
+
+**apply-periodic-scan.sh** -- Applies a daily scheduled scan (cron `0 1 * * *`) with custom storage and tolerations, covering E8, CIS, Moderate, and PCI-DSS profiles.
+
+```bash
+./core/apply-periodic-scan.sh
+```
+
+**create-scan.sh** -- Creates an on-demand scan using the built-in `default` ScanSetting.
+
+```bash
+./core/create-scan.sh                # Single CIS scan
+./core/create-scan.sh --recommended  # All recommended profiles (CIS, Moderate, PCI-DSS)
+```
+
+**collect-complianceremediations.sh** -- Extracts all remediation YAMLs from the cluster and saves them to `complianceremediations/`.
+
+```bash
+./core/collect-complianceremediations.sh
+./core/collect-complianceremediations.sh -s high,medium    # Filter by severity
+./core/collect-complianceremediations.sh -f                # Fresh run (remove existing output first)
+./core/collect-complianceremediations.sh -n my-namespace   # Custom namespace
+```
+
+**combine-machineconfigs-by-path.py** -- Merges MachineConfigs that target the same file path into combined files.
+
+```bash
+python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations
+python3 core/combine-machineconfigs-by-path.py --severity high,medium --header provenance --dry-run
+```
+
+**organize-machine-configs.sh** -- Categorizes MachineConfig YAMLs by topic (sysctl, sshd, audit, etc.).
+
+```bash
+./core/organize-machine-configs.sh
+./core/organize-machine-configs.sh -d complianceremediations -m /path/to/machineconfigs -s high,medium
+./core/organize-machine-configs.sh -x    # Apply configs directly to cluster (use with caution)
+```
+
+**generate-compliance-markdown.sh** -- Creates a Markdown table mapping ComplianceCheckResults to remediations, sorted by result type.
+
+```bash
+./core/generate-compliance-markdown.sh
+```
+
+### Utilities (`utilities/`)
+
+**deploy-hostpath-csi.sh** / **delete-hostpath-csi.sh** -- Deploy or remove the KubeVirt HostPath CSI driver (same storage provisioner used by CRC).
+
+```bash
+./utilities/deploy-hostpath-csi.sh
+./utilities/delete-hostpath-csi.sh
+```
+
+**delete-compliance-operator.sh** -- Removes the operator, its resources, and the `openshift-compliance` namespace.
+
+```bash
+./utilities/delete-compliance-operator.sh
+```
+
+**delete-scans.sh** -- Removes periodic ScanSetting/ScanSettingBinding and associated PVCs.
+
+```bash
+./utilities/delete-scans.sh [--namespace NAMESPACE] [--include-cis]
+```
+
+**delete-compliancescans.sh** -- Deletes ComplianceScan objects, optionally filtering by substring.
+
+```bash
+./utilities/delete-compliancescans.sh [--filter SUBSTRING] [--delete-suite] [--delete-ssb]
+```
+
+**restart-scans.sh** -- Requests re-scan of ComplianceScan resources via annotation.
+
+```bash
+./utilities/restart-scans.sh --all
+./utilities/restart-scans.sh --scan ocp4-cis --watch
+```
+
+**monitor-inprogress-scans.sh** -- Dashboard to view scans, suites, pods, PVCs, and events.
+
+```bash
+./utilities/monitor-inprogress-scans.sh --watch --interval 10
+```
+
+**force-delete-namespace.sh** -- Force-deletes a stuck namespace and all its resources.
+
+```bash
+./utilities/force-delete-namespace.sh <namespace>
+```
+
+### Modular Configuration (`modular/`)
+
+**create-modular-configs.sh** -- Creates modular MachineConfig files using `.d` directory includes, allowing per-rule file management.
+
+```bash
+./modular/create-modular-configs.sh [-s severity] [-i input-dir] [-o output-dir]
+```
+
+**split-machineconfigs-modular.py** -- The Python engine behind `create-modular-configs.sh`.
+
+```bash
+python3 modular/split-machineconfigs-modular.py --src-dir complianceremediations --out-dir complianceremediations/modular
+```
+
+### Miscellaneous (`misc/`)
+
+**generate-network-policies.sh** -- Generates default-deny NetworkPolicies for selected namespaces.
+
+```bash
+./misc/generate-network-policies.sh                       # Preview only
+./misc/generate-network-policies.sh --apply               # Apply to cluster
+./misc/generate-network-policies.sh --namespaces ns1,ns2  # Specific namespaces
+```
+
+**deploy-loopback-ds.sh** -- Deploys a DaemonSet that creates file-backed loop devices on every node. Useful for lab clusters without spare disks.
+
+```bash
+./misc/deploy-loopback-ds.sh [--device /dev/loopX] [--size-gib N] [--skip-patch]
+```
+
+**replace-pull-secret-credentials.sh** -- Updates the cluster-wide pull secret.
+
+```bash
+./misc/replace-pull-secret-credentials.sh --pull-secret /path/to/pull-secret.json [--mode merge|replace]
+```
+
+**apply-remediations-by-severity.sh** -- Applies combined remediation YAMLs for a single severity level.
+
+```bash
+./misc/apply-remediations-by-severity.sh <severity>
+```
+
+**create-source-comments.py** -- Decodes base64 `source:` fields in MachineConfig YAMLs and inserts human-readable comments.
+
+```bash
+python3 misc/create-source-comments.py
+```
+
+### Lab Tools (`lab-tools/`)
+
+**reprovision-cluster.py** -- Reprovisions BeakerLab clusters with a specific OCP version.
+
+```bash
+python3 lab-tools/reprovision-cluster.py <OCP_VERSION> --email <EMAIL> --kerberos-id <ID> --env <ENV>
+```
+
+**fetch-kubeconfig.py** -- Fetches kubeconfig from remote BeakerLab clusters.
+
+```bash
+python3 lab-tools/fetch-kubeconfig.py --env cnfdc3 [--wait]
+```
+
+**compare-clusters.sh** -- Compares two OpenShift clusters to identify permission differences.
+
+```bash
+./lab-tools/compare-clusters.sh <crc-kubeconfig> <remote-kubeconfig>
+```
+
+## Individual Make Targets
+
+```bash
+# Workflow
+make full-workflow                    # Run the entire compliance pipeline
+make preflight                        # Check all dependencies
+
+# Installation and scanning
+make install-compliance-operator      # Install the operator
+make apply-periodic-scan              # Set up daily scans
+make create-scan                      # Run an on-demand scan
+
+# Collection and processing
+make collect-complianceremediations   # Extract remediations from cluster
+make combine-machineconfigs           # Merge overlapping MachineConfigs
+make organize-machine-configs         # Categorize by topic
+make generate-compliance-markdown     # Generate report
+
+# Validation
+make validate-machineconfigs          # Validate MachineConfig YAML files
+make filter-machineconfigs            # Filter specific flags (requires INPUT, OUTPUT, FLAGS)
+make verify-images                    # Verify container images are accessible
+make test-compliance                  # Run full CI validation on local cluster
+
+# Dashboard
+make export-compliance OCP_VERSION=4.22   # Export scan data to JSON
+make update-dashboard OCP_VERSION=4.22    # Export and push to trigger rebuild
+make serve-docs                           # Serve dashboard locally
+make install-jekyll                       # Install Jekyll dependencies
+
+# Linting
+make lint                             # Run all linters (Python + Bash)
+make python-lint                      # Python only (flake8)
+make bash-lint                        # Bash only (shellcheck + shfmt)
+
+# Cleanup
+make clean                            # Remove generated files
+make clean-complianceremediations     # Reset complianceremediations directory
+```
+
+## Operator Versioning
+
+There are two distribution channels with different version numbers:
+
+- **Upstream/community** at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator), used by the install script's `--co-ref` flag. Supported versions: v1.7.0 and v1.8.2.
+- **Red Hat certified**, installed automatically when `redhat-operators` is present in `openshift-marketplace`. Uses its own versioning and is not publicly tagged on GitHub.
+
+The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
+
+Upstream images from `ghcr.io/complianceascode` are mirrored to `quay.io/bapalm` for reliability. The install script automatically falls back to the mirror if the upstream tag is unavailable. To manually mirror: `make mirror-images CO_REF=v1.8.2`.
+
+## Troubleshooting
+
+### "Some pods in 'openshift-marketplace' are not Ready"
+
+This can occur due to race conditions with the marketplace operator's catalog reconciliation. The marketplace operator continuously refreshes catalog source pods, and a new pod might appear right after the readiness check passes. The script ignores pods created less than 30 seconds ago to avoid this.
+
+If you see this error, check whether the failing pods are very young (a few seconds old) -- that indicates the race condition, not an actual problem.
+
+### CRC Cluster Startup Issues
+
+When running in GitHub Actions with CRC (CodeReady Containers):
+- Ensure the `CRC_PULL_SECRET` secret is configured
+- CRC requires significant memory (10GB+ configured for CI)
+- The cluster may take 15-20 minutes to fully start
+- API server "connection refused" errors during startup are normal
+
+### ProfileBundle Not Reaching VALID Status
+
+The install script waits up to 5 minutes for ProfileBundles to become `VALID`. If they remain in `PENDING`:
+1. Check if profile parser pods have ImagePullBackOff errors
+2. Verify the operator version supports your cluster architecture (ARM64 only supported in v1.7.0+)
+3. Check for storage issues -- the operator needs a working StorageClass
+
+### Downloading Full CI Logs
+
+GitHub Actions truncates log output in the UI. To get complete logs:
+
+```bash
+gh run view <run-id> --repo sebrandon1/compliance-scripts
+gh api repos/sebrandon1/compliance-scripts/actions/runs/<run-id>/logs > logs.zip
+unzip logs.zip -d gha-logs
+grep -i "error\|fail" gha-logs/*.txt
+```
+
+## Contributing
+
+1. Fork the repo and create a feature branch
+2. Run `make lint` before submitting -- CI enforces both Python (flake8) and Bash (shellcheck + shfmt) linting
+3. If your change affects the compliance workflow, test with `make test-compliance` against a connected cluster
+4. Submit a pull request
+
+## Related Projects
+
+- [Compliance Operator](https://github.com/ComplianceAsCode/compliance-operator) -- The upstream operator
+- [Compliance Operator Workshop](https://github.com/ComplianceAsCode/compliance-operator/tree/master/doc/tutorials/workshop/content/exercises) -- Hands-on tutorials
+- [Compliance Operator Dashboard](https://github.com/sebrandon1/compliance-operator-dashboard) -- Sister repo: Go + React web UI that reimplements these scripts as a single-binary dashboard
