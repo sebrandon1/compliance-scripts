@@ -152,6 +152,11 @@ validate-machineconfigs: ## ✅ Validate MachineConfig YAML files before applyin
 	@./scripts/validate-machineconfig.sh -d output/machineconfigs 2>/dev/null || ./scripts/validate-machineconfig.sh -d complianceremediations
 	@echo ""
 
+detect-conflicts: ## 🔍 Detect file path conflicts between MachineConfig YAMLs
+	@echo "$(BOLD)$(BLUE)🔍 Detecting MachineConfig file path conflicts...$(RESET)"
+	@./scripts/detect-mc-conflicts.sh -t docs/_data/tracking.json
+	@echo ""
+
 filter-machineconfigs: ## 🎯 Filter specific flags from combined MachineConfig (requires INPUT, OUTPUT, and FLAGS or FLAGS_FILE)
 	@echo "$(BOLD)$(BLUE)🎯 Filtering MachineConfig flags...$(RESET)"
 	@if [ -z "$(INPUT)" ] || [ -z "$(OUTPUT)" ]; then \
