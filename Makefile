@@ -279,17 +279,38 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 5/9: Asserting periodic scan resources exist...$(RESET)"
 	@oc -n openshift-compliance get scansetting periodic-setting || (echo "$(RED)❌ ScanSetting periodic-setting not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get scansettingbinding periodic-e8 || (echo "$(RED)❌ ScanSettingBinding periodic-e8 not found!$(RESET)" && exit 1)
+	@if oc -n openshift-compliance get profile ocp4-e8 &>/dev/null; then \
+		oc -n openshift-compliance get scansettingbinding periodic-e8 || (echo "$(RED)❌ ScanSettingBinding periodic-e8 not found!$(RESET)" && exit 1); \
+		echo "$(GREEN)  ✓ periodic-e8 binding exists$(RESET)"; \
+	else \
+		echo "$(YELLOW)  ⚠ E8 profiles not available, periodic-e8 binding skipped$(RESET)"; \
+	fi
 	@echo "$(GREEN)✅ Periodic scan resources exist!$(RESET)"
 	@echo ""
-	@echo "$(BOLD)$(MAGENTA)Step 6/9: Asserting periodic scan Profiles exist...$(RESET)"
-	@oc -n openshift-compliance get profile ocp4-e8 || (echo "$(RED)❌ Profile ocp4-e8 not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get profile rhcos4-e8 || (echo "$(RED)❌ Profile rhcos4-e8 not found!$(RESET)" && exit 1)
-	@echo "$(GREEN)✅ Profiles ocp4-e8 and rhcos4-e8 exist!$(RESET)"
+	@echo "$(BOLD)$(MAGENTA)Step 6/9: Asserting scan Profiles exist...$(RESET)"
+	@if oc -n openshift-compliance get profile ocp4-e8 &>/dev/null; then \
+		echo "$(GREEN)  ✓ ocp4-e8$(RESET)"; \
+	else \
+		echo "$(YELLOW)  ⚠ ocp4-e8 not available (may be removed in this operator version)$(RESET)"; \
+	fi
+	@if oc -n openshift-compliance get profile rhcos4-e8 &>/dev/null; then \
+		echo "$(GREEN)  ✓ rhcos4-e8$(RESET)"; \
+	else \
+		echo "$(YELLOW)  ⚠ rhcos4-e8 not available (may be removed in this operator version)$(RESET)"; \
+	fi
+	@oc -n openshift-compliance get profile ocp4-cis || (echo "$(RED)❌ Profile ocp4-cis not found!$(RESET)" && exit 1)
+	@oc -n openshift-compliance get profile ocp4-moderate || (echo "$(RED)❌ Profile ocp4-moderate not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ Required profiles exist!$(RESET)"
 	@echo ""
-	@echo "$(BOLD)$(MAGENTA)Step 7/9: Asserting ComplianceSuite for periodic scan exists...$(RESET)"
-	@oc -n openshift-compliance get compliancesuite periodic-e8 || (echo "$(RED)❌ ComplianceSuite periodic-e8 not found!$(RESET)" && exit 1)
-	@echo "$(GREEN)✅ ComplianceSuite periodic-e8 exists!$(RESET)"
+	@echo "$(BOLD)$(MAGENTA)Step 7/9: Asserting ComplianceSuites for periodic scans exist...$(RESET)"
+	@if oc -n openshift-compliance get profile ocp4-e8 &>/dev/null; then \
+		oc -n openshift-compliance get compliancesuite periodic-e8 || (echo "$(RED)❌ ComplianceSuite periodic-e8 not found!$(RESET)" && exit 1); \
+		echo "$(GREEN)  ✓ ComplianceSuite periodic-e8 exists$(RESET)"; \
+	else \
+		echo "$(YELLOW)  ⚠ ComplianceSuite periodic-e8 skipped (E8 profiles not available)$(RESET)"; \
+	fi
+	@oc -n openshift-compliance get compliancesuite cis-scan || (echo "$(RED)❌ ComplianceSuite cis-scan not found!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ ComplianceSuites exist!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 8/9: Creating compliance scans (all profiles)...$(RESET)"
 	@./core/create-scan.sh
@@ -297,8 +318,15 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 9/9: Asserting on-demand scan resources exist...$(RESET)"
 	@oc -n openshift-compliance get scansetting default || (echo "$(RED)❌ ScanSetting default not found!$(RESET)" && exit 1)
-	@for profile in ocp4-e8 rhcos4-e8 ocp4-cis ocp4-moderate ocp4-pci-dss rhcos4-moderate; do \
+	@for profile in ocp4-cis ocp4-moderate ocp4-pci-dss rhcos4-moderate; do \
 		oc -n openshift-compliance get scansettingbinding $${profile}-scan || (echo "$(RED)❌ ScanSettingBinding $${profile}-scan not found!$(RESET)" && exit 1); \
+	done
+	@for profile in ocp4-e8 rhcos4-e8; do \
+		if oc -n openshift-compliance get profile $${profile} &>/dev/null; then \
+			oc -n openshift-compliance get scansettingbinding $${profile}-scan || (echo "$(RED)❌ ScanSettingBinding $${profile}-scan not found!$(RESET)" && exit 1); \
+		else \
+			echo "$(YELLOW)  ⚠ $${profile}-scan skipped (profile not available)$(RESET)"; \
+		fi; \
 	done
 	@echo "$(GREEN)✅ All scan resources exist!$(RESET)"
 	@echo ""
@@ -313,8 +341,8 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo "$(DIM)  ✓ ProfileBundles ocp4 and rhcos4 exist$(RESET)"
 	@echo "$(DIM)  ✓ Periodic scan configuration applied$(RESET)"
 	@echo "$(DIM)  ✓ Periodic scan resources and profiles exist$(RESET)"
-	@echo "$(DIM)  ✓ ComplianceSuite periodic-e8 created$(RESET)"
-	@echo "$(DIM)  ✓ All compliance scans created (E8, CIS, Moderate, PCI-DSS)$(RESET)"
+	@echo "$(DIM)  ✓ ComplianceSuites created for available profiles$(RESET)"
+	@echo "$(DIM)  ✓ All compliance scans created for available profiles$(RESET)"
 	@echo "$(DIM)  ✓ All scan resources and ComplianceSuites exist$(RESET)"
 	@echo ""
 

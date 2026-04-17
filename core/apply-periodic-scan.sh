@@ -253,12 +253,22 @@ settingsRef:
 EOF
 )
 
+# Check profile availability
+E8_AVAILABLE=false
+if profile_exists "ocp4-e8" "$NAMESPACE" && profile_exists "rhcos4-e8" "$NAMESPACE"; then
+	E8_AVAILABLE=true
+else
+	log_warn "E8 profiles not available on this cluster, skipping periodic-e8 binding"
+fi
+
 # Apply or dry-run resources
 if [[ "$DRY_RUN" == "true" ]]; then
 	echo "---"
 	echo "$SCANSETTING_YAML"
-	echo "---"
-	echo "$E8_BINDING_YAML"
+	if [[ "$E8_AVAILABLE" == "true" ]]; then
+		echo "---"
+		echo "$E8_BINDING_YAML"
+	fi
 	echo "---"
 	echo "$CIS_BINDING_YAML"
 	echo "---"
@@ -270,8 +280,10 @@ if [[ "$DRY_RUN" == "true" ]]; then
 	log_info "[DRY-RUN] Validating ScanSetting..."
 	echo "$SCANSETTING_YAML" | oc apply --dry-run=server -f -
 
-	log_info "[DRY-RUN] Validating E8 ScanSettingBinding..."
-	echo "$E8_BINDING_YAML" | oc apply --dry-run=server -f -
+	if [[ "$E8_AVAILABLE" == "true" ]]; then
+		log_info "[DRY-RUN] Validating E8 ScanSettingBinding..."
+		echo "$E8_BINDING_YAML" | oc apply --dry-run=server -f -
+	fi
 
 	log_info "[DRY-RUN] Validating CIS ScanSettingBinding..."
 	echo "$CIS_BINDING_YAML" | oc apply --dry-run=server -f -
@@ -285,14 +297,18 @@ if [[ "$DRY_RUN" == "true" ]]; then
 	log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
 else
 	echo "$SCANSETTING_YAML" | oc apply -f -
-	echo "$E8_BINDING_YAML" | oc apply -f -
+	if [[ "$E8_AVAILABLE" == "true" ]]; then
+		echo "$E8_BINDING_YAML" | oc apply -f -
+	fi
 	echo "$CIS_BINDING_YAML" | oc apply -f -
 	echo "$MODERATE_BINDING_YAML" | oc apply -f -
 	echo "$PCIDSS_BINDING_YAML" | oc apply -f -
 
 	log_success "ScanSetting 'periodic-setting' applied in namespace '$NAMESPACE'."
 	log_info "ScanSettingBindings created:"
-	echo "       - periodic-e8 (rhcos4-e8, ocp4-e8)"
+	if [[ "$E8_AVAILABLE" == "true" ]]; then
+		echo "       - periodic-e8 (rhcos4-e8, ocp4-e8)"
+	fi
 	echo "       - cis-scan (ocp4-cis)"
 	echo "       - periodic-moderate (ocp4-moderate, rhcos4-moderate)"
 	echo "       - periodic-pci-dss (ocp4-pci-dss)"
