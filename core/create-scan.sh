@@ -157,12 +157,34 @@ if [[ -n "$PROFILE" ]]; then
 		echo "  oc get compliancescan -n $NAMESPACE"
 	fi
 else
-	# Default: scan all profiles
-	log_info "Creating scans for all compliance profiles..."
-	log_info "  Namespace: $NAMESPACE"
-	log_info "  Profiles: ${ALL_PROFILES[*]}"
-
+	# Default: scan all available profiles
+	log_info "Filtering profiles by availability on cluster..."
+	CLUSTER_PROFILES=$(oc get profiles.compliance -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || true)
+	AVAILABLE_PROFILES=()
+	SKIPPED_PROFILES=()
 	for profile in "${ALL_PROFILES[@]}"; do
+		if echo "$CLUSTER_PROFILES" | grep -qw "$profile"; then
+			AVAILABLE_PROFILES+=("$profile")
+		else
+			SKIPPED_PROFILES+=("$profile")
+			log_warn "Profile '$profile' not found on cluster, skipping"
+		fi
+	done
+
+	if [[ ${#AVAILABLE_PROFILES[@]} -eq 0 ]]; then
+		log_error "No profiles available on cluster. Available profiles:"
+		oc get profiles.compliance -n "$NAMESPACE" --no-headers 2>/dev/null || true
+		exit 1
+	fi
+
+	log_info "Creating scans for ${#AVAILABLE_PROFILES[@]} available profiles..."
+	log_info "  Namespace: $NAMESPACE"
+	log_info "  Profiles: ${AVAILABLE_PROFILES[*]}"
+	if [[ ${#SKIPPED_PROFILES[@]} -gt 0 ]]; then
+		log_warn "Skipped ${#SKIPPED_PROFILES[@]} unavailable profiles: ${SKIPPED_PROFILES[*]}"
+	fi
+
+	for profile in "${AVAILABLE_PROFILES[@]}"; do
 		scan_name="${profile}-scan"
 		log_info "  Creating scan: $scan_name (profile: $profile)"
 		create_scan_binding "$scan_name" "$profile"
@@ -171,10 +193,10 @@ else
 	if [[ "$DRY_RUN" == "true" ]]; then
 		log_info "[DRY-RUN] Validation passed. Run without --dry-run to apply."
 	else
-		log_success "All compliance scans created in namespace '$NAMESPACE'."
+		log_success "${#AVAILABLE_PROFILES[@]} compliance scans created in namespace '$NAMESPACE'."
 		echo ""
 		log_info "Scans created:"
-		for profile in "${ALL_PROFILES[@]}"; do
+		for profile in "${AVAILABLE_PROFILES[@]}"; do
 			echo "       - ${profile}-scan ($profile)"
 		done
 		echo ""

@@ -249,6 +249,18 @@ print_summary() {
 }
 
 # ============================================================================
+# PROFILE AVAILABILITY
+# ============================================================================
+
+# Check if a compliance profile exists on the cluster
+# Usage: profile_exists "ocp4-e8" [namespace]
+profile_exists() {
+    local profile="$1"
+    local ns="${2:-openshift-compliance}"
+    oc get profile.compliance "$profile" -n "$ns" &>/dev/null
+}
+
+# ============================================================================
 # DRY RUN SUPPORT
 # ============================================================================
 
