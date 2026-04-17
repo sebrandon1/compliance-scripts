@@ -1,0 +1,378 @@
+name: Verify Remediation Group
+
+on:
+  workflow_dispatch:
+    inputs:
+      group_id:
+        description: 'Remediation group ID (e.g., M1, H1, M4)'
+        required: true
+        type: string
+      ocp_version:
+        description: 'OCP version for CRC cluster (default: 4.21)'
+        required: false
+        default: '4.21'
+        type: string
+      co_ref:
+        description: 'Compliance Operator version (default: latest)'
+        required: false
+        default: ''
+        type: string
+
+permissions: read-all
+
+jobs:
+  verify-group:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1'
+    permissions:
+      contents: read
+    steps:
+      - name: Check Red Hat Status
+        uses: palmsoftware/redhat-status@v0
+        with:
+          components: |
+            api.openshift.com
+            developers.redhat.com
+
+      - name: Checkout compliance-scripts
+        uses: actions/checkout@v6
+
+      - name: Validate group ID
+        id: group
+        run: |
+          set -euo pipefail
+          GROUP_ID="${{ github.event.inputs.group_id }}"
+          GROUP_ID=$(echo "$GROUP_ID" | tr '[:lower:]' '[:upper:]')
+          echo "id=$GROUP_ID" >> "$GITHUB_OUTPUT"
+
+          TRACKING="docs/_data/tracking.json"
+          if ! jq -e --arg g "$GROUP_ID" '.groups[$g]' "$TRACKING" >/dev/null 2>&1; then
+            echo "::error::Group '$GROUP_ID' not found in tracking.json"
+            echo "Available groups:"
+            jq -r '.groups | keys[]' "$TRACKING"
+            exit 1
+          fi
+
+          TITLE=$(jq -r --arg g "$GROUP_ID" '.groups[$g].title' "$TRACKING")
+          COMPARE=$(jq -r --arg g "$GROUP_ID" '.groups[$g].compare // empty' "$TRACKING")
+          SEVERITY=$(jq -r --arg g "$GROUP_ID" '.groups[$g].severity' "$TRACKING")
+
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "compare=$COMPARE" >> "$GITHUB_OUTPUT"
+          echo "severity=$SEVERITY" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$COMPARE" ]; then
+            echo "::error::Group '$GROUP_ID' has no compare branch in tracking.json"
+            exit 1
+          fi
+
+          echo "## Group: $GROUP_ID - $TITLE" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Severity: $SEVERITY" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: $COMPARE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify CRC_PULL_SECRET is set
+        env:
+          CRC_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRC_PULL_SECRET}" ]; then
+            echo "CRC_PULL_SECRET secret is required but not set."
+            exit 1
+          fi
+
+      - name: Setup quick-ocp cluster
+        uses: palmsoftware/quick-ocp@v0.0.31
+        with:
+          ocpPullSecret: $OCP_PULL_SECRET
+          desiredOCPVersion: ${{ github.event.inputs.ocp_version }}
+          bundleCache: true
+          waitForOperatorsReady: true
+        env:
+          OCP_PULL_SECRET: ${{ secrets.CRC_PULL_SECRET }}
+
+      - name: Install Compliance Operator
+        run: |
+          set -euo pipefail
+          CO_REF="${{ github.event.inputs.co_ref }}"
+          if [ -n "$CO_REF" ]; then
+            ./core/install-compliance-operator.sh --co-ref "$CO_REF"
+          else
+            ./core/install-compliance-operator.sh
+          fi
+
+      - name: Run baseline scan (before)
+        run: |
+          set -euo pipefail
+          ./core/create-scan.sh --recommended
+
+          echo "Waiting for scans to complete..."
+          for i in $(seq 1 90); do
+            PHASE=$(oc get compliancesuite -n openshift-compliance -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "")
+            if [ "$PHASE" = "DONE" ]; then
+              ALL_DONE=true
+              for suite in $(oc get compliancesuite -n openshift-compliance -o jsonpath='{.items[*].metadata.name}'); do
+                S=$(oc get compliancesuite "$suite" -n openshift-compliance -o jsonpath='{.status.phase}')
+                if [ "$S" != "DONE" ]; then
+                  ALL_DONE=false
+                  break
+                fi
+              done
+              if [ "$ALL_DONE" = "true" ]; then
+                echo "All scans completed."
+                break
+              fi
+            fi
+            echo "Waiting for scans... ($i/90) phase=$PHASE"
+            sleep 20
+          done
+
+          oc get compliancesuite -n openshift-compliance
+          oc get compliancecheckresult -n openshift-compliance --no-headers | wc -l | xargs echo "Total check results:"
+
+      - name: Export baseline results
+        run: |
+          set -euo pipefail
+          OCP_VERSION="${{ github.event.inputs.ocp_version }}"
+          GROUP_ID="${{ steps.group.outputs.id }}"
+
+          mkdir -p artifacts
+
+          oc get compliancecheckresult -n openshift-compliance -o json > "artifacts/before-results.json"
+
+          TOTAL=$(jq '.items | length' artifacts/before-results.json)
+          PASS=$(jq '[.items[] | select(.status == "PASS")] | length' artifacts/before-results.json)
+          FAIL=$(jq '[.items[] | select(.status == "FAIL")] | length' artifacts/before-results.json)
+          MANUAL=$(jq '[.items[] | select(.status == "MANUAL")] | length' artifacts/before-results.json)
+
+          echo "## Baseline Scan Results (Before)" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Total | $TOTAL |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| PASS | $PASS |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| FAIL | $FAIL |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| MANUAL | $MANUAL |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fetch and apply group MachineConfigs
+        run: |
+          set -euo pipefail
+          GROUP_ID="${{ steps.group.outputs.id }}"
+          COMPARE="${{ steps.group.outputs.compare }}"
+
+          echo "Fetching MachineConfigs from telco-reference branch: $COMPARE"
+
+          TELCO_REF_RAW="https://raw.githubusercontent.com/openshift-kni/telco-reference"
+          HARDENING_PATH="telco-ran/configuration/kube-compare-reference/informational/hardening"
+
+          mkdir -p artifacts/machineconfigs
+
+          FILES_URL="${TELCO_REF_RAW}/${COMPARE}/${HARDENING_PATH}"
+          MC_FILES=$(curl -fsSL "https://api.github.com/repos/openshift-kni/telco-reference/contents/${HARDENING_PATH}?ref=${COMPARE}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
+
+          if [ -z "$MC_FILES" ]; then
+            echo "::warning::No MachineConfig files found in branch $COMPARE at $HARDENING_PATH"
+            echo "Trying alternative path..."
+            HARDENING_PATH="telco-ran/configuration/reference-crs/informational/hardening"
+            MC_FILES=$(curl -fsSL "https://api.github.com/repos/openshift-kni/telco-reference/contents/${HARDENING_PATH}?ref=${COMPARE}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
+            FILES_URL="${TELCO_REF_RAW}/${COMPARE}/${HARDENING_PATH}"
+          fi
+
+          if [ -z "$MC_FILES" ]; then
+            echo "::error::No MachineConfig files found in branch $COMPARE"
+            exit 1
+          fi
+
+          APPLIED=0
+          echo "## Applied MachineConfigs" >> "$GITHUB_STEP_SUMMARY"
+          for mc_file in $MC_FILES; do
+            echo "Downloading: $mc_file"
+            curl -fsSL "${FILES_URL}/${mc_file}" -o "artifacts/machineconfigs/${mc_file}"
+
+            KIND=$(yq e '.kind' "artifacts/machineconfigs/${mc_file}" 2>/dev/null || echo "")
+            if [ "$KIND" = "MachineConfig" ] || [ "$KIND" = "APIServer" ] || [ "$KIND" = "OAuth" ]; then
+              echo "Applying: $mc_file ($KIND)"
+              oc apply -f "artifacts/machineconfigs/${mc_file}"
+              echo "- \`${mc_file}\` ($KIND)" >> "$GITHUB_STEP_SUMMARY"
+              APPLIED=$((APPLIED + 1))
+            else
+              echo "Skipping non-applicable file: $mc_file (kind: $KIND)"
+            fi
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Applied $APPLIED file(s) from group $GROUP_ID" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Wait for MCP rollout
+        run: |
+          set -euo pipefail
+          echo "Waiting for MachineConfigPool rollout..."
+
+          oc get mcp -o wide
+
+          for pool in worker master; do
+            if oc get mcp "$pool" &>/dev/null; then
+              echo "Waiting for MCP/$pool to become Updated=True (timeout: 30m)..."
+              if oc wait mcp/"$pool" --for=condition=Updated=True --timeout=30m; then
+                echo "MCP/$pool is Updated"
+              else
+                echo "::warning::MCP/$pool did not reach Updated=True within 30m"
+                oc get mcp "$pool" -o yaml
+              fi
+            fi
+          done
+
+          oc get mcp -o wide
+          oc get nodes -o wide
+
+      - name: Re-scan (after)
+        run: |
+          set -euo pipefail
+          echo "Requesting re-scan of all ComplianceScans..."
+          ./utilities/restart-scans.sh --all
+
+          echo "Waiting for re-scans to complete..."
+          for i in $(seq 1 90); do
+            ALL_DONE=true
+            for suite in $(oc get compliancesuite -n openshift-compliance -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+              PHASE=$(oc get compliancesuite "$suite" -n openshift-compliance -o jsonpath='{.status.phase}' 2>/dev/null || echo "")
+              if [ "$PHASE" != "DONE" ]; then
+                ALL_DONE=false
+                break
+              fi
+            done
+            if [ "$ALL_DONE" = "true" ]; then
+              echo "All re-scans completed."
+              break
+            fi
+            echo "Waiting for re-scans... ($i/90)"
+            sleep 20
+          done
+
+          oc get compliancesuite -n openshift-compliance
+
+      - name: Export post-remediation results
+        run: |
+          set -euo pipefail
+          oc get compliancecheckresult -n openshift-compliance -o json > "artifacts/after-results.json"
+
+          TOTAL=$(jq '.items | length' artifacts/after-results.json)
+          PASS=$(jq '[.items[] | select(.status == "PASS")] | length' artifacts/after-results.json)
+          FAIL=$(jq '[.items[] | select(.status == "FAIL")] | length' artifacts/after-results.json)
+          MANUAL=$(jq '[.items[] | select(.status == "MANUAL")] | length' artifacts/after-results.json)
+
+          echo "## Post-Remediation Scan Results (After)" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Total | $TOTAL |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| PASS | $PASS |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| FAIL | $FAIL |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| MANUAL | $MANUAL |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate diff report
+        run: |
+          set -euo pipefail
+          GROUP_ID="${{ steps.group.outputs.id }}"
+          TITLE="${{ steps.group.outputs.title }}"
+
+          cat > artifacts/generate-diff.py << 'PYSCRIPT'
+          import json, sys
+
+          with open("artifacts/before-results.json") as f:
+              before = {item["metadata"]["name"]: item.get("status", "UNKNOWN") for item in json.load(f)["items"]}
+          with open("artifacts/after-results.json") as f:
+              after = {item["metadata"]["name"]: item.get("status", "UNKNOWN") for item in json.load(f)["items"]}
+
+          flipped_pass = []
+          flipped_fail = []
+          unchanged_fail = []
+
+          for name in sorted(set(before.keys()) | set(after.keys())):
+              b = before.get(name, "MISSING")
+              a = after.get(name, "MISSING")
+              if b != a:
+                  if a == "PASS" and b == "FAIL":
+                      flipped_pass.append((name, b, a))
+                  elif a == "FAIL" and b == "PASS":
+                      flipped_fail.append((name, b, a))
+              elif a == "FAIL":
+                  unchanged_fail.append(name)
+
+          report = {
+              "group": sys.argv[1] if len(sys.argv) > 1 else "",
+              "title": sys.argv[2] if len(sys.argv) > 2 else "",
+              "before_pass": sum(1 for v in before.values() if v == "PASS"),
+              "before_fail": sum(1 for v in before.values() if v == "FAIL"),
+              "after_pass": sum(1 for v in after.values() if v == "PASS"),
+              "after_fail": sum(1 for v in after.values() if v == "FAIL"),
+              "flipped_to_pass": [{"name": n, "before": b, "after": a} for n, b, a in flipped_pass],
+              "flipped_to_fail": [{"name": n, "before": b, "after": a} for n, b, a in flipped_fail],
+              "unchanged_fail_count": len(unchanged_fail),
+          }
+
+          with open("artifacts/diff-report.json", "w") as f:
+              json.dump(report, f, indent=2)
+
+          print(f"\n{'='*60}")
+          print(f"  BEFORE/AFTER REPORT: {report['group']} - {report['title']}")
+          print(f"{'='*60}")
+          print(f"  Before: {report['before_pass']} PASS / {report['before_fail']} FAIL")
+          print(f"  After:  {report['after_pass']} PASS / {report['after_fail']} FAIL")
+          print(f"  Flipped FAIL→PASS: {len(flipped_pass)}")
+          print(f"  Flipped PASS→FAIL: {len(flipped_fail)}")
+          print(f"  Unchanged FAIL:    {len(unchanged_fail)}")
+          print(f"{'='*60}")
+
+          if flipped_pass:
+              print("\n  Checks fixed by remediation (FAIL → PASS):")
+              for n, b, a in flipped_pass:
+                  print(f"    ✅ {n}")
+
+          if flipped_fail:
+              print("\n  ⚠️  Regressions (PASS → FAIL):")
+              for n, b, a in flipped_fail:
+                  print(f"    ❌ {n}")
+
+          print()
+          PYSCRIPT
+
+          python3 artifacts/generate-diff.py "$GROUP_ID" "$TITLE" | tee artifacts/diff-summary.txt
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Before/After Diff" >> "$GITHUB_STEP_SUMMARY"
+
+          FLIPPED=$(jq '.flipped_to_pass | length' artifacts/diff-report.json)
+          REGRESSED=$(jq '.flipped_to_fail | length' artifacts/diff-report.json)
+          BEFORE_PASS=$(jq '.before_pass' artifacts/diff-report.json)
+          AFTER_PASS=$(jq '.after_pass' artifacts/diff-report.json)
+          BEFORE_FAIL=$(jq '.before_fail' artifacts/diff-report.json)
+          AFTER_FAIL=$(jq '.after_fail' artifacts/diff-report.json)
+
+          echo "| | Before | After | Delta |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|--------|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| PASS | $BEFORE_PASS | $AFTER_PASS | +$((AFTER_PASS - BEFORE_PASS)) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| FAIL | $BEFORE_FAIL | $AFTER_FAIL | $((AFTER_FAIL - BEFORE_FAIL)) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Checks flipped FAIL → PASS: **$FLIPPED**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Regressions PASS → FAIL: **$REGRESSED**" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$FLIPPED" -gt 0 ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Checks Fixed" >> "$GITHUB_STEP_SUMMARY"
+            jq -r '.flipped_to_pass[].name' artifacts/diff-report.json | while read -r name; do
+              echo "- \`$name\`" >> "$GITHUB_STEP_SUMMARY"
+            done
+          fi
+
+          if [ "$REGRESSED" -gt 0 ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### ⚠️ Regressions" >> "$GITHUB_STEP_SUMMARY"
+            jq -r '.flipped_to_fail[].name' artifacts/diff-report.json | while read -r name; do
+              echo "- \`$name\`" >> "$GITHUB_STEP_SUMMARY"
+            done
+          fi
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: remediation-verify-${{ steps.group.outputs.id }}-${{ github.event.inputs.ocp_version }}
+          path: artifacts/
