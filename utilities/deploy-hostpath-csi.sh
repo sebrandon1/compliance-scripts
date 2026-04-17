@@ -3,28 +3,31 @@
 # This provides the same storage provisioner as CRC, which handles
 # permissions correctly for restricted-v2 SCC pods.
 
-set -e
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
 
 NAMESPACE="hostpath-provisioner"
 STORAGE_CLASS_NAME="crc-csi-hostpath-provisioner"
 
 # Check if already deployed and offer to reinstall
 if oc get namespace "$NAMESPACE" &>/dev/null; then
-	echo "[INFO] HostPath CSI Driver is already deployed"
-	echo "[INFO] Reinstalling by deleting existing deployment first..."
+	log_info "HostPath CSI Driver is already deployed"
+	log_info "Reinstalling by deleting existing deployment first..."
 
-	# Get the directory where this script is located
-	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-	DELETE_SCRIPT="${SCRIPT_DIR}/delete-hostpath-csi.sh"
+	UTIL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	DELETE_SCRIPT="${UTIL_DIR}/delete-hostpath-csi.sh"
 
 	if [ -f "$DELETE_SCRIPT" ]; then
-		echo "[INFO] Running delete script..."
+		log_info "Running delete script..."
 		bash "$DELETE_SCRIPT"
-		echo "[INFO] Waiting 5 seconds before redeploying..."
+		log_info "Waiting 5 seconds before redeploying..."
 		sleep 5
 	else
-		echo "[WARN] delete-hostpath-csi.sh not found at $DELETE_SCRIPT"
-		echo "[INFO] Manually cleaning up existing resources..."
+		log_warn "delete-hostpath-csi.sh not found at $DELETE_SCRIPT"
+		log_info "Manually cleaning up existing resources..."
 
 		# Manual cleanup
 		oc delete storageclass "$STORAGE_CLASS_NAME" --ignore-not-found=true
@@ -34,7 +37,7 @@ if oc get namespace "$NAMESPACE" &>/dev/null; then
 		oc delete clusterrolebinding hostpath-csi-provisioner-role --ignore-not-found=true
 		oc delete clusterrole hostpath-external-provisioner-runner --ignore-not-found=true
 		oc delete namespace "$NAMESPACE" --ignore-not-found=true --timeout=60s || true
-		echo "[INFO] Waiting 5 seconds before redeploying..."
+		log_info "Waiting 5 seconds before redeploying..."
 		sleep 5
 	fi
 fi
@@ -42,7 +45,7 @@ fi
 # Function to check if an image exists in registry
 check_image_exists() {
 	local image=$1
-	echo "[DEBUG] Checking if image exists: $image"
+	log_debug "Checking if image exists: $image"
 
 	# Try to get image manifest without pulling the full image
 	if podman manifest inspect "$image" &>/dev/null; then
@@ -55,16 +58,16 @@ check_image_exists() {
 }
 
 # Detect OpenShift cluster version for image tags
-echo "[INFO] Detecting OpenShift cluster version..."
+log_info "Detecting OpenShift cluster version..."
 CLUSTER_VERSION=$(oc get clusterversion version -o jsonpath='{.status.desired.version}' 2>/dev/null | cut -d'.' -f1-2 || echo "")
 
 if [[ -z "$CLUSTER_VERSION" ]]; then
-	echo "[WARN] Could not detect cluster version, defaulting to search from v4.19"
+	log_warn "Could not detect cluster version, defaulting to search from v4.19"
 	CLUSTER_VERSION="4.19"
 fi
 
 # Extract major.minor (e.g., "4.17.1" -> "4.17")
-echo "[INFO] Detected cluster version: ${CLUSTER_VERSION}"
+log_info "Detected cluster version: ${CLUSTER_VERSION}"
 
 # Parse version components
 MAJOR=$(echo "$CLUSTER_VERSION" | cut -d'.' -f1)
@@ -79,62 +82,62 @@ PROVISIONER_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-external-provision
 # Try to find the most recent compatible image version where ALL images exist
 IMAGE_TAG=""
 
-echo "[INFO] Searching for compatible image version (checking all required images)..."
+log_info "Searching for compatible image version (checking all required images)..."
 for ((i = MINOR; i >= 15; i--)); do
 	TEST_TAG="v${MAJOR}.${i}"
 
-	echo "[DEBUG] Testing version ${TEST_TAG}..."
+	log_debug "Testing version ${TEST_TAG}..."
 
 	# Check if ALL required images exist for this version
 	ALL_EXIST=true
 
 	if ! check_image_exists "${HOSTPATH_IMAGE_BASE}:${TEST_TAG}"; then
-		echo "[DEBUG] - hostpath-csi-driver not found"
+		log_debug "- hostpath-csi-driver not found"
 		ALL_EXIST=false
 	fi
 
 	if ! check_image_exists "${NODE_REGISTRAR_IMAGE_BASE}:${TEST_TAG}"; then
-		echo "[DEBUG] - ose-csi-node-driver-registrar not found"
+		log_debug "- ose-csi-node-driver-registrar not found"
 		ALL_EXIST=false
 	fi
 
 	if ! check_image_exists "${LIVENESS_IMAGE_BASE}:${TEST_TAG}"; then
-		echo "[DEBUG] - ose-csi-livenessprobe not found"
+		log_debug "- ose-csi-livenessprobe not found"
 		ALL_EXIST=false
 	fi
 
 	if ! check_image_exists "${PROVISIONER_IMAGE_BASE}:${TEST_TAG}"; then
-		echo "[DEBUG] - ose-csi-external-provisioner not found"
+		log_debug "- ose-csi-external-provisioner not found"
 		ALL_EXIST=false
 	fi
 
 	if [ "$ALL_EXIST" = true ]; then
 		IMAGE_TAG="$TEST_TAG"
-		echo "[INFO] ✓ Found compatible image version: ${IMAGE_TAG} (all images exist)"
+		log_info "✓ Found compatible image version: ${IMAGE_TAG} (all images exist)"
 		break
 	else
-		echo "[DEBUG] Version ${TEST_TAG} incomplete, trying older version..."
+		log_debug "Version ${TEST_TAG} incomplete, trying older version..."
 	fi
 done
 
 # Fallback if no image found
 if [[ -z "$IMAGE_TAG" ]]; then
-	echo "[WARN] Could not find compatible image by probing registry"
-	echo "[WARN] Defaulting to v4.19 (known working version)"
+	log_warn "Could not find compatible image by probing registry"
+	log_warn "Defaulting to v4.19 (known working version)"
 	IMAGE_TAG="v4.19"
 fi
 
-echo "[INFO] Using image tag: ${IMAGE_TAG} for all CSI components"
+log_info "Using image tag: ${IMAGE_TAG} for all CSI components"
 
-echo "[INFO] Deploying KubeVirt HostPath CSI Driver"
-echo "[INFO] This is the same provisioner used by CRC"
+log_info "Deploying KubeVirt HostPath CSI Driver"
+log_info "This is the same provisioner used by CRC"
 
 # Create namespace
-echo "[INFO] Creating namespace: $NAMESPACE"
-oc create namespace "$NAMESPACE" 2>/dev/null || echo "[INFO] Namespace already exists"
+log_info "Creating namespace: $NAMESPACE"
+oc create namespace "$NAMESPACE" 2>/dev/null || log_info "Namespace already exists"
 
 # Create ServiceAccount
-echo "[INFO] Creating ServiceAccount"
+log_info "Creating ServiceAccount"
 cat <<EOF | oc apply -f -
 apiVersion: v1
 kind: ServiceAccount
@@ -144,7 +147,7 @@ metadata:
 EOF
 
 # Create ClusterRole
-echo "[INFO] Creating ClusterRole"
+log_info "Creating ClusterRole"
 cat <<EOF | oc apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -184,7 +187,7 @@ rules:
 EOF
 
 # Create ClusterRoleBinding
-echo "[INFO] Creating ClusterRoleBinding"
+log_info "Creating ClusterRoleBinding"
 cat <<EOF | oc apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -201,11 +204,11 @@ subjects:
 EOF
 
 # Grant privileged SCC (required for CSI driver)
-echo "[INFO] Granting privileged SCC to CSI driver ServiceAccount"
+log_info "Granting privileged SCC to CSI driver ServiceAccount"
 oc adm policy add-scc-to-user privileged -z csi-hostpath-provisioner-sa -n "$NAMESPACE"
 
 # Create CSIDriver
-echo "[INFO] Creating CSIDriver resource"
+log_info "Creating CSIDriver resource"
 cat <<EOF | oc apply -f -
 apiVersion: storage.k8s.io/v1
 kind: CSIDriver
@@ -220,7 +223,7 @@ spec:
 EOF
 
 # Create DaemonSet
-echo "[INFO] Creating CSI DaemonSet"
+log_info "Creating CSI DaemonSet"
 cat <<EOF | oc apply -f -
 apiVersion: apps/v1
 kind: DaemonSet
@@ -390,15 +393,15 @@ spec:
 EOF
 
 # Wait for DaemonSet to be ready
-echo "[INFO] Waiting for CSI DaemonSet pods to be ready..."
+log_info "Waiting for CSI DaemonSet pods to be ready..."
 sleep 5
 oc wait --for=condition=Ready pod -l app.kubernetes.io/name=csi-hostpathplugin -n "$NAMESPACE" --timeout=120s || {
-	echo "[WARN] CSI pods not ready yet, checking status..."
+	log_warn "CSI pods not ready yet, checking status..."
 	oc get pods -n "$NAMESPACE"
 }
 
 # Create StorageClass
-echo "[INFO] Creating StorageClass: $STORAGE_CLASS_NAME"
+log_info "Creating StorageClass: $STORAGE_CLASS_NAME"
 cat <<EOF | oc apply -f -
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -415,17 +418,17 @@ parameters:
 EOF
 
 # Remove default annotation from other StorageClasses
-echo "[INFO] Removing default annotation from other StorageClasses"
+log_info "Removing default annotation from other StorageClasses"
 for sc in $(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}'); do
 	if [ "$sc" != "$STORAGE_CLASS_NAME" ]; then
-		echo "[INFO] Removing default from: $sc"
+		log_info "Removing default from: $sc"
 		oc patch storageclass "$sc" -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 	fi
 done
 
 echo ""
 echo "============================================"
-echo "[SUCCESS] KubeVirt HostPath CSI Driver deployed!"
+log_success "KubeVirt HostPath CSI Driver deployed!"
 echo "============================================"
 echo ""
 echo "CSI Driver Status:"
@@ -434,5 +437,5 @@ echo ""
 echo "StorageClass:"
 oc get storageclass "$STORAGE_CLASS_NAME"
 echo ""
-echo "[INFO] This provisioner handles permissions correctly for restricted-v2 SCC pods"
-echo "[INFO] It's the same provisioner used by CRC"
+log_info "This provisioner handles permissions correctly for restricted-v2 SCC pods"
+log_info "It's the same provisioner used by CRC"

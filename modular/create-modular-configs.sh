@@ -3,7 +3,11 @@
 # Wrapper script to create modular MachineConfig files
 # This script integrates the split-machineconfigs-modular.py script into the workflow
 
-set -e
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
 
 # Default directories
 source_dir="complianceremediations"
@@ -38,54 +42,48 @@ done
 
 # Ensure Python virtual environment is activated
 if [[ ! -d "venv" ]]; then
-	echo "Error: Python virtual environment not found."
-	echo "Please run: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+	log_error "Python virtual environment not found."
+	log_error "Please run: python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
 	exit 1
 fi
 
 # Activate venv if not already active
 if [[ -z "$VIRTUAL_ENV" ]]; then
-	echo "Activating Python virtual environment..."
+	log_info "Activating Python virtual environment..."
 	# shellcheck disable=SC1091
 	source venv/bin/activate
 fi
 
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODULAR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Check if split-machineconfigs-modular.py exists
-if [[ ! -f "$SCRIPT_DIR/split-machineconfigs-modular.py" ]]; then
-	echo "Error: split-machineconfigs-modular.py not found in $SCRIPT_DIR"
+if [[ ! -f "$MODULAR_DIR/split-machineconfigs-modular.py" ]]; then
+	log_error "split-machineconfigs-modular.py not found in $MODULAR_DIR"
 	exit 1
 fi
 
-# Run the modular split script
-echo "Creating modular MachineConfig files..."
-echo "  Source: $source_dir"
-echo "  Output: $modular_dir"
-echo "  Severity: $severity"
+log_info "Creating modular MachineConfig files..."
+log_info "  Source: $source_dir"
+log_info "  Output: $modular_dir"
+log_info "  Severity: $severity"
 echo ""
 
-python3 "$SCRIPT_DIR/split-machineconfigs-modular.py" \
+python3 "$MODULAR_DIR/split-machineconfigs-modular.py" \
 	--src-dir "$source_dir" \
 	--out-dir "$modular_dir" \
 	-s "$severity"
 
 # Check if any files were created
 if [[ ! -d "$modular_dir" ]] || [[ -z "$(ls -A "$modular_dir" 2>/dev/null)" ]]; then
-	echo "Warning: No modular files were created."
-	echo "This could mean:"
-	echo "  1. No remediation files found in $source_dir"
-	echo "  2. No files match the severity filter: $severity"
-	echo "  3. No files target modular paths (sshd_config, pam.d files)"
+	log_warn "No modular files were created."
+	log_warn "This could mean:"
+	log_warn "  1. No remediation files found in $source_dir"
+	log_warn "  2. No files match the severity filter: $severity"
+	log_warn "  3. No files target modular paths (sshd_config, pam.d files)"
 	exit 0
 fi
 
-# Display summary
 echo ""
-echo "========================================"
-echo "Modular files created successfully!"
-echo "========================================"
+log_success "Modular files created successfully!"
 echo ""
 echo "Next steps:"
 echo "  1. Review the generated files in: $modular_dir"

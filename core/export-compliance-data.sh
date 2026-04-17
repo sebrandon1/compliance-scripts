@@ -14,23 +14,18 @@
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Configuration
-NAMESPACE="${COMPLIANCE_NAMESPACE:-openshift-compliance}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+# shellcheck source=../lib/common.sh
+source "$REPO_ROOT/lib/common.sh"
+
+NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 OUTPUT_DIR="${REPO_ROOT}/docs/_data"
 TRACKING_FILE="${OUTPUT_DIR}/tracking.json"
 
 # Validate arguments
 if [[ $# -lt 1 ]]; then
-	echo -e "${RED}Error: OCP version required${NC}"
+	log_error "OCP version required"
 	echo "Usage: $0 <ocp-version>"
 	echo "Example: $0 4.17"
 	exit 1
@@ -41,47 +36,31 @@ OCP_VERSION="$1"
 VERSION_SLUG="${OCP_VERSION//./_}"
 OUTPUT_FILE="${OUTPUT_DIR}/ocp-${VERSION_SLUG}.json"
 
-echo -e "${BLUE}=== Compliance Data Export ===${NC}"
-echo -e "OCP Version: ${GREEN}${OCP_VERSION}${NC}"
-echo -e "Namespace: ${NAMESPACE}"
-echo -e "Output: ${OUTPUT_FILE}"
+log_info "=== Compliance Data Export ==="
+log_info "OCP Version: ${OCP_VERSION}"
+log_info "Namespace: ${NAMESPACE}"
+log_info "Output: ${OUTPUT_FILE}"
 
-# Check prerequisites
-if ! command -v oc &>/dev/null; then
-	echo -e "${RED}Error: 'oc' command not found${NC}"
-	exit 1
-fi
+require_cmd oc jq
+require_cluster
 
-if ! command -v jq &>/dev/null; then
-	echo -e "${RED}Error: 'jq' command not found${NC}"
-	exit 1
-fi
-
-# Verify cluster connection
-if ! oc whoami &>/dev/null; then
-	echo -e "${RED}Error: Not logged into OpenShift cluster${NC}"
-	echo "Please set KUBECONFIG or run 'oc login'"
-	exit 1
-fi
-
-# Verify cluster connection (but don't expose cluster name in output)
-echo -e "Cluster: ${GREEN}connected${NC}"
+log_info "Cluster: connected"
 
 # Get current timestamp
 SCAN_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-echo -e "\n${BLUE}Collecting ComplianceCheckResults...${NC}"
+log_info "Collecting ComplianceCheckResults..."
 
 # Collect all check results
 CHECK_RESULTS=$(oc get compliancecheckresults -n "${NAMESPACE}" -o json 2>/dev/null)
 
 if [[ -z "$CHECK_RESULTS" ]] || [[ "$(echo "$CHECK_RESULTS" | jq '.items | length')" -eq 0 ]]; then
-	echo -e "${RED}Error: No ComplianceCheckResults found in namespace ${NAMESPACE}${NC}"
+	log_error "No ComplianceCheckResults found in namespace ${NAMESPACE}"
 	exit 1
 fi
 
 TOTAL_CHECKS=$(echo "$CHECK_RESULTS" | jq '.items | length')
-echo -e "Found ${GREEN}${TOTAL_CHECKS}${NC} compliance checks"
+log_info "Found ${TOTAL_CHECKS} compliance checks"
 
 # Count by status
 # Note: .status is a string field (e.g., "PASS", "FAIL", "MANUAL"), not an object
@@ -90,19 +69,19 @@ FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL")] | l
 MANUAL=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "MANUAL")] | length')
 SKIPPED=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "SKIP" or .status == "NOT-APPLICABLE")] | length')
 
-echo -e "  Passing: ${GREEN}${PASSING}${NC}"
-echo -e "  Failing: ${RED}${FAILING}${NC}"
-echo -e "  Manual:  ${YELLOW}${MANUAL}${NC}"
-echo -e "  Skipped: ${SKIPPED}"
+log_info "  Passing: ${PASSING}"
+log_info "  Failing: ${FAILING}"
+log_info "  Manual:  ${MANUAL}"
+log_info "  Skipped: ${SKIPPED}"
 
 # Load tracking data if exists
 TRACKING_DATA="{}"
 if [[ -f "$TRACKING_FILE" ]]; then
 	TRACKING_DATA=$(cat "$TRACKING_FILE")
-	echo -e "\n${BLUE}Loaded tracking data from ${TRACKING_FILE}${NC}"
+	log_info "Loaded tracking data from ${TRACKING_FILE}"
 fi
 
-echo -e "\n${BLUE}Processing remediations by severity...${NC}"
+log_info "Processing remediations by severity..."
 
 # Helper: extract profile from check name
 # e.g., "ocp4-cis-foo" -> "CIS", "rhcos4-e8-master-foo" -> "E8"
@@ -132,36 +111,36 @@ query_checks() {
 # Note: .severity is a top-level field, .status is the result string
 HIGH_CHECKS=$(query_checks '.severity == "high" and .status == "FAIL"')
 HIGH_COUNT=$(echo "$HIGH_CHECKS" | jq 'length')
-echo -e "  HIGH severity failing: ${RED}${HIGH_COUNT}${NC}"
+log_info "  HIGH severity failing: ${HIGH_COUNT}"
 
 MEDIUM_CHECKS=$(query_checks '.severity == "medium" and .status == "FAIL"')
 MEDIUM_COUNT=$(echo "$MEDIUM_CHECKS" | jq 'length')
-echo -e "  MEDIUM severity failing: ${YELLOW}${MEDIUM_COUNT}${NC}"
+log_info "  MEDIUM severity failing: ${MEDIUM_COUNT}"
 
 LOW_CHECKS=$(query_checks '.severity == "low" and .status == "FAIL"')
 LOW_COUNT=$(echo "$LOW_CHECKS" | jq 'length')
-echo -e "  LOW severity failing: ${BLUE}${LOW_COUNT}${NC}"
+log_info "  LOW severity failing: ${LOW_COUNT}"
 
 MANUAL_CHECKS=$(query_checks '.status == "MANUAL"')
 MANUAL_CHECK_COUNT=$(echo "$MANUAL_CHECKS" | jq 'length')
-echo -e "  MANUAL checks: ${YELLOW}${MANUAL_CHECK_COUNT}${NC}"
+log_info "  MANUAL checks: ${MANUAL_CHECK_COUNT}"
 
-echo -e "\n${BLUE}Processing passing checks by severity...${NC}"
+log_info "Processing passing checks by severity..."
 
 PASSING_HIGH=$(query_checks '.severity == "high" and .status == "PASS"')
 PASSING_HIGH_COUNT=$(echo "$PASSING_HIGH" | jq 'length')
-echo -e "  HIGH severity passing: ${GREEN}${PASSING_HIGH_COUNT}${NC}"
+log_info "  HIGH severity passing: ${PASSING_HIGH_COUNT}"
 
 PASSING_MEDIUM=$(query_checks '.severity == "medium" and .status == "PASS"')
 PASSING_MEDIUM_COUNT=$(echo "$PASSING_MEDIUM" | jq 'length')
-echo -e "  MEDIUM severity passing: ${GREEN}${PASSING_MEDIUM_COUNT}${NC}"
+log_info "  MEDIUM severity passing: ${PASSING_MEDIUM_COUNT}"
 
 PASSING_LOW=$(query_checks '.severity == "low" and .status == "PASS"')
 PASSING_LOW_COUNT=$(echo "$PASSING_LOW" | jq 'length')
-echo -e "  LOW severity passing: ${GREEN}${PASSING_LOW_COUNT}${NC}"
+log_info "  LOW severity passing: ${PASSING_LOW_COUNT}"
 
 # Build the output JSON
-echo -e "\n${BLUE}Generating JSON output...${NC}"
+log_info "Generating JSON output..."
 
 # Create the JSON structure (no cluster name to avoid leaking internal info)
 OUTPUT_JSON=$(jq -n \
@@ -206,16 +185,14 @@ OUTPUT_JSON=$(jq -n \
 mkdir -p "$OUTPUT_DIR"
 echo "$OUTPUT_JSON" | jq '.' >"$OUTPUT_FILE"
 
-echo -e "${GREEN}Successfully exported to ${OUTPUT_FILE}${NC}"
+log_success "Successfully exported to ${OUTPUT_FILE}"
 
-# Print summary
-echo -e "\n${BLUE}=== Summary ===${NC}"
-echo -e "OCP Version: ${OCP_VERSION}"
-echo -e "Scan Date: ${SCAN_DATE}"
-echo -e "Total Checks: ${TOTAL_CHECKS}"
-echo -e "Coverage: $(echo "scale=1; ${PASSING} * 100 / ${TOTAL_CHECKS}" | bc)%"
-echo -e "Failing by severity:"
-echo -e "  HIGH:   ${HIGH_COUNT}"
-echo -e "  MEDIUM: ${MEDIUM_COUNT}"
-echo -e "  LOW:    ${LOW_COUNT}"
-echo -e "  MANUAL: ${MANUAL_CHECK_COUNT}"
+print_summary \
+	"OCP Version" "${OCP_VERSION}" \
+	"Scan Date" "${SCAN_DATE}" \
+	"Total Checks" "${TOTAL_CHECKS}" \
+	"Coverage" "$(echo "scale=1; ${PASSING} * 100 / ${TOTAL_CHECKS}" | bc)%" \
+	"Failing HIGH" "${HIGH_COUNT}" \
+	"Failing MEDIUM" "${MEDIUM_COUNT}" \
+	"Failing LOW" "${LOW_COUNT}" \
+	"MANUAL" "${MANUAL_CHECK_COUNT}"

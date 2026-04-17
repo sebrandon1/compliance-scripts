@@ -1,7 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-NAMESPACE="openshift-compliance"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
+NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
 WATCH=false
 INTERVAL=10
 FILTER=""
@@ -39,7 +43,7 @@ while [[ $# -gt 0 ]]; do
 		exit 0
 		;;
 	*)
-		echo "[ERROR] Unknown argument: $1"
+		log_error " Unknown argument: $1"
 		usage
 		exit 1
 		;;
@@ -48,10 +52,7 @@ done
 
 print_default_sc() {
 	local default_sc
-	default_sc=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
-	if [[ -z "$default_sc" ]]; then
-		default_sc=$(oc get sc -o=jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.storageclass\.beta\.kubernetes\.io/is-default-class}{"\n"}{end}' 2>/dev/null | awk -F: '$2=="true"{print $1; exit}' || true)
-	fi
+	default_sc=$(get_default_storage_class)
 	if [[ -n "$default_sc" ]]; then
 		echo "Default StorageClass: $default_sc"
 	else

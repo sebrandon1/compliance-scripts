@@ -2,11 +2,9 @@
 # verify-images.sh - Verify that required container images are accessible
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
 
 # Timeout for image checks (seconds)
 TIMEOUT="${TIMEOUT:-30}"
@@ -134,13 +132,8 @@ done
 
 # Check if we have the tools we need
 check_tools() {
-	local missing=()
+	require_cmd curl
 
-	if ! command -v curl &>/dev/null; then
-		missing+=("curl")
-	fi
-
-	# Check for container runtime
 	if command -v podman &>/dev/null; then
 		CONTAINER_CMD="podman"
 	elif command -v docker &>/dev/null; then
@@ -148,11 +141,7 @@ check_tools() {
 	elif command -v oc &>/dev/null; then
 		CONTAINER_CMD="oc-debug"
 	else
-		missing+=("podman or docker")
-	fi
-
-	if [[ ${#missing[@]} -gt 0 ]]; then
-		echo -e "${RED}[ERROR] Missing required tools: ${missing[*]}${NC}"
+		log_error "Missing required tools: podman or docker"
 		exit 1
 	fi
 }
@@ -236,11 +225,11 @@ echo "════════════════════════�
 echo ""
 
 check_tools
-echo "[INFO] Using container command: $CONTAINER_CMD"
+log_info "Using container command: $CONTAINER_CMD"
 if [[ -n "$TIMEOUT_CMD" ]]; then
-	echo "[INFO] Timeout command: $TIMEOUT_CMD (${TIMEOUT}s per check)"
+	log_info "Timeout command: $TIMEOUT_CMD (${TIMEOUT}s per check)"
 else
-	echo "[INFO] Timeout: not available (install coreutils for timeout support)"
+	log_info "Timeout: not available (install coreutils for timeout support)"
 fi
 echo ""
 

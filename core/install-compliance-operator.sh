@@ -1,7 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-NAMESPACE="openshift-compliance"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "$SCRIPT_DIR/lib/common.sh"
+
+NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
 OPERATOR_NAME="compliance-operator"
 SUBSCRIPTION_NAME="compliance-operator-sub"
 
@@ -40,12 +44,12 @@ done
 # ============================================================================
 # Storage Provisioner Check
 # ============================================================================
-echo "[PRECHECK] Checking for suitable storage provisioner..."
+log_info "Checking for suitable storage provisioner..."
 
 # Check if hostpath CSI driver is deployed (recommended)
 HOSTPATH_CSI_DEPLOYED=false
 if oc get csidriver kubevirt.io.hostpath-provisioner &>/dev/null; then
-	echo "[INFO] ✅ KubeVirt HostPath CSI driver detected (recommended)"
+	log_info "✅ KubeVirt HostPath CSI driver detected (recommended)"
 	HOSTPATH_CSI_DEPLOYED=true
 fi
 
@@ -58,34 +62,34 @@ if [[ -z "$DEFAULT_SC" ]] && [[ "$HOSTPATH_CSI_DEPLOYED" == "false" ]]; then
 	echo "📦 No default StorageClass detected - deploying HostPath CSI driver"
 	echo "════════════════════════════════════════════════════════════════════"
 	echo ""
-	echo "[INFO] Deploying KubeVirt HostPath CSI driver (same as CRC uses)"
-	echo "[INFO] This handles permissions correctly for restricted-v2 SCC"
+	log_info "Deploying KubeVirt HostPath CSI driver (same as CRC uses)"
+	log_info "This handles permissions correctly for restricted-v2 SCC"
 	echo ""
 
 	if [[ -x "./utilities/deploy-hostpath-csi.sh" ]]; then
 		./utilities/deploy-hostpath-csi.sh
 		echo ""
-		echo "[SUCCESS] HostPath CSI driver deployed!"
-		echo "[INFO] Continuing with Compliance Operator installation..."
+		log_success "HostPath CSI driver deployed!"
+		log_info "Continuing with Compliance Operator installation..."
 		echo ""
 	else
-		echo "[ERROR] utilities/deploy-hostpath-csi.sh not found or not executable"
-		echo "[INFO] Please run: ./utilities/deploy-hostpath-csi.sh"
+		log_error "utilities/deploy-hostpath-csi.sh not found or not executable"
+		log_info "Please run: ./utilities/deploy-hostpath-csi.sh"
 		exit 1
 	fi
 elif [[ "$HOSTPATH_CSI_DEPLOYED" == "true" ]]; then
-	echo "[INFO] ✅ HostPath CSI driver already deployed"
+	log_info "✅ HostPath CSI driver already deployed"
 elif [[ -n "$DEFAULT_SC" ]]; then
-	echo "[INFO] Default StorageClass found: $DEFAULT_SC"
+	log_info "Default StorageClass found: $DEFAULT_SC"
 	PROVISIONER=$(oc get storageclass "$DEFAULT_SC" -o jsonpath='{.provisioner}' 2>/dev/null || echo "unknown")
 	if [[ "$PROVISIONER" == "kubevirt.io.hostpath-provisioner" ]]; then
-		echo "[INFO] ✅ Using recommended KubeVirt HostPath CSI provisioner"
+		log_info "✅ Using recommended KubeVirt HostPath CSI provisioner"
 	elif [[ "$PROVISIONER" == "rancher.io/local-path" ]]; then
-		echo "[WARN] ⚠️  local-path provisioner detected"
-		echo "[WARN] This may have permission issues with restricted-v2 SCC"
-		echo "[WARN] Consider running: ./utilities/deploy-hostpath-csi.sh"
+		log_warn "⚠️  local-path provisioner detected"
+		log_warn "This may have permission issues with restricted-v2 SCC"
+		log_warn "Consider running: ./utilities/deploy-hostpath-csi.sh"
 	else
-		echo "[INFO] Using provisioner: $PROVISIONER"
+		log_info "Using provisioner: $PROVISIONER"
 	fi
 fi
 echo ""
@@ -93,13 +97,13 @@ echo ""
 # ============================================================================
 # Marketplace Health Check
 # ============================================================================
-echo "[PRECHECK] Ensuring 'openshift-marketplace' is healthy before proceeding..."
+log_info "Ensuring 'openshift-marketplace' is healthy before proceeding..."
 if ! oc get ns openshift-marketplace &>/dev/null; then
-	echo "[ERROR] Namespace 'openshift-marketplace' not found. Ensure you're connected to an OpenShift cluster."
+	log_error "Namespace 'openshift-marketplace' not found. Ensure you're connected to an OpenShift cluster."
 	exit 1
 fi
 
-echo "[PRECHECK] Checking for pods in error states in 'openshift-marketplace'..."
+log_info "Checking for pods in error states in 'openshift-marketplace'..."
 # Check for pods in permanent error states (ImagePullBackOff, CrashLoopBackOff, etc.)
 ERROR_PODS=$(oc -n openshift-marketplace get pods -o json 2>/dev/null |
 	jq -r '.items[] | select(.status.phase != "Succeeded" and .status.phase != "Running") | 
@@ -108,15 +112,15 @@ ERROR_PODS=$(oc -n openshift-marketplace get pods -o json 2>/dev/null |
 	.metadata.name' | tr '\n' ' ' || true)
 
 if [[ -n "$ERROR_PODS" ]]; then
-	echo "[ERROR] Found pods in permanent error states in 'openshift-marketplace':"
+	log_error "Found pods in permanent error states in 'openshift-marketplace':"
 	oc -n openshift-marketplace get pods -o wide || true
 	echo ""
 	echo "Pods in error state: $ERROR_PODS"
-	echo "[ERROR] Please resolve the pod errors above before proceeding."
+	log_error "Please resolve the pod errors above before proceeding."
 	exit 1
 fi
 
-echo "[PRECHECK] Waiting up to 5m for non-completed pods in 'openshift-marketplace' to be Ready..."
+log_info "Waiting up to 5m for non-completed pods in 'openshift-marketplace' to be Ready..."
 # Poll for pods to be ready, handling pods that might be deleted/recreated during the wait
 for i in {1..30}; do
 	# Get current non-completed pods
@@ -124,7 +128,7 @@ for i in {1..30}; do
 		-o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' 2>/dev/null || true)
 
 	if [[ -z "$MKTPODS" ]]; then
-		echo "[PRECHECK] No non-completed pods found in 'openshift-marketplace'"
+		log_info "No non-completed pods found in 'openshift-marketplace'"
 		break
 	fi
 
@@ -141,11 +145,11 @@ for i in {1..30}; do
 	done <<<"$MKTPODS"
 
 	if [[ "$ALL_READY" == "true" ]]; then
-		echo "[PRECHECK] All pods in 'openshift-marketplace' are Ready"
+		log_info "All pods in 'openshift-marketplace' are Ready"
 		break
 	fi
 
-	echo "[WAIT] Waiting for marketplace pods to be Ready ($i/30)..."
+	log_info "Waiting for marketplace pods to be Ready ($i/30)..."
 	sleep 10
 done
 
@@ -168,7 +172,7 @@ while IFS= read -r line; do
 		POD_TS=$(date -d "$POD_CREATED" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$POD_CREATED" +%s 2>/dev/null || echo "0")
 		AGE=$((NOW_TS - POD_TS))
 		if [[ $AGE -lt 30 ]]; then
-			echo "[PRECHECK] Ignoring recently created pod '$POD_NAME' (${AGE}s old) - catalog reconciliation in progress"
+			log_info "Ignoring recently created pod '$POD_NAME' (${AGE}s old) - catalog reconciliation in progress"
 			continue
 		fi
 	fi
@@ -180,8 +184,8 @@ while IFS= read -r line; do
 done < <(oc -n openshift-marketplace get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{" "}{range .status.conditions[?(@.type=="Ready")]}{.status}{end}{"\n"}{end}' 2>/dev/null || true)
 
 if [[ -n "$FAILED_PODS" ]]; then
-	echo "[ERROR] Some pods in 'openshift-marketplace' are not Ready:$FAILED_PODS"
-	echo "[ERROR] Current pod statuses:"
+	log_error "Some pods in 'openshift-marketplace' are not Ready:$FAILED_PODS"
+	log_error "Current pod statuses:"
 	oc -n openshift-marketplace get pods -o wide || true
 	exit 1
 fi
@@ -207,27 +211,27 @@ get_latest_release_tag() {
 USE_REDHAT_OPERATOR=false
 
 if [[ "$USE_COMMUNITY" == "true" ]]; then
-	echo "[INFO] USE_COMMUNITY_OPERATOR=true - skipping Red Hat certified operator check"
+	log_info "USE_COMMUNITY_OPERATOR=true - skipping Red Hat certified operator check"
 else
-	echo "[INFO] Checking for Red Hat certified operator availability..."
+	log_info "Checking for Red Hat certified operator availability..."
 
 	# Check if redhat-operators catalog source exists
 	if oc get catalogsource redhat-operators -n openshift-marketplace &>/dev/null; then
-		echo "[INFO] ✅ redhat-operators catalog is available"
+		log_info "✅ redhat-operators catalog is available"
 
 		# Check if compliance-operator package is available from redhat-operators
 		RH_PACKAGE=$(oc get packagemanifests -n openshift-marketplace compliance-operator \
 			-o jsonpath='{.status.catalogSource}' 2>/dev/null || true)
 
 		if [[ "$RH_PACKAGE" == "redhat-operators" ]]; then
-			echo "[INFO] ✅ Compliance Operator available from Red Hat certified catalog"
+			log_info "✅ Compliance Operator available from Red Hat certified catalog"
 			USE_REDHAT_OPERATOR=true
 		elif [[ -n "$RH_PACKAGE" ]]; then
 			# Package exists but from different catalog - check if redhat-operators has it too
 			RH_CHECK=$(oc get packagemanifests -n openshift-marketplace -o json 2>/dev/null |
 				jq -r '.items[] | select(.metadata.name=="compliance-operator" and .status.catalogSource=="redhat-operators") | .metadata.name' || true)
 			if [[ -n "$RH_CHECK" ]]; then
-				echo "[INFO] ✅ Compliance Operator available from Red Hat certified catalog"
+				log_info "✅ Compliance Operator available from Red Hat certified catalog"
 				USE_REDHAT_OPERATOR=true
 			fi
 		fi
@@ -235,11 +239,11 @@ else
 		# Check if redhat-operators is disabled in OperatorHub config
 		RH_DISABLED=$(oc get operatorhub cluster -o jsonpath='{.status.sources[?(@.name=="redhat-operators")].disabled}' 2>/dev/null || true)
 		if [[ "$RH_DISABLED" == "true" ]]; then
-			echo "[WARN] redhat-operators catalog is disabled in OperatorHub"
-			echo "[INFO] To enable: oc patch operatorhub cluster --type=merge -p '{\"spec\":{\"sources\":[{\"name\":\"redhat-operators\",\"disabled\":false}]}}'"
-			echo "[INFO] Falling back to community operator..."
+			log_warn "redhat-operators catalog is disabled in OperatorHub"
+			log_info "To enable: oc patch operatorhub cluster --type=merge -p '{\"spec\":{\"sources\":[{\"name\":\"redhat-operators\",\"disabled\":false}]}}'"
+			log_info "Falling back to community operator..."
 		else
-			echo "[INFO] redhat-operators catalog not found, using community operator"
+			log_info "redhat-operators catalog not found, using community operator"
 		fi
 	fi
 fi
@@ -247,28 +251,28 @@ fi
 # ============================================================================
 # ARM Architecture Check
 # ============================================================================
-echo "[INFO] Checking cluster architecture..."
+log_info "Checking cluster architecture..."
 ARM_NODES=$(oc get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}' 2>/dev/null | tr ' ' '\n' | grep -c "arm64" || true)
 ARM_NODES=${ARM_NODES:-0}
 
 if [[ "$ARM_NODES" -gt 0 ]]; then
-	echo "[INFO] Detected $ARM_NODES ARM64 node(s) in cluster"
+	log_info "Detected $ARM_NODES ARM64 node(s) in cluster"
 	ARM_CLUSTER=true
 else
-	echo "[INFO] Detected x86_64 cluster"
+	log_info "Detected x86_64 cluster"
 	ARM_CLUSTER=false
 fi
 
 if [[ -z "$CO_REF" ]]; then
-	echo "[INFO] Resolving latest $CO_REPO_OWNER/$CO_REPO_NAME release tag from GitHub..."
+	log_info "Resolving latest $CO_REPO_OWNER/$CO_REPO_NAME release tag from GitHub..."
 	CO_REF=$(get_latest_release_tag || true)
 fi
 
 if [[ -z "$CO_REF" ]]; then
-	echo "[WARN] Could not determine latest release (rate limit or network issue). Falling back to 'master'."
+	log_warn "Could not determine latest release (rate limit or network issue). Falling back to 'master'."
 	CO_REF="master"
 else
-	echo "[INFO] Using Compliance Operator ref: $CO_REF"
+	log_info "Using Compliance Operator ref: $CO_REF"
 fi
 
 # ============================================================================
@@ -296,16 +300,16 @@ if [[ "$ARM_CLUSTER" == "true" ]]; then
 		echo ""
 		exit 1
 	else
-		echo "[INFO] ✅ Version $CO_REF is compatible with ARM64"
+		log_info "✅ Version $CO_REF is compatible with ARM64"
 	fi
 fi
 
 BASE_RAW="https://raw.githubusercontent.com/$CO_REPO_OWNER/$CO_REPO_NAME/$CO_REF"
 
-echo "[INFO] Creating namespace: $NAMESPACE"
+log_info "Creating namespace: $NAMESPACE"
 oc apply -f "$BASE_RAW/config/ns/ns.yaml"
 
-echo "[INFO] Compliance Operator will use default SCCs (restricted-v2)"
+log_info "Compliance Operator will use default SCCs (restricted-v2)"
 # DO NOT grant anyuid or privileged to compliance service accounts!
 # The operator needs restricted-v2 SCC which auto-assigns UIDs from namespace range
 # Granting anyuid/privileged breaks pods with runAsNonRoot: true
@@ -319,12 +323,12 @@ if [[ "$USE_REDHAT_OPERATOR" == "true" ]]; then
 	echo "📦 Installing Red Hat Certified Compliance Operator"
 	echo "════════════════════════════════════════════════════════════════════"
 	echo ""
-	echo "[INFO] Using Red Hat certified operator from redhat-operators catalog"
-	echo "[INFO] This is more stable than the community version"
+	log_info "Using Red Hat certified operator from redhat-operators catalog"
+	log_info "This is more stable than the community version"
 	echo ""
 
 	# Create OperatorGroup
-	echo "[INFO] Creating OperatorGroup"
+	log_info "Creating OperatorGroup"
 	cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
@@ -337,7 +341,7 @@ spec:
 EOF
 
 	# Create Subscription to Red Hat certified operator
-	echo "[INFO] Creating Subscription to Red Hat certified operator"
+	log_info "Creating Subscription to Red Hat certified operator"
 	cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -358,26 +362,26 @@ else
 	echo "📦 Installing Community Compliance Operator"
 	echo "════════════════════════════════════════════════════════════════════"
 	echo ""
-	echo "[INFO] Using community operator from upstream catalog"
-	echo "[INFO] Using catalog image tag: $CO_REF"
+	log_info "Using community operator from upstream catalog"
+	log_info "Using catalog image tag: $CO_REF"
 	echo ""
 
 	# Determine catalog image: try upstream ghcr.io first, fall back to quay.io/bapalm mirror
 	CATALOG_IMAGE="ghcr.io/complianceascode/compliance-operator-catalog:$CO_REF"
 	MIRROR_IMAGE="quay.io/bapalm/compliance-operator-catalog:$CO_REF"
 
-	echo "[INFO] Checking if upstream catalog image is available..."
+	log_info "Checking if upstream catalog image is available..."
 	if command -v skopeo &>/dev/null && skopeo inspect --raw --no-creds "docker://$CATALOG_IMAGE" &>/dev/null 2>&1; then
-		echo "[INFO] Using upstream catalog image: $CATALOG_IMAGE"
+		log_info "Using upstream catalog image: $CATALOG_IMAGE"
 	elif command -v skopeo &>/dev/null && skopeo inspect --raw --no-creds "docker://$MIRROR_IMAGE" &>/dev/null 2>&1; then
-		echo "[INFO] Upstream image not found, using mirror: $MIRROR_IMAGE"
+		log_info "Upstream image not found, using mirror: $MIRROR_IMAGE"
 		CATALOG_IMAGE="$MIRROR_IMAGE"
 	else
-		echo "[WARN] skopeo not available to verify images, using mirror: $MIRROR_IMAGE"
+		log_warn "skopeo not available to verify images, using mirror: $MIRROR_IMAGE"
 		CATALOG_IMAGE="$MIRROR_IMAGE"
 	fi
 
-	echo "[INFO] Creating CatalogSource with master node tolerations"
+	log_info "Creating CatalogSource with master node tolerations"
 	cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
@@ -399,19 +403,19 @@ spec:
       effect: NoSchedule
 EOF
 
-	echo "[INFO] Waiting for CatalogSource to be READY..."
+	log_info "Waiting for CatalogSource to be READY..."
 	for i in {1..30}; do
 		CATALOG_STATE=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
 		if [[ "$CATALOG_STATE" == "READY" ]]; then
-			echo "[INFO] CatalogSource is READY"
+			log_info "CatalogSource is READY"
 			break
 		fi
-		echo "[WAIT] CatalogSource not ready yet, state: $CATALOG_STATE ($i/30)"
+		log_info "CatalogSource not ready yet, state: $CATALOG_STATE ($i/30)"
 		sleep 10
 	done
 
 	if [[ "$CATALOG_STATE" != "READY" ]]; then
-		echo "[ERROR] CatalogSource did not become READY within 5 minutes. Checking status..."
+		log_error "CatalogSource did not become READY within 5 minutes. Checking status..."
 		echo ""
 		echo "CatalogSource details:"
 		oc describe catalogsource compliance-operator -n openshift-marketplace || true
@@ -424,51 +428,51 @@ EOF
 		exit 1
 	fi
 
-	echo "[INFO] Creating OperatorGroup"
+	log_info "Creating OperatorGroup"
 	oc apply -f "$BASE_RAW/config/catalog/operator-group.yaml"
 
-	echo "[INFO] Creating Subscription for Community Compliance Operator"
+	log_info "Creating Subscription for Community Compliance Operator"
 	oc apply -f "$BASE_RAW/config/catalog/subscription.yaml"
 
-	echo "[INFO] Patching Subscription with extended bundle unpack timeout (30m)"
+	log_info "Patching Subscription with extended bundle unpack timeout (30m)"
 	oc patch subscription "$SUBSCRIPTION_NAME" -n "$NAMESPACE" --type merge \
 		-p '{"spec":{"config":{"env":[],"bundleUnpackTimeout":"30m"}}}' 2>/dev/null || true
 fi
 
-echo "[INFO] Waiting for Subscription to populate installedCSV..."
+log_info "Waiting for Subscription to populate installedCSV..."
 for i in {1..30}; do
 	echo "Attempt number $i"
 	CSV=$(oc get subscription $SUBSCRIPTION_NAME -n $NAMESPACE -o jsonpath='{.status.installedCSV}' || true)
 	if [[ -n "$CSV" ]]; then
-		echo "[INFO] Found installedCSV: $CSV"
+		log_info "Found installedCSV: $CSV"
 		break
 	fi
-	echo "[WAIT] installedCSV not found yet, retrying... ($i/30)"
+	log_info "installedCSV not found yet, retrying... ($i/30)"
 	sleep 10
 done
 
 if [[ -z "$CSV" ]]; then
-	echo "[ERROR] installedCSV was not populated. Exiting."
+	log_error "installedCSV was not populated. Exiting."
 	exit 1
 fi
 
-echo "[INFO] Waiting for ClusterServiceVersion ($CSV) to be succeeded..."
+log_info "Waiting for ClusterServiceVersion ($CSV) to be succeeded..."
 for i in {1..30}; do
 	PHASE=$(oc get clusterserviceversion "$CSV" -n "$NAMESPACE" -o jsonpath='{.status.phase}' || true)
-	echo "[WAIT] ClusterServiceVersion phase: $PHASE ($i/30)"
+	log_info "ClusterServiceVersion phase: $PHASE ($i/30)"
 	if [[ "$PHASE" == "Succeeded" ]]; then
-		echo "[INFO] ClusterServiceVersion $CSV is Succeeded."
+		log_info "ClusterServiceVersion $CSV is Succeeded."
 		break
 	fi
 	sleep 10
 done
 
 if [[ "$PHASE" != "Succeeded" ]]; then
-	echo "[ERROR] ClusterServiceVersion $CSV did not reach Succeeded phase. Exiting."
+	log_error "ClusterServiceVersion $CSV did not reach Succeeded phase. Exiting."
 	exit 1
 fi
 
-echo "[SUCCESS] Compliance Operator installed successfully."
+log_success "Compliance Operator installed successfully."
 oc get pods -n $NAMESPACE
 
 # ============================================================================
@@ -476,7 +480,7 @@ oc get pods -n $NAMESPACE
 # ============================================================================
 # The upstream operator RBAC is missing 'create' permission for Jobs which
 # prevents scans from launching. This supplements the missing permissions.
-echo "[INFO] Applying supplemental RBAC for Job creation..."
+log_info "Applying supplemental RBAC for Job creation..."
 cat <<EOF | oc apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -513,36 +517,36 @@ subjects:
   name: compliance-operator
   namespace: $NAMESPACE
 EOF
-echo "[INFO] ✅ Supplemental RBAC applied"
+log_info "✅ Supplemental RBAC applied"
 
 # ============================================================================
 # CRD Updates - Ensure CRDs have all required fields
 # ============================================================================
 # Update ComplianceScan CRD from the same release tag to keep CRD/operator in sync.
 # Using 'master' branch CRD can introduce fields the operator binary doesn't recognize.
-echo "[INFO] Updating ComplianceScan CRD from $CO_REF..."
+log_info "Updating ComplianceScan CRD from $CO_REF..."
 SCAN_CRD_URL="https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/$CO_REF/config/crd/bases/compliance.openshift.io_compliancescans.yaml"
 if oc apply -f "$SCAN_CRD_URL" 2>/dev/null; then
-	echo "[INFO] ✅ ComplianceScan CRD updated from $CO_REF"
+	log_info "✅ ComplianceScan CRD updated from $CO_REF"
 else
-	echo "[WARN] Could not update ComplianceScan CRD from $CO_REF - scans may get stuck in PENDING"
+	log_warn "Could not update ComplianceScan CRD from $CO_REF - scans may get stuck in PENDING"
 fi
 
 # ============================================================================
 # CustomRule CRD Check and Installation
 # ============================================================================
-echo "[INFO] Checking for CustomRule CRD..."
+log_info "Checking for CustomRule CRD..."
 if ! oc get crd customrules.compliance.openshift.io &>/dev/null; then
-	echo "[WARN] CustomRule CRD not found - attempting to install it..."
+	log_warn "CustomRule CRD not found - attempting to install it..."
 
 	# Try to apply from the same ref we're using for the operator
 	CRD_URL="$BASE_RAW/deploy/crds/compliance.openshift.io_customrules.yaml"
-	echo "[INFO] Attempting to apply CustomRule CRD from: $CRD_URL"
+	log_info "Attempting to apply CustomRule CRD from: $CRD_URL"
 
 	if oc apply -f "$CRD_URL" 2>/dev/null; then
-		echo "[SUCCESS] ✅ CustomRule CRD installed successfully"
+		log_success "✅ CustomRule CRD installed successfully"
 	else
-		echo "[WARN] Failed to apply from $CRD_URL, trying fallback locations..."
+		log_warn "Failed to apply from $CRD_URL, trying fallback locations..."
 
 		# Try alternate paths that might exist
 		# Note: The correct path is config/crd/bases/ (not deploy/crds/)
@@ -554,32 +558,32 @@ if ! oc get crd customrules.compliance.openshift.io &>/dev/null; then
 
 		CRD_APPLIED=false
 		for URL in "${FALLBACK_URLS[@]}"; do
-			echo "[INFO] Trying: $URL"
+			log_info "Trying: $URL"
 			if oc apply -f "$URL" 2>/dev/null; then
-				echo "[SUCCESS] ✅ CustomRule CRD installed from fallback location"
+				log_success "✅ CustomRule CRD installed from fallback location"
 				CRD_APPLIED=true
 				break
 			fi
 		done
 
 		if [[ "$CRD_APPLIED" == "false" ]]; then
-			echo "[WARN] ⚠️  Could not install CustomRule CRD from any known location"
-			echo "[WARN] The operator may restart with cache sync errors"
-			echo "[WARN] You can manually apply it later with:"
+			log_warn "⚠️  Could not install CustomRule CRD from any known location"
+			log_warn "The operator may restart with cache sync errors"
+			log_warn "You can manually apply it later with:"
 			echo "  oc apply -f https://raw.githubusercontent.com/ComplianceAsCode/compliance-operator/master/deploy/crds/compliance.openshift.io_customrules.yaml"
 		fi
 	fi
 
 	# Verify the CRD was installed
 	if oc get crd customrules.compliance.openshift.io &>/dev/null; then
-		echo "[INFO] ✅ CustomRule CRD is now present"
+		log_info "✅ CustomRule CRD is now present"
 	fi
 else
-	echo "[INFO] ✅ CustomRule CRD already exists"
+	log_info "✅ CustomRule CRD already exists"
 fi
 echo ""
 
-echo "[INFO] Waiting up to 5m for non-completed pods in '$NAMESPACE' to be Ready..."
+log_info "Waiting up to 5m for non-completed pods in '$NAMESPACE' to be Ready..."
 # Clean up any leftover storage probe pods first
 oc -n "$NAMESPACE" delete pod -l app=co-storage-probe --ignore-not-found=true >/dev/null 2>&1 || true
 
@@ -590,7 +594,7 @@ for i in {1..30}; do
 		grep -v "co-storage-probe" || true)
 
 	if [[ -z "$NSPODS" ]]; then
-		echo "[INFO] No non-completed pods found in '$NAMESPACE'"
+		log_info "No non-completed pods found in '$NAMESPACE'"
 		break
 	fi
 
@@ -611,36 +615,36 @@ for i in {1..30}; do
 	done <<<"$NSPODS"
 
 	if [[ "$ALL_READY" == "true" ]]; then
-		echo "[INFO] All pods in '$NAMESPACE' are Ready"
+		log_info "All pods in '$NAMESPACE' are Ready"
 		break
 	fi
 
-	echo "[WAIT] Waiting for pods to be Ready ($i/30)..."
+	log_info "Waiting for pods to be Ready ($i/30)..."
 	sleep 10
 done
 
 # Final status check
-echo "[INFO] Final pod status in '$NAMESPACE':"
+log_info "Final pod status in '$NAMESPACE':"
 oc -n "$NAMESPACE" get pods -o wide 2>/dev/null || true
 
-echo "[INFO] Waiting for ProfileBundles to become VALID..."
+log_info "Waiting for ProfileBundles to become VALID..."
 for i in {1..30}; do
 	OCP4_STATUS=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
 	RHCOS4_STATUS=$(oc get profilebundle rhcos4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
 
 	if [[ "$OCP4_STATUS" == "VALID" && "$RHCOS4_STATUS" == "VALID" ]]; then
-		echo "[INFO] All ProfileBundles are VALID"
+		log_info "All ProfileBundles are VALID"
 		break
 	fi
-	echo "[WAIT] Waiting for ProfileBundles to be valid ($i/30)... ocp4=$OCP4_STATUS rhcos4=$RHCOS4_STATUS"
+	log_info "Waiting for ProfileBundles to be valid ($i/30)... ocp4=$OCP4_STATUS rhcos4=$RHCOS4_STATUS"
 	sleep 10
 done
 
-echo "[INFO] ProfileBundle status:"
+log_info "ProfileBundle status:"
 oc get profilebundles -n "$NAMESPACE" 2>/dev/null || true
 
-echo "[INFO] Profile parser pods should be using 'restricted-v2' SCC"
-echo "[INFO] You can verify with: oc get pods -n $NAMESPACE -o custom-columns=NAME:.metadata.name,SCC:.metadata.annotations.'openshift\.io/scc'"
+log_info "Profile parser pods should be using 'restricted-v2' SCC"
+log_info "You can verify with: oc get pods -n $NAMESPACE -o custom-columns=NAME:.metadata.name,SCC:.metadata.annotations.'openshift\.io/scc'"
 
-echo "[NEXT STEP] To schedule a periodic compliance scan, run:"
+log_info "To schedule a periodic compliance scan, run:"
 echo "  ./core/apply-periodic-scan.sh"

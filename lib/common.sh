@@ -9,6 +9,11 @@
 set -euo pipefail
 
 # ============================================================================
+# SHARED CONSTANTS
+# ============================================================================
+DEFAULT_COMPLIANCE_NAMESPACE="openshift-compliance"
+
+# ============================================================================
 # COLORS (only if terminal supports it)
 # ============================================================================
 if [[ -t 1 ]]; then
@@ -258,6 +263,72 @@ profile_exists() {
     local profile="$1"
     local ns="${2:-openshift-compliance}"
     oc get profile.compliance "$profile" -n "$ns" &>/dev/null
+}
+
+# ============================================================================
+# MACHINECONFIG HELPERS
+# ============================================================================
+
+# Derive MCP role from a MachineConfig YAML file (best-effort)
+# Checks the role label first, then filename, then file content. Defaults to worker.
+# Usage: role=$(get_node_role path/to/mc.yaml)
+get_node_role() {
+	local path="$1"
+	local role
+	role=$(yq e '.metadata.labels["machineconfiguration.openshift.io/role"]' "$path" 2>/dev/null || echo "")
+	if [[ -z "$role" || "$role" == "null" ]]; then
+		local base
+		base=$(basename "$path")
+		if [[ "$base" == *"master"* ]]; then
+			role="master"
+		elif [[ "$base" == *"worker"* ]]; then
+			role="worker"
+		elif grep -q "master" "$path" 2>/dev/null; then
+			role="master"
+		else
+			role="worker"
+		fi
+	fi
+	echo "$role"
+}
+
+# ============================================================================
+# FINALIZER HELPERS
+# ============================================================================
+
+# Remove finalizers from all instances of a resource kind in a namespace
+# Usage: remove_finalizers_from_kind "compliancesuites.compliance.openshift.io" "$NAMESPACE"
+remove_finalizers_from_kind() {
+	local kind="$1"
+	local ns="$2"
+	local names
+	names=$(oc get "$kind" -n "$ns" -o name 2>/dev/null || true)
+	if [[ -n "$names" ]]; then
+		log_debug "Removing finalizers from $kind objects"
+		echo "$names" | while read -r res; do
+			[[ -z "$res" ]] && continue
+			oc patch "$res" -n "$ns" --type=merge -p '{"metadata":{"finalizers":[]}}' >/dev/null 2>&1 || true
+		done
+	fi
+}
+
+# ============================================================================
+# STORAGE HELPERS
+# ============================================================================
+
+# Detect the best available StorageClass
+# Returns: the default SC, or crc-csi-hostpath-provisioner, or the first available SC
+# Usage: sc=$(get_default_storage_class)
+get_default_storage_class() {
+	local sc
+	sc=$(oc get sc -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || true)
+	if [[ -z "$sc" ]] && oc get sc crc-csi-hostpath-provisioner &>/dev/null; then
+		sc="crc-csi-hostpath-provisioner"
+	fi
+	if [[ -z "$sc" ]]; then
+		sc=$(oc get sc -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+	fi
+	echo "$sc"
 }
 
 # ============================================================================
