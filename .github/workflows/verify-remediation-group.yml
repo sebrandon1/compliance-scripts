@@ -155,11 +155,11 @@ jobs:
           HARDENING_PATH="telco-ran/configuration/kube-compare-reference/informational/hardening"
           mkdir -p artifacts/machineconfigs
 
-          MC_FILES=$(curl -fsSL "https://api.github.com/repos/openshift-kni/telco-reference/contents/${HARDENING_PATH}?ref=${COMPARE}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
+          MC_FILES=$(curl -fsSL "https://api.github.com/repos/sebrandon1/telco-reference/contents/${HARDENING_PATH}?ref=${COMPARE}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
 
           if [ -z "$MC_FILES" ]; then
             HARDENING_PATH="telco-ran/configuration/reference-crs/informational/hardening"
-            MC_FILES=$(curl -fsSL "https://api.github.com/repos/openshift-kni/telco-reference/contents/${HARDENING_PATH}?ref=${COMPARE}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
+            MC_FILES=$(curl -fsSL "https://api.github.com/repos/sebrandon1/telco-reference/contents/${HARDENING_PATH}?ref=${COMPARE}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
           fi
 
           if [ -z "$MC_FILES" ]; then
@@ -167,7 +167,7 @@ jobs:
             exit 1
           fi
 
-          FILES_URL="https://raw.githubusercontent.com/openshift-kni/telco-reference/${COMPARE}/${HARDENING_PATH}"
+          FILES_URL="https://raw.githubusercontent.com/sebrandon1/telco-reference/${COMPARE}/${HARDENING_PATH}"
           APPLIED=0
           echo "## Applied MachineConfigs" >> "$GITHUB_STEP_SUMMARY"
           for mc_file in $MC_FILES; do
