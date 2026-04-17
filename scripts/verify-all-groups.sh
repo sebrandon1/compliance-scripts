@@ -11,6 +11,8 @@
 #   --skip-baseline        Skip baseline scan export (use existing results)
 #   --skip-apply           Skip applying MCs (just re-scan and diff)
 #   --groups G1,G2,...     Only apply specific groups (default: all with compare branches)
+#   --batch-size N         Apply N groups at a time, waiting for MCP rollout between batches
+#                          (recommended for SNO/CRC clusters to avoid reboot cascades)
 #   --output-dir DIR       Output directory for artifacts (default: test-results/<timestamp>)
 #   --dry-run              Download MCs but don't apply them
 #   -h, --help             Show this help message
@@ -28,6 +30,7 @@ TRACKING="$SCRIPT_DIR/docs/_data/tracking.json"
 SKIP_BASELINE=false
 SKIP_APPLY=false
 GROUP_FILTER=""
+BATCH_SIZE=0
 OUTPUT_DIR=""
 DRY_RUN=false
 
@@ -40,6 +43,7 @@ usage() {
 	echo "  --skip-baseline        Skip baseline scan export (use existing results)"
 	echo "  --skip-apply           Skip applying MCs (just re-scan and diff)"
 	echo "  --groups G1,G2,...     Only apply specific groups (default: all with compare branches)"
+	echo "  --batch-size N         Apply N groups per batch, wait for MCP between (default: all at once)"
 	echo "  --output-dir DIR       Output directory for artifacts (default: test-results/<timestamp>)"
 	echo "  --dry-run              Download MCs but don't apply them"
 	echo "  -h, --help             Show this help message"
@@ -58,6 +62,10 @@ while [[ $# -gt 0 ]]; do
 		;;
 	--groups)
 		GROUP_FILTER="$2"
+		shift 2
+		;;
+	--batch-size)
+		BATCH_SIZE="$2"
 		shift 2
 		;;
 	--output-dir)
@@ -148,6 +156,18 @@ export_results() {
 	jq -r '{total: (.items | length), pass: ([.items[] | select(.status == "PASS")] | length), fail: ([.items[] | select(.status == "FAIL")] | length), manual: ([.items[] | select(.status == "MANUAL")] | length)} | "  Total: \(.total) | PASS: \(.pass) | FAIL: \(.fail) | MANUAL: \(.manual)"' "$output_file"
 }
 
+wait_for_mcp() {
+	for pool in $(oc get mcp -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+		log_info "  Waiting for MCP/$pool (timeout: 45m)..."
+		if ! oc wait mcp/"$pool" --for=condition=Updated=True --timeout=45m; then
+			log_warn "  MCP/$pool did not reach Updated=True within 45m"
+			return 1
+		fi
+	done
+	oc get mcp -o wide
+	return 0
+}
+
 GROUP_LIST=$(build_group_list)
 GROUP_COUNT=$(echo "$GROUP_LIST" | wc -l | tr -d ' ')
 log_info "Groups to process: $GROUP_COUNT"
@@ -161,9 +181,13 @@ else
 fi
 
 log_info "Phase 2: Fetch and apply remediation MachineConfigs"
+if [[ "$BATCH_SIZE" -gt 0 ]]; then
+	log_info "Batch mode: $BATCH_SIZE group(s) per batch with MCP rollout between batches"
+fi
 APPLIED_TOTAL=0
 SKIPPED_GROUPS=0
 APPLIED_GROUPS=0
+BATCH_APPLIED=0
 
 while IFS= read -r group_id; do
 	[[ -z "$group_id" ]] && continue
@@ -206,6 +230,13 @@ while IFS= read -r group_id; do
 		fi
 	done
 	APPLIED_GROUPS=$((APPLIED_GROUPS + 1))
+	BATCH_APPLIED=$((BATCH_APPLIED + 1))
+
+	if [[ "$BATCH_SIZE" -gt 0 && "$BATCH_APPLIED" -ge "$BATCH_SIZE" && "$DRY_RUN" != "true" && "$SKIP_APPLY" != "true" ]]; then
+		log_info "Batch of $BATCH_APPLIED groups applied, waiting for MCP rollout..."
+		wait_for_mcp
+		BATCH_APPLIED=0
+	fi
 done <<<"$GROUP_LIST"
 
 log_info "Applied $APPLIED_TOTAL files from $APPLIED_GROUPS groups ($SKIPPED_GROUPS skipped)"
@@ -217,14 +248,8 @@ if [[ "$DRY_RUN" == "true" ]]; then
 fi
 
 if [[ "$SKIP_APPLY" != "true" && "$APPLIED_TOTAL" -gt 0 ]]; then
-	log_info "Phase 3: Waiting for MCP rollout"
-	for pool in $(oc get mcp -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
-		log_info "  Waiting for MCP/$pool (timeout: 45m)..."
-		if ! oc wait mcp/"$pool" --for=condition=Updated=True --timeout=45m; then
-			log_warn "  MCP/$pool did not reach Updated=True within 45m"
-		fi
-	done
-	oc get mcp -o wide
+	log_info "Phase 3: Waiting for final MCP rollout"
+	wait_for_mcp
 fi
 
 log_info "Phase 4: Re-scan"
