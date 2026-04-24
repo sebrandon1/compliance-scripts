@@ -13,14 +13,15 @@
       "priority": 1,
       "priority_label": "Critical",
       "jira": "CNF-21212",
-      "pr": "529",
+      "pr": null,
       "compare": null,
       "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": null,
       "next_group": "H2",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending."
     },
     "H2": {
       "title": "PAM Empty Passwords",
@@ -28,14 +29,15 @@
       "priority": 1,
       "priority_label": "Critical",
       "jira": "CNF-21212",
-      "pr": "529",
+      "pr": null,
       "compare": null,
       "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "H1",
       "next_group": "H3",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending."
     },
     "H3": {
       "title": "SSHD Empty Passwords",
@@ -76,13 +78,14 @@
       "priority_label": "Medium",
       "jira": "CNF-21196",
       "pr": null,
-      "compare": "compliance/4.21/m2-kernel-sysctl",
+      "compare": "compliance/4.22/m2-kernel-sysctl",
       "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M1",
       "next_group": "M3",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
     },
     "M3": {
       "title": "Audit Rules - DAC Modifications",
@@ -123,13 +126,14 @@
       "priority_label": "Medium",
       "jira": null,
       "pr": null,
-      "compare": "compliance/4.21/m5-audit-modules",
+      "compare": "compliance/4.22/m5-audit-modules",
       "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M4",
       "next_group": "M6",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
     },
     "M6": {
       "title": "Audit Rules - Time Modifications",
@@ -170,13 +174,14 @@
       "priority_label": "Medium",
       "jira": null,
       "pr": null,
-      "compare": "compliance/4.21/m8-audit-network",
+      "compare": "compliance/4.22/m8-audit-network",
       "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M7",
       "next_group": "M9",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
     },
     "M9": {
       "title": "Auditd Configuration",
@@ -265,13 +270,14 @@
       "priority_label": "Low",
       "jira": null,
       "pr": null,
-      "compare": "compliance/4.21/l2-sysctl-dmesg",
+      "compare": "compliance/4.22/l2-sysctl-dmesg",
       "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "L1",
       "next_group": "MAN1",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
     },
     "M13": {
       "title": "Extended DAC Audit",
@@ -537,12 +543,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m29-access-controls",
-      "status": "verified",
+      "status": "partial",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M28",
       "next_group": "M30",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "2 platform-level checks still FAIL (banner, motd). Node-level checks PASS."
     },
     "M30": {
       "title": "OAuth Configuration",
