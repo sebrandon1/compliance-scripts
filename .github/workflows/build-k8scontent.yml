@@ -31,7 +31,7 @@ jobs:
           CONTENT_REF="${{ github.event.inputs.content_ref || 'master' }}"
           echo "Resolving ComplianceAsCode/content at ref: $CONTENT_REF"
 
-          COMMIT_SHA=$(git ls-remote https://github.com/ComplianceAsCode/content.git "$CONTENT_REF" | awk '{print $1}')
+          COMMIT_SHA=$(git ls-remote https://github.com/ComplianceAsCode/content.git "$CONTENT_REF" | head -1 | awk '{print $1}')
           if [[ -z "$COMMIT_SHA" ]]; then
             echo "ERROR: Could not resolve ref '$CONTENT_REF'"
             exit 1
