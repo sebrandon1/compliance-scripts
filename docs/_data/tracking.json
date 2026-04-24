@@ -105,14 +105,15 @@
       "priority": 2,
       "priority_label": "High",
       "jira": "CNF-22621",
-      "pr": "675",
-      "compare": "compliance/4.22/m4-audit-selinux",
-      "status": "verified",
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M3",
       "next_group": "M5",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "M5": {
       "title": "Audit Rules - Kernel Modules",
@@ -135,14 +136,15 @@
       "priority": 2,
       "priority_label": "High",
       "jira": "CNF-22622",
-      "pr": "676",
-      "compare": "compliance/4.22/m6-audit-time",
-      "status": "verified",
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M5",
       "next_group": "M7",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "M7": {
       "title": "Audit Rules - Login Monitoring",
@@ -150,14 +152,15 @@
       "priority": 2,
       "priority_label": "High",
       "jira": "CNF-22623",
-      "pr": "677",
-      "compare": "compliance/4.22/m7-audit-login",
-      "status": "verified",
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M6",
       "next_group": "M8",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "M8": {
       "title": "Audit Rules - Network Config",
