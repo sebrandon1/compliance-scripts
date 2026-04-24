@@ -20,6 +20,7 @@ permissions: read-all
 
 jobs:
   test-compliance:
+    name: test-compliance (${{ matrix.co_ref }}, ${{ matrix.ocp_version }}, k8scontent:v0.1.80)
     runs-on: ubuntu-latest
     if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
     strategy:
@@ -83,7 +84,12 @@ jobs:
           echo "$VERSION" | grep -q "$OCP_MAJOR_MINOR" || (echo "ERROR: Expected ${OCP_MAJOR_MINOR}.x, got $VERSION" && exit 1)
 
       - name: Run compliance validation (CO ${{ steps.inputs.outputs.co_ref }}, OCP ${{ steps.inputs.outputs.ocp_version }})
-        run: CO_REF=${{ steps.inputs.outputs.co_ref }} make test-compliance
+        env:
+          CO_REF: ${{ steps.inputs.outputs.co_ref }}
+          RELATED_IMAGE_OPERATOR: quay.io/bapalm/compliance-operator:234bdd200637
+          RELATED_IMAGE_OPENSCAP: quay.io/bapalm/openscap-ocp:234bdd200637
+          RELATED_IMAGE_PROFILE: quay.io/bapalm/k8scontent:v0.1.80
+        run: make test-compliance
 
       - name: Validate E8 results against baseline
         run: |

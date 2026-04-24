@@ -28,7 +28,7 @@ BG_BLUE := \033[44m
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
         export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
-        mirror-images
+        mirror-images rhcos-static-scan
 
 # Default target
 all: help
@@ -431,4 +431,14 @@ install-jekyll: ## 💎 Install Jekyll dependencies for local dashboard developm
 	@echo "$(BOLD)$(BLUE)💎 Installing Jekyll dependencies...$(RESET)"
 	@cd docs && bundle install --path vendor/bundle
 	@echo "$(GREEN)✅ Jekyll dependencies installed!$(RESET)"
+	@echo ""
+
+rhcos-static-scan: ## 🔬 Run offline OSCAP scan against RHCOS rootfs (requires OCP_VERSION)
+	@if [ -z "$(OCP_VERSION)" ]; then \
+	  echo "$(RED)❌ Error: OCP_VERSION is required!$(RESET)"; \
+	  echo "$(YELLOW)Usage: make rhcos-static-scan OCP_VERSION=4.21$(RESET)"; \
+	  exit 1; \
+	fi
+	@echo "$(BOLD)$(BLUE)🔬 Running offline RHCOS compliance scan for OCP $(OCP_VERSION)...$(RESET)"
+	@./scripts/rhcos-static-scan.sh $(OCP_VERSION)
 	@echo ""

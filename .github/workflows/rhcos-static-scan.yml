@@ -1,0 +1,153 @@
+name: RHCOS Static Compliance Scan
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # Daily at 8 AM UTC
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/rhcos-static-scan.sh'
+      - 'scripts/parse-oscap-results.py'
+      - '.github/workflows/rhcos-static-scan.yml'
+  workflow_dispatch:
+    inputs:
+      ocp_versions:
+        description: 'Comma-separated OCP versions to scan (e.g., 4.21,4.22)'
+        required: false
+        default: '4.21,4.22'
+      content_tag:
+        description: 'k8scontent image tag'
+        required: false
+        default: 'v0.1.80'
+      openscap_tag:
+        description: 'openscap-ocp image tag'
+        required: false
+        default: '234bdd200637'
+      must_gather_tag:
+        description: 'must-gather-ocp image tag'
+        required: false
+        default: '234bdd200637'
+      profiles:
+        description: 'Comma-separated SCAP profiles to scan'
+        required: false
+        default: 'xccdf_org.ssgproject.content_profile_e8,xccdf_org.ssgproject.content_profile_moderate'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1'
+    outputs:
+      matrix: ${{ steps.matrix.outputs.versions }}
+    steps:
+      - name: Build version matrix
+        id: matrix
+        run: |
+          VERSIONS="${{ inputs.ocp_versions || '4.21,4.22' }}"
+          JSON=$(echo "$VERSIONS" | tr ',' '\n' | jq -R . | jq -sc .)
+          echo "versions=$JSON" >> "$GITHUB_OUTPUT"
+          echo "Scanning versions: $JSON"
+
+  scan:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ocp_version: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install oc CLI
+        run: |
+          git clone --depth 1 https://github.com/palmsoftware/quick-k8s.git /tmp/quick-k8s
+          sudo /tmp/quick-k8s/scripts/install-oc-tools.sh --latest 4.21
+          rm -rf /tmp/quick-k8s
+
+      - name: Set up pull secret
+        run: echo '${{ secrets.OCP_PULL_SECRET }}' > /tmp/pull-secret.json
+
+      - name: Run RHCOS static scan (OCP ${{ matrix.ocp_version }})
+        env:
+          CONTENT_TAG: ${{ inputs.content_tag || 'v0.1.80' }}
+          OPENSCAP_TAG: ${{ inputs.openscap_tag || '234bdd200637' }}
+          MUST_GATHER_TAG: ${{ inputs.must_gather_tag || '234bdd200637' }}
+          PROFILES: ${{ inputs.profiles || 'xccdf_org.ssgproject.content_profile_e8,xccdf_org.ssgproject.content_profile_moderate' }}
+          PULL_SECRET: /tmp/pull-secret.json
+          RESULTS_DIR: /tmp/rhcos-scan-results
+          SUMMARY_FILE: /tmp/rhcos-summary.md
+        run: |
+          ./scripts/rhcos-static-scan.sh "${{ matrix.ocp_version }}"
+          if [[ -f /tmp/rhcos-summary.md ]]; then
+            cat /tmp/rhcos-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rhcos-scan-results-${{ matrix.ocp_version }}
+          path: /tmp/rhcos-scan-results/
+          retention-days: 30
+
+      - name: Open issue on baseline changes
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CHANGED=false
+          TITLE_PARTS=""
+          BODY=""
+
+          for DIFF_FILE in /tmp/rhcos-scan-results/baseline-diff-*.json; do
+            [[ -f "$DIFF_FILE" ]] || continue
+
+            HAS_CHANGES=$(python3 -c "import json; print(json.load(open('$DIFF_FILE')).get('has_changes', False))")
+            [[ "$HAS_CHANGES" == "True" ]] || continue
+
+            CHANGED=true
+            PROFILE=$(python3 -c "import json; print(json.load(open('$DIFF_FILE'))['profile'])")
+            OCP_MINOR=$(python3 -c "import json; print(json.load(open('$DIFF_FILE'))['ocp_minor'])")
+            RHCOS_VER=$(python3 -c "import json; print(json.load(open('$DIFF_FILE'))['rhcos_version'])")
+            NEW_FAILS=$(python3 -c "import json; f=json.load(open('$DIFF_FILE'))['new_fails']; print('\n'.join(f) if f else '')")
+            FIXED=$(python3 -c "import json; f=json.load(open('$DIFF_FILE'))['fixed']; print('\n'.join(f) if f else '')")
+            NEW_COUNT=$(python3 -c "import json; print(len(json.load(open('$DIFF_FILE'))['new_fails']))")
+            FIXED_COUNT=$(python3 -c "import json; print(len(json.load(open('$DIFF_FILE'))['fixed']))")
+
+            TITLE_PARTS="${TITLE_PARTS}${PROFILE}: ${NEW_COUNT} new, ${FIXED_COUNT} fixed; "
+
+            BODY="${BODY}## Profile: ${PROFILE} (OCP ${OCP_MINOR}, RHCOS ${RHCOS_VER})\n\n"
+            if [[ -n "$NEW_FAILS" ]]; then
+              BODY="${BODY}### New FAILs\n\`\`\`\n${NEW_FAILS}\n\`\`\`\n\n"
+            fi
+            if [[ -n "$FIXED" ]]; then
+              BODY="${BODY}### Fixed (now PASS)\n\`\`\`\n${FIXED}\n\`\`\`\n\n"
+            fi
+          done
+
+          if [[ "$CHANGED" != "true" ]]; then
+            echo "No baseline changes detected"
+            exit 0
+          fi
+
+          TITLE="[RHCOS Scan] OCP ${{ matrix.ocp_version }}: ${TITLE_PARTS%%; }"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY="${BODY}---\n[Workflow run](${RUN_URL})"
+
+          EXISTING=$(gh issue list --label compliance,automated --search "[RHCOS Scan] OCP ${{ matrix.ocp_version }}" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [[ -n "$EXISTING" ]]; then
+            echo "Commenting on existing issue #${EXISTING}"
+            echo -e "$BODY" | gh issue comment "$EXISTING" --body-file -
+          else
+            echo "Creating new issue: $TITLE"
+            echo -e "$BODY" | gh issue create --title "$TITLE" --body-file - --label compliance,automated
+          fi
+
+      - name: Clean up
+        if: always()
+        run: rm -f /tmp/pull-secret.json
