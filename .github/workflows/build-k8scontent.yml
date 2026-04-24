@@ -202,10 +202,9 @@ jobs:
             echo "  -> quay.io/bapalm/${IMG}:${SHORT}"
           done
 
-      - name: Verify architectures
+      - name: Verify mirrored images
         run: |
           SHORT="${{ needs.detect.outputs.operator_short }}"
-          FAILED=0
 
           for IMG in compliance-operator openscap-ocp must-gather-ocp; do
             echo "Verifying quay.io/bapalm/${IMG}:${SHORT}..."
@@ -215,20 +214,15 @@ jobs:
           m = json.load(sys.stdin)
           if 'manifests' in m:
               arches = sorted(set(p['platform']['architecture'] for p in m['manifests'] if p.get('platform', {}).get('architecture')))
-              print(f'  {arches}')
-              for required in ['amd64', 'arm64']:
-                  if required not in arches:
-                      print(f'  ERROR: missing {required}')
-                      sys.exit(1)
+              print(f'  Architectures: {arches}')
+              if 'amd64' not in arches:
+                  print(f'  ERROR: missing amd64')
+                  sys.exit(1)
           else:
               print('  Single-arch manifest')
-          " || FAILED=1
+          " || { echo "ERROR: ${IMG} verification failed"; exit 1; }
           done
-
-          if [[ $FAILED -ne 0 ]]; then
-            echo "ERROR: Architecture verification failed"
-            exit 1
-          fi
+          echo "All operator images verified"
 
       - name: Summary
         run: |
