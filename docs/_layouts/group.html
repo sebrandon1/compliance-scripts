@@ -30,6 +30,7 @@ layout: default
         {% elsif group.status == "complete" %}Complete
         {% elsif group.status == "verified" %}Verified
         {% elsif group.status == "partial" %}Partial
+        {% elsif group.status contains "pass-vanilla" %}PASS (vanilla RHCOS 9.8+)
         {% endif %}
       </span>
 
