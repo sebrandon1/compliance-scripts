@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       content_ref:
-        description: 'Git ref for ComplianceAsCode/content (default: master)'
+        description: 'Git ref for ComplianceAsCode/content (branch, tag, or SHA). Examples: master, v0.1.80, v0.1.79'
         required: false
         default: 'master'
       force:
@@ -118,6 +118,17 @@ jobs:
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
 
+      - name: Determine image tags
+        id: tags
+        run: |
+          SHORT="${{ needs.detect.outputs.content_short }}"
+          TAGS="quay.io/bapalm/k8scontent:${SHORT},quay.io/bapalm/k8scontent:latest"
+          if [[ -n "$VERSION_TAG" ]]; then
+            TAGS="${TAGS},quay.io/bapalm/k8scontent:${VERSION_TAG}"
+            echo "Adding version tag: ${VERSION_TAG}"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
       - name: Build and push k8scontent
         uses: docker/build-push-action@v7
         with:
@@ -125,13 +136,12 @@ jobs:
           file: content-src/Dockerfiles/ocp4_content
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            quay.io/bapalm/k8scontent:${{ needs.detect.outputs.content_short }}
-            quay.io/bapalm/k8scontent:latest
+          tags: ${{ steps.tags.outputs.tags }}
           labels: |
             org.opencontainers.image.revision=${{ needs.detect.outputs.content_sha }}
             org.opencontainers.image.source=https://github.com/ComplianceAsCode/content
             org.opencontainers.image.title=k8scontent
+            org.opencontainers.image.version=${{ env.VERSION_TAG }}
 
       - name: Verify architectures
         run: |
