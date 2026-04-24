@@ -1,0 +1,151 @@
+name: Build k8scontent Image
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Daily at 6 AM UTC
+  workflow_dispatch:
+    inputs:
+      content_ref:
+        description: 'Git ref for ComplianceAsCode/content (default: master)'
+        required: false
+        default: 'master'
+      force:
+        description: 'Force rebuild even if image already exists'
+        required: false
+        default: 'false'
+
+permissions: read-all
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1'
+    outputs:
+      commit_sha: ${{ steps.detect.outputs.commit_sha }}
+      short_sha: ${{ steps.detect.outputs.short_sha }}
+      needs_build: ${{ steps.detect.outputs.needs_build }}
+    steps:
+      - name: Detect latest content commit
+        id: detect
+        run: |
+          CONTENT_REF="${{ github.event.inputs.content_ref || 'master' }}"
+          echo "Resolving ComplianceAsCode/content at ref: $CONTENT_REF"
+
+          COMMIT_SHA=$(git ls-remote https://github.com/ComplianceAsCode/content.git "$CONTENT_REF" | awk '{print $1}')
+          if [[ -z "$COMMIT_SHA" ]]; then
+            echo "ERROR: Could not resolve ref '$CONTENT_REF'"
+            exit 1
+          fi
+          SHORT_SHA="${COMMIT_SHA:0:12}"
+
+          echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "version_tag=" >> "$GITHUB_OUTPUT"
+
+          echo "Content commit: $COMMIT_SHA"
+          echo "Short SHA: $SHORT_SHA"
+
+          if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
+            echo "Force rebuild requested"
+            echo "needs_build=true" >> "$GITHUB_OUTPUT"
+          elif skopeo inspect --raw --no-creds \
+              "docker://quay.io/bapalm/k8scontent:${SHORT_SHA}" >/dev/null 2>&1; then
+            echo "Image already exists for $SHORT_SHA, skipping"
+            echo "needs_build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Image not found for $SHORT_SHA, will build"
+            echo "needs_build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: detect
+    if: needs.detect.outputs.needs_build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check Red Hat Status
+        uses: palmsoftware/redhat-status@v0
+        with:
+          components: |
+            Quay.io
+
+      - name: Checkout ComplianceAsCode/content
+        run: |
+          git clone --depth 1 --branch "${{ github.event.inputs.content_ref || 'master' }}" \
+            https://github.com/ComplianceAsCode/content.git content-src
+          cd content-src
+          VERSION_TAG=$(git tag --points-at HEAD 2>/dev/null | grep "^v" | head -1 || true)
+          echo "VERSION_TAG=$VERSION_TAG" >> "$GITHUB_ENV"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to quay.io
+        uses: docker/login-action@v4
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_ROBOT_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
+      - name: Build and push k8scontent
+        uses: docker/build-push-action@v7
+        with:
+          context: content-src
+          file: content-src/Dockerfiles/ocp4_content
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            quay.io/bapalm/k8scontent:${{ needs.detect.outputs.short_sha }}
+            quay.io/bapalm/k8scontent:latest
+          labels: |
+            org.opencontainers.image.revision=${{ needs.detect.outputs.commit_sha }}
+            org.opencontainers.image.source=https://github.com/ComplianceAsCode/content
+            org.opencontainers.image.title=k8scontent
+            org.opencontainers.image.description=Security automation content in SCAP, Bash, Ansible, and other formats
+
+      - name: Verify architectures
+        run: |
+          SHORT_SHA="${{ needs.detect.outputs.short_sha }}"
+          echo "Verifying quay.io/bapalm/k8scontent:${SHORT_SHA}..."
+          skopeo inspect --raw --no-creds "docker://quay.io/bapalm/k8scontent:${SHORT_SHA}" | \
+            python3 -c "
+          import sys, json
+          m = json.load(sys.stdin)
+          if 'manifests' in m:
+              arches = sorted(set(p['platform']['architecture'] for p in m['manifests'] if p.get('platform', {}).get('architecture')))
+              print(f'Architectures: {arches}')
+              for required in ['amd64', 'arm64']:
+                  if required not in arches:
+                      print(f'ERROR: missing {required}')
+                      sys.exit(1)
+              print('OK — both amd64 and arm64 present')
+          else:
+              print('Single-arch manifest (not a manifest list)')
+          "
+
+      - name: Summary
+        run: |
+          SHORT_SHA="${{ needs.detect.outputs.short_sha }}"
+          COMMIT_SHA="${{ needs.detect.outputs.commit_sha }}"
+          VERSION_TAG="${VERSION_TAG:-}"
+
+          echo "## k8scontent Build Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image | \`quay.io/bapalm/k8scontent:${SHORT_SHA}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Source | [ComplianceAsCode/content@${SHORT_SHA}](https://github.com/ComplianceAsCode/content/commit/${COMMIT_SHA}) |" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -n "$VERSION_TAG" ]]; then
+            echo "| Version | \`${VERSION_TAG}\` |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "| Platforms | linux/amd64, linux/arm64 |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Usage" >> "$GITHUB_STEP_SUMMARY"
+          echo '```bash' >> "$GITHUB_STEP_SUMMARY"
+          echo "oc patch profilebundle ocp4 -n openshift-compliance --type merge -p '{\"spec\":{\"contentImage\":\"quay.io/bapalm/k8scontent:${SHORT_SHA}\"}}'" >> "$GITHUB_STEP_SUMMARY"
+          echo "oc patch profilebundle rhcos4 -n openshift-compliance --type merge -p '{\"spec\":{\"contentImage\":\"quay.io/bapalm/k8scontent:${SHORT_SHA}\"}}'" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
