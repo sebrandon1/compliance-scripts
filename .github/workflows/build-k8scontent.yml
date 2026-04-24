@@ -146,17 +146,19 @@ jobs:
       - name: Verify architectures
         run: |
           SHORT="${{ needs.detect.outputs.content_short }}"
+          echo "Verifying quay.io/bapalm/k8scontent:${SHORT}..."
           skopeo inspect --raw --no-creds "docker://quay.io/bapalm/k8scontent:${SHORT}" | \
             python3 -c "
           import sys, json
           m = json.load(sys.stdin)
           if 'manifests' in m:
               arches = sorted(set(p['platform']['architecture'] for p in m['manifests'] if p.get('platform', {}).get('architecture')))
-              print(f'k8scontent:{SHORT} — {arches}')
+              print(f'  Architectures: {arches}')
               for required in ['amd64', 'arm64']:
                   if required not in arches:
-                      print(f'ERROR: missing {required}')
+                      print(f'  ERROR: missing {required}')
                       sys.exit(1)
+              print('  OK')
           "
 
       - name: Summary
