@@ -185,15 +185,10 @@ jobs:
           components: |
             Quay.io
 
-      - name: Login to quay.io
-        run: |
-          skopeo login quay.io \
-            --username "${{ secrets.QUAY_ROBOT_USERNAME }}" \
-            --password "${{ secrets.QUAY_ROBOT_TOKEN }}"
-
       - name: Mirror operator images
         run: |
           SHORT="${{ needs.detect.outputs.operator_short }}"
+          QUAY_CREDS="${{ secrets.QUAY_ROBOT_USERNAME }}:${{ secrets.QUAY_ROBOT_TOKEN }}"
           IMAGES=(compliance-operator openscap-ocp must-gather-ocp)
 
           for IMG in "${IMAGES[@]}"; do
@@ -202,8 +197,8 @@ jobs:
             DST_LATEST="docker://quay.io/bapalm/${IMG}:latest"
 
             echo "Mirroring ${IMG}..."
-            skopeo copy --all "$SRC" "$DST"
-            skopeo copy --all "$SRC" "$DST_LATEST"
+            skopeo copy --all --dest-creds "$QUAY_CREDS" "$SRC" "$DST"
+            skopeo copy --all --dest-creds "$QUAY_CREDS" "$SRC" "$DST_LATEST"
             echo "  -> quay.io/bapalm/${IMG}:${SHORT}"
           done
 
