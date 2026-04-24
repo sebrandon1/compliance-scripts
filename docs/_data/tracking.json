@@ -45,7 +45,7 @@
       "jira": "CNF-21326",
       "pr": null,
       "compare": null,
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "H2",
@@ -61,7 +61,7 @@
       "jira": "CNF-22620",
       "pr": null,
       "compare": null,
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "H3",
@@ -92,12 +92,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.21/m3-audit-dac",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M2",
       "next_group": "M4",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M4": {
       "title": "Audit Rules - SELinux",
@@ -107,7 +108,7 @@
       "jira": "CNF-22621",
       "pr": null,
       "compare": null,
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M3",
@@ -138,7 +139,7 @@
       "jira": "CNF-22622",
       "pr": null,
       "compare": null,
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M5",
@@ -154,7 +155,7 @@
       "jira": "CNF-22623",
       "pr": null,
       "compare": null,
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M6",
@@ -185,12 +186,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.21/m9-auditd-config",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M8",
       "next_group": "M10",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M10": {
       "title": "API Server Encryption",
@@ -248,7 +250,7 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.21/l1-sshd-loglevel",
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M30",
@@ -279,12 +281,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m13-audit-dac-ext",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M12",
       "next_group": "M14",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M14": {
       "title": "Identity File Access Audit",
@@ -294,12 +297,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m14-audit-identity",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M13",
       "next_group": "M15",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M15": {
       "title": "File Deletion Audit",
@@ -309,12 +313,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m15-audit-file-deletion",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M14",
       "next_group": "M16",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M16": {
       "title": "Unsuccessful File Modification Audit",
@@ -324,12 +329,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m16-audit-unsuccessful",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M15",
       "next_group": "M17",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M17": {
       "title": "Privileged Commands Audit",
@@ -339,12 +345,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m17-audit-privileged",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M16",
       "next_group": "M18",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M18": {
       "title": "Session & MAC Audit",
@@ -354,12 +361,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m18-audit-session-mac",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M17",
       "next_group": "M19",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M19": {
       "title": "Usergroup Modification Audit",
@@ -369,12 +377,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m19-audit-usergroup",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M18",
       "next_group": "M20",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M20": {
       "title": "Auditd Data Retention",
@@ -384,12 +393,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m20-auditd-retention",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M19",
       "next_group": "M21",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M21": {
       "title": "Kernel Module Blacklist",
@@ -399,12 +409,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m21-kernel-modules",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M20",
       "next_group": "M22",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M22": {
       "title": "Network Sysctl Hardening",
@@ -414,12 +425,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m22-net-sysctl",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M21",
       "next_group": "M23",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M23": {
       "title": "Kernel Sysctl Extended",
@@ -429,12 +441,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m23-kernel-sysctl-ext",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M22",
       "next_group": "M24",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M24": {
       "title": "CoreOS Kernel Arguments",
@@ -444,12 +457,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m24-coreos-kernel-args",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M23",
       "next_group": "M25",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M25": {
       "title": "Chrony/NTP Configuration",
@@ -459,12 +473,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m25-chrony",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M24",
       "next_group": "M26",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M26": {
       "title": "Systemd Hardening",
@@ -474,12 +489,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m26-systemd",
-      "status": "verified",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M25",
       "next_group": "M27",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M27": {
       "title": "SSHD Moderate Extensions",
@@ -489,7 +505,7 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m27-sshd-moderate",
-      "status": "pass-vanilla",
+      "status": "pass-vanilla-rhcos9.8",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M26",
