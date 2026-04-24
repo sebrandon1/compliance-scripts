@@ -9,6 +9,12 @@ NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
 OPERATOR_NAME="compliance-operator"
 SUBSCRIPTION_NAME="compliance-operator-sub"
 
+# Pinned image overrides for reproducible scanning.
+# Set these env vars to override, or leave empty to use upstream defaults.
+PINNED_OPERATOR_IMAGE="${RELATED_IMAGE_OPERATOR:-quay.io/bapalm/compliance-operator:234bdd200637}"
+PINNED_OPENSCAP_IMAGE="${RELATED_IMAGE_OPENSCAP:-quay.io/bapalm/openscap-ocp:234bdd200637}"
+PINNED_CONTENT_IMAGE="${RELATED_IMAGE_PROFILE:-quay.io/bapalm/k8scontent:v0.1.80}"
+
 usage() {
 	cat <<USAGE
 Usage: $(basename "$0") [options]
@@ -642,6 +648,41 @@ done
 
 log_info "ProfileBundle status:"
 oc get profilebundles -n "$NAMESPACE" -o wide 2>/dev/null || true
+
+# ============================================================================
+# Pin All Operator Images
+# ============================================================================
+# Override the 3 RELATED_IMAGE env vars on the operator deployment to use
+# our pinned images instead of upstream :latest rolling tags.
+log_info "Pinning operator images for reproducible scanning..."
+log_info "  RELATED_IMAGE_OPERATOR=$PINNED_OPERATOR_IMAGE"
+log_info "  RELATED_IMAGE_OPENSCAP=$PINNED_OPENSCAP_IMAGE"
+log_info "  RELATED_IMAGE_PROFILE=$PINNED_CONTENT_IMAGE"
+
+oc set env deployment/compliance-operator -n "$NAMESPACE" \
+	RELATED_IMAGE_OPERATOR="$PINNED_OPERATOR_IMAGE" \
+	RELATED_IMAGE_OPENSCAP="$PINNED_OPENSCAP_IMAGE" \
+	RELATED_IMAGE_PROFILE="$PINNED_CONTENT_IMAGE" 2>/dev/null || log_warn "Could not set image env vars on deployment"
+
+oc patch profilebundle ocp4 -n "$NAMESPACE" --type merge \
+	-p "{\"spec\":{\"contentImage\":\"$PINNED_CONTENT_IMAGE\"}}" 2>/dev/null || true
+oc patch profilebundle rhcos4 -n "$NAMESPACE" --type merge \
+	-p "{\"spec\":{\"contentImage\":\"$PINNED_CONTENT_IMAGE\"}}" 2>/dev/null || true
+
+log_info "Waiting for operator to restart with pinned images..."
+oc rollout status deployment/compliance-operator -n "$NAMESPACE" --timeout=120s 2>/dev/null || true
+
+log_info "Waiting for ProfileBundles to re-parse..."
+for i in {1..30}; do
+	OCP4_STATUS=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+	RHCOS4_STATUS=$(oc get profilebundle rhcos4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+	if [[ "$OCP4_STATUS" == "VALID" && "$RHCOS4_STATUS" == "VALID" ]]; then
+		log_info "ProfileBundles re-parsed with pinned content"
+		break
+	fi
+	sleep 10
+done
+echo ""
 
 # ============================================================================
 # Content Image Tracking
