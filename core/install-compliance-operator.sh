@@ -641,7 +641,44 @@ for i in {1..30}; do
 done
 
 log_info "ProfileBundle status:"
-oc get profilebundles -n "$NAMESPACE" 2>/dev/null || true
+oc get profilebundles -n "$NAMESPACE" -o wide 2>/dev/null || true
+
+# ============================================================================
+# Content Image Tracking
+# ============================================================================
+# Resolve the content image digest and mirror it to quay.io/bapalm with a
+# traceable tag so we can reproduce scans with the exact same content later.
+log_info "Resolving content image details..."
+CONTENT_IMAGE=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.spec.contentImage}' 2>/dev/null || echo "")
+
+if [[ -n "$CONTENT_IMAGE" ]] && command -v skopeo &>/dev/null; then
+	INSPECT_JSON=$(skopeo inspect --override-arch amd64 --override-os linux "docker://$CONTENT_IMAGE" 2>/dev/null || echo "{}")
+	CONTENT_DIGEST=$(echo "$INSPECT_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Digest',''))" 2>/dev/null || echo "")
+	CONTENT_REVISION=$(echo "$INSPECT_JSON" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('Labels',{}).get('org.opencontainers.image.revision',''))" 2>/dev/null || echo "")
+
+	if [[ -n "$CONTENT_DIGEST" ]]; then
+		DIGEST_TAG="${CONTENT_DIGEST#sha256:}"
+		DIGEST_TAG="${DIGEST_TAG:0:12}"
+		log_info "Content image: $CONTENT_IMAGE"
+		log_info "Content digest: $CONTENT_DIGEST"
+		if [[ -n "$CONTENT_REVISION" ]]; then
+			log_info "Content revision (source commit): $CONTENT_REVISION"
+		fi
+
+		MIRROR_CONTENT_IMAGE="quay.io/bapalm/k8scontent:${DIGEST_TAG}"
+		log_info "Mirroring content image to $MIRROR_CONTENT_IMAGE for reproducibility..."
+		if skopeo copy --all "docker://$CONTENT_IMAGE" "docker://$MIRROR_CONTENT_IMAGE" 2>/dev/null; then
+			log_success "Content image mirrored to $MIRROR_CONTENT_IMAGE"
+		else
+			log_warn "Could not mirror content image (check quay.io/bapalm credentials)"
+		fi
+	else
+		log_warn "Could not resolve content image digest"
+	fi
+else
+	log_warn "Skipping content image tracking (missing skopeo or content image not found)"
+fi
+echo ""
 
 log_info "Profile parser pods should be using 'restricted-v2' SCC"
 log_info "You can verify with: oc get pods -n $NAMESPACE -o custom-columns=NAME:.metadata.name,SCC:.metadata.annotations.'openshift\.io/scc'"
