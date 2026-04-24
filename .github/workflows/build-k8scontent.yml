@@ -1,4 +1,4 @@
-name: Build k8scontent Image
+name: Build and Mirror Compliance Content Images
 
 on:
   schedule:
@@ -21,45 +21,72 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'sebrandon1'
     outputs:
-      commit_sha: ${{ steps.detect.outputs.commit_sha }}
-      short_sha: ${{ steps.detect.outputs.short_sha }}
-      needs_build: ${{ steps.detect.outputs.needs_build }}
+      content_sha: ${{ steps.content.outputs.commit_sha }}
+      content_short: ${{ steps.content.outputs.short_sha }}
+      needs_content_build: ${{ steps.content.outputs.needs_build }}
+      operator_digest: ${{ steps.operator.outputs.digest }}
+      operator_short: ${{ steps.operator.outputs.short }}
+      needs_operator_mirror: ${{ steps.operator.outputs.needs_mirror }}
     steps:
-      - name: Detect latest content commit
-        id: detect
+      - name: Detect k8scontent commit
+        id: content
         run: |
           CONTENT_REF="${{ github.event.inputs.content_ref || 'master' }}"
-          echo "Resolving ComplianceAsCode/content at ref: $CONTENT_REF"
-
           COMMIT_SHA=$(git ls-remote https://github.com/ComplianceAsCode/content.git "$CONTENT_REF" | head -1 | awk '{print $1}')
           if [[ -z "$COMMIT_SHA" ]]; then
             echo "ERROR: Could not resolve ref '$CONTENT_REF'"
             exit 1
           fi
           SHORT_SHA="${COMMIT_SHA:0:12}"
-
           echo "commit_sha=$COMMIT_SHA" >> "$GITHUB_OUTPUT"
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
-          echo "version_tag=" >> "$GITHUB_OUTPUT"
-
-          echo "Content commit: $COMMIT_SHA"
-          echo "Short SHA: $SHORT_SHA"
+          echo "k8scontent: $SHORT_SHA ($COMMIT_SHA)"
 
           if [[ "${{ github.event.inputs.force }}" == "true" ]]; then
-            echo "Force rebuild requested"
             echo "needs_build=true" >> "$GITHUB_OUTPUT"
-          elif skopeo inspect --raw --no-creds \
-              "docker://quay.io/bapalm/k8scontent:${SHORT_SHA}" >/dev/null 2>&1; then
-            echo "Image already exists for $SHORT_SHA, skipping"
+          elif skopeo inspect --raw --no-creds "docker://quay.io/bapalm/k8scontent:${SHORT_SHA}" >/dev/null 2>&1; then
+            echo "k8scontent:${SHORT_SHA} already exists"
             echo "needs_build=false" >> "$GITHUB_OUTPUT"
           else
-            echo "Image not found for $SHORT_SHA, will build"
             echo "needs_build=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build:
+      - name: Detect operator image digests
+        id: operator
+        run: |
+          FORCE="${{ github.event.inputs.force || 'false' }}"
+
+          # All 3 operator images share the same source commit, so use the operator digest as the tag
+          DIGEST=$(skopeo inspect --override-arch amd64 --override-os linux \
+            "docker://ghcr.io/complianceascode/compliance-operator:latest" 2>/dev/null | \
+            python3 -c "import json,sys; print(json.load(sys.stdin).get('Digest',''))" || echo "")
+
+          if [[ -z "$DIGEST" ]]; then
+            echo "Could not resolve operator digest"
+            echo "needs_mirror=false" >> "$GITHUB_OUTPUT"
+            echo "digest=" >> "$GITHUB_OUTPUT"
+            echo "short=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          SHORT="${DIGEST#sha256:}"
+          SHORT="${SHORT:0:12}"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "short=$SHORT" >> "$GITHUB_OUTPUT"
+          echo "Operator digest: $SHORT"
+
+          if [[ "$FORCE" == "true" ]]; then
+            echo "needs_mirror=true" >> "$GITHUB_OUTPUT"
+          elif skopeo inspect --raw --no-creds "docker://quay.io/bapalm/compliance-operator:${SHORT}" >/dev/null 2>&1; then
+            echo "Operator images already mirrored at $SHORT"
+            echo "needs_mirror=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_mirror=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-content:
     needs: detect
-    if: needs.detect.outputs.needs_build == 'true'
+    if: needs.detect.outputs.needs_content_build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -99,53 +126,119 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            quay.io/bapalm/k8scontent:${{ needs.detect.outputs.short_sha }}
+            quay.io/bapalm/k8scontent:${{ needs.detect.outputs.content_short }}
             quay.io/bapalm/k8scontent:latest
           labels: |
-            org.opencontainers.image.revision=${{ needs.detect.outputs.commit_sha }}
+            org.opencontainers.image.revision=${{ needs.detect.outputs.content_sha }}
             org.opencontainers.image.source=https://github.com/ComplianceAsCode/content
             org.opencontainers.image.title=k8scontent
-            org.opencontainers.image.description=Security automation content in SCAP, Bash, Ansible, and other formats
 
       - name: Verify architectures
         run: |
-          SHORT_SHA="${{ needs.detect.outputs.short_sha }}"
-          echo "Verifying quay.io/bapalm/k8scontent:${SHORT_SHA}..."
-          skopeo inspect --raw --no-creds "docker://quay.io/bapalm/k8scontent:${SHORT_SHA}" | \
+          SHORT="${{ needs.detect.outputs.content_short }}"
+          skopeo inspect --raw --no-creds "docker://quay.io/bapalm/k8scontent:${SHORT}" | \
             python3 -c "
           import sys, json
           m = json.load(sys.stdin)
           if 'manifests' in m:
               arches = sorted(set(p['platform']['architecture'] for p in m['manifests'] if p.get('platform', {}).get('architecture')))
-              print(f'Architectures: {arches}')
+              print(f'k8scontent:{SHORT} — {arches}')
               for required in ['amd64', 'arm64']:
                   if required not in arches:
                       print(f'ERROR: missing {required}')
                       sys.exit(1)
-              print('OK — both amd64 and arm64 present')
-          else:
-              print('Single-arch manifest (not a manifest list)')
           "
 
       - name: Summary
         run: |
-          SHORT_SHA="${{ needs.detect.outputs.short_sha }}"
-          COMMIT_SHA="${{ needs.detect.outputs.commit_sha }}"
-          VERSION_TAG="${VERSION_TAG:-}"
-
-          echo "## k8scontent Build Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          SHORT="${{ needs.detect.outputs.content_short }}"
+          SHA="${{ needs.detect.outputs.content_sha }}"
+          VER="${VERSION_TAG:-}"
+          echo "## k8scontent" >> "$GITHUB_STEP_SUMMARY"
           echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Image | \`quay.io/bapalm/k8scontent:${SHORT_SHA}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Source | [ComplianceAsCode/content@${SHORT_SHA}](https://github.com/ComplianceAsCode/content/commit/${COMMIT_SHA}) |" >> "$GITHUB_STEP_SUMMARY"
-          if [[ -n "$VERSION_TAG" ]]; then
-            echo "| Version | \`${VERSION_TAG}\` |" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          echo "| Image | \`quay.io/bapalm/k8scontent:${SHORT}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Source | [ComplianceAsCode/content@${SHORT}](https://github.com/ComplianceAsCode/content/commit/${SHA}) |" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -n "$VER" ]]; then echo "| Version | \`${VER}\` |" >> "$GITHUB_STEP_SUMMARY"; fi
           echo "| Platforms | linux/amd64, linux/arm64 |" >> "$GITHUB_STEP_SUMMARY"
+
+  mirror-operator:
+    needs: detect
+    if: needs.detect.outputs.needs_operator_mirror == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check Red Hat Status
+        uses: palmsoftware/redhat-status@v0
+        with:
+          components: |
+            Quay.io
+
+      - name: Login to quay.io
+        run: |
+          skopeo login quay.io \
+            --username "${{ secrets.QUAY_ROBOT_USERNAME }}" \
+            --password "${{ secrets.QUAY_ROBOT_TOKEN }}"
+
+      - name: Mirror operator images
+        run: |
+          SHORT="${{ needs.detect.outputs.operator_short }}"
+          IMAGES=(compliance-operator openscap-ocp must-gather-ocp)
+
+          for IMG in "${IMAGES[@]}"; do
+            SRC="docker://ghcr.io/complianceascode/${IMG}:latest"
+            DST="docker://quay.io/bapalm/${IMG}:${SHORT}"
+            DST_LATEST="docker://quay.io/bapalm/${IMG}:latest"
+
+            echo "Mirroring ${IMG}..."
+            skopeo copy --all "$SRC" "$DST"
+            skopeo copy --all "$SRC" "$DST_LATEST"
+            echo "  -> quay.io/bapalm/${IMG}:${SHORT}"
+          done
+
+      - name: Verify architectures
+        run: |
+          SHORT="${{ needs.detect.outputs.operator_short }}"
+          FAILED=0
+
+          for IMG in compliance-operator openscap-ocp must-gather-ocp; do
+            echo "Verifying quay.io/bapalm/${IMG}:${SHORT}..."
+            skopeo inspect --raw --no-creds "docker://quay.io/bapalm/${IMG}:${SHORT}" | \
+              python3 -c "
+          import sys, json
+          m = json.load(sys.stdin)
+          if 'manifests' in m:
+              arches = sorted(set(p['platform']['architecture'] for p in m['manifests'] if p.get('platform', {}).get('architecture')))
+              print(f'  {arches}')
+              for required in ['amd64', 'arm64']:
+                  if required not in arches:
+                      print(f'  ERROR: missing {required}')
+                      sys.exit(1)
+          else:
+              print('  Single-arch manifest')
+          " || FAILED=1
+          done
+
+          if [[ $FAILED -ne 0 ]]; then
+            echo "ERROR: Architecture verification failed"
+            exit 1
+          fi
+
+      - name: Summary
+        run: |
+          SHORT="${{ needs.detect.outputs.operator_short }}"
+          echo "## Operator Images" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image | Tag |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-----|" >> "$GITHUB_STEP_SUMMARY"
+          for IMG in compliance-operator openscap-ocp must-gather-ocp; do
+            echo "| \`quay.io/bapalm/${IMG}\` | \`${SHORT}\` |" >> "$GITHUB_STEP_SUMMARY"
+          done
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Usage" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Override env vars for operator deployment" >> "$GITHUB_STEP_SUMMARY"
           echo '```bash' >> "$GITHUB_STEP_SUMMARY"
-          echo "oc patch profilebundle ocp4 -n openshift-compliance --type merge -p '{\"spec\":{\"contentImage\":\"quay.io/bapalm/k8scontent:${SHORT_SHA}\"}}'" >> "$GITHUB_STEP_SUMMARY"
-          echo "oc patch profilebundle rhcos4 -n openshift-compliance --type merge -p '{\"spec\":{\"contentImage\":\"quay.io/bapalm/k8scontent:${SHORT_SHA}\"}}'" >> "$GITHUB_STEP_SUMMARY"
+          echo "oc set env deployment/compliance-operator -n openshift-compliance \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  RELATED_IMAGE_OPERATOR=quay.io/bapalm/compliance-operator:${SHORT} \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  RELATED_IMAGE_OPENSCAP=quay.io/bapalm/openscap-ocp:${SHORT} \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  RELATED_IMAGE_PROFILE=quay.io/bapalm/k8scontent:latest" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
