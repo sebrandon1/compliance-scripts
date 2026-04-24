@@ -43,14 +43,15 @@
       "priority": 1,
       "priority_label": "Critical",
       "jira": "CNF-21326",
-      "pr": "466",
+      "pr": null,
       "compare": null,
-      "status": "verified",
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "H2",
       "next_group": "M1",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "M1": {
       "title": "SSHD Configuration",
@@ -58,14 +59,15 @@
       "priority": 2,
       "priority_label": "High",
       "jira": "CNF-22620",
-      "pr": "674",
-      "compare": "compliance/4.22/m1-sshd-medium",
-      "status": "verified",
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "H3",
       "next_group": "M2",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "M2": {
       "title": "Kernel Hardening (Sysctl)",
@@ -243,12 +245,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.21/l1-sshd-loglevel",
-      "status": "verified",
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M30",
       "next_group": "L2",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "L2": {
       "title": "Sysctl dmesg_restrict",
@@ -483,12 +486,13 @@
       "jira": null,
       "pr": null,
       "compare": "compliance/4.22/m27-sshd-moderate",
-      "status": "verified",
+      "status": "pass-vanilla",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M26",
       "next_group": "M28",
-      "last_sync": null
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
     },
     "M28": {
       "title": "USBGuard",
