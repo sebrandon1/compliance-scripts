@@ -51,7 +51,7 @@
       "prev_group": "H2",
       "next_group": "M1",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M1": {
       "title": "SSHD Configuration",
@@ -67,7 +67,7 @@
       "prev_group": "H3",
       "next_group": "M2",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M2": {
       "title": "Kernel Hardening (Sysctl)",
@@ -113,7 +113,7 @@
       "prev_group": "M3",
       "next_group": "M5",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M5": {
       "title": "Audit Rules - Kernel Modules",
@@ -144,7 +144,7 @@
       "prev_group": "M5",
       "next_group": "M7",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M7": {
       "title": "Audit Rules - Login Monitoring",
@@ -160,7 +160,7 @@
       "prev_group": "M6",
       "next_group": "M8",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M8": {
       "title": "Audit Rules - Network Config",
@@ -254,7 +254,7 @@
       "prev_group": "M30",
       "next_group": "L2",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "L2": {
       "title": "Sysctl dmesg_restrict",
@@ -495,7 +495,7 @@
       "prev_group": "M26",
       "next_group": "M28",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS as of content v0.1.78+ with compliance-operator v1.8.2"
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
     },
     "M28": {
       "title": "USBGuard",
