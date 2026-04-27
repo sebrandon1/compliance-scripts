@@ -39,7 +39,7 @@ permissions:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'sebrandon1'
+    if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
     outputs:
       matrix: ${{ steps.matrix.outputs.versions }}
     steps:
