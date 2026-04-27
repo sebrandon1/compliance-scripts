@@ -60,7 +60,7 @@ jobs:
         ocp_version: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install oc CLI
         run: |
