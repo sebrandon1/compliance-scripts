@@ -16,6 +16,14 @@ layout: default
   <div class="group-header">
     <h1>
       <span class="severity-badge {{ group.severity | downcase }}">{{ group.severity }}</span>
+      {% if group.platform %}
+      <span class="platform-badge {{ group.platform }}">
+        {% if group.platform == "rhcos" %}RHCOS (Node)
+        {% elsif group.platform == "ocp" %}OCP (Platform)
+        {% elsif group.platform == "mixed" %}Mixed
+        {% endif %}
+      </span>
+      {% endif %}
       {{ page.group_id }}: {{ group.title }}
       {% if group.priority %}
       <span class="priority-score p{{ group.priority }}" title="{{ group.priority_label }} Priority">P{{ group.priority }}</span>

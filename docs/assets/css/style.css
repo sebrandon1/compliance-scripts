@@ -1810,3 +1810,50 @@ kbd {
 [data-theme="dark"] .source-files li {
   color: var(--color-text);
 }
+
+/* Platform badges */
+.platform-badge {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border-radius: 3px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.platform-badge.rhcos {
+  background: #E0F2F1;
+  color: #00695C;
+  border: 1px solid #80CBC4;
+}
+
+.platform-badge.ocp {
+  background: #F3E5F5;
+  color: #6A1B9A;
+  border: 1px solid #CE93D8;
+}
+
+.platform-badge.mixed {
+  background: #FFF3E0;
+  color: #E65100;
+  border: 1px solid #FFB74D;
+}
+
+[data-theme="dark"] .platform-badge.rhcos {
+  background: #004D40;
+  color: #A7FFEB;
+  border-color: #00897B;
+}
+
+[data-theme="dark"] .platform-badge.ocp {
+  background: #4A148C;
+  color: #EA80FC;
+  border-color: #7B1FA2;
+}
+
+[data-theme="dark"] .platform-badge.mixed {
+  background: #BF360C;
+  color: #FFCCBC;
+  border-color: #E64A19;
+}

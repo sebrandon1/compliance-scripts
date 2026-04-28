@@ -2,17 +2,26 @@
   <thead>
     <tr>
       <th>Check Name</th>
+      <th>Platform</th>
       <th>Status</th>
     </tr>
   </thead>
   <tbody>
     {% for check in include.checks %}
-    <tr>
+    {% if check.name contains "rhcos4-" %}
+      {% assign check_platform = "rhcos" %}
+    {% else %}
+      {% assign check_platform = "ocp" %}
+    {% endif %}
+    <tr data-platform="{{ check_platform }}">
       <td>
         <code>{{ check.name }}</code>
         {% if check.summary %}
         <br><small class="description">{{ check.summary }}</small>
         {% endif %}
+      </td>
+      <td>
+        <span class="platform-badge {{ check_platform }}">{{ check_platform | upcase }}</span>
       </td>
       <td>
         <span class="status-badge pass">

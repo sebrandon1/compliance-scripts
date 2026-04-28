@@ -2,6 +2,7 @@
   <thead>
     <tr>
       <th>Check Name</th>
+      <th>Platform</th>
       <th>Status</th>
       <th>Jira</th>
       <th>PR</th>
@@ -18,7 +19,12 @@
     {% else %}
       {% assign tracking = nil %}
     {% endif %}
-    <tr>
+    {% if check.name contains "rhcos4-" %}
+      {% assign check_platform = "rhcos" %}
+    {% else %}
+      {% assign check_platform = "ocp" %}
+    {% endif %}
+    <tr data-platform="{{ check_platform }}">
       <td>
         <details class="check-details">
           <summary>
@@ -39,6 +45,9 @@
             {% endif %}
           </div>
         </details>
+      </td>
+      <td>
+        <span class="platform-badge {{ check_platform }}">{{ check_platform | upcase }}</span>
       </td>
       <td>
         <span class="status-badge {{ check.status | downcase }}">

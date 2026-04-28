@@ -81,6 +81,12 @@ if [[ -f "$TRACKING_FILE" ]]; then
 	log_info "Loaded tracking data from ${TRACKING_FILE}"
 fi
 
+# Count failing by platform
+RHCOS_FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL" and (.metadata.name | test("^rhcos4-")))] | length')
+OCP_FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL" and (.metadata.name | test("^ocp4-")))] | length')
+log_info "  RHCOS failing: ${RHCOS_FAILING}"
+log_info "  OCP failing:   ${OCP_FAILING}"
+
 log_info "Processing remediations by severity..."
 
 # Helper: extract profile from check name
@@ -93,6 +99,11 @@ PROFILE_JQ='def extract_profile:
   elif test("^rhcos4-e8") then "E8"
   elif test("^rhcos4-moderate") then "Moderate"
   else "Unknown"
+  end;
+def extract_platform:
+  if test("^rhcos4-") then "rhcos"
+  elif test("^ocp4-") then "ocp"
+  else "unknown"
   end;'
 
 # Query checks by jq filter expression
@@ -104,7 +115,8 @@ query_checks() {
 	    status: .status,
 	    description: .description,
 	    severity: .severity,
-	    profile: (.metadata.name | extract_profile)
+	    profile: (.metadata.name | extract_profile),
+	    platform: (.metadata.name | extract_platform)
 	}]'
 }
 
@@ -151,6 +163,8 @@ OUTPUT_JSON=$(jq -n \
 	--argjson failing "$FAILING" \
 	--argjson manual "$MANUAL" \
 	--argjson skipped "$SKIPPED" \
+	--argjson rhcos_failing "$RHCOS_FAILING" \
+	--argjson ocp_failing "$OCP_FAILING" \
 	--argjson high "$HIGH_CHECKS" \
 	--argjson medium "$MEDIUM_CHECKS" \
 	--argjson low "$LOW_CHECKS" \
@@ -166,7 +180,9 @@ OUTPUT_JSON=$(jq -n \
             passing: $passing,
             failing: $failing,
             manual: $manual,
-            skipped: $skipped
+            skipped: $skipped,
+            rhcos_failing: $rhcos_failing,
+            ocp_failing: $ocp_failing
         },
         remediations: {
             high: $high,
