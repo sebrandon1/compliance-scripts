@@ -169,87 +169,33 @@ $(for role in $SCAN_ROLES; do echo "  - $role"; done)
 EOF
 )
 
-# ScanSettingBinding for E8 profiles
-E8_BINDING_YAML=$(
-	cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-e8
-  namespace: $NAMESPACE
-profiles:
-  - name: rhcos4-e8
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-  - name: ocp4-e8
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-)
+# ============================================================================
+# HELPER: generate a ScanSettingBinding YAML for one or more profiles
+# ============================================================================
 
-# ScanSettingBinding for CIS profile
-CIS_BINDING_YAML=$(
+gen_scan_binding() {
+	local name="$1"
+	shift
+	local profiles_yaml=""
+	for profile in "$@"; do
+		profiles_yaml+="  - name: ${profile}
+    kind: Profile
+    apiGroup: compliance.openshift.io/v1alpha1
+"
+	done
 	cat <<EOF
 apiVersion: compliance.openshift.io/v1alpha1
 kind: ScanSettingBinding
 metadata:
-  name: cis-scan
-  namespace: $NAMESPACE
+  name: ${name}
+  namespace: ${NAMESPACE}
 profiles:
-  - name: ocp4-cis
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
+${profiles_yaml}settingsRef:
   name: periodic-setting
   kind: ScanSetting
   apiGroup: compliance.openshift.io/v1alpha1
 EOF
-)
-
-# ScanSettingBinding for NIST 800-53 Moderate profiles
-MODERATE_BINDING_YAML=$(
-	cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-moderate
-  namespace: $NAMESPACE
-profiles:
-  - name: ocp4-moderate
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-  - name: rhcos4-moderate
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-)
-
-# ScanSettingBinding for PCI-DSS profiles
-PCIDSS_BINDING_YAML=$(
-	cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-pci-dss
-  namespace: $NAMESPACE
-profiles:
-  - name: ocp4-pci-dss
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-)
+}
 
 # Check profile availability
 E8_AVAILABLE=false
@@ -259,117 +205,33 @@ else
 	log_warn "E8 profiles not available on this cluster, skipping periodic-e8 binding"
 fi
 
+# Determine profiles per binding based on platform
+case "$PLATFORM" in
+all) E8_PROFILES=("rhcos4-e8" "ocp4-e8") MOD_PROFILES=("ocp4-moderate" "rhcos4-moderate") ;;
+ocp) E8_PROFILES=("ocp4-e8") MOD_PROFILES=("ocp4-moderate") ;;
+rhcos) E8_PROFILES=("rhcos4-e8") MOD_PROFILES=("rhcos4-moderate") ;;
+esac
+
 echo "$SCANSETTING_YAML" | apply_inline
 
 BINDINGS_CREATED=()
 
-# E8: mixed (rhcos4-e8 + ocp4-e8), apply when platform is all or matches either
-if [[ "$E8_AVAILABLE" == "true" && "$PLATFORM" != "ocp" && "$PLATFORM" != "rhcos" ]]; then
-	echo "$E8_BINDING_YAML" | apply_inline
-	BINDINGS_CREATED+=("periodic-e8 (rhcos4-e8, ocp4-e8)")
+if [[ "$E8_AVAILABLE" == "true" ]]; then
+	gen_scan_binding "periodic-e8" "${E8_PROFILES[@]}" | apply_inline
+	BINDINGS_CREATED+=("periodic-e8 (${E8_PROFILES[*]})")
 fi
 
-# CIS: ocp only
 if [[ "$PLATFORM" != "rhcos" ]]; then
-	echo "$CIS_BINDING_YAML" | apply_inline
+	gen_scan_binding "cis-scan" "ocp4-cis" | apply_inline
 	BINDINGS_CREATED+=("cis-scan (ocp4-cis)")
 fi
 
-# Moderate: mixed (ocp4-moderate + rhcos4-moderate)
-if [[ "$PLATFORM" == "all" ]]; then
-	echo "$MODERATE_BINDING_YAML" | apply_inline
-	BINDINGS_CREATED+=("periodic-moderate (ocp4-moderate, rhcos4-moderate)")
-elif [[ "$PLATFORM" == "ocp" ]]; then
-	# Create ocp-only moderate binding
-	OCP_MODERATE_YAML=$(
-		cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-moderate
-  namespace: $NAMESPACE
-profiles:
-  - name: ocp4-moderate
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-	)
-	echo "$OCP_MODERATE_YAML" | apply_inline
-	BINDINGS_CREATED+=("periodic-moderate (ocp4-moderate)")
-elif [[ "$PLATFORM" == "rhcos" ]]; then
-	# Create rhcos-only moderate binding
-	RHCOS_MODERATE_YAML=$(
-		cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-moderate
-  namespace: $NAMESPACE
-profiles:
-  - name: rhcos4-moderate
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-	)
-	echo "$RHCOS_MODERATE_YAML" | apply_inline
-	BINDINGS_CREATED+=("periodic-moderate (rhcos4-moderate)")
-fi
+gen_scan_binding "periodic-moderate" "${MOD_PROFILES[@]}" | apply_inline
+BINDINGS_CREATED+=("periodic-moderate (${MOD_PROFILES[*]})")
 
-# PCI-DSS: ocp only
 if [[ "$PLATFORM" != "rhcos" ]]; then
-	echo "$PCIDSS_BINDING_YAML" | apply_inline
+	gen_scan_binding "periodic-pci-dss" "ocp4-pci-dss" | apply_inline
 	BINDINGS_CREATED+=("periodic-pci-dss (ocp4-pci-dss)")
-fi
-
-# E8: handle platform-specific E8 bindings
-if [[ "$E8_AVAILABLE" == "true" && "$PLATFORM" == "ocp" ]]; then
-	OCP_E8_YAML=$(
-		cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-e8
-  namespace: $NAMESPACE
-profiles:
-  - name: ocp4-e8
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-	)
-	echo "$OCP_E8_YAML" | apply_inline
-	BINDINGS_CREATED+=("periodic-e8 (ocp4-e8)")
-elif [[ "$E8_AVAILABLE" == "true" && "$PLATFORM" == "rhcos" ]]; then
-	RHCOS_E8_YAML=$(
-		cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-e8
-  namespace: $NAMESPACE
-profiles:
-  - name: rhcos4-e8
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-	)
-	echo "$RHCOS_E8_YAML" | apply_inline
-	BINDINGS_CREATED+=("periodic-e8 (rhcos4-e8)")
 fi
 
 if [[ "$DRY_RUN" != "true" ]]; then

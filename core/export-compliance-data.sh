@@ -81,7 +81,6 @@ if [[ -f "$TRACKING_FILE" ]]; then
 	log_info "Loaded tracking data from ${TRACKING_FILE}"
 fi
 
-# Count failing by platform
 RHCOS_FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL" and (.metadata.name | test("^rhcos4-")))] | length')
 OCP_FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL" and (.metadata.name | test("^ocp4-")))] | length')
 log_info "  RHCOS failing: ${RHCOS_FAILING}"

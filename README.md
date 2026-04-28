@@ -44,6 +44,10 @@ Run `make help` to see all available targets. See [Individual Make Targets](#ind
 | On-demand scan | `./core/create-scan.sh` | Runs once | CIS (default) |
 | On-demand, all profiles | `./core/create-scan.sh --recommended` | Runs once | CIS, Moderate, PCI-DSS |
 | Periodic scan | `./core/apply-periodic-scan.sh` | Daily (`0 1 * * *`) | E8, CIS, Moderate, PCI-DSS |
+| Platform-filtered | `./core/create-scan.sh --platform ocp` | Runs once | OCP platform checks only |
+| Platform-filtered | `./core/create-scan.sh --platform rhcos` | Runs once | RHCOS node checks only |
+
+Both `create-scan.sh` and `apply-periodic-scan.sh` accept `-t, --platform` (`ocp`, `rhcos`, or `all`) to scan only one platform type. This is useful when focusing on node-level hardening (RHCOS) vs cluster configuration (OCP).
 
 ### Post-Scan Processing
 

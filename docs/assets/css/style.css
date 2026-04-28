@@ -1811,6 +1811,34 @@ kbd {
   color: var(--color-text);
 }
 
+/* Platform summary cards */
+.summary-cards.platform-cards {
+  margin-top: 0.5rem;
+}
+
+.card.platform-rhcos {
+  border-left: 4px solid #00897B;
+}
+
+.card.platform-ocp {
+  border-left: 4px solid #7B1FA2;
+}
+
+.card-subtitle {
+  font-size: 0.8em;
+  color: var(--color-text-muted, #666);
+  margin-top: 0.25rem;
+}
+
+.filter-separator {
+  border-left: 1px solid #ccc;
+  margin: 0 0.25rem;
+}
+
+[data-theme="dark"] .filter-separator {
+  border-color: #555;
+}
+
 /* Platform badges */
 .platform-badge {
   display: inline-block;
