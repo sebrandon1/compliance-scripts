@@ -14,6 +14,7 @@
 # Options:
 #   -n, --namespace    Namespace for the scan (default: openshift-compliance)
 #   -p, --profile      Scan a single profile instead of all profiles
+#   -t, --platform     Platform filter: ocp, rhcos, or all (default: all)
 #   -s, --scan-name    Name of the scan (only used with --profile)
 #   --dry-run          Preview changes without applying
 #   -h, --help         Show this help message
@@ -30,6 +31,7 @@ load_env
 NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 PROFILE=""
 SCAN_NAME=""
+PLATFORM="all"
 DRY_RUN=false
 
 # All compliance profiles for broad coverage
@@ -45,11 +47,17 @@ usage() {
 	echo "Options:"
 	echo "  -n, --namespace    Namespace for the scan (default: $NAMESPACE)"
 	echo "  -p, --profile      Scan a single profile instead of all"
+	echo "  -t, --platform     Platform filter: ocp, rhcos, or all (default: all)"
 	echo "  -s, --scan-name    Name of the scan (only used with --profile)"
 	echo "  --dry-run          Preview changes without applying"
 	echo "  -h, --help         Show this help message"
 	echo ""
-	echo "Default profiles (all scanned unless --profile is specified):"
+	echo "Platform filters:"
+	echo "  ocp     OCP platform checks only (ocp4-* profiles)"
+	echo "  rhcos   RHCOS node checks only (rhcos4-* profiles)"
+	echo "  all     Both platforms (default)"
+	echo ""
+	echo "Default profiles (all scanned unless --profile or --platform is specified):"
 	echo "  ocp4-e8             Essential Eight (platform)"
 	echo "  rhcos4-e8           Essential Eight (node)"
 	echo "  ocp4-cis            CIS Benchmark (platform)"
@@ -70,6 +78,14 @@ while [[ $# -gt 0 ]]; do
 		;;
 	-p | --profile)
 		PROFILE="$2"
+		shift 2
+		;;
+	-t | --platform)
+		PLATFORM="$2"
+		if [[ "$PLATFORM" != "ocp" && "$PLATFORM" != "rhcos" && "$PLATFORM" != "all" ]]; then
+			log_error "Invalid platform: $PLATFORM (must be ocp, rhcos, or all)"
+			exit 1
+		fi
 		shift 2
 		;;
 	-s | --scan-name)
@@ -151,6 +167,23 @@ if [[ -n "$PROFILE" ]]; then
 	fi
 else
 	# Default: scan all available profiles
+	# Apply platform filter
+	if [[ "$PLATFORM" == "ocp" ]]; then
+		FILTERED_PROFILES=()
+		for p in "${ALL_PROFILES[@]}"; do
+			[[ "$p" == ocp4-* ]] && FILTERED_PROFILES+=("$p")
+		done
+		ALL_PROFILES=("${FILTERED_PROFILES[@]}")
+		log_info "Platform filter: OCP only (${#ALL_PROFILES[@]} profiles)"
+	elif [[ "$PLATFORM" == "rhcos" ]]; then
+		FILTERED_PROFILES=()
+		for p in "${ALL_PROFILES[@]}"; do
+			[[ "$p" == rhcos4-* ]] && FILTERED_PROFILES+=("$p")
+		done
+		ALL_PROFILES=("${FILTERED_PROFILES[@]}")
+		log_info "Platform filter: RHCOS only (${#ALL_PROFILES[@]} profiles)"
+	fi
+
 	log_info "Filtering profiles by availability on cluster..."
 	CLUSTER_PROFILES=$(oc get profiles.compliance -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || true)
 	AVAILABLE_PROFILES=()

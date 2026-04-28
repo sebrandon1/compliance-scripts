@@ -21,7 +21,8 @@
       "prev_group": null,
       "next_group": "H2",
       "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending."
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending.",
+      "platform": "rhcos"
     },
     "H2": {
       "title": "PAM Empty Passwords",
@@ -37,7 +38,8 @@
       "prev_group": "H1",
       "next_group": "H3",
       "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending."
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending.",
+      "platform": "rhcos"
     },
     "H3": {
       "title": "SSHD Empty Passwords",
@@ -53,7 +55,8 @@
       "prev_group": "H2",
       "next_group": "M1",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M1": {
       "title": "SSHD Configuration",
@@ -69,7 +72,8 @@
       "prev_group": "H3",
       "next_group": "M2",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M2": {
       "title": "Kernel Hardening (Sysctl)",
@@ -85,7 +89,8 @@
       "prev_group": "M1",
       "next_group": "M3",
       "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos"
     },
     "M3": {
       "title": "Audit Rules - DAC Modifications",
@@ -101,7 +106,8 @@
       "prev_group": "M2",
       "next_group": "M4",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M4": {
       "title": "Audit Rules - SELinux",
@@ -117,7 +123,8 @@
       "prev_group": "M3",
       "next_group": "M5",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M5": {
       "title": "Audit Rules - Kernel Modules",
@@ -133,7 +140,8 @@
       "prev_group": "M4",
       "next_group": "M6",
       "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos"
     },
     "M6": {
       "title": "Audit Rules - Time Modifications",
@@ -149,7 +157,8 @@
       "prev_group": "M5",
       "next_group": "M7",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M7": {
       "title": "Audit Rules - Login Monitoring",
@@ -165,7 +174,8 @@
       "prev_group": "M6",
       "next_group": "M8",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M8": {
       "title": "Audit Rules - Network Config",
@@ -181,7 +191,8 @@
       "prev_group": "M7",
       "next_group": "M9",
       "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos"
     },
     "M9": {
       "title": "Auditd Configuration",
@@ -197,7 +208,8 @@
       "prev_group": "M8",
       "next_group": "M10",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M10": {
       "title": "API Server Encryption",
@@ -213,7 +225,8 @@
       "prev_group": "M9",
       "next_group": "M11",
       "last_sync": null,
-      "notes": "Platform-level APIServer config, not a MachineConfig."
+      "notes": "Platform-level APIServer config, not a MachineConfig.",
+      "platform": "ocp"
     },
     "M11": {
       "title": "Ingress TLS Ciphers",
@@ -229,7 +242,8 @@
       "prev_group": "M10",
       "next_group": "M12",
       "last_sync": null,
-      "notes": "Platform-level IngressController config, not a MachineConfig."
+      "notes": "Platform-level IngressController config, not a MachineConfig.",
+      "platform": "ocp"
     },
     "M12": {
       "title": "Audit Profile",
@@ -245,7 +259,8 @@
       "prev_group": "M11",
       "next_group": "M13",
       "last_sync": null,
-      "notes": "Platform-level APIServer audit profile, not a MachineConfig."
+      "notes": "Platform-level APIServer audit profile, not a MachineConfig.",
+      "platform": "ocp"
     },
     "L1": {
       "title": "SSHD LogLevel",
@@ -261,7 +276,8 @@
       "prev_group": "M30",
       "next_group": "L2",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "L2": {
       "title": "Sysctl dmesg_restrict",
@@ -277,7 +293,8 @@
       "prev_group": "L1",
       "next_group": "MAN1",
       "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works."
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos"
     },
     "M13": {
       "title": "Extended DAC Audit",
@@ -293,7 +310,8 @@
       "prev_group": "M12",
       "next_group": "M14",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M14": {
       "title": "Identity File Access Audit",
@@ -309,7 +327,8 @@
       "prev_group": "M13",
       "next_group": "M15",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M15": {
       "title": "File Deletion Audit",
@@ -325,7 +344,8 @@
       "prev_group": "M14",
       "next_group": "M16",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M16": {
       "title": "Unsuccessful File Modification Audit",
@@ -341,7 +361,8 @@
       "prev_group": "M15",
       "next_group": "M17",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M17": {
       "title": "Privileged Commands Audit",
@@ -357,7 +378,8 @@
       "prev_group": "M16",
       "next_group": "M18",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M18": {
       "title": "Session & MAC Audit",
@@ -373,7 +395,8 @@
       "prev_group": "M17",
       "next_group": "M19",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M19": {
       "title": "Usergroup Modification Audit",
@@ -389,7 +412,8 @@
       "prev_group": "M18",
       "next_group": "M20",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M20": {
       "title": "Auditd Data Retention",
@@ -405,7 +429,8 @@
       "prev_group": "M19",
       "next_group": "M21",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M21": {
       "title": "Kernel Module Blacklist",
@@ -421,7 +446,8 @@
       "prev_group": "M20",
       "next_group": "M22",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M22": {
       "title": "Network Sysctl Hardening",
@@ -437,7 +463,8 @@
       "prev_group": "M21",
       "next_group": "M23",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M23": {
       "title": "Kernel Sysctl Extended",
@@ -453,7 +480,8 @@
       "prev_group": "M22",
       "next_group": "M24",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M24": {
       "title": "CoreOS Kernel Arguments",
@@ -469,7 +497,8 @@
       "prev_group": "M23",
       "next_group": "M25",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M25": {
       "title": "Chrony/NTP Configuration",
@@ -485,7 +514,8 @@
       "prev_group": "M24",
       "next_group": "M26",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M26": {
       "title": "Systemd Hardening",
@@ -501,7 +531,8 @@
       "prev_group": "M25",
       "next_group": "M27",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M27": {
       "title": "SSHD Moderate Extensions",
@@ -517,7 +548,8 @@
       "prev_group": "M26",
       "next_group": "M28",
       "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation."
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos"
     },
     "M28": {
       "title": "USBGuard",
@@ -533,7 +565,8 @@
       "prev_group": "M27",
       "next_group": "M29",
       "last_sync": null,
-      "notes": "USBGuard RPM not available on RHCOS. MC enables service and adds rules but package-usbguard-installed and service-usbguard-enabled always fail."
+      "notes": "USBGuard RPM not available on RHCOS. MC enables service and adds rules but package-usbguard-installed and service-usbguard-enabled always fail.",
+      "platform": "rhcos"
     },
     "M29": {
       "title": "System Access Controls",
@@ -549,7 +582,8 @@
       "prev_group": "M28",
       "next_group": "M30",
       "last_sync": null,
-      "status_note": "2 platform-level checks still FAIL (banner, motd). Node-level checks PASS."
+      "status_note": "2 platform-level checks still FAIL (banner, motd). Node-level checks PASS.",
+      "platform": "mixed"
     },
     "M30": {
       "title": "OAuth Configuration",
@@ -565,7 +599,8 @@
       "prev_group": "M29",
       "next_group": "L1",
       "last_sync": null,
-      "notes": "oauth-or-oauthclient-inactivity-timeout passes. oauth-or-oauthclient-token-maxage is a platform-level OAuth config not addressable by MachineConfig."
+      "notes": "oauth-or-oauthclient-inactivity-timeout passes. oauth-or-oauthclient-token-maxage is a platform-level OAuth config not addressable by MachineConfig.",
+      "platform": "mixed"
     },
     "MAN1": {
       "title": "Workload Security",
@@ -580,7 +615,8 @@
       "pr_state": null,
       "prev_group": "L2",
       "next_group": "MAN2",
-      "last_sync": null
+      "last_sync": null,
+      "platform": "ocp"
     },
     "MAN2": {
       "title": "RBAC & Access Control",
@@ -595,7 +631,8 @@
       "pr_state": null,
       "prev_group": "MAN1",
       "next_group": "MAN3",
-      "last_sync": null
+      "last_sync": null,
+      "platform": "ocp"
     },
     "MAN3": {
       "title": "Secrets Management",
@@ -610,7 +647,8 @@
       "pr_state": null,
       "prev_group": "MAN2",
       "next_group": "MAN4",
-      "last_sync": null
+      "last_sync": null,
+      "platform": "ocp"
     },
     "MAN4": {
       "title": "Audit Log Partitions",
@@ -625,7 +663,8 @@
       "pr_state": null,
       "prev_group": "MAN3",
       "next_group": "MAN5",
-      "last_sync": null
+      "last_sync": null,
+      "platform": "ocp"
     },
     "MAN5": {
       "title": "Hardware/BIOS & Alerting",
@@ -640,7 +679,8 @@
       "pr_state": null,
       "prev_group": "MAN4",
       "next_group": null,
-      "last_sync": null
+      "last_sync": null,
+      "platform": "ocp"
     }
   },
   "remediations": {

@@ -16,6 +16,7 @@
 #
 # Options:
 #   -n, --namespace    Namespace for the scan (default: openshift-compliance)
+#   -t, --platform     Platform filter: ocp, rhcos, or all (default: all)
 #   --no-pvc           Skip PVC configuration for rawResultStorage
 #   --dry-run          Preview changes without applying
 #   -h, --help         Show this help message
@@ -31,6 +32,7 @@ load_env
 # Defaults (can be overridden by .env or CLI flags)
 NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 NO_PVC="${NO_PVC:-false}"
+PLATFORM="${PLATFORM:-all}"
 DRY_RUN="${DRY_RUN:-false}"
 
 usage() {
@@ -40,11 +42,17 @@ usage() {
 	echo ""
 	echo "Options:"
 	echo "  -n, --namespace    Namespace for the scan (default: $NAMESPACE)"
+	echo "  -t, --platform     Platform filter: ocp, rhcos, or all (default: all)"
 	echo "  --no-pvc           Skip PVC configuration for rawResultStorage"
 	echo "  --dry-run          Preview changes without applying"
 	echo "  -h, --help         Show this help message"
 	echo ""
-	echo "Environment variables: COMPLIANCE_NAMESPACE, NO_PVC, SC_NAME, RAW_SIZE, ROTATION"
+	echo "Platform filters:"
+	echo "  ocp     OCP platform checks only (ocp4-* profiles)"
+	echo "  rhcos   RHCOS node checks only (rhcos4-* profiles)"
+	echo "  all     Both platforms (default)"
+	echo ""
+	echo "Environment variables: COMPLIANCE_NAMESPACE, NO_PVC, PLATFORM, SC_NAME, RAW_SIZE, ROTATION"
 	exit 0
 }
 
@@ -53,6 +61,14 @@ while [[ $# -gt 0 ]]; do
 	case "$1" in
 	-n | --namespace)
 		NAMESPACE="$2"
+		shift 2
+		;;
+	-t | --platform)
+		PLATFORM="$2"
+		if [[ "$PLATFORM" != "ocp" && "$PLATFORM" != "rhcos" && "$PLATFORM" != "all" ]]; then
+			log_error "Invalid platform: $PLATFORM (must be ocp, rhcos, or all)"
+			exit 1
+		fi
 		shift 2
 		;;
 	--no-pvc)
@@ -105,6 +121,7 @@ fi
 
 log_info "Applying periodic scan configuration..."
 log_info "  Namespace: $NAMESPACE"
+log_info "  Platform: $PLATFORM"
 log_info "  Topology: $([ "$IS_SNO" == "true" ] && echo "SNO (1 node)" || echo "Multi-node ($NODE_COUNT nodes)")"
 log_info "  Scan roles: $SCAN_ROLES"
 log_info "  PVC Storage: $([ "$NO_PVC" == "true" ] && echo "disabled" || echo "enabled (${SC_NAME:-auto})")"
@@ -152,87 +169,33 @@ $(for role in $SCAN_ROLES; do echo "  - $role"; done)
 EOF
 )
 
-# ScanSettingBinding for E8 profiles
-E8_BINDING_YAML=$(
-	cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-e8
-  namespace: $NAMESPACE
-profiles:
-  - name: rhcos4-e8
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-  - name: ocp4-e8
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-)
+# ============================================================================
+# HELPER: generate a ScanSettingBinding YAML for one or more profiles
+# ============================================================================
 
-# ScanSettingBinding for CIS profile
-CIS_BINDING_YAML=$(
+gen_scan_binding() {
+	local name="$1"
+	shift
+	local profiles_yaml=""
+	for profile in "$@"; do
+		profiles_yaml+="  - name: ${profile}
+    kind: Profile
+    apiGroup: compliance.openshift.io/v1alpha1
+"
+	done
 	cat <<EOF
 apiVersion: compliance.openshift.io/v1alpha1
 kind: ScanSettingBinding
 metadata:
-  name: cis-scan
-  namespace: $NAMESPACE
+  name: ${name}
+  namespace: ${NAMESPACE}
 profiles:
-  - name: ocp4-cis
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
+${profiles_yaml}settingsRef:
   name: periodic-setting
   kind: ScanSetting
   apiGroup: compliance.openshift.io/v1alpha1
 EOF
-)
-
-# ScanSettingBinding for NIST 800-53 Moderate profiles
-MODERATE_BINDING_YAML=$(
-	cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-moderate
-  namespace: $NAMESPACE
-profiles:
-  - name: ocp4-moderate
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-  - name: rhcos4-moderate
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-)
-
-# ScanSettingBinding for PCI-DSS profiles
-PCIDSS_BINDING_YAML=$(
-	cat <<EOF
-apiVersion: compliance.openshift.io/v1alpha1
-kind: ScanSettingBinding
-metadata:
-  name: periodic-pci-dss
-  namespace: $NAMESPACE
-profiles:
-  - name: ocp4-pci-dss
-    kind: Profile
-    apiGroup: compliance.openshift.io/v1alpha1
-settingsRef:
-  name: periodic-setting
-  kind: ScanSetting
-  apiGroup: compliance.openshift.io/v1alpha1
-EOF
-)
+}
 
 # Check profile availability
 E8_AVAILABLE=false
@@ -242,23 +205,41 @@ else
 	log_warn "E8 profiles not available on this cluster, skipping periodic-e8 binding"
 fi
 
+# Determine profiles per binding based on platform
+case "$PLATFORM" in
+all) E8_PROFILES=("rhcos4-e8" "ocp4-e8") MOD_PROFILES=("ocp4-moderate" "rhcos4-moderate") ;;
+ocp) E8_PROFILES=("ocp4-e8") MOD_PROFILES=("ocp4-moderate") ;;
+rhcos) E8_PROFILES=("rhcos4-e8") MOD_PROFILES=("rhcos4-moderate") ;;
+esac
+
 echo "$SCANSETTING_YAML" | apply_inline
+
+BINDINGS_CREATED=()
+
 if [[ "$E8_AVAILABLE" == "true" ]]; then
-	echo "$E8_BINDING_YAML" | apply_inline
+	gen_scan_binding "periodic-e8" "${E8_PROFILES[@]}" | apply_inline
+	BINDINGS_CREATED+=("periodic-e8 (${E8_PROFILES[*]})")
 fi
-echo "$CIS_BINDING_YAML" | apply_inline
-echo "$MODERATE_BINDING_YAML" | apply_inline
-echo "$PCIDSS_BINDING_YAML" | apply_inline
+
+if [[ "$PLATFORM" != "rhcos" ]]; then
+	gen_scan_binding "cis-scan" "ocp4-cis" | apply_inline
+	BINDINGS_CREATED+=("cis-scan (ocp4-cis)")
+fi
+
+gen_scan_binding "periodic-moderate" "${MOD_PROFILES[@]}" | apply_inline
+BINDINGS_CREATED+=("periodic-moderate (${MOD_PROFILES[*]})")
+
+if [[ "$PLATFORM" != "rhcos" ]]; then
+	gen_scan_binding "periodic-pci-dss" "ocp4-pci-dss" | apply_inline
+	BINDINGS_CREATED+=("periodic-pci-dss (ocp4-pci-dss)")
+fi
 
 if [[ "$DRY_RUN" != "true" ]]; then
 	log_success "ScanSetting 'periodic-setting' applied in namespace '$NAMESPACE'."
 	log_info "ScanSettingBindings created:"
-	if [[ "$E8_AVAILABLE" == "true" ]]; then
-		echo "       - periodic-e8 (rhcos4-e8, ocp4-e8)"
-	fi
-	echo "       - cis-scan (ocp4-cis)"
-	echo "       - periodic-moderate (ocp4-moderate, rhcos4-moderate)"
-	echo "       - periodic-pci-dss (ocp4-pci-dss)"
+	for binding in "${BINDINGS_CREATED[@]}"; do
+		echo "       - $binding"
+	done
 	echo ""
 	log_info "To create an on-demand scan, run: ./core/create-scan.sh"
 fi

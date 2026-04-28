@@ -38,6 +38,21 @@ layout: default
     </div>
   </div>
 
+  {% if version_data.summary.rhcos_failing or version_data.summary.ocp_failing %}
+  <div class="summary-cards platform-cards">
+    <div class="card platform-rhcos">
+      <h3>RHCOS Failing</h3>
+      <span class="number">{{ version_data.summary.rhcos_failing | default: "N/A" }}</span>
+      <div class="card-subtitle">Node-level (MachineConfig)</div>
+    </div>
+    <div class="card platform-ocp">
+      <h3>OCP Failing</h3>
+      <span class="number">{{ version_data.summary.ocp_failing | default: "N/A" }}</span>
+      <div class="card-subtitle">Platform-level (API/CR)</div>
+    </div>
+  </div>
+  {% endif %}
+
   <div class="coverage-bar">
     {% assign coverage = version_data.summary.passing | times: 100 | divided_by: version_data.summary.total_checks %}
     <div class="progress" style="width: {{ coverage }}%"></div>
@@ -141,6 +156,9 @@ layout: default
       </div>
       <div class="filter-buttons">
         <button class="filter-btn active" data-filter="all" onclick="setCheckFilter('all')">All</button>
+        <button class="filter-btn" data-filter="rhcos" onclick="setCheckFilter('rhcos')">RHCOS</button>
+        <button class="filter-btn" data-filter="ocp" onclick="setCheckFilter('ocp')">OCP</button>
+        <span class="filter-separator"></span>
         <button class="filter-btn" data-filter="has-jira" onclick="setCheckFilter('has-jira')">Has Jira</button>
         <button class="filter-btn" data-filter="has-pr" onclick="setCheckFilter('has-pr')">Has PR</button>
         <button class="filter-btn" data-filter="tracked" onclick="setCheckFilter('tracked')">Tracked</button>
@@ -266,7 +284,11 @@ function filterChecks() {
       var isTracked = statusCell !== 'Not Tracked' && statusCell !== '';
 
       var matchesSearch = checkSearchTerm === '' || text.includes(checkSearchTerm);
+      var rowPlatform = row.getAttribute('data-platform') || '';
+
       var matchesFilter = currentCheckFilter === 'all' ||
+        (currentCheckFilter === 'rhcos' && rowPlatform === 'rhcos') ||
+        (currentCheckFilter === 'ocp' && rowPlatform === 'ocp') ||
         (currentCheckFilter === 'has-jira' && hasJira) ||
         (currentCheckFilter === 'has-pr' && hasPR) ||
         (currentCheckFilter === 'tracked' && isTracked) ||

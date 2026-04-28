@@ -69,7 +69,7 @@ make install-jekyll                       # Install Jekyll dependencies
 
 ### Key Workflow
 1. `install-compliance-operator.sh` - Installs operator, auto-deploys HostPath CSI if needed
-2. `apply-periodic-scan.sh` / `create-scan.sh` - Configure and run compliance scans
+2. `apply-periodic-scan.sh` / `create-scan.sh` - Configure and run compliance scans (use `--platform ocp|rhcos` to scan only one platform)
 3. `collect-complianceremediations.sh` - Extract remediation YAMLs from cluster
 4. `combine-machineconfigs-by-path.py` - Merge overlapping MachineConfigs
 5. `organize-machine-configs.sh` - Categorize by topic (sysctl, sshd, etc.)
@@ -92,6 +92,15 @@ oc get compliancesuite -n openshift-compliance       # Check suite status (DONE/
 ./utilities/monitor-inprogress-scans.sh --watch      # Live dashboard of scan progress
 oc get compliancecheckresult -n openshift-compliance  # View individual check results
 ```
+
+### Platform Classification
+
+Compliance checks are classified by platform:
+- **RHCOS (Node)**: Checks prefixed with `rhcos4-*` that scan node-level OS configuration. Addressable via MachineConfig. May resolve with RHCOS upgrades (e.g., many passed on vanilla RHCOS 9.8).
+- **OCP (Platform)**: Checks prefixed with `ocp4-*` that scan cluster-level API/CR configuration. Require explicit cluster configuration changes regardless of OS version.
+- **Mixed**: Groups containing both RHCOS and OCP checks (e.g., M29 System Access Controls, M30 OAuth).
+
+The `--platform` flag on `create-scan.sh` and `apply-periodic-scan.sh` filters scans to one platform. The dashboard shows platform badges and supports RHCOS/OCP filtering. Each group in `tracking.json` has a `platform` field (`rhcos`, `ocp`, or `mixed`).
 
 ### Safety Considerations
 
