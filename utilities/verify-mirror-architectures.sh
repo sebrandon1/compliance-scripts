@@ -25,7 +25,7 @@ else
 	echo ""
 	IMAGES=()
 	for repo in compliance-operator openscap-ocp compliance-operator-bundle compliance-operator-catalog k8scontent; do
-		tags=$(skopeo list-tags --no-creds "docker://quay.io/bapalm/${repo}" 2>/dev/null | jq -r '.Tags[]' 2>/dev/null | grep "^v" || true)
+		tags=$(skopeo list-tags --no-creds "docker://quay.io/bapalm/${repo}" 2>/dev/null | jq -r '.Tags[]' 2>/dev/null | grep "^v" | grep -vE "-(amd64|arm64|ppc64le|s390x)$" || true)
 		for tag in $tags; do
 			IMAGES+=("quay.io/bapalm/${repo}:${tag}")
 		done
