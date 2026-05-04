@@ -356,13 +356,13 @@
       "jira": "CNF-23518",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M15",
       "next_group": "M17",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 18 unsuccessful file modification audit rule files deployed.",
       "platform": "rhcos"
     },
     "M17": {
@@ -373,13 +373,13 @@
       "jira": "CNF-23519",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M16",
       "next_group": "M18",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 22 privileged command audit rules deployed.",
       "platform": "rhcos"
     },
     "M18": {
