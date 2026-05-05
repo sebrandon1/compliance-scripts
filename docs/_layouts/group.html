@@ -99,11 +99,12 @@ layout: default
   {% if group.upstream %}
   <div class="upstream-proposal" id="upstream-proposal">
     <h2>Upstream Proposal</h2>
-    <p>The following changes could be upstreamed to eliminate the need for MachineConfig remediation:</p>
+    <p>The following changes could eliminate the need for MachineConfig remediation. Items are categorized by recommended scope:</p>
     <table>
       <thead>
         <tr>
           <th>Setting</th>
+          <th style="width: 90px;">Scope</th>
           <th>Target Repo</th>
           <th>Target File</th>
           <th>Rationale</th>
@@ -114,9 +115,22 @@ layout: default
       {% for item in group.upstream %}
         <tr>
           <td><code>{{ item.setting }}</code></td>
+          <td>
+            <span class="scope-badge {{ item.scope }}">
+              {% if item.scope == "upstream" %}All OCP
+              {% elsif item.scope == "ran" %}RAN
+              {% elsif item.scope == "site" %}Site
+              {% endif %}
+            </span>
+          </td>
           <td><a href="{{ item.repo_url }}">{{ item.repo }}</a></td>
           <td><code>{{ item.file }}</code></td>
-          <td>{{ item.rationale }}</td>
+          <td>
+            {{ item.rationale }}
+            {% if item.scope_reason %}
+            <br><em class="scope-reason">Scope: {{ item.scope_reason }}</em>
+            {% endif %}
+          </td>
           <td>
             <span class="risk-badge {{ item.risk }}">
               {% if item.risk == "low" %}Low

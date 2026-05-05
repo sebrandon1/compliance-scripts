@@ -30,7 +30,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "Crypto policy preset in base image",
           "rationale": "RHCOS ships DEFAULT policy. E8 requires NO-SHA1 sub-policy. Hardened container hosts should not use SHA1.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "General OCP clusters may need DEFAULT policy for broad TLS compatibility. NO-SHA1 is a hardening choice."
         }
       ]
     },
@@ -57,7 +59,9 @@
           "repo_url": "https://github.com/ComplianceAsCode/content",
           "file": "Upstream remediation fix (PR #14602)",
           "rationale": "Compliance operator's own remediation uses broken authselect path on RHCOS 9. Upstream fix uses direct sed instead.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice."
         }
       ]
     },
@@ -118,7 +122,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
           "rationale": "Prevents BPF JIT spraying attacks. KSPP recommended. Zero workload impact.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Negligible performance impact. Protects against JIT spraying on all clusters. KSPP recommended."
         },
         {
           "setting": "kernel.yama.ptrace_scope=1",
@@ -126,7 +132,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "Override /usr/lib/sysctl.d/10-default-yama-scope.conf",
           "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 45 proposal in progress.",
-          "risk": "medium"
+          "risk": "medium",
+          "scope": "upstream",
+          "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts."
         }
       ]
     },
@@ -153,7 +161,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-dac-modification.rules",
           "rationale": "Standard CIS/STIG audit requirement. Tracks permission changes for forensic analysis.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Audit rules add overhead. Not all clusters need DAC modification forensic logging."
         }
       ]
     },
@@ -180,7 +190,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-selinux-commands.rules",
           "rationale": "Tracks SELinux policy modifications. Critical for security audit trail on hardened systems.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "SELinux command auditing is valuable for hardened environments but adds audit log volume."
         }
       ]
     },
@@ -207,7 +219,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-kernel-modules.rules",
           "rationale": "Tracks kernel module operations (init_module, delete_module). Essential for detecting rootkit installation.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Module loading auditing is critical for security-sensitive deployments but unnecessary for general workloads."
         }
       ]
     },
@@ -234,7 +248,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-time-change.rules",
           "rationale": "Tracks time changes that could be used to manipulate log timestamps for forensic evasion.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Time change auditing matters for forensic integrity but adds log volume on all nodes."
         }
       ]
     },
@@ -261,7 +277,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-login-events.rules",
           "rationale": "Tracks failed logins, sudo usage, and user/group modifications. Core authentication audit trail.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Login auditing is standard for compliance but may be excessive for dev/test clusters."
         }
       ]
     },
@@ -288,7 +306,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-network-config.rules",
           "rationale": "Tracks hostname/domainname changes and network environment modifications.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Network config auditing is important for hardened deployments but not universally needed."
         }
       ]
     },
@@ -315,7 +335,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/auditd.conf",
           "rationale": "Identifies audit log source by hostname. Critical for centralized log aggregation across multi-node clusters.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "All multi-node clusters benefit from hostname identification in audit logs for centralized aggregation."
         }
       ]
     },
@@ -413,7 +435,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
           "rationale": "Restricts kernel log access to root. Prevents unprivileged users from reading kernel ring buffer for info leakage.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Unprivileged users have no legitimate need to read kernel ring buffer on any OCP node."
         }
       ]
     },
@@ -440,7 +464,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-dac-extended.rules",
           "rationale": "Covers fchmod, fchown, xattr operations. Completes the DAC audit trail started by M3.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Extended DAC auditing adds significant log volume. Needed for compliance, not general use."
         }
       ]
     },
@@ -467,7 +493,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-identity-files.rules",
           "rationale": "Tracks open/openat/open_by_handle_at on /etc/passwd, shadow, group, gshadow. Detects credential harvesting.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Identity file access auditing is compliance-driven. Significant audit overhead for general clusters."
         }
       ]
     },
@@ -494,7 +522,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-file-deletion.rules",
           "rationale": "Tracks rename, unlink, rmdir. Detects evidence tampering and unauthorized file removal.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "File deletion auditing is compliance-driven forensic logging."
         }
       ]
     },
@@ -521,7 +551,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-unsuccessful-access.rules",
           "rationale": "Tracks failed access attempts (EACCES/EPERM). Detects privilege escalation and unauthorized access probing.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "32 unsuccessful access rules generate substantial audit volume. Compliance-specific."
         }
       ]
     },
@@ -548,7 +580,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-privileged-commands.rules",
           "rationale": "Tracks execution of setuid/setgid binaries (su, sudo, mount, passwd, etc.). Required by CIS and STIG.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Privileged command auditing is compliance-driven. 22 rules add audit overhead."
         }
       ]
     },
@@ -575,7 +609,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-session-mac.rules",
           "rationale": "Tracks session initiation, SELinux policy changes, media export, and makes audit config immutable.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Session/MAC auditing and audit immutability are compliance-specific hardening."
         }
       ]
     },
@@ -602,7 +638,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/rules.d/50-usergroup-modification.rules",
           "rationale": "Watches /etc/passwd, group, shadow, gshadow, opasswd for modifications. Detects unauthorized account changes.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Usergroup file watches are compliance-driven forensic logging."
         }
       ]
     },
@@ -629,7 +667,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/audit/auditd.conf",
           "rationale": "Configures disk error/full actions and space_left thresholds. Ensures audit logs are preserved even under disk pressure.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "All clusters should handle audit log disk pressure gracefully rather than silently dropping events."
         }
       ]
     },
@@ -656,7 +696,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/modprobe.d/50-security-blacklist.conf",
           "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
-          "risk": "medium"
+          "risk": "medium",
+          "scope": "ran",
+          "scope_reason": "Some modules (SCTP) are used by telco workloads. Bluetooth/WiFi blacklist is safe but module selection is deployment-specific."
         }
       ]
     },
@@ -683,7 +725,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/sysctl.d/50-network-hardening.conf",
           "rationale": "Standard CIS/STIG network hardening: disable redirects, source routing, enable martian logging, syncookies. Universal for servers.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Standard CIS/STIG network hardening. Universally recommended for all servers. No legitimate reason to accept ICMP redirects on a Kubernetes node."
         }
       ]
     },
@@ -710,7 +754,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
           "rationale": "Disables core dumps (data leakage), kexec (rootkit persistence), restricts perf_event (info disclosure). Standard KSPP hardening.",
-          "risk": "medium"
+          "risk": "medium",
+          "scope": "ran",
+          "scope_reason": "kexec_load_disabled is safe for upstream (RHCOS doesn't use kexec), but core_pattern and perf_event_paranoid break debugging and profiling tools needed by platform teams."
         }
       ]
     },
@@ -737,7 +783,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "Default kernel command line arguments",
           "rationale": "KSPP-recommended boot parameters. Enable audit subsystem, kernel page table isolation, memory poisoning, vsyscall elimination.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "audit=1 and KSPP kernel args (pti, page_poison, vsyscall=none) are universally beneficial security defaults with negligible performance impact."
         },
         {
           "setting": "nousb",
@@ -745,7 +793,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "Optional hardening profile kernel arg",
           "rationale": "Disables USB entirely. Prevents USB-based attacks but breaks BMC KVM and USB provisioning. Should be opt-in, not default.",
-          "risk": "high"
+          "risk": "high",
+          "scope": "ran",
+          "scope_reason": "Disabling USB entirely breaks BMC KVM and USB-based provisioning. Must be opt-in for specific hardened deployments only."
         }
       ]
     },
@@ -772,7 +822,9 @@
           "repo_url": "https://github.com/openshift/machine-config-operator",
           "file": "MCO chrony config template",
           "rationale": "MCO generates chrony.conf at install time. maxpoll and server list are deployment-specific. Template should set maxpoll=10 by default.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "site",
+          "scope_reason": "NTP server addresses and maxpoll intervals are site-specific. MCO template could default maxpoll=10 but server list must be configured per deployment."
         }
       ]
     },
@@ -799,7 +851,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/systemd/coredump.conf.d/50-no-coredumps.conf",
           "rationale": "Container hosts shouldn't store core dumps. Prevents sensitive data leakage and disk exhaustion from crashed processes.",
-          "risk": "medium"
+          "risk": "medium",
+          "scope": "ran",
+          "scope_reason": "Disabling core dumps prevents crash debugging for node-level issues. Appropriate for hardened production but not dev/QE clusters."
         },
         {
           "setting": "Mask ctrl-alt-del.target, CtrlAltDelBurstAction=none",
@@ -807,7 +861,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "systemd preset + /etc/systemd/system.conf.d/",
           "rationale": "Prevents accidental or malicious reboot via keyboard. RHCOS nodes are headless servers, not interactive workstations.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "No OCP node is interactive. No legitimate use case for Ctrl-Alt-Del on a Kubernetes node."
         }
       ]
     },
@@ -834,7 +890,9 @@
           "repo_url": "https://github.com/openshift/os",
           "file": "/etc/ssh/sshd_config.d/50-hardening.conf",
           "rationale": "Automatically disconnects idle SSH sessions after 5 minutes. Prevents abandoned sessions from being hijacked.",
-          "risk": "low"
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "5-minute idle timeout is aggressive. Platform teams may need longer SSH sessions for debugging. Appropriate for hardened production deployments."
         }
       ]
     },

@@ -1941,6 +1941,58 @@ kbd {
   color: #f4a0a8;
 }
 
+/* Scope badges for upstream proposals */
+.scope-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.scope-badge.upstream {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.scope-badge.ran {
+  background: #e2d5f1;
+  color: #4a1a8a;
+  border: 1px solid #d0bfe8;
+}
+
+.scope-badge.site {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+[data-theme="dark"] .scope-badge.upstream {
+  background: #0c3547;
+  color: #7ecde6;
+  border-color: #155d74;
+}
+
+[data-theme="dark"] .scope-badge.ran {
+  background: #2d1654;
+  color: #c9a8f0;
+  border-color: #4a2880;
+}
+
+[data-theme="dark"] .scope-badge.site {
+  background: #4a3c00;
+  color: #ffd54f;
+  border-color: #6b5500;
+}
+
+.scope-reason {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #888);
+}
+
 /* Certsuite badge in group-meta */
 .certsuite-badge {
   display: inline-flex;
