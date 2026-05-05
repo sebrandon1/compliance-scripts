@@ -18,6 +18,7 @@ These checks recommend placing audit and system logs on separate disk partitions
 
 **Severity**: LOW
 
+<span class="certsuite-inline not-covered">Not Covered by Certsuite</span>
 **Why this fails**: Ensure /var/log Located On Separate Partition
 
 System logs are stored in the /var/log directory.
@@ -32,6 +33,7 @@ Note that the Red Hat OpenShift documentation often...
 
 **Severity**: LOW
 
+<span class="certsuite-inline not-covered">Not Covered by Certsuite</span>
 **Why this fails**: Ensure /var/log/audit Located On Separate Partition
 
 Audit logs are stored in the /var/log/audit directory.

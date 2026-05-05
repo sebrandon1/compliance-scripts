@@ -1919,6 +1919,40 @@ kbd {
   color: #212529;
 }
 
+/* Certsuite inline badges on individual checks */
+.certsuite-inline {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.certsuite-inline.covered {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.certsuite-inline.not-covered {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+[data-theme="dark"] .certsuite-inline.covered {
+  background: #1b4332;
+  color: #95d5b2;
+  border-color: #2d6a4f;
+}
+
+[data-theme="dark"] .certsuite-inline.not-covered {
+  background: #4a1520;
+  color: #f4a0a8;
+  border-color: #6b2030;
+}
+
 /* Certsuite coverage section */
 .certsuite-coverage {
   margin-top: 2rem;
