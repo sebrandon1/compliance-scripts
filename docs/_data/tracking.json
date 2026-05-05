@@ -492,13 +492,13 @@
       "jira": "CNF-23526",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M23",
       "next_group": "M25",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 6 kernel args: audit, audit_backlog_limit, nousb, page_poison, pti, vsyscall.",
       "platform": "rhcos"
     },
     "M25": {
@@ -509,13 +509,13 @@
       "jira": "CNF-23527",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M24",
       "next_group": "M26",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Chrony port=0, cmdport=0, maxpoll=10, 4 NTP servers.",
       "platform": "rhcos"
     },
     "M26": {
@@ -526,13 +526,13 @@
       "jira": "CNF-23528",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M25",
       "next_group": "M27",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Coredump disabled, ctrl-alt-del masked, systemd-coredump masked.",
       "platform": "rhcos"
     },
     "M27": {
@@ -543,13 +543,13 @@
       "jira": "CNF-23529",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M26",
       "next_group": "M28",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. ClientAliveInterval=300, ClientAliveCountMax=0.",
       "platform": "rhcos"
     },
     "M28": {
