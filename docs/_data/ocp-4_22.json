@@ -1,14 +1,14 @@
 {
   "version": "4.22",
-  "scan_date": "2026-05-05T04:42:34Z",
+  "scan_date": "2026-05-05T13:09:41Z",
   "summary": {
     "total_checks": 910,
-    "passing": 769,
-    "failing": 62,
+    "passing": 773,
+    "failing": 58,
     "manual": 79,
     "skipped": 0,
     "rhcos_failing": 14,
-    "ocp_failing": 48
+    "ocp_failing": 44
   },
   "remediations": {
     "high": [
@@ -96,15 +96,6 @@
     ],
     "medium": [
       {
-        "name": "ocp4-cis-api-server-encryption-provider-cipher",
-        "check": "ocp4-cis-api-server-encryption-provider-cipher",
-        "status": "FAIL",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
-        "severity": "medium",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-cis-audit-log-forwarding-enabled",
         "check": "ocp4-cis-audit-log-forwarding-enabled",
         "status": "FAIL",
@@ -159,15 +150,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-e8-api-server-encryption-provider-cipher",
-        "check": "ocp4-e8-api-server-encryption-provider-cipher",
-        "status": "FAIL",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-e8-ocp-allowed-registries",
         "check": "ocp4-e8-ocp-allowed-registries",
         "status": "FAIL",
@@ -192,15 +174,6 @@
         "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "E8",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-api-server-encryption-provider-cipher",
-        "check": "ocp4-moderate-api-server-encryption-provider-cipher",
-        "status": "FAIL",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
-        "severity": "medium",
-        "profile": "Moderate",
         "platform": "ocp"
       },
       {
@@ -361,15 +334,6 @@
         "check": "ocp4-pci-dss-acs-sensor-exists",
         "status": "FAIL",
         "description": "Ensure that Advanced Cluster Security (ACS) Sensor is deployed\nRed Hat Advanced Cluster Security (ACS) for Kubernetes provides comprehensive security for containerized environments. It offers deep visibility into deployed resources across Kubernetes clusters, enabling teams to detect vulnerabilities in all images, manage compliance, and enforce security policies. By integrating ACS into the Kubernetes environment, organizations can automate security checks and configurations, ensuring that every deployed application is scanned and secured according to best practices and organizational policies. Sensor is the service responsible for analyzing and monitoring the cluster. Sensor listens to the OpenShift Container Platform or Kubernetes API and Collector events to report the current state of the cluster. Sensor also triggers deploy-time and runtime violations based on RHACS Cloud Service policies. In addition, Sensor is responsible for all cluster interactions, such as applying network policies, initiating reprocessing of RHACS Cloud Service policies, and interacting with the Admission controller.",
-        "severity": "medium",
-        "profile": "PCI-DSS",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-pci-dss-api-server-encryption-provider-cipher",
-        "check": "ocp4-pci-dss-api-server-encryption-provider-cipher",
-        "status": "FAIL",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
         "severity": "medium",
         "profile": "PCI-DSS",
         "platform": "ocp"
@@ -1147,6 +1111,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-cis-api-server-encryption-provider-cipher",
+        "check": "ocp4-cis-api-server-encryption-provider-cipher",
+        "status": "PASS",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium",
+        "profile": "CIS",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-cis-api-server-etcd-ca",
         "check": "ocp4-cis-api-server-etcd-ca",
         "status": "PASS",
@@ -1489,6 +1462,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-e8-api-server-encryption-provider-cipher",
+        "check": "ocp4-e8-api-server-encryption-provider-cipher",
+        "status": "PASS",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-e8-api-server-tls-cipher-suites",
         "check": "ocp4-e8-api-server-tls-cipher-suites",
         "status": "PASS",
@@ -1628,6 +1610,15 @@
         "check": "ocp4-moderate-api-server-client-ca",
         "status": "PASS",
         "description": "Configure the Client Certificate Authority for the API Server\nCertificates must be provided to fully setup TLS client certificate authentication. To ensure the API Server utilizes its own TLS certificates, the clientCA must be configured. Verify that servingInfo has the clientCA configured in the openshift-kube-apiserver config configmap to something similar to:\n\n\"apiServerArguments\": {\n ...\n   \"client-ca-file\": [\n     \"/etc/kubernetes/static-pod-certs/configmaps/client-ca/ca-bundle.crt\"\n   ],\n ...",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-api-server-encryption-provider-cipher",
+        "check": "ocp4-moderate-api-server-encryption-provider-cipher",
+        "status": "PASS",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -2195,6 +2186,15 @@
         "check": "ocp4-pci-dss-api-server-client-ca",
         "status": "PASS",
         "description": "Configure the Client Certificate Authority for the API Server\nCertificates must be provided to fully setup TLS client certificate authentication. To ensure the API Server utilizes its own TLS certificates, the clientCA must be configured. Verify that servingInfo has the clientCA configured in the openshift-kube-apiserver config configmap to something similar to:\n\n\"apiServerArguments\": {\n ...\n   \"client-ca-file\": [\n     \"/etc/kubernetes/static-pod-certs/configmaps/client-ca/ca-bundle.crt\"\n   ],\n ...",
+        "severity": "medium",
+        "profile": "PCI-DSS",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-pci-dss-api-server-encryption-provider-cipher",
+        "check": "ocp4-pci-dss-api-server-encryption-provider-cipher",
+        "status": "PASS",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
         "severity": "medium",
         "profile": "PCI-DSS",
         "platform": "ocp"

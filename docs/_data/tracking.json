@@ -20,8 +20,8 @@
       "pr_state": null,
       "prev_group": null,
       "next_group": "H2",
-      "last_sync": null,
-      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending.",
+      "last_sync": "2026-05-05",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. E8 PASS. Moderate crypto policy FAIL (expects FIPS, we set DEFAULT:NO-SHA1).",
       "platform": "rhcos"
     },
     "H2": {
@@ -224,10 +224,10 @@
       "pr_state": null,
       "prev_group": "M9",
       "next_group": "M11",
-      "last_sync": "2026-05-04",
+      "last_sync": "2026-05-05",
       "notes": "Platform-level APIServer config, not a MachineConfig.",
       "platform": "ocp",
-      "status_note": "Verified on cnfdt16 OCP 4.22. API encryption type=aescbc, Encrypted condition=True."
+      "status_note": "Verified on cnfdt16 OCP 4.22. API encryption type=aescbc, all resources encrypted."
     },
     "M11": {
       "title": "Ingress TLS Ciphers",
@@ -550,8 +550,8 @@
       "pr_state": null,
       "prev_group": "M26",
       "next_group": "M28",
-      "last_sync": "2026-05-04",
-      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. ClientAliveInterval=300, ClientAliveCountMax=0.",
+      "last_sync": "2026-05-05",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Settings applied (sshd -T confirms ClientAliveInterval=300 ClientAliveCountMax=0). Moderate scanner FAIL is a known drop-in file detection limitation.",
       "platform": "rhcos"
     },
     "M28": {
@@ -579,13 +579,13 @@
       "jira": "CNF-23453",
       "pr": null,
       "compare": "compliance/4.22/m29-access-controls",
-      "status": "verified",
+      "status": "partial",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M28",
       "next_group": "M30",
-      "last_sync": "2026-05-04",
-      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Securetty empty, audit trail access rules deployed.",
+      "last_sync": "2026-05-05",
+      "status_note": "Verified on cnfdt16 OCP 4.22. RHCOS node checks (securetty, audit trail) PASS. OCP platform checks (banner-or-login-template-set, openshift-motd-exists) still FAIL \u2014 require per-deployment configuration.",
       "platform": "mixed"
     },
     "M30": {
@@ -596,15 +596,15 @@
       "jira": "CNF-23454",
       "pr": null,
       "compare": "compliance/4.22/m30-oauth",
-      "status": "verified",
+      "status": "partial",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M29",
       "next_group": "L1",
-      "last_sync": "2026-05-04",
+      "last_sync": "2026-05-05",
       "notes": "oauth-or-oauthclient-inactivity-timeout passes. oauth-or-oauthclient-token-maxage is a platform-level OAuth config not addressable by MachineConfig.",
       "platform": "mixed",
-      "status_note": "Verified on cnfdt16 OCP 4.22. OAuth accessTokenInactivityTimeout=10m0s."
+      "status_note": "Verified on cnfdt16 OCP 4.22. accessTokenInactivityTimeout set. oauth-or-oauthclient-token-maxage and PCI-DSS inactivity-timeout still FAIL. Branch needs update with accessTokenMaxAgeSeconds."
     },
     "MAN1": {
       "title": "Workload Security",
