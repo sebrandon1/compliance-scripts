@@ -219,14 +219,15 @@
       "jira": "CNF-22624",
       "pr": "678",
       "compare": "compliance/4.22/m10-api-encryption",
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M9",
       "next_group": "M11",
-      "last_sync": null,
+      "last_sync": "2026-05-04",
       "notes": "Platform-level APIServer config, not a MachineConfig.",
-      "platform": "ocp"
+      "platform": "ocp",
+      "status_note": "Verified on cnfdt16 OCP 4.22. API encryption type=aescbc, Encrypted condition=True."
     },
     "M11": {
       "title": "Ingress TLS Ciphers",
