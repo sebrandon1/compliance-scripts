@@ -1156,7 +1156,13 @@
     "configure-network-policies-namespaces": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Configure network policies per namespace"
+      "description": "Manual: Configure network policies per namespace",
+      "certsuite": [
+        {
+          "id": "networking-network-policy-deny-all",
+          "suite": "networking"
+        }
+      ]
     },
     "rbac-least-privilege": {
       "group": "MAN2",
@@ -1166,7 +1172,13 @@
     "rbac-limit-cluster-admin": {
       "group": "MAN2",
       "file": null,
-      "description": "Manual: Limit cluster-admin usage"
+      "description": "Manual: Limit cluster-admin usage",
+      "certsuite": [
+        {
+          "id": "access-control-cluster-role-bindings",
+          "suite": "access-control"
+        }
+      ]
     },
     "rbac-limit-secrets-access": {
       "group": "MAN2",
@@ -1181,52 +1193,116 @@
     "rbac-wildcard-use": {
       "group": "MAN2",
       "file": null,
-      "description": "Manual: Minimize wildcard roles"
+      "description": "Manual: Minimize wildcard roles",
+      "certsuite": [
+        {
+          "id": "access-control-cluster-role-bindings",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-pod-role-bindings",
+          "suite": "access-control"
+        }
+      ]
     },
     "accounts-restrict-service-account-tokens": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Restrict SA token automounting"
+      "description": "Manual: Restrict SA token automounting",
+      "certsuite": [
+        {
+          "id": "access-control-pod-automount-service-account-token",
+          "suite": "access-control"
+        }
+      ]
     },
     "accounts-unique-service-account": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Use unique service accounts"
+      "description": "Manual: Use unique service accounts",
+      "certsuite": [
+        {
+          "id": "access-control-pod-service-account",
+          "suite": "access-control"
+        }
+      ]
     },
     "general-apply-scc": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Apply SCCs to pods"
+      "description": "Manual: Apply SCCs to pods",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        }
+      ]
     },
     "general-default-namespace-use": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Don't use default namespace"
+      "description": "Manual: Don't use default namespace",
+      "certsuite": [
+        {
+          "id": "access-control-namespace",
+          "suite": "access-control"
+        }
+      ]
     },
     "general-default-seccomp-profile": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Enable seccomp profiles"
+      "description": "Manual: Enable seccomp profiles",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        }
+      ]
     },
     "general-namespaces-in-use": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Use namespaces for isolation"
+      "description": "Manual: Use namespaces for isolation",
+      "certsuite": [
+        {
+          "id": "access-control-namespace",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-privilege-escalation": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit privilege escalation"
+      "description": "Manual: Limit privilege escalation",
+      "certsuite": [
+        {
+          "id": "access-control-security-context-privilege-escalation",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-privileged-containers": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit privileged containers"
+      "description": "Manual: Limit privileged containers",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-root-containers": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit root containers"
+      "description": "Manual: Limit root containers",
+      "certsuite": [
+        {
+          "id": "access-control-security-context-non-root-user-id-check",
+          "suite": "access-control"
+        }
+      ]
     },
     "secrets-consider-external-storage": {
       "group": "MAN3",
@@ -1396,32 +1472,88 @@
     "scc-drop-container-capabilities": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Drop container capabilities"
+      "description": "Manual: Drop container capabilities",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-sys-admin-capability-check",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-container-allowed-capabilities": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit container capabilities"
+      "description": "Manual: Limit container capabilities",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-bpf-capability-check",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-ipc-lock-capability-check",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-net-admin-capability-check",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-sys-admin-capability-check",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-ipc-namespace": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit IPC namespace"
+      "description": "Manual: Limit IPC namespace",
+      "certsuite": [
+        {
+          "id": "access-control-pod-host-ipc",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-net-raw-capability": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit NET_RAW"
+      "description": "Manual: Limit NET_RAW",
+      "certsuite": [
+        {
+          "id": "access-control-net-raw-capability-check",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-network-namespace": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit network namespace"
+      "description": "Manual: Limit network namespace",
+      "certsuite": [
+        {
+          "id": "access-control-pod-host-network",
+          "suite": "access-control"
+        }
+      ]
     },
     "scc-limit-process-id-namespace": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Limit PID namespace"
+      "description": "Manual: Limit PID namespace",
+      "certsuite": [
+        {
+          "id": "access-control-pod-host-pid",
+          "suite": "access-control"
+        }
+      ]
     },
     "general-configure-imagepolicywebhook": {
       "group": "MAN1",
@@ -1901,7 +2033,13 @@
     "cluster-version-operator-exists": {
       "group": "MAN5",
       "file": null,
-      "description": "Manual: CVO check"
+      "description": "Manual: CVO check",
+      "certsuite": [
+        {
+          "id": "platform-alteration-cluster-operator-health",
+          "suite": "platform-alteration"
+        }
+      ]
     },
     "cluster-wide-proxy-set": {
       "group": "MAN5",
@@ -1961,12 +2099,28 @@
     "resource-requests-limits-in-daemonset": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Resource requests in daemonsets"
+      "description": "Manual: Resource requests in daemonsets",
+      "certsuite": [
+        {
+          "id": "access-control-requests",
+          "suite": "access-control"
+        }
+      ]
     },
     "resource-requests-quota": {
       "group": "MAN1",
       "file": null,
-      "description": "Manual: Resource quotas"
+      "description": "Manual: Resource quotas",
+      "certsuite": [
+        {
+          "id": "access-control-namespace-resource-quota",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-requests",
+          "suite": "access-control"
+        }
+      ]
     },
     "security-profiles-operator-exists": {
       "group": "MAN5",

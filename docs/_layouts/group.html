@@ -74,6 +74,43 @@ layout: default
     {{ content }}
   </div>
 
+  {% assign has_certsuite = false %}
+  {% for rem in site.data.tracking.remediations %}
+    {% if rem[1].group == page.group_id and rem[1].certsuite %}
+      {% assign has_certsuite = true %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+
+  {% if has_certsuite %}
+  <div class="certsuite-coverage">
+    <h2>Certsuite Coverage</h2>
+    <p>The following <a href="https://github.com/redhat-best-practices-for-k8s/certsuite">certsuite</a> tests provide automated verification for checks in this group:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Compliance Check</th>
+          <th>Certsuite Test</th>
+          <th>Suite</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for rem in site.data.tracking.remediations %}
+        {% if rem[1].group == page.group_id and rem[1].certsuite %}
+          {% for test in rem[1].certsuite %}
+          <tr>
+            <td><code>{{ rem[0] }}</code></td>
+            <td><a href="https://github.com/redhat-best-practices-for-k8s/certsuite/blob/main/CATALOG.md#{{ test.id }}">{{ test.id }}</a></td>
+            <td><code>{{ test.suite }}</code></td>
+          </tr>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   <div class="group-nav">
     {% if group.prev_group %}
     <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group.prev_group }}.html" class="nav-prev">
