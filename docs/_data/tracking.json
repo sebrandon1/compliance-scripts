@@ -458,13 +458,13 @@
       "jira": "CNF-23524",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M21",
       "next_group": "M23",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 20 network sysctl hardening configs deployed.",
       "platform": "rhcos"
     },
     "M23": {
@@ -475,13 +475,13 @@
       "jira": "CNF-23525",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M22",
       "next_group": "M24",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. core_pattern, kexec_load_disabled, perf_event_paranoid set.",
       "platform": "rhcos"
     },
     "M24": {
