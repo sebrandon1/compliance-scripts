@@ -424,13 +424,13 @@
       "jira": "CNF-23522",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M19",
       "next_group": "M21",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Auditd data retention settings applied.",
       "platform": "rhcos"
     },
     "M21": {
@@ -441,13 +441,13 @@
       "jira": "CNF-23523",
       "pr": null,
       "compare": null,
-      "status": "in_progress",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M20",
       "next_group": "M22",
       "last_sync": "2026-05-04",
-      "status_note": "Vanilla scan on RHCOS 9.8 confirms FAIL. Remediation branch created.",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 18 kernel module blacklist files deployed.",
       "platform": "rhcos"
     },
     "M22": {
