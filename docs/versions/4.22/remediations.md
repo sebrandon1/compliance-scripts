@@ -22,6 +22,12 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
     <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">🟡 Pending</button>
     <button class="filter-btn" data-filter="partial" onclick="setStatusFilter('partial')">🟠 Partial</button>
   </div>
+  <div class="filter-buttons">
+    <button class="filter-btn platform-filter active" data-platform="all" onclick="setPlatformFilter('all')">All Platforms</button>
+    <button class="filter-btn platform-filter" data-platform="rhcos" onclick="setPlatformFilter('rhcos')">RHCOS</button>
+    <button class="filter-btn platform-filter" data-platform="ocp" onclick="setPlatformFilter('ocp')">OCP</button>
+    <button class="filter-btn platform-filter" data-platform="mixed" onclick="setPlatformFilter('mixed')">Mixed</button>
+  </div>
   <div class="filter-counts" id="filter-counts"></div>
 </div>
 
@@ -73,6 +79,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
     <tr>
       <th style="width: 60px;">Group</th>
       <th>Category</th>
+      <th style="width: 90px;">Platform</th>
       <th style="width: 80px;">Severity</th>
       <th style="width: 50px; text-align: center;">Checks</th>
       <th style="width: 160px;">Status</th>
@@ -91,9 +98,19 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
         {% assign check_count = check_count | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <tr data-status="{{ g.status }}">
+    <tr data-status="{{ g.status }}" data-platform="{{ g.platform }}">
       <td><a href="groups/{{ gid }}.html" class="group-id">{{ gid }}</a></td>
       <td>{{ g.title }}</td>
+      <td>
+        {% if g.platform %}
+        <span class="platform-badge {{ g.platform }}">
+          {% if g.platform == "rhcos" %}RHCOS
+          {% elsif g.platform == "ocp" %}OCP
+          {% elsif g.platform == "mixed" %}Mixed
+          {% endif %}
+        </span>
+        {% else %}-{% endif %}
+      </td>
       <td><span class="severity-pill {{ g.severity | downcase }}">{{ g.severity }}</span></td>
       <td style="text-align: center;">{{ check_count }}</td>
       <td>
@@ -183,10 +200,17 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 
 <script>
 var currentFilter = 'all';
+var currentPlatform = 'all';
 function setStatusFilter(filter) {
   currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn:not(.platform-filter)').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
+  filterTables();
+}
+function setPlatformFilter(platform) {
+  currentPlatform = platform;
+  document.querySelectorAll('.platform-filter').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-platform="' + platform + '"]').classList.add('active');
   filterTables();
 }
 function filterTables() {
@@ -195,13 +219,15 @@ function filterTables() {
   var shown = 0, total = rows.length;
   rows.forEach(function(row) {
     var status = row.getAttribute('data-status') || '';
+    var platform = row.getAttribute('data-platform') || '';
     var text = row.textContent.toLowerCase();
     var matchSearch = !search || text.indexOf(search) !== -1;
     var matchFilter = currentFilter === 'all' ||
       (currentFilter === 'pass-vanilla' && status.indexOf('pass-vanilla') !== -1) ||
       (currentFilter !== 'pass-vanilla' && status === currentFilter);
-    row.style.display = (matchSearch && matchFilter) ? '' : 'none';
-    if (matchSearch && matchFilter) shown++;
+    var matchPlatform = currentPlatform === 'all' || platform === currentPlatform;
+    row.style.display = (matchSearch && matchFilter && matchPlatform) ? '' : 'none';
+    if (matchSearch && matchFilter && matchPlatform) shown++;
   });
   document.getElementById('filter-counts').textContent = shown + ' of ' + total + ' groups';
 }
