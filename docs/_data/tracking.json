@@ -61,7 +61,8 @@
           "rationale": "Compliance operator's own remediation uses broken authselect path on RHCOS 9. Upstream fix uses direct sed instead.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice."
+          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/pam-no-empty-passwords"
         }
       ]
     },
@@ -124,7 +125,8 @@
           "rationale": "Prevents BPF JIT spraying attacks. KSPP recommended. Zero workload impact.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "Negligible performance impact. Protects against JIT spraying on all clusters. KSPP recommended."
+          "scope_reason": "Negligible performance impact. Protects against JIT spraying on all clusters. KSPP recommended.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-security"
         },
         {
           "setting": "kernel.yama.ptrace_scope=1",
@@ -134,7 +136,8 @@
           "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 45 proposal in progress.",
           "risk": "medium",
           "scope": "upstream",
-          "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts."
+          "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-security"
         }
       ]
     },
@@ -337,7 +340,8 @@
           "rationale": "Identifies audit log source by hostname. Critical for centralized log aggregation across multi-node clusters.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "All multi-node clusters benefit from hostname identification in audit logs for centralized aggregation."
+          "scope_reason": "All multi-node clusters benefit from hostname identification in audit logs for centralized aggregation.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/auditd-defaults"
         }
       ]
     },
@@ -437,7 +441,8 @@
           "rationale": "Restricts kernel log access to root. Prevents unprivileged users from reading kernel ring buffer for info leakage.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "Unprivileged users have no legitimate need to read kernel ring buffer on any OCP node."
+          "scope_reason": "Unprivileged users have no legitimate need to read kernel ring buffer on any OCP node.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-security"
         }
       ]
     },
@@ -669,7 +674,8 @@
           "rationale": "Configures disk error/full actions and space_left thresholds. Ensures audit logs are preserved even under disk pressure.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "All clusters should handle audit log disk pressure gracefully rather than silently dropping events."
+          "scope_reason": "All clusters should handle audit log disk pressure gracefully rather than silently dropping events.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/auditd-defaults"
         }
       ]
     },
@@ -727,7 +733,8 @@
           "rationale": "Standard CIS/STIG network hardening: disable redirects, source routing, enable martian logging, syncookies. Universal for servers.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "Standard CIS/STIG network hardening. Universally recommended for all servers. No legitimate reason to accept ICMP redirects on a Kubernetes node."
+          "scope_reason": "Standard CIS/STIG network hardening. Universally recommended for all servers. No legitimate reason to accept ICMP redirects on a Kubernetes node.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-network"
         }
       ]
     },
@@ -785,7 +792,8 @@
           "rationale": "KSPP-recommended boot parameters. Enable audit subsystem, kernel page table isolation, memory poisoning, vsyscall elimination.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "audit=1 and KSPP kernel args (pti, page_poison, vsyscall=none) are universally beneficial security defaults with negligible performance impact."
+          "scope_reason": "audit=1 and KSPP kernel args (pti, page_poison, vsyscall=none) are universally beneficial security defaults with negligible performance impact.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/kernel-boot-args"
         },
         {
           "setting": "nousb",
@@ -863,7 +871,8 @@
           "rationale": "Prevents accidental or malicious reboot via keyboard. RHCOS nodes are headless servers, not interactive workstations.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "No OCP node is interactive. No legitimate use case for Ctrl-Alt-Del on a Kubernetes node."
+          "scope_reason": "No OCP node is interactive. No legitimate use case for Ctrl-Alt-Del on a Kubernetes node.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/disable-ctrlaltdel"
         }
       ]
     },

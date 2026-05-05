@@ -123,7 +123,12 @@ layout: default
               {% endif %}
             </span>
           </td>
-          <td><a href="{{ item.repo_url }}">{{ item.repo }}</a></td>
+          <td>
+            <a href="{{ item.repo_url }}">{{ item.repo }}</a>
+            {% if item.compare_url %}
+            <br><a href="{{ item.compare_url }}" class="upstream-compare-link">View Proposed Change</a>
+            {% endif %}
+          </td>
           <td><code>{{ item.file }}</code></td>
           <td>
             {{ item.rationale }}
