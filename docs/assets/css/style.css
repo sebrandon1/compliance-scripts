@@ -1886,6 +1886,61 @@ kbd {
   border-color: #E64A19;
 }
 
+/* Upstream proposal section */
+.upstream-proposal {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--color-border);
+}
+
+.upstream-proposal h2::before {
+  content: "\2B06\FE0F ";
+}
+
+.upstream-proposal p {
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary, #666);
+}
+
+.risk-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.risk-badge.low {
+  background: #d4edda;
+  color: #155724;
+}
+
+.risk-badge.medium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.risk-badge.high {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+[data-theme="dark"] .risk-badge.low {
+  background: #1b4332;
+  color: #95d5b2;
+}
+
+[data-theme="dark"] .risk-badge.medium {
+  background: #4a3c00;
+  color: #ffd54f;
+}
+
+[data-theme="dark"] .risk-badge.high {
+  background: #4a1520;
+  color: #f4a0a8;
+}
+
 /* Certsuite badge in group-meta */
 .certsuite-badge {
   display: inline-flex;

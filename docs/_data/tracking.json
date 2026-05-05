@@ -22,7 +22,17 @@
       "next_group": "H2",
       "last_sync": "2026-05-05",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. E8 PASS. Moderate crypto policy FAIL (expects FIPS, we set DEFAULT:NO-SHA1).",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "DEFAULT:NO-SHA1 crypto policy",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Crypto policy preset in base image",
+          "rationale": "RHCOS ships DEFAULT policy. E8 requires NO-SHA1 sub-policy. Hardened container hosts should not use SHA1.",
+          "risk": "low"
+        }
+      ]
     },
     "H2": {
       "title": "PAM Empty Passwords",
@@ -39,7 +49,17 @@
       "next_group": "H3",
       "last_sync": null,
       "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Remove nullok from PAM",
+          "repo": "ComplianceAsCode/content",
+          "repo_url": "https://github.com/ComplianceAsCode/content",
+          "file": "Upstream remediation fix (PR #14602)",
+          "rationale": "Compliance operator's own remediation uses broken authselect path on RHCOS 9. Upstream fix uses direct sed instead.",
+          "risk": "low"
+        }
+      ]
     },
     "H3": {
       "title": "SSHD Empty Passwords",
@@ -90,7 +110,25 @@
       "next_group": "M3",
       "last_sync": null,
       "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "net.core.bpf_jit_harden=2",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
+          "rationale": "Prevents BPF JIT spraying attacks. KSPP recommended. Zero workload impact.",
+          "risk": "low"
+        },
+        {
+          "setting": "kernel.yama.ptrace_scope=1",
+          "repo": "Fedora/RHEL (elfutils RPM)",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Override /usr/lib/sysctl.d/10-default-yama-scope.conf",
+          "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 45 proposal in progress.",
+          "risk": "medium"
+        }
+      ]
     },
     "M3": {
       "title": "Audit Rules - DAC Modifications",
@@ -107,7 +145,17 @@
       "next_group": "M4",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "chmod/chown DAC audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-dac-modification.rules",
+          "rationale": "Standard CIS/STIG audit requirement. Tracks permission changes for forensic analysis.",
+          "risk": "low"
+        }
+      ]
     },
     "M4": {
       "title": "Audit Rules - SELinux",
@@ -124,7 +172,17 @@
       "next_group": "M5",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "SELinux command audit rules (6 commands)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-selinux-commands.rules",
+          "rationale": "Tracks SELinux policy modifications. Critical for security audit trail on hardened systems.",
+          "risk": "low"
+        }
+      ]
     },
     "M5": {
       "title": "Audit Rules - Kernel Modules",
@@ -141,7 +199,17 @@
       "next_group": "M6",
       "last_sync": null,
       "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Kernel module load/unload audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-kernel-modules.rules",
+          "rationale": "Tracks kernel module operations (init_module, delete_module). Essential for detecting rootkit installation.",
+          "risk": "low"
+        }
+      ]
     },
     "M6": {
       "title": "Audit Rules - Time Modifications",
@@ -158,7 +226,17 @@
       "next_group": "M7",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Time modification audit rules (5 syscalls)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-time-change.rules",
+          "rationale": "Tracks time changes that could be used to manipulate log timestamps for forensic evasion.",
+          "risk": "low"
+        }
+      ]
     },
     "M7": {
       "title": "Audit Rules - Login Monitoring",
@@ -175,7 +253,17 @@
       "next_group": "M8",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Login/authentication audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-login-events.rules",
+          "rationale": "Tracks failed logins, sudo usage, and user/group modifications. Core authentication audit trail.",
+          "risk": "low"
+        }
+      ]
     },
     "M8": {
       "title": "Audit Rules - Network Config",
@@ -192,7 +280,17 @@
       "next_group": "M9",
       "last_sync": null,
       "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Network config audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-network-config.rules",
+          "rationale": "Tracks hostname/domainname changes and network environment modifications.",
+          "risk": "low"
+        }
+      ]
     },
     "M9": {
       "title": "Auditd Configuration",
@@ -209,7 +307,17 @@
       "next_group": "M10",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. auditd name_format=hostname.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "auditd name_format=hostname",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/auditd.conf",
+          "rationale": "Identifies audit log source by hostname. Critical for centralized log aggregation across multi-node clusters.",
+          "risk": "low"
+        }
+      ]
     },
     "M10": {
       "title": "API Server Encryption",
@@ -297,7 +405,17 @@
       "next_group": "MAN1",
       "last_sync": null,
       "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "kernel.dmesg_restrict=1",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
+          "rationale": "Restricts kernel log access to root. Prevents unprivileged users from reading kernel ring buffer for info leakage.",
+          "risk": "low"
+        }
+      ]
     },
     "M13": {
       "title": "Extended DAC Audit",
@@ -314,7 +432,17 @@
       "next_group": "M14",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 11 extended DAC audit rules deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Extended DAC audit rules (11 syscalls)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-dac-extended.rules",
+          "rationale": "Covers fchmod, fchown, xattr operations. Completes the DAC audit trail started by M3.",
+          "risk": "low"
+        }
+      ]
     },
     "M14": {
       "title": "Identity File Access Audit",
@@ -331,7 +459,17 @@
       "next_group": "M15",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 12 identity file audit rules deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Identity file access audit rules (12 checks)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-identity-files.rules",
+          "rationale": "Tracks open/openat/open_by_handle_at on /etc/passwd, shadow, group, gshadow. Detects credential harvesting.",
+          "risk": "low"
+        }
+      ]
     },
     "M15": {
       "title": "File Deletion Audit",
@@ -348,7 +486,17 @@
       "next_group": "M16",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 5 file deletion audit rules deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "File deletion audit rules (5 syscalls)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-file-deletion.rules",
+          "rationale": "Tracks rename, unlink, rmdir. Detects evidence tampering and unauthorized file removal.",
+          "risk": "low"
+        }
+      ]
     },
     "M16": {
       "title": "Unsuccessful File Modification Audit",
@@ -365,7 +513,17 @@
       "next_group": "M17",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 18 unsuccessful file modification audit rule files deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Unsuccessful file access audit rules (32 checks)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-unsuccessful-access.rules",
+          "rationale": "Tracks failed access attempts (EACCES/EPERM). Detects privilege escalation and unauthorized access probing.",
+          "risk": "low"
+        }
+      ]
     },
     "M17": {
       "title": "Privileged Commands Audit",
@@ -382,7 +540,17 @@
       "next_group": "M18",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 22 privileged command audit rules deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Privileged command audit rules (22 commands)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-privileged-commands.rules",
+          "rationale": "Tracks execution of setuid/setgid binaries (su, sudo, mount, passwd, etc.). Required by CIS and STIG.",
+          "risk": "low"
+        }
+      ]
     },
     "M18": {
       "title": "Session & MAC Audit",
@@ -399,7 +567,17 @@
       "next_group": "M19",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Session, MAC-policy, export, immutable audit rules deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Session, MAC, and media export audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-session-mac.rules",
+          "rationale": "Tracks session initiation, SELinux policy changes, media export, and makes audit config immutable.",
+          "risk": "low"
+        }
+      ]
     },
     "M19": {
       "title": "Usergroup Modification Audit",
@@ -416,7 +594,17 @@
       "next_group": "M20",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 5 usergroup modification file watches deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Usergroup modification file watches (5 files)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-usergroup-modification.rules",
+          "rationale": "Watches /etc/passwd, group, shadow, gshadow, opasswd for modifications. Detects unauthorized account changes.",
+          "risk": "low"
+        }
+      ]
     },
     "M20": {
       "title": "Auditd Data Retention",
@@ -433,7 +621,17 @@
       "next_group": "M21",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Auditd data retention settings applied.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "auditd data retention settings",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/auditd.conf",
+          "rationale": "Configures disk error/full actions and space_left thresholds. Ensures audit logs are preserved even under disk pressure.",
+          "risk": "low"
+        }
+      ]
     },
     "M21": {
       "title": "Kernel Module Blacklist",
@@ -450,7 +648,17 @@
       "next_group": "M22",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 18 kernel module blacklist files deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "18 kernel module blacklist entries",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/modprobe.d/50-security-blacklist.conf",
+          "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
+          "risk": "medium"
+        }
+      ]
     },
     "M22": {
       "title": "Network Sysctl Hardening",
@@ -467,7 +675,17 @@
       "next_group": "M23",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 20 network sysctl hardening configs deployed.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "20 IPv4/IPv6 network sysctl values",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-network-hardening.conf",
+          "rationale": "Standard CIS/STIG network hardening: disable redirects, source routing, enable martian logging, syncookies. Universal for servers.",
+          "risk": "low"
+        }
+      ]
     },
     "M23": {
       "title": "Kernel Sysctl Extended",
@@ -484,7 +702,17 @@
       "next_group": "M24",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. core_pattern, kexec_load_disabled, perf_event_paranoid set.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "kernel.core_pattern, kexec_load_disabled, perf_event_paranoid",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
+          "rationale": "Disables core dumps (data leakage), kexec (rootkit persistence), restricts perf_event (info disclosure). Standard KSPP hardening.",
+          "risk": "medium"
+        }
+      ]
     },
     "M24": {
       "title": "CoreOS Kernel Arguments",
@@ -501,7 +729,25 @@
       "next_group": "M25",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 6 kernel args: audit, audit_backlog_limit, nousb, page_poison, pti, vsyscall.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "audit=1, audit_backlog_limit=8192, pti=on, page_poison=1, vsyscall=none",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Default kernel command line arguments",
+          "rationale": "KSPP-recommended boot parameters. Enable audit subsystem, kernel page table isolation, memory poisoning, vsyscall elimination.",
+          "risk": "low"
+        },
+        {
+          "setting": "nousb",
+          "repo": "openshift/os (opt-in only)",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Optional hardening profile kernel arg",
+          "rationale": "Disables USB entirely. Prevents USB-based attacks but breaks BMC KVM and USB provisioning. Should be opt-in, not default.",
+          "risk": "high"
+        }
+      ]
     },
     "M25": {
       "title": "Chrony/NTP Configuration",
@@ -518,7 +764,17 @@
       "next_group": "M26",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Chrony port=0, cmdport=0, maxpoll=10, 4 NTP servers.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "maxpoll 10, multiple NTP servers",
+          "repo": "openshift/machine-config-operator",
+          "repo_url": "https://github.com/openshift/machine-config-operator",
+          "file": "MCO chrony config template",
+          "rationale": "MCO generates chrony.conf at install time. maxpoll and server list are deployment-specific. Template should set maxpoll=10 by default.",
+          "risk": "low"
+        }
+      ]
     },
     "M26": {
       "title": "Systemd Hardening",
@@ -535,7 +791,25 @@
       "next_group": "M27",
       "last_sync": "2026-05-04",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Coredump disabled, ctrl-alt-del masked, systemd-coredump masked.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Disable coredumps (Storage=none, ProcessSizeMax=0)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/systemd/coredump.conf.d/50-no-coredumps.conf",
+          "rationale": "Container hosts shouldn't store core dumps. Prevents sensitive data leakage and disk exhaustion from crashed processes.",
+          "risk": "medium"
+        },
+        {
+          "setting": "Mask ctrl-alt-del.target, CtrlAltDelBurstAction=none",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "systemd preset + /etc/systemd/system.conf.d/",
+          "rationale": "Prevents accidental or malicious reboot via keyboard. RHCOS nodes are headless servers, not interactive workstations.",
+          "risk": "low"
+        }
+      ]
     },
     "M27": {
       "title": "SSHD Moderate Extensions",
@@ -552,7 +826,17 @@
       "next_group": "M28",
       "last_sync": "2026-05-05",
       "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Settings applied (sshd -T confirms ClientAliveInterval=300 ClientAliveCountMax=0). Moderate scanner FAIL is a known drop-in file detection limitation.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "ClientAliveInterval=300, ClientAliveCountMax=0",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/ssh/sshd_config.d/50-hardening.conf",
+          "rationale": "Automatically disconnects idle SSH sessions after 5 minutes. Prevents abandoned sessions from being hijacked.",
+          "risk": "low"
+        }
+      ]
     },
     "M28": {
       "title": "USBGuard",
