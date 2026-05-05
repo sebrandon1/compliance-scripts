@@ -5,6 +5,22 @@ layout: default
 {% assign group = site.data.tracking.groups[page.group_id] %}
 {% assign meta = site.data.tracking.meta %}
 
+{% assign certsuite_total = 0 %}
+{% assign certsuite_covered = 0 %}
+{% for rem in site.data.tracking.remediations %}
+  {% if rem[1].group == page.group_id %}
+    {% assign certsuite_total = certsuite_total | plus: 1 %}
+    {% if rem[1].certsuite %}
+      {% assign certsuite_covered = certsuite_covered | plus: 1 %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% if certsuite_total > 0 and certsuite_covered > 0 %}
+  {% assign certsuite_pct = certsuite_covered | times: 100 | divided_by: certsuite_total %}
+{% else %}
+  {% assign certsuite_pct = 0 %}
+{% endif %}
+
 <div class="group-page">
   <nav class="breadcrumb">
     <a href="{{ site.baseurl }}/">Home</a> &raquo;
@@ -67,6 +83,12 @@ layout: default
         Synced: {{ group.last_sync | date: "%Y-%m-%d" }}
       </span>
       {% endif %}
+
+      {% if certsuite_pct > 0 %}
+      <a href="#certsuite-coverage" class="certsuite-badge {% if certsuite_pct == 100 %}full{% elsif certsuite_pct >= 50 %}high{% else %}low{% endif %}" title="{{ certsuite_covered }}/{{ certsuite_total }} checks covered by certsuite">
+        Certsuite: {{ certsuite_pct }}%
+      </a>
+      {% endif %}
     </div>
   </div>
 
@@ -83,8 +105,8 @@ layout: default
   {% endfor %}
 
   {% if has_certsuite %}
-  <div class="certsuite-coverage">
-    <h2>Certsuite Coverage</h2>
+  <div class="certsuite-coverage" id="certsuite-coverage">
+    <h2>Certsuite Coverage ({{ certsuite_covered }}/{{ certsuite_total }} checks)</h2>
     <p>The following <a href="https://github.com/redhat-best-practices-for-k8s/certsuite">certsuite</a> tests provide automated verification for checks in this group:</p>
     <table>
       <thead>

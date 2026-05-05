@@ -1886,6 +1886,39 @@ kbd {
   border-color: #E64A19;
 }
 
+/* Certsuite badge in group-meta */
+.certsuite-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.certsuite-badge:hover {
+  opacity: 0.85;
+  text-decoration: none;
+}
+
+.certsuite-badge.full {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: #fff;
+}
+
+.certsuite-badge.high {
+  background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+  color: #fff;
+}
+
+.certsuite-badge.low {
+  background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+  color: #212529;
+}
+
 /* Certsuite coverage section */
 .certsuite-coverage {
   margin-top: 2rem;
