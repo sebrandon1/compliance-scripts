@@ -255,14 +255,15 @@
       "jira": "CNF-23452",
       "pr": null,
       "compare": "compliance/4.21/m12-audit-profile",
-      "status": "pending",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M11",
       "next_group": "M13",
-      "last_sync": null,
+      "last_sync": "2026-05-04",
       "notes": "Platform-level APIServer audit profile, not a MachineConfig.",
-      "platform": "ocp"
+      "platform": "ocp",
+      "status_note": "Verified on cnfdt16 OCP 4.22. Audit profile set to WriteRequestBodies."
     },
     "L1": {
       "title": "SSHD LogLevel",
@@ -578,13 +579,13 @@
       "jira": "CNF-23453",
       "pr": null,
       "compare": "compliance/4.22/m29-access-controls",
-      "status": "partial",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M28",
       "next_group": "M30",
-      "last_sync": null,
-      "status_note": "2 platform-level checks still FAIL (banner, motd). Node-level checks PASS.",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Securetty empty, audit trail access rules deployed.",
       "platform": "mixed"
     },
     "M30": {
@@ -595,14 +596,15 @@
       "jira": "CNF-23454",
       "pr": null,
       "compare": "compliance/4.22/m30-oauth",
-      "status": "partial",
+      "status": "verified",
       "jira_status": null,
       "pr_state": null,
       "prev_group": "M29",
       "next_group": "L1",
-      "last_sync": null,
+      "last_sync": "2026-05-04",
       "notes": "oauth-or-oauthclient-inactivity-timeout passes. oauth-or-oauthclient-token-maxage is a platform-level OAuth config not addressable by MachineConfig.",
-      "platform": "mixed"
+      "platform": "mixed",
+      "status_note": "Verified on cnfdt16 OCP 4.22. OAuth accessTokenInactivityTimeout=10m0s."
     },
     "MAN1": {
       "title": "Workload Security",
