@@ -870,9 +870,8 @@
           "file": "systemd preset + /etc/systemd/system.conf.d/",
           "rationale": "Prevents accidental or malicious reboot via keyboard. RHCOS nodes are headless servers, not interactive workstations.",
           "risk": "low",
-          "scope": "upstream",
-          "scope_reason": "No OCP node is interactive. No legitimate use case for Ctrl-Alt-Del on a Kubernetes node.",
-          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/disable-ctrlaltdel"
+          "scope": "ran",
+          "scope_reason": "Bare-metal operators use Ctrl-Alt-Del via BMC console to recover hung nodes when SSH is unavailable. Masking it removes a useful recovery tool. Appropriate for hardened RAN production nodes where accidental reboots are catastrophic."
         }
       ]
     },
