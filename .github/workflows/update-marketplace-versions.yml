@@ -1,0 +1,61 @@
+name: Update Marketplace Versions
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Weekly on Monday at 6 AM UTC
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  update-marketplace-versions:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install skopeo
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq skopeo
+
+      - name: Run update script
+        id: update
+        run: |
+          OUTPUT=$(./scripts/update-marketplace-versions.sh 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "updated=true"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="automated/update-marketplace-versions"
+
+          EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [[ -n "$EXISTING" ]]; then
+            echo "PR #${EXISTING} already open — skipping"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add utilities/verify-images.sh
+          git commit -m "Update community-operator-index versions"
+          git push -f origin "$BRANCH"
+
+          gh pr create \
+            --title "Update community-operator-index versions" \
+            --body "Automated PR to update the marketplace image verification list with the latest available OCP versions." \
+            --base main \
+            --head "$BRANCH"
