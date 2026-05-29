@@ -45,10 +45,11 @@ MIRROR_IMAGES=(
 )
 
 OPENSHIFT_MARKETPLACE_IMAGES=(
-	"registry.redhat.io/redhat/community-operator-index:v4.17"
 	"registry.redhat.io/redhat/community-operator-index:v4.18"
 	"registry.redhat.io/redhat/community-operator-index:v4.19"
 	"registry.redhat.io/redhat/community-operator-index:v4.20"
+	"registry.redhat.io/redhat/community-operator-index:v4.21"
+	"registry.redhat.io/redhat/community-operator-index:v4.22"
 )
 
 usage() {
