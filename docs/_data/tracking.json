@@ -4,7 +4,9 @@
     "pr_base_url": "https://github.com/openshift-kni/telco-reference/pull/",
     "compare_base_url": "https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:",
     "epic": "CNF-19031",
-    "last_sync": null
+    "last_sync": null,
+    "last_upstream_audit": "2026-06-02",
+    "upstream_audit_note": "Full 40-group audit: 2 upstream-pr-exists, 10 upstream-candidate, 12 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable, 1 partial/blocked"
   },
   "groups": {
     "H1": {
@@ -13,11 +15,11 @@
       "priority": 1,
       "priority_label": "Critical",
       "jira": "CNF-21212",
-      "pr": null,
+      "pr": "735",
       "compare": "compliance/4.22/h1-crypto-policy",
       "status": "verified",
-      "jira_status": null,
-      "pr_state": null,
+      "jira_status": "In Progress",
+      "pr_state": "open",
       "prev_group": null,
       "next_group": "H2",
       "last_sync": "2026-05-05",
@@ -32,9 +34,11 @@
           "rationale": "RHCOS ships DEFAULT policy. E8 requires NO-SHA1 sub-policy. Hardened container hosts should not use SHA1.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "General OCP clusters may need DEFAULT policy for broad TLS compatibility. NO-SHA1 is a hardening choice."
+          "scope_reason": "General OCP clusters may need DEFAULT policy for broad TLS compatibility. NO-SHA1 is a hardening choice.",
+          "upstream_candidate_note": "Re-evaluate: SHA1 is deprecated in NIST/PCI-DSS/CIS. RHEL 10 may default to FUTURE or stricter. Check if RHCOS 10 changes default crypto policy."
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "H2": {
       "title": "PAM Empty Passwords",
@@ -42,11 +46,11 @@
       "priority": 1,
       "priority_label": "Critical",
       "jira": "CNF-21212",
-      "pr": null,
+      "pr": "736",
       "compare": "compliance/4.22/h2-pam-nullok",
       "status": "verified",
-      "jira_status": null,
-      "pr_state": null,
+      "jira_status": "In Progress",
+      "pr_state": "open",
       "prev_group": "H1",
       "next_group": "H3",
       "last_sync": null,
@@ -64,7 +68,8 @@
           "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/pam-no-empty-passwords"
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-pr-exists"
     },
     "H3": {
       "title": "SSHD Empty Passwords",
@@ -75,13 +80,14 @@
       "pr": null,
       "compare": null,
       "status": "pass-vanilla-rhcos9.8",
-      "jira_status": null,
+      "jira_status": "Closed",
       "pr_state": null,
       "prev_group": "H2",
       "next_group": "M1",
       "last_sync": null,
       "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream_verdict": "pass-vanilla"
     },
     "M1": {
       "title": "SSHD Configuration",
@@ -90,15 +96,17 @@
       "priority_label": "High",
       "jira": "CNF-22620",
       "pr": null,
-      "compare": null,
-      "status": "pass-vanilla-rhcos9.8",
-      "jira_status": "Closed",
+      "compare": "compliance/4.22/m1-sshd-medium",
+      "status": "partial",
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "H3",
       "next_group": "M2",
-      "last_sync": null,
-      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
-      "platform": "rhcos"
+      "last_sync": "2026-06-04",
+      "status_note": "5/7 checks PASS on vanilla RHCOS 9.8. 2 FAIL: sshd-disable-gssapi-auth (GSSAPIAuthentication yes default) and sshd-disable-user-known-hosts (IgnoreUserKnownHosts no default). Upstream candidate for rhel-coreos-config 40-rhcos-defaults.conf.",
+      "platform": "rhcos",
+      "upstream_verdict": "upstream-candidate",
+      "upstream_verdict": "pass-vanilla"
     },
     "M2": {
       "title": "Kernel Hardening (Sysctl)",
@@ -106,11 +114,11 @@
       "priority": 3,
       "priority_label": "Medium",
       "jira": "CNF-21196",
-      "pr": null,
+      "pr": "737",
       "compare": "compliance/4.22/m2-kernel-sysctl",
       "status": "verified",
-      "jira_status": null,
-      "pr_state": null,
+      "jira_status": "In Progress",
+      "pr_state": "open",
       "prev_group": "M1",
       "next_group": "M3",
       "last_sync": null,
@@ -139,7 +147,8 @@
           "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts.",
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-security"
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M3": {
       "title": "Audit Rules - DAC Modifications",
@@ -150,7 +159,7 @@
       "pr": null,
       "compare": "compliance/4.22/m3-audit-dac",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M2",
       "next_group": "M4",
@@ -168,7 +177,8 @@
           "scope": "ran",
           "scope_reason": "Audit rules add overhead. Not all clusters need DAC modification forensic logging."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M4": {
       "title": "Audit Rules - SELinux",
@@ -179,7 +189,7 @@
       "pr": null,
       "compare": "compliance/4.22/m4-audit-selinux",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M3",
       "next_group": "M5",
@@ -197,7 +207,8 @@
           "scope": "ran",
           "scope_reason": "SELinux command auditing is valuable for hardened environments but adds audit log volume."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M5": {
       "title": "Audit Rules - Kernel Modules",
@@ -205,11 +216,11 @@
       "priority": 3,
       "priority_label": "Medium",
       "jira": "CNF-23448",
-      "pr": null,
+      "pr": "738",
       "compare": "compliance/4.22/m5-audit-modules",
       "status": "verified",
-      "jira_status": null,
-      "pr_state": null,
+      "jira_status": "In Progress",
+      "pr_state": "open",
       "prev_group": "M4",
       "next_group": "M6",
       "last_sync": null,
@@ -226,7 +237,8 @@
           "scope": "ran",
           "scope_reason": "Module loading auditing is critical for security-sensitive deployments but unnecessary for general workloads."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M6": {
       "title": "Audit Rules - Time Modifications",
@@ -237,7 +249,7 @@
       "pr": null,
       "compare": "compliance/4.22/m6-audit-time",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M5",
       "next_group": "M7",
@@ -255,7 +267,8 @@
           "scope": "ran",
           "scope_reason": "Time change auditing matters for forensic integrity but adds log volume on all nodes."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M7": {
       "title": "Audit Rules - Login Monitoring",
@@ -266,7 +279,7 @@
       "pr": null,
       "compare": "compliance/4.22/m7-audit-login",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M6",
       "next_group": "M8",
@@ -284,7 +297,8 @@
           "scope": "ran",
           "scope_reason": "Login auditing is standard for compliance but may be excessive for dev/test clusters."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M8": {
       "title": "Audit Rules - Network Config",
@@ -295,7 +309,7 @@
       "pr": null,
       "compare": "compliance/4.22/m8-audit-network",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M7",
       "next_group": "M9",
@@ -313,7 +327,8 @@
           "scope": "ran",
           "scope_reason": "Network config auditing is important for hardened deployments but not universally needed."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M9": {
       "title": "Auditd Configuration",
@@ -324,7 +339,7 @@
       "pr": null,
       "compare": "compliance/4.22/m9-auditd-config",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M8",
       "next_group": "M10",
@@ -343,7 +358,8 @@
           "scope_reason": "All multi-node clusters benefit from hostname identification in audit logs for centralized aggregation.",
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/auditd-defaults"
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M10": {
       "title": "API Server Encryption",
@@ -354,14 +370,15 @@
       "pr": "678",
       "compare": "compliance/4.22/m10-api-encryption",
       "status": "verified",
-      "jira_status": null,
-      "pr_state": null,
+      "jira_status": "In Progress",
+      "pr_state": "open",
       "prev_group": "M9",
       "next_group": "M11",
       "last_sync": "2026-05-05",
       "notes": "Platform-level APIServer config, not a MachineConfig.",
       "platform": "ocp",
-      "status_note": "Verified on cnfdt16 OCP 4.22. API encryption type=aescbc, all resources encrypted."
+      "status_note": "Verified on cnfdt16 OCP 4.22. API encryption type=aescbc, all resources encrypted.",
+      "upstream_verdict": "platform-config"
     },
     "M11": {
       "title": "Ingress TLS Ciphers",
@@ -372,14 +389,15 @@
       "pr": null,
       "compare": "compliance/4.22/m11-ingress-tls",
       "status": "pass-vanilla-rhcos9.8",
-      "jira_status": null,
+      "jira_status": "Closed",
       "pr_state": null,
       "prev_group": "M10",
       "next_group": "M12",
       "last_sync": "2026-05-04",
       "notes": "Platform-level IngressController config, not a MachineConfig.",
       "platform": "ocp",
-      "status_note": "Vanilla scan on OCP 4.22 confirms PASS. No remediation needed."
+      "status_note": "Vanilla scan on OCP 4.22 confirms PASS. No remediation needed.",
+      "upstream_verdict": "pass-vanilla"
     },
     "M12": {
       "title": "Audit Profile",
@@ -390,14 +408,15 @@
       "pr": null,
       "compare": "compliance/4.22/m12-audit-profile",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M11",
       "next_group": "M13",
       "last_sync": "2026-05-04",
       "notes": "Platform-level APIServer audit profile, not a MachineConfig.",
       "platform": "ocp",
-      "status_note": "Verified on cnfdt16 OCP 4.22. Audit profile set to WriteRequestBodies."
+      "status_note": "Verified on cnfdt16 OCP 4.22. Audit profile set to WriteRequestBodies.",
+      "upstream_verdict": "platform-config"
     },
     "L1": {
       "title": "SSHD LogLevel",
@@ -414,7 +433,8 @@
       "next_group": "L2",
       "last_sync": null,
       "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream_verdict": "pass-vanilla"
     },
     "L2": {
       "title": "Sysctl dmesg_restrict",
@@ -425,7 +445,7 @@
       "pr": null,
       "compare": "compliance/4.22/l2-sysctl-dmesg",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "L1",
       "next_group": "MAN1",
@@ -444,7 +464,8 @@
           "scope_reason": "Unprivileged users have no legitimate need to read kernel ring buffer on any OCP node.",
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-security"
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M13": {
       "title": "Extended DAC Audit",
@@ -455,7 +476,7 @@
       "pr": null,
       "compare": "compliance/4.22/m13-audit-dac-extended",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M12",
       "next_group": "M14",
@@ -473,7 +494,8 @@
           "scope": "ran",
           "scope_reason": "Extended DAC auditing adds significant log volume. Needed for compliance, not general use."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M14": {
       "title": "Identity File Access Audit",
@@ -484,7 +506,7 @@
       "pr": null,
       "compare": "compliance/4.22/m14-audit-identity-files",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M13",
       "next_group": "M15",
@@ -502,7 +524,8 @@
           "scope": "ran",
           "scope_reason": "Identity file access auditing is compliance-driven. Significant audit overhead for general clusters."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M15": {
       "title": "File Deletion Audit",
@@ -513,7 +536,7 @@
       "pr": null,
       "compare": "compliance/4.22/m15-audit-file-deletion",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M14",
       "next_group": "M16",
@@ -531,7 +554,8 @@
           "scope": "ran",
           "scope_reason": "File deletion auditing is compliance-driven forensic logging."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M16": {
       "title": "Unsuccessful File Modification Audit",
@@ -542,7 +566,7 @@
       "pr": null,
       "compare": "compliance/4.22/m16-audit-unsuccessful-access",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M15",
       "next_group": "M17",
@@ -560,7 +584,8 @@
           "scope": "ran",
           "scope_reason": "32 unsuccessful access rules generate substantial audit volume. Compliance-specific."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M17": {
       "title": "Privileged Commands Audit",
@@ -571,7 +596,7 @@
       "pr": null,
       "compare": "compliance/4.22/m17-audit-privileged-commands",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M16",
       "next_group": "M18",
@@ -589,7 +614,8 @@
           "scope": "ran",
           "scope_reason": "Privileged command auditing is compliance-driven. 22 rules add audit overhead."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M18": {
       "title": "Session & MAC Audit",
@@ -600,7 +626,7 @@
       "pr": null,
       "compare": "compliance/4.22/m18-audit-session-mac",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M17",
       "next_group": "M19",
@@ -618,7 +644,8 @@
           "scope": "ran",
           "scope_reason": "Session/MAC auditing and audit immutability are compliance-specific hardening."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M19": {
       "title": "Usergroup Modification Audit",
@@ -629,7 +656,7 @@
       "pr": null,
       "compare": "compliance/4.22/m19-audit-usergroup-files",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M18",
       "next_group": "M20",
@@ -647,7 +674,8 @@
           "scope": "ran",
           "scope_reason": "Usergroup file watches are compliance-driven forensic logging."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M20": {
       "title": "Auditd Data Retention",
@@ -658,7 +686,7 @@
       "pr": null,
       "compare": "compliance/4.22/m20-auditd-data-retention",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M19",
       "next_group": "M21",
@@ -677,7 +705,8 @@
           "scope_reason": "All clusters should handle audit log disk pressure gracefully rather than silently dropping events.",
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/auditd-defaults"
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M21": {
       "title": "Kernel Module Blacklist",
@@ -688,7 +717,7 @@
       "pr": null,
       "compare": "compliance/4.22/m21-kernel-module-blacklist",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M20",
       "next_group": "M22",
@@ -704,9 +733,11 @@
           "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
           "risk": "medium",
           "scope": "ran",
-          "scope_reason": "Some modules (SCTP) are used by telco workloads. Bluetooth/WiFi blacklist is safe but module selection is deployment-specific."
+          "scope_reason": "Some modules (SCTP) are used by telco workloads. Bluetooth/WiFi blacklist is safe but module selection is deployment-specific.",
+          "upstream_candidate_note": "Partial upstream candidate: bluetooth, btusb, firewire-core, thunderbolt, cramfs, squashfs, udf modules are universally safe to blacklist on server/container hosts. SCTP and some network modules are telco-dependent."
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M22": {
       "title": "Network Sysctl Hardening",
@@ -717,7 +748,7 @@
       "pr": null,
       "compare": "compliance/4.22/m22-sysctl-network",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M21",
       "next_group": "M23",
@@ -736,7 +767,8 @@
           "scope_reason": "Standard CIS/STIG network hardening. Universally recommended for all servers. No legitimate reason to accept ICMP redirects on a Kubernetes node.",
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/sysctl-network"
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M23": {
       "title": "Kernel Sysctl Extended",
@@ -747,7 +779,7 @@
       "pr": null,
       "compare": "compliance/4.22/m23-sysctl-kernel-extended",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M22",
       "next_group": "M24",
@@ -763,9 +795,11 @@
           "rationale": "Disables core dumps (data leakage), kexec (rootkit persistence), restricts perf_event (info disclosure). Standard KSPP hardening.",
           "risk": "medium",
           "scope": "ran",
-          "scope_reason": "kexec_load_disabled is safe for upstream (RHCOS doesn't use kexec), but core_pattern and perf_event_paranoid break debugging and profiling tools needed by platform teams."
+          "scope_reason": "kexec_load_disabled is safe for upstream (RHCOS doesn't use kexec), but core_pattern and perf_event_paranoid break debugging and profiling tools needed by platform teams.",
+          "upstream_candidate_note": "Partial upstream candidate: kexec_load_disabled=1 is safe (RHCOS does not use kexec). core_pattern and perf_event_paranoid break debugging tools - keep as ran."
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M24": {
       "title": "CoreOS Kernel Arguments",
@@ -776,7 +810,7 @@
       "pr": null,
       "compare": "compliance/4.22/m24-coreos-kernel-args",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M23",
       "next_group": "M25",
@@ -805,7 +839,8 @@
           "scope": "ran",
           "scope_reason": "Disabling USB entirely breaks BMC KVM and USB-based provisioning. Must be opt-in for specific hardened deployments only."
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M25": {
       "title": "Chrony/NTP Configuration",
@@ -816,7 +851,7 @@
       "pr": null,
       "compare": "compliance/4.22/m25-chrony-hardening",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M24",
       "next_group": "M26",
@@ -834,7 +869,8 @@
           "scope": "site",
           "scope_reason": "NTP server addresses and maxpoll intervals are site-specific. MCO template could default maxpoll=10 but server list must be configured per deployment."
         }
-      ]
+      ],
+      "upstream_verdict": "site-specific"
     },
     "M26": {
       "title": "Systemd Hardening",
@@ -845,7 +881,7 @@
       "pr": null,
       "compare": "compliance/4.22/m26-systemd-hardening",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M25",
       "next_group": "M27",
@@ -871,9 +907,11 @@
           "rationale": "Prevents accidental or malicious reboot via keyboard. RHCOS nodes are headless servers, not interactive workstations.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Bare-metal operators use Ctrl-Alt-Del via BMC console to recover hung nodes when SSH is unavailable. Masking it removes a useful recovery tool. Appropriate for hardened RAN production nodes where accidental reboots are catastrophic."
+          "scope_reason": "Bare-metal operators use Ctrl-Alt-Del via BMC console to recover hung nodes when SSH is unavailable. Masking it removes a useful recovery tool. Appropriate for hardened RAN production nodes where accidental reboots are catastrophic.",
+          "upstream_candidate_note": "Upstream candidate: RHCOS nodes are headless servers managed via BMC, not interactive workstations. Ctrl-Alt-Del via BMC console is a niche recovery method. Most operators use IPMI power cycle instead."
         }
-      ]
+      ],
+      "upstream_verdict": "upstream-candidate"
     },
     "M27": {
       "title": "SSHD Moderate Extensions",
@@ -884,7 +922,7 @@
       "pr": null,
       "compare": "compliance/4.22/m27-sshd-session-hardening",
       "status": "verified",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M26",
       "next_group": "M28",
@@ -902,7 +940,8 @@
           "scope": "ran",
           "scope_reason": "5-minute idle timeout is aggressive. Platform teams may need longer SSH sessions for debugging. Appropriate for hardened production deployments."
         }
-      ]
+      ],
+      "upstream_verdict": "ran-only"
     },
     "M28": {
       "title": "USBGuard",
@@ -919,7 +958,8 @@
       "next_group": "M29",
       "last_sync": null,
       "notes": "USBGuard RPM not available on RHCOS. MC enables service and adds rules but package-usbguard-installed and service-usbguard-enabled always fail.",
-      "platform": "rhcos"
+      "platform": "rhcos",
+      "upstream_verdict": "not-applicable"
     },
     "M29": {
       "title": "System Access Controls",
@@ -930,13 +970,14 @@
       "pr": null,
       "compare": "compliance/4.22/m29-access-controls",
       "status": "partial",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M28",
       "next_group": "M30",
       "last_sync": "2026-05-05",
       "status_note": "Verified on cnfdt16 OCP 4.22. RHCOS node checks (securetty, audit trail) PASS. OCP platform checks (banner-or-login-template-set, openshift-motd-exists) still FAIL \u2014 require per-deployment configuration.",
-      "platform": "mixed"
+      "platform": "mixed",
+      "upstream_verdict": "platform-config"
     },
     "M30": {
       "title": "OAuth Configuration",
@@ -947,14 +988,15 @@
       "pr": null,
       "compare": "compliance/4.22/m30-oauth",
       "status": "partial",
-      "jira_status": null,
+      "jira_status": "In Progress",
       "pr_state": null,
       "prev_group": "M29",
       "next_group": "L1",
       "last_sync": "2026-05-05",
       "notes": "oauth-or-oauthclient-inactivity-timeout passes. oauth-or-oauthclient-token-maxage is a platform-level OAuth config not addressable by MachineConfig.",
       "platform": "mixed",
-      "status_note": "Verified on cnfdt16 OCP 4.22. accessTokenInactivityTimeout set. oauth-or-oauthclient-token-maxage and PCI-DSS inactivity-timeout still FAIL. Branch needs update with accessTokenMaxAgeSeconds."
+      "status_note": "Verified on cnfdt16 OCP 4.22. accessTokenInactivityTimeout set. oauth-or-oauthclient-token-maxage and PCI-DSS inactivity-timeout still FAIL. Branch needs update with accessTokenMaxAgeSeconds.",
+      "upstream_verdict": "platform-config"
     },
     "MAN1": {
       "title": "Workload Security",
@@ -970,7 +1012,8 @@
       "prev_group": "L2",
       "next_group": "MAN2",
       "last_sync": null,
-      "platform": "ocp"
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
     },
     "MAN2": {
       "title": "RBAC & Access Control",
@@ -986,7 +1029,8 @@
       "prev_group": "MAN1",
       "next_group": "MAN3",
       "last_sync": null,
-      "platform": "ocp"
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
     },
     "MAN3": {
       "title": "Secrets Management",
@@ -1002,7 +1046,8 @@
       "prev_group": "MAN2",
       "next_group": "MAN4",
       "last_sync": null,
-      "platform": "ocp"
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
     },
     "MAN4": {
       "title": "Audit Log Partitions",
@@ -1018,7 +1063,8 @@
       "prev_group": "MAN3",
       "next_group": "MAN5",
       "last_sync": null,
-      "platform": "ocp"
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
     },
     "MAN5": {
       "title": "Hardware/BIOS & Alerting",
@@ -1034,7 +1080,8 @@
       "prev_group": "MAN4",
       "next_group": null,
       "last_sync": null,
-      "platform": "ocp"
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
     }
   },
   "remediations": {
