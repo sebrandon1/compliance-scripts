@@ -309,9 +309,9 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 7/9: Asserting ComplianceSuites for periodic scans exist...$(RESET)"
 	@echo "  Waiting for operator to reconcile ScanSettingBindings into ComplianceSuites..."
-	@for i in 1 2 3 4 5 6; do \
+	@for i in $$(seq 1 18); do \
 		if oc -n openshift-compliance get compliancesuite cis-scan &>/dev/null; then break; fi; \
-		echo "  Waiting for ComplianceSuites to be created (attempt $$i/6)..."; \
+		echo "  Waiting for ComplianceSuites to be created (attempt $$i/18)..."; \
 		sleep 10; \
 	done
 	@if oc -n openshift-compliance get profile ocp4-e8 &>/dev/null; then \
