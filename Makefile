@@ -309,18 +309,23 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 7/9: Asserting ComplianceSuites for periodic scans exist...$(RESET)"
 	@echo "  Waiting for operator to reconcile ScanSettingBindings into ComplianceSuites..."
-	@for i in 1 2 3 4 5 6; do \
-		if oc -n openshift-compliance get compliancesuite cis-scan &>/dev/null; then break; fi; \
-		echo "  Waiting for ComplianceSuites to be created (attempt $$i/6)..."; \
+	@found=false; \
+	for i in $$(seq 1 18); do \
+		if oc -n openshift-compliance get compliancesuite cis-scan &>/dev/null; then found=true; break; fi; \
+		echo "  Waiting for ComplianceSuites to be created (attempt $$i/18)..."; \
 		sleep 10; \
-	done
-	@if oc -n openshift-compliance get profile ocp4-e8 &>/dev/null; then \
+	done; \
+	if [ "$$found" != "true" ]; then \
+		echo "$(RED)❌ ComplianceSuite cis-scan not found after 180s!$(RESET)"; \
+		exit 1; \
+	fi; \
+	echo "$(GREEN)  ✓ ComplianceSuite cis-scan exists$(RESET)"; \
+	if oc -n openshift-compliance get profile ocp4-e8 &>/dev/null; then \
 		oc -n openshift-compliance get compliancesuite periodic-e8 || (echo "$(RED)❌ ComplianceSuite periodic-e8 not found!$(RESET)" && exit 1); \
 		echo "$(GREEN)  ✓ ComplianceSuite periodic-e8 exists$(RESET)"; \
 	else \
 		echo "$(YELLOW)  ⚠ ComplianceSuite periodic-e8 skipped (E8 profiles not available)$(RESET)"; \
 	fi
-	@oc -n openshift-compliance get compliancesuite cis-scan || (echo "$(RED)❌ ComplianceSuite cis-scan not found!$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ ComplianceSuites exist!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 8/9: Creating compliance scans (all profiles)...$(RESET)"
