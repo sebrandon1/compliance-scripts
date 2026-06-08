@@ -371,6 +371,11 @@ lint: python-lint bash-lint ## 🔍 Run all linters (Python + Bash)
 	@echo "$(BOLD)$(GREEN)✅ All linting checks passed!$(RESET)"
 	@echo ""
 
+python-test: ## 🧪 Run Python unit tests
+	@echo "$(BOLD)$(BLUE)🧪 Running Python tests...$(RESET)"
+	@python3 -m pytest tests/ -v || (echo "$(RED)❌ Python tests failed!$(RESET)" && exit 1)
+	@echo "$(GREEN)✅ Python tests passed!$(RESET)"
+
 python-lint: ## 🐍 Lint Python files with flake8
 	@echo "$(BOLD)$(BLUE)🐍 Linting Python files...$(RESET)"
 	@if ! command -v flake8 >/dev/null 2>&1 && ! python3 -m flake8 --version >/dev/null 2>&1; then \
