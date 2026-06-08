@@ -127,37 +127,27 @@ if [[ -n "$ERROR_PODS" ]]; then
 fi
 
 log_info "Waiting up to 5m for non-completed pods in 'openshift-marketplace' to be Ready..."
-# Poll for pods to be ready, handling pods that might be deleted/recreated during the wait
-for i in {1..30}; do
-	# Get current non-completed pods
-	MKTPODS=$(oc -n openshift-marketplace get pods \
+wait_for_pods_ready() {
+	local ns="$1"
+	local pods
+	pods=$(oc -n "$ns" get pods \
 		-o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' 2>/dev/null || true)
-
-	if [[ -z "$MKTPODS" ]]; then
-		log_info "No non-completed pods found in 'openshift-marketplace'"
-		break
-	fi
-
-	ALL_READY=true
+	[[ -z "$pods" ]] && return 0
 	while IFS= read -r line; do
-		POD_NAME=$(echo "$line" | awk '{print $1}')
-
-		# Check if pod still exists and is Ready
-		if oc -n openshift-marketplace get pod "$POD_NAME" &>/dev/null; then
-			if ! oc -n openshift-marketplace get pod "$POD_NAME" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q "True"; then
-				ALL_READY=false
+		local pod_name
+		pod_name=$(echo "$line" | awk '{print $1}')
+		[[ -z "$pod_name" ]] && continue
+		if oc -n "$ns" get pod "$pod_name" &>/dev/null; then
+			if ! oc -n "$ns" get pod "$pod_name" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q "True"; then
+				return 1
 			fi
 		fi
-	done <<<"$MKTPODS"
-
-	if [[ "$ALL_READY" == "true" ]]; then
-		log_info "All pods in 'openshift-marketplace' are Ready"
-		break
-	fi
-
-	log_info "Waiting for marketplace pods to be Ready ($i/30)..."
-	sleep 10
-done
+	done <<<"$pods"
+	return 0
+}
+if wait_for 30 10 "Waiting for marketplace pods to be Ready" wait_for_pods_ready openshift-marketplace; then
+	log_info "All pods in 'openshift-marketplace' are Ready"
+fi
 
 # Final check - if pods are still not ready after timeout, fail
 # Ignore pods created less than 30 seconds ago to avoid race conditions with catalog reconciliation
@@ -410,16 +400,14 @@ spec:
 EOF
 
 	log_info "Waiting for CatalogSource to be READY..."
-	for i in {1..30}; do
-		CATALOG_STATE=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
-		if [[ "$CATALOG_STATE" == "READY" ]]; then
-			log_info "CatalogSource is READY"
-			break
-		fi
-		log_info "CatalogSource not ready yet, state: $CATALOG_STATE ($i/30)"
-		sleep 10
-	done
+	catalog_is_ready() {
+		local state
+		state=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
+		[[ "$state" == "READY" ]]
+	}
+	wait_for 30 10 "Waiting for CatalogSource to be READY" catalog_is_ready && log_info "CatalogSource is READY"
 
+	CATALOG_STATE=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
 	if [[ "$CATALOG_STATE" != "READY" ]]; then
 		log_error "CatalogSource did not become READY within 5 minutes. Checking status..."
 		echo ""
@@ -446,34 +434,25 @@ EOF
 fi
 
 log_info "Waiting for Subscription to populate installedCSV..."
-for i in {1..30}; do
-	echo "Attempt number $i"
-	CSV=$(oc get subscription $SUBSCRIPTION_NAME -n $NAMESPACE -o jsonpath='{.status.installedCSV}' || true)
-	if [[ -n "$CSV" ]]; then
-		log_info "Found installedCSV: $CSV"
-		break
-	fi
-	log_info "installedCSV not found yet, retrying... ($i/30)"
-	sleep 10
-done
-
-if [[ -z "$CSV" ]]; then
+csv_is_populated() {
+	CSV=$(oc get subscription "$SUBSCRIPTION_NAME" -n "$NAMESPACE" -o jsonpath='{.status.installedCSV}' 2>/dev/null || true)
+	[[ -n "$CSV" ]]
+}
+if wait_for 30 10 "Waiting for installedCSV" csv_is_populated; then
+	log_info "Found installedCSV: $CSV"
+else
 	log_error "installedCSV was not populated. Exiting."
 	exit 1
 fi
 
 log_info "Waiting for ClusterServiceVersion ($CSV) to be succeeded..."
-for i in {1..30}; do
-	PHASE=$(oc get clusterserviceversion "$CSV" -n "$NAMESPACE" -o jsonpath='{.status.phase}' || true)
-	log_info "ClusterServiceVersion phase: $PHASE ($i/30)"
-	if [[ "$PHASE" == "Succeeded" ]]; then
-		log_info "ClusterServiceVersion $CSV is Succeeded."
-		break
-	fi
-	sleep 10
-done
-
-if [[ "$PHASE" != "Succeeded" ]]; then
+csv_is_succeeded() {
+	PHASE=$(oc get clusterserviceversion "$CSV" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || true)
+	[[ "$PHASE" == "Succeeded" ]]
+}
+if wait_for 30 10 "ClusterServiceVersion phase" csv_is_succeeded; then
+	log_info "ClusterServiceVersion $CSV is Succeeded."
+else
 	log_error "ClusterServiceVersion $CSV did not reach Succeeded phase. Exiting."
 	exit 1
 fi
@@ -593,58 +572,41 @@ log_info "Waiting up to 5m for non-completed pods in '$NAMESPACE' to be Ready...
 # Clean up any leftover storage probe pods first
 oc -n "$NAMESPACE" delete pod -l app=co-storage-probe --ignore-not-found=true >/dev/null 2>&1 || true
 
-for i in {1..30}; do
-	# Get current non-completed, non-probe pods
-	NSPODS=$(oc -n "$NAMESPACE" get pods \
+wait_for_compliance_pods_ready() {
+	local pods
+	pods=$(oc -n "$NAMESPACE" get pods \
 		-o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' 2>/dev/null |
 		grep -v "co-storage-probe" || true)
-
-	if [[ -z "$NSPODS" ]]; then
-		log_info "No non-completed pods found in '$NAMESPACE'"
-		break
-	fi
-
-	# Count pods and check if any are not Ready
-	NOT_READY=$(echo "$NSPODS" | wc -l | xargs)
-	ALL_READY=true
-
+	[[ -z "$pods" ]] && return 0
 	while IFS= read -r line; do
-		POD_NAME=$(echo "$line" | awk '{print $1}')
-		POD_PHASE=$(echo "$line" | awk '{print $2}')
-
-		# Check if pod still exists and is Ready
-		if oc -n "$NAMESPACE" get pod "$POD_NAME" &>/dev/null; then
-			if ! oc -n "$NAMESPACE" get pod "$POD_NAME" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q "True"; then
-				ALL_READY=false
+		local pod_name
+		pod_name=$(echo "$line" | awk '{print $1}')
+		[[ -z "$pod_name" ]] && continue
+		if oc -n "$NAMESPACE" get pod "$pod_name" &>/dev/null; then
+			if ! oc -n "$NAMESPACE" get pod "$pod_name" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q "True"; then
+				return 1
 			fi
 		fi
-	done <<<"$NSPODS"
-
-	if [[ "$ALL_READY" == "true" ]]; then
-		log_info "All pods in '$NAMESPACE' are Ready"
-		break
-	fi
-
-	log_info "Waiting for pods to be Ready ($i/30)..."
-	sleep 10
-done
+	done <<<"$pods"
+	return 0
+}
+if wait_for 30 10 "Waiting for pods to be Ready" wait_for_compliance_pods_ready; then
+	log_info "All pods in '$NAMESPACE' are Ready"
+fi
 
 # Final status check
 log_info "Final pod status in '$NAMESPACE':"
 oc -n "$NAMESPACE" get pods -o wide 2>/dev/null || true
 
-log_info "Waiting for ProfileBundles to become VALID..."
-for i in {1..30}; do
-	OCP4_STATUS=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
-	RHCOS4_STATUS=$(oc get profilebundle rhcos4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+profilebundles_are_valid() {
+	local ocp4_status rhcos4_status
+	ocp4_status=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+	rhcos4_status=$(oc get profilebundle rhcos4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
+	[[ "$ocp4_status" == "VALID" && "$rhcos4_status" == "VALID" ]]
+}
 
-	if [[ "$OCP4_STATUS" == "VALID" && "$RHCOS4_STATUS" == "VALID" ]]; then
-		log_info "All ProfileBundles are VALID"
-		break
-	fi
-	log_info "Waiting for ProfileBundles to be valid ($i/30)... ocp4=$OCP4_STATUS rhcos4=$RHCOS4_STATUS"
-	sleep 10
-done
+log_info "Waiting for ProfileBundles to become VALID..."
+wait_for 30 10 "Waiting for ProfileBundles to be VALID" profilebundles_are_valid && log_info "All ProfileBundles are VALID"
 
 log_info "ProfileBundle status:"
 oc get profilebundles -n "$NAMESPACE" -o wide 2>/dev/null || true
@@ -673,15 +635,7 @@ log_info "Waiting for operator to restart with pinned images..."
 oc rollout status deployment/compliance-operator -n "$NAMESPACE" --timeout=120s 2>/dev/null || true
 
 log_info "Waiting for ProfileBundles to re-parse..."
-for i in {1..30}; do
-	OCP4_STATUS=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
-	RHCOS4_STATUS=$(oc get profilebundle rhcos4 -n "$NAMESPACE" -o jsonpath='{.status.dataStreamStatus}' 2>/dev/null || echo "")
-	if [[ "$OCP4_STATUS" == "VALID" && "$RHCOS4_STATUS" == "VALID" ]]; then
-		log_info "ProfileBundles re-parsed with pinned content"
-		break
-	fi
-	sleep 10
-done
+wait_for 30 10 "Waiting for ProfileBundles to re-parse" profilebundles_are_valid && log_info "ProfileBundles re-parsed with pinned content"
 echo ""
 
 # ============================================================================

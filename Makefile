@@ -393,7 +393,7 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	  exit 1; \
 	fi
 	@echo "$(DIM)  • Running shellcheck...$(RESET)"
-	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' -not -path './docs/vendor/*' | xargs shellcheck -e SC1091,SC2034,SC2086,SC2001,SC2028,SC2129,SC2155 || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
+	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' -not -path './docs/vendor/*' | xargs shellcheck -e SC1091,SC2034,SC2086,SC2001,SC2028,SC2129,SC2155,SC2317,SC2329 || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
 	@if ! command -v shfmt >/dev/null 2>&1; then \
 	  echo "$(RED)❌ shfmt not found. Please install it:$(RESET)"; \
 	  echo "$(DIM)  macOS: brew install shfmt$(RESET)"; \

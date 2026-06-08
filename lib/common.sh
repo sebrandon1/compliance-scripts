@@ -238,6 +238,26 @@ retry() {
     done
 }
 
+# Wait for a condition to become true with fixed-interval polling
+# Usage: wait_for 30 10 "Waiting for pods to be Ready" check_pods_ready
+#        (30 attempts, 10s interval, description for log messages)
+wait_for() {
+    local max_attempts="$1"
+    local interval="$2"
+    local description="$3"
+    shift 3
+
+    for i in $(seq 1 "$max_attempts"); do
+        if "$@" >/dev/null 2>&1; then
+            return 0
+        fi
+        log_info "$description ($i/$max_attempts)..."
+        sleep "$interval"
+    done
+    log_error "$description failed after $max_attempts attempts"
+    return 1
+}
+
 # Print execution summary
 # Usage: print_summary "key1" "value1" "key2" "value2" ...
 print_summary() {
