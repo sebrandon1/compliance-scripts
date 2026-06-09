@@ -65,7 +65,18 @@
           "rationale": "Compliance operator's own remediation uses broken authselect path on RHCOS 9. Upstream fix uses direct sed instead.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice."
+          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
+          "pr_history": [
+            {
+              "repo": "ComplianceAsCode/content",
+              "pr": 14602,
+              "url": "https://github.com/ComplianceAsCode/content/pull/14602",
+              "state": "open",
+              "opened": "2026-04-28",
+              "outcome": null,
+              "reason": null
+            }
+          ]
         },
         {
           "setting": "Remove nullok from PAM in RHCOS base image",
@@ -77,7 +88,27 @@
           "scope": "upstream",
           "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
           "compare_url": "https://github.com/coreos/rhel-coreos-config/pull/255",
-          "upstream_candidate_note": "openshift/os PR #1934 was closed — maintainer directed to base layer. Reopened as coreos/rhel-coreos-config PR #255 (open, awaiting /ok-to-test)."
+          "pr_history": [
+            {
+              "repo": "openshift/os",
+              "pr": 1934,
+              "url": "https://github.com/openshift/os/pull/1934",
+              "state": "closed",
+              "opened": "2026-05-11",
+              "closed": "2026-05-12",
+              "outcome": "redirected",
+              "reason": "Maintainer (@travier) directed change to base layer (coreos/rhel-coreos-config) instead of openshift/os. OS-level config belongs in the base image."
+            },
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 255,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/255",
+              "state": "open",
+              "opened": "2026-05-12",
+              "outcome": null,
+              "reason": null
+            }
+          ]
         }
       ],
       "upstream_verdict": "upstream-candidate"
@@ -145,7 +176,19 @@
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "Negligible performance impact. Protects against JIT spraying on all clusters. KSPP recommended.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 264,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
+              "state": "closed",
+              "opened": "2026-06-02",
+              "closed": "2026-06-04",
+              "outcome": "redirected",
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level."
+            }
+          ]
         },
         {
           "setting": "kernel.yama.ptrace_scope=1",
@@ -156,7 +199,19 @@
           "risk": "medium",
           "scope": "upstream",
           "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 264,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
+              "state": "closed",
+              "opened": "2026-06-02",
+              "closed": "2026-06-04",
+              "outcome": "redirected",
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level."
+            }
+          ]
         }
       ],
       "upstream_verdict": "upstream-candidate"
@@ -473,7 +528,19 @@
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "Unprivileged users have no legitimate need to read kernel ring buffer on any OCP node.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 264,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
+              "state": "closed",
+              "opened": "2026-06-02",
+              "closed": "2026-06-04",
+              "outcome": "redirected",
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults and changing at the RHEL level. dmesg_restrict is already CONFIG_SECURITY_DMESG_RESTRICT=y in kernel-ark but not enforced at runtime. Suggested proposing bpf_jit_harden further upstream."
+            }
+          ]
         }
       ],
       "upstream_verdict": "upstream-candidate"

@@ -148,6 +148,54 @@ layout: default
       {% endfor %}
       </tbody>
     </table>
+
+    {% assign has_pr_history = false %}
+    {% for item in group.upstream %}
+      {% if item.pr_history %}
+        {% assign has_pr_history = true %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
+    {% if has_pr_history %}
+    <h3>PR History</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Setting</th>
+          <th>Repo</th>
+          <th>PR</th>
+          <th style="width: 80px;">State</th>
+          <th>Outcome</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in group.upstream %}
+        {% if item.pr_history %}
+          {% for pr in item.pr_history %}
+          <tr>
+            <td><code>{{ item.setting }}</code></td>
+            <td><a href="https://github.com/{{ pr.repo }}">{{ pr.repo }}</a></td>
+            <td><a href="{{ pr.url }}">#{{ pr.pr }}</a></td>
+            <td>
+              {% if pr.state == "open" %}
+                <span class="upstream-badge pr-exists">Open</span>
+              {% elsif pr.state == "merged" %}
+                <span class="upstream-badge pass">Merged</span>
+              {% elsif pr.state == "closed" %}
+                <span class="upstream-badge ran-only">Closed</span>
+              {% endif %}
+            </td>
+            <td>{{ pr.outcome | default: "—" }}</td>
+            <td>{{ pr.reason | default: "—" }}</td>
+          </tr>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
   </div>
   {% endif %}
 
