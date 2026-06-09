@@ -28,6 +28,13 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
     <button class="filter-btn platform-filter" data-platform="ocp" onclick="setPlatformFilter('ocp')">OCP</button>
     <button class="filter-btn platform-filter" data-platform="mixed" onclick="setPlatformFilter('mixed')">Mixed</button>
   </div>
+  <div class="filter-buttons">
+    <button class="filter-btn upstream-filter active" data-upstream="all" onclick="setUpstreamFilter('all')">All Upstream</button>
+    <button class="filter-btn upstream-filter" data-upstream="upstream-candidate" onclick="setUpstreamFilter('upstream-candidate')">🔼 Candidate</button>
+    <button class="filter-btn upstream-filter" data-upstream="ran-only" onclick="setUpstreamFilter('ran-only')">🎯 RAN Only</button>
+    <button class="filter-btn upstream-filter" data-upstream="platform-config" onclick="setUpstreamFilter('platform-config')">⚙️ Platform</button>
+    <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">— N/A</button>
+  </div>
   <div class="filter-counts" id="filter-counts"></div>
 </div>
 
@@ -83,6 +90,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
       <th style="width: 80px;">Severity</th>
       <th style="width: 50px; text-align: center;">Checks</th>
       <th style="width: 160px;">Status</th>
+      <th style="width: 120px;">Upstream</th>
       <th style="width: 50px; text-align: center;">Compare</th>
       <th style="width: 100px;">Jira</th>
       <th style="width: 70px;">PR</th>
@@ -98,7 +106,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
         {% assign check_count = check_count | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <tr data-status="{{ g.status }}" data-platform="{{ g.platform }}">
+    <tr data-status="{{ g.status }}" data-platform="{{ g.platform }}" data-upstream="{{ g.upstream_verdict }}">
       <td><a href="groups/{{ gid }}.html" class="group-id">{{ gid }}</a></td>
       <td>{{ g.title }}</td>
       <td>
@@ -128,6 +136,25 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
           <span class="status-pill on-hold">⚪ On Hold</span>
         {% else %}
           <span class="status-pill">{{ g.status }}</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if g.upstream_verdict == "upstream-candidate" %}
+          <span class="upstream-badge candidate">🔼 Candidate</span>
+        {% elsif g.upstream_verdict contains "upstream-pr" %}
+          <span class="upstream-badge pr-exists">🟣 PR Open</span>
+        {% elsif g.upstream_verdict == "ran-only" %}
+          <span class="upstream-badge ran-only">🎯 RAN Only</span>
+        {% elsif g.upstream_verdict == "platform-config" %}
+          <span class="upstream-badge platform">⚙️ Platform</span>
+        {% elsif g.upstream_verdict == "pass-vanilla" %}
+          <span class="upstream-badge pass">✅ Pass</span>
+        {% elsif g.upstream_verdict == "site-specific" %}
+          <span class="upstream-badge site">📍 Site</span>
+        {% elsif g.upstream_verdict == "not-applicable" %}
+          <span class="upstream-badge na">— N/A</span>
+        {% else %}
+          <span class="upstream-badge">—</span>
         {% endif %}
       </td>
       <td style="text-align: center;">
@@ -201,9 +228,10 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 <script>
 var currentFilter = 'all';
 var currentPlatform = 'all';
+var currentUpstream = 'all';
 function setStatusFilter(filter) {
   currentFilter = filter;
-  document.querySelectorAll('.filter-btn:not(.platform-filter)').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn:not(.platform-filter):not(.upstream-filter)').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
   filterTables();
 }
@@ -213,6 +241,12 @@ function setPlatformFilter(platform) {
   document.querySelector('[data-platform="' + platform + '"]').classList.add('active');
   filterTables();
 }
+function setUpstreamFilter(upstream) {
+  currentUpstream = upstream;
+  document.querySelectorAll('.upstream-filter').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-upstream="' + upstream + '"]').classList.add('active');
+  filterTables();
+}
 function filterTables() {
   var search = (document.getElementById('table-search').value || '').toLowerCase();
   var rows = document.querySelectorAll('#remediation-table tbody tr');
@@ -220,14 +254,16 @@ function filterTables() {
   rows.forEach(function(row) {
     var status = row.getAttribute('data-status') || '';
     var platform = row.getAttribute('data-platform') || '';
+    var upstream = row.getAttribute('data-upstream') || '';
     var text = row.textContent.toLowerCase();
     var matchSearch = !search || text.indexOf(search) !== -1;
     var matchFilter = currentFilter === 'all' ||
       (currentFilter === 'pass-vanilla' && status.indexOf('pass-vanilla') !== -1) ||
       (currentFilter !== 'pass-vanilla' && status === currentFilter);
     var matchPlatform = currentPlatform === 'all' || platform === currentPlatform;
-    row.style.display = (matchSearch && matchFilter && matchPlatform) ? '' : 'none';
-    if (matchSearch && matchFilter && matchPlatform) shown++;
+    var matchUpstream = currentUpstream === 'all' || upstream === currentUpstream;
+    row.style.display = (matchSearch && matchFilter && matchPlatform && matchUpstream) ? '' : 'none';
+    if (matchSearch && matchFilter && matchPlatform && matchUpstream) shown++;
   });
   document.getElementById('filter-counts').textContent = shown + ' of ' + total + ' groups';
 }
