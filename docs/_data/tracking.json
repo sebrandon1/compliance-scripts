@@ -6,7 +6,7 @@
     "epic": "CNF-19031",
     "last_sync": null,
     "last_upstream_audit": "2026-06-02",
-    "upstream_audit_note": "Full 40-group audit: 2 upstream-pr-exists, 10 upstream-candidate, 12 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable, 1 partial/blocked"
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 11 upstream-candidate, 14 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
   },
   "groups": {
     "H1": {
@@ -69,7 +69,7 @@
           "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/pam-no-empty-passwords"
         }
       ],
-      "upstream_verdict": "upstream-pr-exists"
+      "upstream_verdict": "upstream-candidate"
     },
     "H3": {
       "title": "SSHD Empty Passwords",
