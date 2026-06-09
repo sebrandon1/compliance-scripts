@@ -58,15 +58,26 @@
       "platform": "rhcos",
       "upstream": [
         {
-          "setting": "Remove nullok from PAM",
+          "setting": "Fix no_empty_passwords remediation for RHCOS 9",
           "repo": "ComplianceAsCode/content",
           "repo_url": "https://github.com/ComplianceAsCode/content",
           "file": "Upstream remediation fix (PR #14602)",
           "rationale": "Compliance operator's own remediation uses broken authselect path on RHCOS 9. Upstream fix uses direct sed instead.",
           "risk": "low",
           "scope": "upstream",
+          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice."
+        },
+        {
+          "setting": "Remove nullok from PAM in RHCOS base image",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "PAM configuration overlay",
+          "rationale": "RHCOS ships with nullok in PAM, allowing empty password login. Should be removed in the base image so remediation is unnecessary.",
+          "risk": "low",
+          "scope": "upstream",
           "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
-          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/pam-no-empty-passwords"
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/pam-no-empty-passwords",
+          "upstream_candidate_note": "openshift/os PR #1934 was opened and closed. Branch prepared but no new PR filed yet."
         }
       ],
       "upstream_verdict": "upstream-candidate"
@@ -908,7 +919,8 @@
           "risk": "low",
           "scope": "ran",
           "scope_reason": "Bare-metal operators use Ctrl-Alt-Del via BMC console to recover hung nodes when SSH is unavailable. Masking it removes a useful recovery tool. Appropriate for hardened RAN production nodes where accidental reboots are catastrophic.",
-          "upstream_candidate_note": "Upstream candidate: RHCOS nodes are headless servers managed via BMC, not interactive workstations. Ctrl-Alt-Del via BMC console is a niche recovery method. Most operators use IPMI power cycle instead."
+          "upstream_candidate_note": "Upstream candidate: RHCOS nodes are headless servers managed via BMC, not interactive workstations. Ctrl-Alt-Del via BMC console is a niche recovery method. Most operators use IPMI power cycle instead.",
+          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/disable-ctrlaltdel"
         }
       ],
       "upstream_verdict": "upstream-candidate"
