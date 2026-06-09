@@ -69,15 +69,15 @@
         },
         {
           "setting": "Remove nullok from PAM in RHCOS base image",
-          "repo": "openshift/os",
-          "repo_url": "https://github.com/openshift/os",
-          "file": "PAM configuration overlay",
+          "repo": "coreos/rhel-coreos-config",
+          "repo_url": "https://github.com/coreos/rhel-coreos-config",
+          "file": "packages-openshift.yaml (authselect without-nullok postprocess)",
           "rationale": "RHCOS ships with nullok in PAM, allowing empty password login. Should be removed in the base image so remediation is unnecessary.",
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
-          "compare_url": "https://github.com/openshift/os/compare/master...sebrandon1:os:hardening/pam-no-empty-passwords",
-          "upstream_candidate_note": "openshift/os PR #1934 was opened and closed. Branch prepared but no new PR filed yet."
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/pull/255",
+          "upstream_candidate_note": "openshift/os PR #1934 was closed — maintainer directed to base layer. Reopened as coreos/rhel-coreos-config PR #255 (open, awaiting /ok-to-test)."
         }
       ],
       "upstream_verdict": "upstream-candidate"
