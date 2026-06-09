@@ -161,7 +161,6 @@
       "last_sync": "2026-06-04",
       "status_note": "5/7 checks PASS on vanilla RHCOS 9.8. 2 FAIL: sshd-disable-gssapi-auth (GSSAPIAuthentication yes default) and sshd-disable-user-known-hosts (IgnoreUserKnownHosts no default). Upstream candidate for rhel-coreos-config 40-rhcos-defaults.conf.",
       "platform": "rhcos",
-      "upstream_verdict": "upstream-candidate",
       "upstream_verdict": "pass-vanilla"
     },
     "M2": {
@@ -263,7 +262,23 @@
           "rationale": "Standard CIS/STIG audit requirement. Tracks permission changes for forensic analysis.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Audit rules add overhead. Not all clusters need DAC modification forensic logging."
+          "scope_reason": "Audit rules add overhead. Not all clusters need DAC modification forensic logging.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -293,7 +308,23 @@
           "rationale": "Tracks SELinux policy modifications. Critical for security audit trail on hardened systems.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "SELinux command auditing is valuable for hardened environments but adds audit log volume."
+          "scope_reason": "SELinux command auditing is valuable for hardened environments but adds audit log volume.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -323,7 +354,23 @@
           "rationale": "Tracks kernel module operations (init_module, delete_module). Essential for detecting rootkit installation.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Module loading auditing is critical for security-sensitive deployments but unnecessary for general workloads."
+          "scope_reason": "Module loading auditing is critical for security-sensitive deployments but unnecessary for general workloads.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -353,7 +400,23 @@
           "rationale": "Tracks time changes that could be used to manipulate log timestamps for forensic evasion.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Time change auditing matters for forensic integrity but adds log volume on all nodes."
+          "scope_reason": "Time change auditing matters for forensic integrity but adds log volume on all nodes.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -383,7 +446,23 @@
           "rationale": "Tracks failed logins, sudo usage, and user/group modifications. Core authentication audit trail.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Login auditing is standard for compliance but may be excessive for dev/test clusters."
+          "scope_reason": "Login auditing is standard for compliance but may be excessive for dev/test clusters.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -413,7 +492,23 @@
           "rationale": "Tracks hostname/domainname changes and network environment modifications.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Network config auditing is important for hardened deployments but not universally needed."
+          "scope_reason": "Network config auditing is important for hardened deployments but not universally needed.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -611,7 +706,23 @@
           "rationale": "Covers fchmod, fchown, xattr operations. Completes the DAC audit trail started by M3.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Extended DAC auditing adds significant log volume. Needed for compliance, not general use."
+          "scope_reason": "Extended DAC auditing adds significant log volume. Needed for compliance, not general use.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -641,7 +752,23 @@
           "rationale": "Tracks open/openat/open_by_handle_at on /etc/passwd, shadow, group, gshadow. Detects credential harvesting.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Identity file access auditing is compliance-driven. Significant audit overhead for general clusters."
+          "scope_reason": "Identity file access auditing is compliance-driven. Significant audit overhead for general clusters.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -671,7 +798,23 @@
           "rationale": "Tracks rename, unlink, rmdir. Detects evidence tampering and unauthorized file removal.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "File deletion auditing is compliance-driven forensic logging."
+          "scope_reason": "File deletion auditing is compliance-driven forensic logging.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -701,7 +844,23 @@
           "rationale": "Tracks failed access attempts (EACCES/EPERM). Detects privilege escalation and unauthorized access probing.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "32 unsuccessful access rules generate substantial audit volume. Compliance-specific."
+          "scope_reason": "32 unsuccessful access rules generate substantial audit volume. Compliance-specific.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -731,7 +890,23 @@
           "rationale": "Tracks execution of setuid/setgid binaries (su, sudo, mount, passwd, etc.). Required by CIS and STIG.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Privileged command auditing is compliance-driven. 22 rules add audit overhead."
+          "scope_reason": "Privileged command auditing is compliance-driven. 22 rules add audit overhead.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -761,7 +936,23 @@
           "rationale": "Tracks session initiation, SELinux policy changes, media export, and makes audit config immutable.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Session/MAC auditing and audit immutability are compliance-specific hardening."
+          "scope_reason": "Session/MAC auditing and audit immutability are compliance-specific hardening.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -791,7 +982,23 @@
           "rationale": "Watches /etc/passwd, group, shadow, gshadow, opasswd for modifications. Detects unauthorized account changes.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "Usergroup file watches are compliance-driven forensic logging."
+          "scope_reason": "Usergroup file watches are compliance-driven forensic logging.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -1056,7 +1263,22 @@
           "rationale": "MCO generates chrony.conf at install time. maxpoll and server list are deployment-specific. Template should set maxpoll=10 by default.",
           "risk": "low",
           "scope": "site",
-          "scope_reason": "NTP server addresses and maxpoll intervals are site-specific. MCO template could default maxpoll=10 but server list must be configured per deployment."
+          "scope_reason": "NTP server addresses and maxpoll intervals are site-specific. MCO template could default maxpoll=10 but server list must be configured per deployment.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "NTP server selection and chrony configuration are inherently site-specific. FCOS defaults to Fedora NTP pools but enterprise environments need internal time sources for PCI compliance (fedora-coreos-tracker#517). maxpoll=10 (1024s) is already the chrony default. port=0/cmdport=0 disables chrony listening which breaks NTP server functionality if the node needs to serve time. FCOS chrony config handling has known conflicts with user modifications (fedora-coreos-tracker#1449).",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/517",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/1449",
+                "https://github.com/mlichvar/chrony/blob/master/doc/faq.adoc"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "site-specific"
@@ -1141,7 +1363,21 @@
           "rationale": "Automatically disconnects idle SSH sessions after 5 minutes. Prevents abandoned sessions from being hijacked.",
           "risk": "low",
           "scope": "ran",
-          "scope_reason": "5-minute idle timeout is aggressive. Platform teams may need longer SSH sessions for debugging. Appropriate for hardened production deployments."
+          "scope_reason": "5-minute idle timeout is aggressive. Platform teams may need longer SSH sessions for debugging. Appropriate for hardened production deployments.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Session timeout via ClientAliveInterval/ClientAliveCountMax is operational policy, not a security default. The default ClientAliveInterval=0 means no keepalives. On OpenSSH 8.2p1+, these settings detect unresponsive TCP connections, not idle users — a CountMax=0 value disables termination entirely, which is counterproductive. RHCOS already has an SSHD drop-in at overlay.d/05rhcos/etc/ssh/sshd_config.d/40-rhcos-defaults.conf. The Compliance Operator Moderate scanner has a known drop-in detection limitation that causes FAIL even when settings are correctly applied.",
+              "references": [
+                "https://bbs.archlinux.org/viewtopic.php?id=254707",
+                "https://access.redhat.com/discussions/6960435"
+              ]
+            }
+          ]
         }
       ],
       "upstream_verdict": "ran-only"
@@ -1178,7 +1414,7 @@
       "prev_group": "M28",
       "next_group": "M30",
       "last_sync": "2026-05-05",
-      "status_note": "Verified on cnfdt16 OCP 4.22. RHCOS node checks (securetty, audit trail) PASS. OCP platform checks (banner-or-login-template-set, openshift-motd-exists) still FAIL \u2014 require per-deployment configuration.",
+      "status_note": "Verified on cnfdt16 OCP 4.22. RHCOS node checks (securetty, audit trail) PASS. OCP platform checks (banner-or-login-template-set, openshift-motd-exists) still FAIL — require per-deployment configuration.",
       "platform": "mixed",
       "upstream_verdict": "platform-config"
     },
