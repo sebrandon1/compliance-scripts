@@ -6,7 +6,7 @@
     "epic": "CNF-19031",
     "last_sync": null,
     "last_upstream_audit": "2026-06-02",
-    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 10 upstream-candidate, 15 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 4 upstream-candidate, 21 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
   },
   "groups": {
     "H1": {
@@ -186,7 +186,11 @@
               "opened": "2026-06-02",
               "closed": "2026-06-04",
               "outcome": "redirected",
-              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level."
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level. Fedora 44 Change Proposal changed bpf_jit_harden from 0 to 2 by default — may flow to RHEL 10. Hold and verify.",
+              "references": [
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
+              ]
             }
           ]
         },
@@ -195,7 +199,7 @@
           "repo": "Fedora/RHEL (elfutils RPM)",
           "repo_url": "https://github.com/openshift/os",
           "file": "Override /usr/lib/sysctl.d/10-default-yama-scope.conf",
-          "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 45 proposal in progress.",
+          "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 44 Change Proposal changed ptrace_scope from 1 to 2.",
           "risk": "medium",
           "scope": "upstream",
           "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts.",
@@ -209,12 +213,16 @@
               "opened": "2026-06-02",
               "closed": "2026-06-04",
               "outcome": "redirected",
-              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level."
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Fedora 44 Change Proposal changed ptrace_scope from 1 to 2 and bpf_jit_harden from 0 to 2 by default. These may resolve at the RHEL/Fedora level without needing RHCOS-specific overrides.",
+              "references": [
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
+              ]
             }
           ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M3": {
       "title": "Audit Rules - DAC Modifications",
@@ -422,10 +430,25 @@
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "All multi-node clusters benefit from hostname identification in audit logs for centralized aggregation.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/auditd-defaults"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/auditd-defaults",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Auditd configuration (name_format, data retention) is operational policy, not security hardening. CoreOS maintainers are ambivalent about the audit subsystem itself — FCOS debated whether to even include the audit RPM (fedora-coreos-tracker#461), and audit was called an 'odd fit' for CoreOS (coreos/bugs#140). name_format=hostname is deployment-specific (only matters for centralized log aggregation). Data retention settings are operational tuning, not base image defaults.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M10": {
       "title": "API Server Encryption",
@@ -538,12 +561,16 @@
               "opened": "2026-06-02",
               "closed": "2026-06-04",
               "outcome": "redirected",
-              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults and changing at the RHEL level. dmesg_restrict is already CONFIG_SECURITY_DMESG_RESTRICT=y in kernel-ark but not enforced at runtime. Suggested proposing bpf_jit_harden further upstream."
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults and changing at the RHEL level. dmesg_restrict is already CONFIG_SECURITY_DMESG_RESTRICT=y in kernel-ark but not enforced at runtime. Suggested proposing bpf_jit_harden further upstream. Fedora 44 Change Proposal may resolve bpf_jit_harden upstream. Hold and verify whether RHEL 10/RHCOS 10 inherits these defaults.",
+              "references": [
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
+              ]
             }
           ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M13": {
       "title": "Extended DAC Audit",
@@ -781,10 +808,24 @@
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "All clusters should handle audit log disk pressure gracefully rather than silently dropping events.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/auditd-defaults"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/auditd-defaults",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Same rationale as M9 — auditd data retention (space_left, disk_full_action, disk_error_action) is operational policy, not a security default. CoreOS maintainers are ambivalent about the audit subsystem (fedora-coreos-tracker#461). Retention thresholds are deployment-specific and depend on disk sizing.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/bugs/issues/140"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M21": {
       "title": "Kernel Module Blacklist",
@@ -843,10 +884,25 @@
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "Standard CIS/STIG network hardening. Universally recommended for all servers. No legitimate reason to accept ICMP redirects on a Kubernetes node.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-network"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-network",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Maintainers defer to RHEL/systemd defaults for network sysctls. rp_filter was changed from strict (1) to loose (2) by systemd upstream in v240 — CoreOS maintainers accepted this (fedora-coreos-tracker#219). PR #264 feedback established pattern of not carrying RHCOS-specific sysctl overrides. Some settings (accept_ra=0, send_redirects=0) could break IPv6 SLAAC or multi-homed configurations. RHEL 9 is non-compliant on 13/15 IPv4 STIG controls by design.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/219",
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://github.com/Bnwokoma/rhel9-stig-hardening"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M23": {
       "title": "Kernel Sysctl Extended",
@@ -905,7 +961,22 @@
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "audit=1 and KSPP kernel args (pti, page_poison, vsyscall=none) are universally beneficial security defaults with negligible performance impact.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/kernel-boot-args"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/kernel-boot-args",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Mostly redundant with existing defaults. pti=on is already the default on x86_64 for Meltdown-vulnerable CPUs. audit=1 is already effective — audit messages flood console on fresh FCOS boot (fedora-coreos-tracker#220). page_poison=1 is a legacy KSPP recommendation superseded by init_on_alloc/init_on_free in modern kernels. vsyscall=none may already be the default on modern builds. audit_backlog_limit=8192 is operational tuning. CoreOS hardening discussion (fedora-coreos-tracker#805) focused on GRUB passwords, not kernel args.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/805",
+                "https://madaidans-insecurities.github.io/guides/linux-hardening.html"
+              ]
+            }
+          ]
         },
         {
           "setting": "nousb",
@@ -918,7 +989,7 @@
           "scope_reason": "Disabling USB entirely breaks BMC KVM and USB-based provisioning. Must be opt-in for specific hardened deployments only."
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M25": {
       "title": "Chrony/NTP Configuration",
