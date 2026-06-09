@@ -6,7 +6,7 @@
     "epic": "CNF-19031",
     "last_sync": null,
     "last_upstream_audit": "2026-06-02",
-    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 11 upstream-candidate, 14 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 10 upstream-candidate, 15 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
   },
   "groups": {
     "H1": {
@@ -986,11 +986,24 @@
           "risk": "low",
           "scope": "ran",
           "scope_reason": "Bare-metal operators use Ctrl-Alt-Del via BMC console to recover hung nodes when SSH is unavailable. Masking it removes a useful recovery tool. Appropriate for hardened RAN production nodes where accidental reboots are catastrophic.",
-          "upstream_candidate_note": "Upstream candidate: RHCOS nodes are headless servers managed via BMC, not interactive workstations. Ctrl-Alt-Del via BMC console is a niche recovery method. Most operators use IPMI power cycle instead.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/disable-ctrlaltdel"
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/disable-ctrlaltdel",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "CoreOS maintainers addressed console security via GRUB bootloader passwords (coreos/fedora-coreos-tracker#134), not by disabling the reboot key sequence. Their position: Ctrl-Alt-Del is one step in an attack chain — the real fix is GRUB passwords, which prevent rd.break root shell access after reboot. Additionally, rhel-coreos-config maintainers prefer accepting RHEL defaults (PR #264 feedback). RHEL ships with Ctrl-Alt-Del enabled. Physical/BMC console access already implies ability to power cycle via IPMI, so disabling the keyboard shortcut doesn't meaningfully raise the security bar.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/134",
+                "https://github.com/coreos/rhel-coreos-config/pull/264"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M27": {
       "title": "SSHD Moderate Extensions",
