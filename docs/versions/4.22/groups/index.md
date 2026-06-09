@@ -20,6 +20,14 @@ Each group below represents a logical set of related compliance checks that can 
     <button class="filter-btn" data-filter="on_hold" onclick="setStatusFilter('on_hold')">⚪ On Hold</button>
     <button class="filter-btn" data-filter="complete" onclick="setStatusFilter('complete')">🟢 Complete</button>
   </div>
+  <div class="filter-buttons">
+    <button class="filter-btn upstream-filter active" data-upstream="all" onclick="setUpstreamFilter('all')">All Upstream</button>
+    <button class="filter-btn upstream-filter" data-upstream="upstream-candidate" onclick="setUpstreamFilter('upstream-candidate')">🔼 Candidate</button>
+    <button class="filter-btn upstream-filter" data-upstream="ran-only" onclick="setUpstreamFilter('ran-only')">🎯 RAN Only</button>
+    <button class="filter-btn upstream-filter" data-upstream="platform-config" onclick="setUpstreamFilter('platform-config')">⚙️ Platform</button>
+    <button class="filter-btn upstream-filter" data-upstream="pass-vanilla" onclick="setUpstreamFilter('pass-vanilla')">✅ Pass</button>
+    <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">— N/A</button>
+  </div>
   <div class="filter-counts" id="filter-counts"></div>
 </div>
 
@@ -144,13 +152,36 @@ Example markdown for PR descriptions:
 
 <script>
 var currentFilter = 'all';
+var currentUpstream = 'all';
 var searchTerm = '';
+
+{% assign groups = site.data.tracking.groups %}
+var upstreamVerdicts = {
+{% for group in groups %}  "{{ group[0] }}": "{{ group[1].upstream_verdict }}"{% unless forloop.last %},
+{% endunless %}{% endfor %}
+};
 
 function setStatusFilter(filter) {
   currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.filter-btn:not(.upstream-filter)').forEach(btn => btn.classList.remove('active'));
   document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
   filterTables();
+}
+
+function setUpstreamFilter(upstream) {
+  currentUpstream = upstream;
+  document.querySelectorAll('.upstream-filter').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('[data-upstream="' + upstream + '"]').classList.add('active');
+  filterTables();
+}
+
+function getGroupId(row) {
+  var link = row.querySelector('a[href]');
+  if (link) {
+    var match = link.getAttribute('href').match(/([A-Z]+\d+)\.html/);
+    if (match) return match[1];
+  }
+  return null;
 }
 
 function filterTables() {
@@ -162,10 +193,12 @@ function filterTables() {
   tables.forEach(function(table) {
     var rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
     rows.forEach(function(row) {
-      if (row.querySelector('th')) return; // Skip header rows
+      if (row.querySelector('th')) return;
       totalCount++;
       var text = row.textContent.toLowerCase();
       var statusCell = row.cells[2] ? row.cells[2].textContent : '';
+      var groupId = getGroupId(row);
+      var verdict = groupId ? (upstreamVerdicts[groupId] || '') : '';
 
       var matchesSearch = searchTerm === '' || text.includes(searchTerm);
       var matchesFilter = currentFilter === 'all' ||
@@ -173,8 +206,9 @@ function filterTables() {
         (currentFilter === 'in_progress' && statusCell.includes('In Progress')) ||
         (currentFilter === 'on_hold' && statusCell.includes('On Hold')) ||
         (currentFilter === 'complete' && statusCell.includes('Complete'));
+      var matchesUpstream = currentUpstream === 'all' || verdict === currentUpstream;
 
-      if (matchesSearch && matchesFilter) {
+      if (matchesSearch && matchesFilter && matchesUpstream) {
         row.style.display = '';
         visibleCount++;
       } else {
