@@ -371,6 +371,10 @@ lint: python-lint bash-lint ## 🔍 Run all linters (Python + Bash)
 	@echo "$(BOLD)$(GREEN)✅ All linting checks passed!$(RESET)"
 	@echo ""
 
+diff-scans: ## 📊 Compare two scan exports and report differences
+	@echo "$(BOLD)$(BLUE)📊 Comparing scan exports...$(RESET)"
+	@python3 scripts/diff-scans.py $(OLD) $(NEW)
+
 validate-dashboard-data: ## 🔍 Validate dashboard JSON data files
 	@echo "$(BOLD)$(BLUE)🔍 Validating dashboard data...$(RESET)"
 	@python3 scripts/validate-dashboard-data.py docs/_data/ || (echo "$(RED)❌ Dashboard data validation failed!$(RESET)" && exit 1)
