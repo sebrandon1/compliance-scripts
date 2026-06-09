@@ -34,6 +34,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
     <button class="filter-btn upstream-filter" data-upstream="ran-only" onclick="setUpstreamFilter('ran-only')">🎯 RAN Only</button>
     <button class="filter-btn upstream-filter" data-upstream="platform-config" onclick="setUpstreamFilter('platform-config')">⚙️ Platform</button>
     <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">— N/A</button>
+    <button class="filter-btn upstream-filter" data-upstream="has-branch" onclick="setUpstreamFilter('has-branch')">🔧 Branch Prepared</button>
   </div>
   <div class="filter-counts" id="filter-counts"></div>
 </div>
@@ -106,7 +107,8 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
         {% assign check_count = check_count | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <tr data-status="{{ g.status }}" data-platform="{{ g.platform }}" data-upstream="{{ g.upstream_verdict }}">
+    {% assign has_branch = false %}{% if g.upstream %}{% for u in g.upstream %}{% if u.compare_url %}{% assign has_branch = true %}{% endif %}{% endfor %}{% endif %}
+    <tr data-status="{{ g.status }}" data-platform="{{ g.platform }}" data-upstream="{{ g.upstream_verdict }}" data-has-branch="{{ has_branch }}">
       <td><a href="groups/{{ gid }}.html" class="group-id">{{ gid }}</a></td>
       <td>{{ g.title }}</td>
       <td>
@@ -261,7 +263,9 @@ function filterTables() {
       (currentFilter === 'pass-vanilla' && status.indexOf('pass-vanilla') !== -1) ||
       (currentFilter !== 'pass-vanilla' && status === currentFilter);
     var matchPlatform = currentPlatform === 'all' || platform === currentPlatform;
-    var matchUpstream = currentUpstream === 'all' || upstream === currentUpstream;
+    var hasBranch = row.getAttribute('data-has-branch') === 'true';
+    var matchUpstream = currentUpstream === 'all' || upstream === currentUpstream ||
+      (currentUpstream === 'has-branch' && hasBranch);
     row.style.display = (matchSearch && matchFilter && matchPlatform && matchUpstream) ? '' : 'none';
     if (matchSearch && matchFilter && matchPlatform && matchUpstream) shown++;
   });

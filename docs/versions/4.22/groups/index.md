@@ -27,6 +27,7 @@ Each group below represents a logical set of related compliance checks that can 
     <button class="filter-btn upstream-filter" data-upstream="platform-config" onclick="setUpstreamFilter('platform-config')">⚙️ Platform</button>
     <button class="filter-btn upstream-filter" data-upstream="pass-vanilla" onclick="setUpstreamFilter('pass-vanilla')">✅ Pass</button>
     <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">— N/A</button>
+    <button class="filter-btn upstream-filter" data-upstream="has-branch" onclick="setUpstreamFilter('has-branch')">🔧 Branch Prepared</button>
   </div>
   <div class="filter-counts" id="filter-counts"></div>
 </div>
@@ -160,6 +161,10 @@ var upstreamVerdicts = {
 {% for group in groups %}  "{{ group[0] }}": "{{ group[1].upstream_verdict }}"{% unless forloop.last %},
 {% endunless %}{% endfor %}
 };
+var hasBranch = {
+{% for group in groups %}{% assign has_url = false %}{% if group[1].upstream %}{% for u in group[1].upstream %}{% if u.compare_url %}{% assign has_url = true %}{% endif %}{% endfor %}{% endif %}{% if has_url %}  "{{ group[0] }}": true,
+{% endif %}{% endfor %}
+};
 
 function setStatusFilter(filter) {
   currentFilter = filter;
@@ -206,7 +211,8 @@ function filterTables() {
         (currentFilter === 'in_progress' && statusCell.includes('In Progress')) ||
         (currentFilter === 'on_hold' && statusCell.includes('On Hold')) ||
         (currentFilter === 'complete' && statusCell.includes('Complete'));
-      var matchesUpstream = currentUpstream === 'all' || verdict === currentUpstream;
+      var matchesUpstream = currentUpstream === 'all' || verdict === currentUpstream ||
+        (currentUpstream === 'has-branch' && groupId && hasBranch[groupId]);
 
       if (matchesSearch && matchesFilter && matchesUpstream) {
         row.style.display = '';
