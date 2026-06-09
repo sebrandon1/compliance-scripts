@@ -6,7 +6,7 @@
     "epic": "CNF-19031",
     "last_sync": null,
     "last_upstream_audit": "2026-06-02",
-    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 4 upstream-candidate, 21 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 1 upstream-candidate, 24 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
   },
   "groups": {
     "H1": {
@@ -35,10 +35,24 @@
           "risk": "low",
           "scope": "ran",
           "scope_reason": "General OCP clusters may need DEFAULT policy for broad TLS compatibility. NO-SHA1 is a hardening choice.",
-          "upstream_candidate_note": "Re-evaluate: SHA1 is deprecated in NIST/PCI-DSS/CIS. RHEL 10 may default to FUTURE or stricter. Check if RHCOS 10 changes default crypto policy."
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "RHEL 9 DEFAULT policy already restricts SHA-1 in signatures for TLS, SSH, IKEv2, DNSSEC, Kerberos. Fedora 41 completed full SHA-1 distrust in OpenSSL — will flow to RHEL 10. Forcing NO-SHA1 at base image level risks breaking third-party integrations relying on SHA-1 (Red Hat KB 7088966). Moderate compliance still fails because it expects FIPS, not just NO-SHA1. Crypto policy is a deployment-specific hardening choice, not a base image default.",
+              "references": [
+                "https://discussion.fedoraproject.org/t/f41-change-proposal-make-openssl-distrust-sha-1-signatures-by-default-system-wide/119457",
+                "https://access.redhat.com/solutions/7088966",
+                "https://www.redhat.com/en/blog/rhel-security-sha-1-package-signatures-distrusted-rhel-9"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "H2": {
       "title": "PAM Empty Passwords",
@@ -853,10 +867,23 @@
           "risk": "medium",
           "scope": "ran",
           "scope_reason": "Some modules (SCTP) are used by telco workloads. Bluetooth/WiFi blacklist is safe but module selection is deployment-specific.",
-          "upstream_candidate_note": "Partial upstream candidate: bluetooth, btusb, firewire-core, thunderbolt, cramfs, squashfs, udf modules are universally safe to blacklist on server/container hosts. SCTP and some network modules are telco-dependent."
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "18 modules is too broad for a base image blacklist. The only existing CoreOS module blacklist is nouveau (1 module, with specific bugzilla). Several modules have legitimate uses: SCTP for telco signaling (4G/5G), usb-storage for BMC KVM and provisioning, squashfs for snap/container runtimes, Bluetooth/WiFi for sensor nodes. Each module would need individual upstream justification. CoreOS tracker #249 discusses module management but not default blacklists.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/249",
+                "https://bugzilla.redhat.com/show_bug.cgi?id=1700056"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M22": {
       "title": "Network Sysctl Hardening",
@@ -930,10 +957,23 @@
           "risk": "medium",
           "scope": "ran",
           "scope_reason": "kexec_load_disabled is safe for upstream (RHCOS doesn't use kexec), but core_pattern and perf_event_paranoid break debugging and profiling tools needed by platform teams.",
-          "upstream_candidate_note": "Partial upstream candidate: kexec_load_disabled=1 is safe (RHCOS does not use kexec). core_pattern and perf_event_paranoid break debugging tools - keep as ran."
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "perf_event_paranoid=2 is already the RHEL default since RHEL 7.3. kexec_load_disabled=1 is a one-way toggle that cannot be reverted without reboot — breaks kdump/kexec crash recovery, which is a supported RHCOS feature. core_pattern modification is operational policy already covered by M26 coredump disable. All three settings defer to RHEL defaults per maintainer preference (PR #264 pattern).",
+              "references": [
+                "https://docs.kernel.org/admin-guide/sysctl/kernel.html",
+                "https://github.com/coreos/rhel-coreos-config/pull/264"
+              ]
+            }
+          ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "ran-only"
     },
     "M24": {
       "title": "CoreOS Kernel Arguments",
