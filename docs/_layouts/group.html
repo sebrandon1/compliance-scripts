@@ -100,54 +100,40 @@ layout: default
   <div class="upstream-proposal" id="upstream-proposal">
     <h2>Upstream Proposal</h2>
     <p>The following changes could eliminate the need for MachineConfig remediation. Items are categorized by recommended scope:</p>
-    <table class="upstream-table">
-      <thead>
-        <tr>
-          <th>Setting</th>
-          <th>Scope</th>
-          <th>Target Repo</th>
-          <th>Target File</th>
-          <th>Rationale</th>
-          <th>Risk</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for item in group.upstream %}
-        <tr>
-          <td><code>{{ item.setting }}</code></td>
-          <td>
-            <span class="scope-badge {{ item.scope }}">
-              {% if item.scope == "upstream" %}All OCP
-              {% elsif item.scope == "ran" %}RAN
-              {% elsif item.scope == "site" %}Site
-              {% endif %}
-            </span>
-          </td>
-          <td>
-            <a href="{{ item.repo_url }}">{{ item.repo }}</a>
-            {% if item.compare_url %}
-            <br><a href="{{ item.compare_url }}" class="upstream-compare-link">View Proposed Change</a>
+    {% for item in group.upstream %}
+    <div class="upstream-card">
+      <div class="upstream-card-header">
+        <code>{{ item.setting }}</code>
+        <span class="upstream-card-badges">
+          <span class="scope-badge {{ item.scope }}">
+            {% if item.scope == "upstream" %}All OCP
+            {% elsif item.scope == "ran" %}RAN
+            {% elsif item.scope == "site" %}Site
             {% endif %}
-          </td>
-          <td><code>{{ item.file }}</code></td>
-          <td>
-            {{ item.rationale }}
-            {% if item.scope_reason %}
-            <br><em class="scope-reason">Scope: {{ item.scope_reason }}</em>
+          </span>
+          <span class="risk-badge {{ item.risk }}">
+            {% if item.risk == "low" %}Low
+            {% elsif item.risk == "medium" %}Med
+            {% elsif item.risk == "high" %}High
             {% endif %}
-          </td>
-          <td>
-            <span class="risk-badge {{ item.risk }}">
-              {% if item.risk == "low" %}Low
-              {% elsif item.risk == "medium" %}Med
-              {% elsif item.risk == "high" %}High
-              {% endif %}
-            </span>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+          </span>
+        </span>
+      </div>
+      <div class="upstream-card-target">
+        <a href="{{ item.repo_url }}">{{ item.repo }}</a>
+        <code>{{ item.file }}</code>
+        {% if item.compare_url %}
+        <a href="{{ item.compare_url }}" class="upstream-compare-link">View Proposed Change</a>
+        {% endif %}
+      </div>
+      <div class="upstream-card-rationale">
+        {{ item.rationale }}
+        {% if item.scope_reason %}
+        <br><em class="scope-reason">Scope: {{ item.scope_reason }}</em>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
 
     {% assign has_pr_history = false %}
     {% for item in group.upstream %}

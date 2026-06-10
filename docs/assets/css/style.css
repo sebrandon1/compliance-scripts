@@ -1902,21 +1902,56 @@ kbd {
   color: var(--color-text-secondary, #666);
 }
 
-.upstream-proposal table.upstream-table {
-  table-layout: auto !important;
-  width: 100%;
+/* Upstream proposal cards */
+.upstream-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
-.upstream-proposal table td,
-.upstream-proposal table th {
-  vertical-align: top;
-  overflow-wrap: break-word;
+.upstream-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 }
 
-.upstream-proposal table td code {
+.upstream-card-header code {
+  font-size: 0.9rem;
+  font-weight: 600;
   white-space: normal;
   overflow-wrap: break-word;
+}
+
+.upstream-card-badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.upstream-card-target {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upstream-card-target code {
   font-size: 0.8rem;
+  color: var(--color-text-secondary, #666);
+}
+
+.upstream-card-rationale {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary, #666);
+  margin-top: 0.5rem;
 }
 
 /* PR History cards */
