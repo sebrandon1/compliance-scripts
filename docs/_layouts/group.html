@@ -100,15 +100,15 @@ layout: default
   <div class="upstream-proposal" id="upstream-proposal">
     <h2>Upstream Proposal</h2>
     <p>The following changes could eliminate the need for MachineConfig remediation. Items are categorized by recommended scope:</p>
-    <table>
+    <table class="upstream-table">
       <thead>
         <tr>
-          <th>Setting</th>
-          <th style="width: 90px;">Scope</th>
-          <th>Target Repo</th>
-          <th>Target File</th>
+          <th style="width: 18%;">Setting</th>
+          <th style="width: 70px;">Scope</th>
+          <th style="width: 15%;">Target Repo</th>
+          <th style="width: 17%;">Target File</th>
           <th>Rationale</th>
-          <th style="width: 60px;">Risk</th>
+          <th style="width: 50px;">Risk</th>
         </tr>
       </thead>
       <tbody>
@@ -159,42 +159,51 @@ layout: default
 
     {% if has_pr_history %}
     <h3>PR History</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Setting</th>
-          <th>Repo</th>
-          <th>PR</th>
-          <th style="width: 80px;">State</th>
-          <th>Outcome</th>
-          <th>Reason</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for item in group.upstream %}
-        {% if item.pr_history %}
-          {% for pr in item.pr_history %}
-          <tr>
-            <td><code>{{ item.setting }}</code></td>
-            <td><a href="https://github.com/{{ pr.repo }}">{{ pr.repo }}</a></td>
-            <td><a href="{{ pr.url }}">#{{ pr.pr }}</a></td>
-            <td>
+    {% for item in group.upstream %}
+      {% if item.pr_history %}
+        {% for pr in item.pr_history %}
+        <div class="pr-history-card">
+          <div class="pr-history-header">
+            <code>{{ item.setting }}</code>
+            <span class="pr-history-meta">
               {% if pr.state == "open" %}
                 <span class="upstream-badge pr-exists">Open</span>
               {% elsif pr.state == "merged" %}
                 <span class="upstream-badge pass">Merged</span>
               {% elsif pr.state == "closed" %}
                 <span class="upstream-badge ran-only">Closed</span>
+              {% elsif pr.state == "not-filed" %}
+                <span class="upstream-badge na">Not Filed</span>
               {% endif %}
-            </td>
-            <td>{{ pr.outcome | default: "—" }}</td>
-            <td>{{ pr.reason | default: "—" }}</td>
-          </tr>
-          {% endfor %}
-        {% endif %}
-      {% endfor %}
-      </tbody>
-    </table>
+              {% if pr.outcome %}
+                <span class="upstream-badge {% if pr.outcome == 'blocked' %}ran-only{% elsif pr.outcome == 'redirected' %}candidate{% else %}na{% endif %}">{{ pr.outcome }}</span>
+              {% endif %}
+            </span>
+          </div>
+          {% if pr.pr %}
+          <div class="pr-history-link">
+            <a href="{{ pr.url }}">{{ pr.repo }}#{{ pr.pr }}</a>
+            {% if pr.opened %}<span class="pr-history-date">opened {{ pr.opened }}{% if pr.closed %}, closed {{ pr.closed }}{% endif %}</span>{% endif %}
+          </div>
+          {% else %}
+          <div class="pr-history-link">
+            <a href="https://github.com/{{ pr.repo }}">{{ pr.repo }}</a>
+          </div>
+          {% endif %}
+          {% if pr.reason %}
+          <div class="pr-history-reason">{{ pr.reason }}</div>
+          {% endif %}
+          {% if pr.references %}
+          <div class="pr-history-refs">
+            {% for ref in pr.references %}
+            <a href="{{ ref }}">{{ ref | replace: "https://github.com/", "" | replace: "https://", "" }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
     {% endif %}
   </div>
   {% endif %}
