@@ -1902,40 +1902,21 @@ kbd {
   color: var(--color-text-secondary, #666);
 }
 
-.upstream-proposal table {
-  table-layout: auto;
+.upstream-proposal table.upstream-table {
+  table-layout: auto !important;
   width: 100%;
 }
 
 .upstream-proposal table td,
 .upstream-proposal table th {
   vertical-align: top;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .upstream-proposal table td code {
   white-space: normal;
-  word-break: break-word;
+  overflow-wrap: break-word;
   font-size: 0.8rem;
-}
-
-.upstream-proposal .pr-history-reason {
-  font-size: 0.85rem;
-  line-height: 1.5;
-  max-width: 500px;
-}
-
-.upstream-proposal .pr-history-refs {
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--color-border);
-  font-size: 0.75rem;
-}
-
-.upstream-proposal .pr-history-refs a {
-  display: block;
-  margin-bottom: 0.2rem;
-  word-break: break-all;
 }
 
 /* PR History cards */
