@@ -9,6 +9,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 VERIFY_IMAGES="$SCRIPT_DIR/utilities/verify-images.sh"
 REGISTRY="registry.redhat.io"
+QUERY_REGISTRY="registry.access.redhat.com"
 IMAGE="redhat/community-operator-index"
 WINDOW=5
 DRY_RUN=false
@@ -53,11 +54,11 @@ done
 
 require_cmd skopeo
 
-log_info "Querying tags for $REGISTRY/$IMAGE..."
-RAW_TAGS=$(skopeo list-tags "docker://$REGISTRY/$IMAGE" 2>/dev/null)
+log_info "Querying tags for $QUERY_REGISTRY/$IMAGE..."
+RAW_TAGS=$(skopeo list-tags "docker://$QUERY_REGISTRY/$IMAGE" 2>/dev/null)
 
 if [[ -z "$RAW_TAGS" ]]; then
-	log_error "Failed to fetch tags from $REGISTRY/$IMAGE"
+	log_error "Failed to fetch tags from $QUERY_REGISTRY/$IMAGE"
 	exit 1
 fi
 
