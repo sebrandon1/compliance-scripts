@@ -11,7 +11,7 @@ VERIFY_IMAGES="$SCRIPT_DIR/utilities/verify-images.sh"
 REGISTRY="registry.redhat.io"
 QUERY_REGISTRY="registry.access.redhat.com"
 IMAGE="redhat/community-operator-index"
-WINDOW=5
+WINDOW=10
 DRY_RUN=false
 
 usage() {
