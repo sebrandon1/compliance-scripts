@@ -177,30 +177,6 @@ setup_cleanup() {
 # UTILITY FUNCTIONS
 # ============================================================================
 
-# Wait for a condition with timeout
-# Usage: wait_for "condition description" timeout_seconds command args...
-wait_for() {
-    local description="$1"
-    local timeout="$2"
-    shift 2
-    local elapsed=0
-    local interval=5
-
-    log_info "Waiting for $description (timeout: ${timeout}s)..."
-    while ! "$@" &>/dev/null; do
-        sleep $interval
-        elapsed=$((elapsed + interval))
-        if [[ $elapsed -ge $timeout ]]; then
-            log_error "Timeout waiting for $description"
-            return 1
-        fi
-        echo -n "."
-    done
-    echo ""
-    log_success "$description ready"
-    return 0
-}
-
 # Confirm action with user
 # Usage: confirm "Are you sure?" && do_something
 confirm() {
