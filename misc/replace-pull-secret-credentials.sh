@@ -80,8 +80,7 @@ fi
 require_cluster
 
 TS=$(date +%Y%m%d%H%M%S)
-TMPDIR=$(mktemp -d "/tmp/psecret.XXXXXX")
-trap 'rm -rf "$TMPDIR"' EXIT
+TMPDIR=$(make_temp_dir)
 
 BACKUP="/tmp/${SECRET_NAME}-backup-${TS}.json"
 
@@ -121,8 +120,7 @@ oc set data "secret/${SECRET_NAME}" -n "$NAMESPACE" --from-file=.dockerconfigjso
 oc -n "$NAMESPACE" patch "secret/${SECRET_NAME}" --type merge -p '{"type":"kubernetes.io/dockerconfigjson"}' >/dev/null || true
 
 if [[ "$VERIFY" == true ]]; then
-	VERIFYDIR=$(mktemp -d "/tmp/psecretv.XXXXXX")
-	trap 'rm -rf "$TMPDIR" "$VERIFYDIR"' EXIT
+	VERIFYDIR=$(make_temp_dir)
 	oc extract "secret/${SECRET_NAME}" -n "$NAMESPACE" --to="$VERIFYDIR" >/dev/null
 	log_info "Registries in updated secret:"
 	if command -v python3 >/dev/null 2>&1; then

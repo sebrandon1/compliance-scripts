@@ -103,6 +103,7 @@ if [[ "$DRY_RUN" == "true" ]]; then
 fi
 
 REPLACEMENT_FILE=$(mktemp)
+trap 'rm -f "$REPLACEMENT_FILE"' EXIT
 printf '%s\n' "$NEW_ARRAY" >"$REPLACEMENT_FILE"
 
 TEMPFILE=$(mktemp)
