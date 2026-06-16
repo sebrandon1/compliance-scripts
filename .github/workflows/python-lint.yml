@@ -1,4 +1,4 @@
-name: Python Lint
+name: Python Lint and Test
 
 on:
   pull_request:
@@ -25,3 +25,17 @@ jobs:
           sudo apt-get install -y make shellcheck
       - name: Run linting
         run: make python-lint
+
+  python-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install pytest pyyaml
+      - name: Run tests
+        run: make python-test
