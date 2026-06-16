@@ -24,7 +24,7 @@ BG_BLUE := \033[44m
 # 📋 Target Definitions
 # ────────────────────────────────────────────────────────────────────────────────
 .PHONY: all help preflight install-compliance-operator apply-periodic-scan create-scan \
-        collect-complianceremediations combine-machineconfigs organize-machine-configs \
+        wait-for-scans collect-complianceremediations combine-machineconfigs organize-machine-configs \
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
         export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
@@ -50,7 +50,7 @@ help: banner ## 📖 Show this help message
 	@echo "$(BOLD)$(BLUE)Available Commands:$(RESET)"
 	@echo ""
 	@echo "$(YELLOW)🚀 Workflow Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(workflow|install|apply|create|test-compliance)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(workflow|install|apply|create|wait-for|test-compliance)"
 	@echo ""
 	@echo "$(YELLOW)📊 Data Collection Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(collect|organize|generate)"
@@ -129,6 +129,32 @@ create-scan: ## 🔍 Create a new compliance scan
 	@echo "$(BOLD)$(BLUE)🔍 Creating compliance scan...$(RESET)"
 	@./core/create-scan.sh
 	@echo "$(GREEN)✅ Compliance scan created successfully!$(RESET)"
+	@echo ""
+
+SCAN_WAIT_ATTEMPTS ?= 90
+SCAN_WAIT_INTERVAL ?= 10
+
+wait-for-scans: ## ⏳ Wait for all ComplianceSuites to finish (up to 15 min)
+	@echo "$(BOLD)$(BLUE)⏳ Waiting for ComplianceSuites to complete...$(RESET)"
+	@namespace=$${NAMESPACE:-openshift-compliance}; \
+	for i in $$(seq 1 $(SCAN_WAIT_ATTEMPTS)); do \
+		total=$$(oc get compliancesuite -n "$$namespace" --no-headers 2>/dev/null | wc -l | tr -d ' '); \
+		if [ "$$total" -eq 0 ]; then \
+			echo "  No ComplianceSuites found, waiting... ($$i/$(SCAN_WAIT_ATTEMPTS))"; \
+			sleep $(SCAN_WAIT_INTERVAL); \
+			continue; \
+		fi; \
+		done_count=$$(oc get compliancesuite -n "$$namespace" -o jsonpath='{range .items[*]}{.status.phase}{"\n"}{end}' 2>/dev/null | grep -c '^DONE$$' || true); \
+		if [ "$$done_count" -eq "$$total" ]; then \
+			echo "$(GREEN)✅ All $$total ComplianceSuite(s) completed!$(RESET)"; \
+			exit 0; \
+		fi; \
+		echo "  $$done_count/$$total suites DONE ($$i/$(SCAN_WAIT_ATTEMPTS))..."; \
+		sleep $(SCAN_WAIT_INTERVAL); \
+	done; \
+	echo "$(RED)❌ ComplianceSuites not all DONE after $(SCAN_WAIT_ATTEMPTS) attempts$(RESET)"; \
+	oc get compliancesuite -n "$${namespace}" 2>/dev/null || true; \
+	exit 1
 	@echo ""
 
 # ────────────────────────────────────────────────────────────────────────────────
@@ -222,7 +248,7 @@ clean-complianceremediations: ## 🧹 Remove and recreate the complianceremediat
 # 🚀 Workflow Orchestration
 # ────────────────────────────────────────────────────────────────────────────────
 
-full-workflow: banner install-compliance-operator apply-periodic-scan create-scan collect-complianceremediations combine-machineconfigs organize-machine-configs generate-compliance-markdown ## 🚀 Execute complete compliance workflow
+full-workflow: banner install-compliance-operator apply-periodic-scan create-scan wait-for-scans collect-complianceremediations combine-machineconfigs organize-machine-configs generate-compliance-markdown ## 🚀 Execute complete compliance workflow
 	@echo ""
 	@echo "$(BOLD)$(BG_GREEN)$(WHITE)"
 	@echo "  ╔═════════════════════════════════════════════════════════════╗"
@@ -234,6 +260,7 @@ full-workflow: banner install-compliance-operator apply-periodic-scan create-sca
 	@echo "$(DIM)  ✓ Compliance Operator installed$(RESET)"
 	@echo "$(DIM)  ✓ Periodic scan configuration applied$(RESET)"
 	@echo "$(DIM)  ✓ Compliance scan created$(RESET)"
+	@echo "$(DIM)  ✓ Scans completed$(RESET)"
 	@echo "$(DIM)  ✓ Compliance remediations collected$(RESET)"
 	@echo "$(DIM)  ✓ Machine configurations organized$(RESET)"
 	@echo "$(DIM)  ✓ Compliance markdown report generated$(RESET)"
@@ -432,7 +459,7 @@ export-compliance: ## 📊 Export compliance data to JSON for dashboard (require
 	@echo "$(GREEN)✅ Compliance data exported to docs/_data/ocp-$(OCP_VERSION).json$(RESET)"
 	@echo ""
 
-update-dashboard: ## 🔄 Export compliance data and push to trigger dashboard rebuild
+update-dashboard: ## 🔄 Export compliance data and open a PR to update the dashboard
 	@if [ -z "$(OCP_VERSION)" ]; then \
 	  echo "$(RED)❌ Error: OCP_VERSION is required!$(RESET)"; \
 	  echo "$(YELLOW)Usage: make update-dashboard OCP_VERSION=4.17$(RESET)"; \
@@ -440,10 +467,14 @@ update-dashboard: ## 🔄 Export compliance data and push to trigger dashboard r
 	fi
 	@echo "$(BOLD)$(BLUE)🔄 Updating compliance dashboard for OCP $(OCP_VERSION)...$(RESET)"
 	@./core/export-compliance-data.sh $(OCP_VERSION)
-	@git add docs/_data/
-	@git commit -m "Update compliance data for OCP $(OCP_VERSION)"
-	@git push
-	@echo "$(GREEN)✅ Dashboard update pushed! GitHub Actions will rebuild the site.$(RESET)"
+	@branch="update-dashboard-$(OCP_VERSION)-$$(date +%Y%m%d)"; \
+	git checkout -b "$$branch"; \
+	git add docs/_data/; \
+	git commit -m "Update compliance data for OCP $(OCP_VERSION)"; \
+	git push -u origin "$$branch"; \
+	gh pr create --title "Update compliance data for OCP $(OCP_VERSION)" \
+	  --body "Automated dashboard data export from \`make update-dashboard\`."
+	@echo "$(GREEN)✅ Dashboard update PR created! Merge to trigger site rebuild.$(RESET)"
 	@echo ""
 
 serve-docs: ## 🖥️  Serve the compliance dashboard locally (requires Jekyll)
