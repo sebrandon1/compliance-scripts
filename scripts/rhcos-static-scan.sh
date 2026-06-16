@@ -74,8 +74,8 @@ if [[ "$OCP_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
 fi
 
 SCANNER="${OPENSCAP_IMAGE}:${OPENSCAP_TAG}"
-WORK_DIR=$(mktemp -d)
-trap 'rm -rf "$WORK_DIR"; podman rm -f rhcos-scan-extract content-scan-extract 2>/dev/null || true' EXIT
+WORK_DIR=$(make_temp_dir)
+trap 'podman rm -f rhcos-scan-extract content-scan-extract 2>/dev/null || true; _cleanup_temp_dirs' EXIT
 
 RELEASE_IMAGE="quay.io/openshift-release-dev/ocp-release:${OCP_VERSION}-x86_64"
 

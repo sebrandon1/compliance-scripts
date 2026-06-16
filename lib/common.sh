@@ -14,6 +14,28 @@ set -euo pipefail
 DEFAULT_COMPLIANCE_NAMESPACE="openshift-compliance"
 
 # ============================================================================
+# TEMP DIRECTORY MANAGEMENT
+# ============================================================================
+_CLEANUP_DIRS=()
+
+_cleanup_temp_dirs() {
+    for d in "${_CLEANUP_DIRS[@]}"; do
+        rm -rf "$d"
+    done
+}
+trap _cleanup_temp_dirs EXIT
+
+# Create a temp directory that is automatically cleaned up on exit.
+# Safe to call multiple times — all directories are tracked and removed.
+# Usage: MY_DIR=$(make_temp_dir)
+make_temp_dir() {
+    local dir
+    dir=$(mktemp -d)
+    _CLEANUP_DIRS+=("$dir")
+    echo "$dir"
+}
+
+# ============================================================================
 # COLORS (only if terminal supports it)
 # ============================================================================
 if [[ -t 1 ]]; then

@@ -62,8 +62,7 @@ echo "# YAML apply report ($SEVERITY) - $(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$repor
 echo "file,reboot_hint,result" >>"$report_path"
 
 # Use a temp workspace for metadata-injected files
-TMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TMP_DIR"' EXIT
+TMP_DIR=$(make_temp_dir)
 while IFS= read -r file; do
 	[[ -z "$file" ]] && continue
 	# Prepare metadata-injected temp file mirroring organize-machine-configs.sh behavior

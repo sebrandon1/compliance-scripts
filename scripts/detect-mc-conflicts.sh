@@ -87,8 +87,7 @@ if [[ -n "$TRACKING_FILE" ]]; then
 	require_cmd jq
 fi
 
-TMP_DIR=$(mktemp -d)
-trap 'rm -rf "$TMP_DIR"' EXIT
+TMP_DIR=$(make_temp_dir)
 
 PATHMAP="$TMP_DIR/pathmap.tsv"
 : >"$PATHMAP"

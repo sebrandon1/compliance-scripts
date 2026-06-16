@@ -32,8 +32,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 	exit 0
 fi
 
-WORK_DIR=$(mktemp -d)
-trap 'rm -rf "$WORK_DIR"' EXIT
+WORK_DIR=$(make_temp_dir)
 
 log_info "Cloning ComplianceAsCode/content (ref: $CONTENT_REF)..."
 git clone --depth 1 --branch "$CONTENT_REF" "$CONTENT_REPO" "$WORK_DIR/content"

@@ -132,8 +132,7 @@ fi
 
 WORK_DIR=""
 if [[ "$ANY_BUILD_NEEDED" == "true" ]]; then
-	WORK_DIR=$(mktemp -d)
-	trap 'rm -rf "$WORK_DIR"' EXIT
+	WORK_DIR=$(make_temp_dir)
 	log_info "Cloning compliance-operator source (ref: $CO_REF)..."
 	git clone --depth 1 --branch "$CO_REF" \
 		https://github.com/ComplianceAsCode/compliance-operator.git "$WORK_DIR/co-src"
