@@ -19,7 +19,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 load_env
 
 # Check required dependencies
-require_cmd oc yq
+require_cmd oc yq jq
 
 # Check cluster connectivity
 require_cluster
@@ -127,17 +127,22 @@ if [[ -n "$SEVERITY_FILTER" ]]; then
 	fi
 fi
 
-# Fetch all complianceremediation objects in YAML format
+# Fetch all complianceremediation objects as JSON (single parse, O(n) extraction)
 log_info "Fetching complianceremediation objects from cluster..."
-complianceremediations=$(oc get complianceremediation -n "$NAMESPACE" -o yaml)
+REMEDIATION_JSON=$(oc get complianceremediation -n "$NAMESPACE" -o json)
 
-# Build a name->severity map from ComplianceCheckResult (names should match remediation names)
-severity_lines=$(oc get compliancecheckresult -A | awk 'NR>1 {print $2, $4}')
-# Lowercase entire mapping to ease comparisons
-severity_lines=$(echo "$severity_lines" | tr '[:upper:]' '[:lower:]')
+# Build a name->severity associative array from ComplianceCheckResult
+declare -A severity_map
+while read -r sname ssev; do
+	severity_map["$sname"]="$ssev"
+done < <(oc get compliancecheckresult -A | awk 'NR>1 {print tolower($2), tolower($4)}')
 
-# Extract the names of the complianceremediation objects
-names=$(echo "$complianceremediations" | yq e '.items[].metadata.name' -)
+# Split all items into individual JSON files in one pass
+ITEMS_DIR=$(make_temp_dir)
+while IFS= read -r item; do
+	item_name=$(echo "$item" | jq -r '.metadata.name')
+	echo "$item" >"$ITEMS_DIR/$item_name.json"
+done < <(echo "$REMEDIATION_JSON" | jq -c '.items[]')
 
 # Counters for logging
 count_total=0
@@ -146,12 +151,13 @@ count_invalid=0
 count_skipped_severity=0
 kinds=()
 
-# Loop through each complianceremediation object
-for name in $names; do
+for item_file in "$ITEMS_DIR"/*.json; do
+	[[ -f "$item_file" ]] || continue
+	name=$(basename "$item_file" .json)
 	count_total=$((count_total + 1))
 
 	# Apply severity filter if requested
-	check_severity=$(echo "$severity_lines" | awk -v n="$name" '$1==n{print $2; exit}')
+	check_severity="${severity_map[$name]:-}"
 	if [[ ${#severity_list[@]} -gt 0 ]]; then
 		allowed=0
 		for s in "${severity_list[@]}"; do
@@ -161,17 +167,15 @@ for name in $names; do
 			fi
 		done
 		if [[ $allowed -eq 0 ]]; then
-			# Skip this remediation due to severity filter
 			count_skipped_severity=$((count_skipped_severity + 1))
 			continue
 		fi
 	fi
 
-	# Extract the spec.object YAML structure for the current object
-	spec_object=$(echo "$complianceremediations" | yq e ".items[] | select(.metadata.name == \"$name\") | .spec.current.object" -)
+	# Extract spec.current.object as raw YAML
+	spec_object=$(jq -r '.spec.current.object' "$item_file") || true
 
-	# Validate the YAML structure of the spec.object
-	if ! echo "$spec_object" | yq e '.' - >/dev/null 2>&1; then
+	if [[ -z "$spec_object" ]] || ! echo "$spec_object" | yq e '.' - >/dev/null 2>&1; then
 		log_warn "Invalid YAML for complianceremediation object '$name'. Skipping."
 		count_invalid=$((count_invalid + 1))
 		continue

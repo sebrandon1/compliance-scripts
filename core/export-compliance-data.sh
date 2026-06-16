@@ -59,20 +59,31 @@ if [[ -z "$CHECK_RESULTS" ]] || [[ "$(echo "$CHECK_RESULTS" | jq '.items | lengt
 	exit 1
 fi
 
-TOTAL_CHECKS=$(echo "$CHECK_RESULTS" | jq '.items | length')
+SUMMARY=$(echo "$CHECK_RESULTS" | jq '{
+	total: (.items | length),
+	passing: [.items[] | select(.status == "PASS")] | length,
+	failing: [.items[] | select(.status == "FAIL")] | length,
+	manual: [.items[] | select(.status == "MANUAL")] | length,
+	skipped: [.items[] | select(.status == "SKIP" or .status == "NOT-APPLICABLE")] | length,
+	rhcos_failing: [.items[] | select(.status == "FAIL" and (.metadata.name | test("^rhcos4-")))] | length,
+	ocp_failing: [.items[] | select(.status == "FAIL" and (.metadata.name | test("^ocp4-")))] | length
+}')
+
+TOTAL_CHECKS=$(echo "$SUMMARY" | jq '.total')
+PASSING=$(echo "$SUMMARY" | jq '.passing')
+FAILING=$(echo "$SUMMARY" | jq '.failing')
+MANUAL=$(echo "$SUMMARY" | jq '.manual')
+SKIPPED=$(echo "$SUMMARY" | jq '.skipped')
+RHCOS_FAILING=$(echo "$SUMMARY" | jq '.rhcos_failing')
+OCP_FAILING=$(echo "$SUMMARY" | jq '.ocp_failing')
+
 log_info "Found ${TOTAL_CHECKS} compliance checks"
-
-# Count by status
-# Note: .status is a string field (e.g., "PASS", "FAIL", "MANUAL"), not an object
-PASSING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "PASS")] | length')
-FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL")] | length')
-MANUAL=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "MANUAL")] | length')
-SKIPPED=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "SKIP" or .status == "NOT-APPLICABLE")] | length')
-
 log_info "  Passing: ${PASSING}"
 log_info "  Failing: ${FAILING}"
 log_info "  Manual:  ${MANUAL}"
 log_info "  Skipped: ${SKIPPED}"
+log_info "  RHCOS failing: ${RHCOS_FAILING}"
+log_info "  OCP failing:   ${OCP_FAILING}"
 
 # Load tracking data if exists
 TRACKING_DATA="{}"
@@ -81,15 +92,6 @@ if [[ -f "$TRACKING_FILE" ]]; then
 	log_info "Loaded tracking data from ${TRACKING_FILE}"
 fi
 
-RHCOS_FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL" and (.metadata.name | test("^rhcos4-")))] | length')
-OCP_FAILING=$(echo "$CHECK_RESULTS" | jq '[.items[] | select(.status == "FAIL" and (.metadata.name | test("^ocp4-")))] | length')
-log_info "  RHCOS failing: ${RHCOS_FAILING}"
-log_info "  OCP failing:   ${OCP_FAILING}"
-
-log_info "Processing remediations by severity..."
-
-# Helper: extract profile from check name
-# e.g., "ocp4-cis-foo" -> "CIS", "rhcos4-e8-master-foo" -> "E8"
 PROFILE_JQ='def extract_profile:
   if test("^ocp4-cis") then "CIS"
   elif test("^ocp4-e8") then "E8"
@@ -103,57 +105,50 @@ def extract_platform:
   if test("^rhcos4-") then "rhcos"
   elif test("^ocp4-") then "ocp"
   else "unknown"
-  end;'
+  end;
+def to_check:
+  {name: .metadata.name, check: .metadata.name, status, description, severity,
+   profile: (.metadata.name | extract_profile),
+   platform: (.metadata.name | extract_platform)};'
 
-# Query checks by jq filter expression
-query_checks() {
-	local filter="$1"
-	echo "$CHECK_RESULTS" | jq -c "${PROFILE_JQ}"'[.items[] | select('"$filter"') | {
-	    name: .metadata.name,
-	    check: .metadata.name,
-	    status: .status,
-	    description: .description,
-	    severity: .severity,
-	    profile: (.metadata.name | extract_profile),
-	    platform: (.metadata.name | extract_platform)
-	}]'
-}
+log_info "Processing checks by severity..."
+CLASSIFIED=$(echo "$CHECK_RESULTS" | jq -c "${PROFILE_JQ}"'{
+	fail_high:    [.items[] | select(.severity == "high"   and .status == "FAIL")   | to_check],
+	fail_medium:  [.items[] | select(.severity == "medium" and .status == "FAIL")   | to_check],
+	fail_low:     [.items[] | select(.severity == "low"    and .status == "FAIL")   | to_check],
+	manual:       [.items[] | select(.status == "MANUAL")                           | to_check],
+	pass_high:    [.items[] | select(.severity == "high"   and .status == "PASS")   | to_check],
+	pass_medium:  [.items[] | select(.severity == "medium" and .status == "PASS")   | to_check],
+	pass_low:     [.items[] | select(.severity == "low"    and .status == "PASS")   | to_check]
+}')
 
-# Note: .severity is a top-level field, .status is the result string
-HIGH_CHECKS=$(query_checks '.severity == "high" and .status == "FAIL"')
-HIGH_COUNT=$(echo "$HIGH_CHECKS" | jq 'length')
+HIGH_CHECKS=$(echo "$CLASSIFIED" | jq -c '.fail_high')
+MEDIUM_CHECKS=$(echo "$CLASSIFIED" | jq -c '.fail_medium')
+LOW_CHECKS=$(echo "$CLASSIFIED" | jq -c '.fail_low')
+MANUAL_CHECKS=$(echo "$CLASSIFIED" | jq -c '.manual')
+PASSING_HIGH=$(echo "$CLASSIFIED" | jq -c '.pass_high')
+PASSING_MEDIUM=$(echo "$CLASSIFIED" | jq -c '.pass_medium')
+PASSING_LOW=$(echo "$CLASSIFIED" | jq -c '.pass_low')
+
+HIGH_COUNT=$(echo "$CLASSIFIED" | jq '.fail_high | length')
+MEDIUM_COUNT=$(echo "$CLASSIFIED" | jq '.fail_medium | length')
+LOW_COUNT=$(echo "$CLASSIFIED" | jq '.fail_low | length')
+MANUAL_CHECK_COUNT=$(echo "$CLASSIFIED" | jq '.manual | length')
+PASSING_HIGH_COUNT=$(echo "$CLASSIFIED" | jq '.pass_high | length')
+PASSING_MEDIUM_COUNT=$(echo "$CLASSIFIED" | jq '.pass_medium | length')
+PASSING_LOW_COUNT=$(echo "$CLASSIFIED" | jq '.pass_low | length')
+
 log_info "  HIGH severity failing: ${HIGH_COUNT}"
-
-MEDIUM_CHECKS=$(query_checks '.severity == "medium" and .status == "FAIL"')
-MEDIUM_COUNT=$(echo "$MEDIUM_CHECKS" | jq 'length')
 log_info "  MEDIUM severity failing: ${MEDIUM_COUNT}"
-
-LOW_CHECKS=$(query_checks '.severity == "low" and .status == "FAIL"')
-LOW_COUNT=$(echo "$LOW_CHECKS" | jq 'length')
 log_info "  LOW severity failing: ${LOW_COUNT}"
-
-MANUAL_CHECKS=$(query_checks '.status == "MANUAL"')
-MANUAL_CHECK_COUNT=$(echo "$MANUAL_CHECKS" | jq 'length')
 log_info "  MANUAL checks: ${MANUAL_CHECK_COUNT}"
-
-log_info "Processing passing checks by severity..."
-
-PASSING_HIGH=$(query_checks '.severity == "high" and .status == "PASS"')
-PASSING_HIGH_COUNT=$(echo "$PASSING_HIGH" | jq 'length')
 log_info "  HIGH severity passing: ${PASSING_HIGH_COUNT}"
-
-PASSING_MEDIUM=$(query_checks '.severity == "medium" and .status == "PASS"')
-PASSING_MEDIUM_COUNT=$(echo "$PASSING_MEDIUM" | jq 'length')
 log_info "  MEDIUM severity passing: ${PASSING_MEDIUM_COUNT}"
-
-PASSING_LOW=$(query_checks '.severity == "low" and .status == "PASS"')
-PASSING_LOW_COUNT=$(echo "$PASSING_LOW" | jq 'length')
 log_info "  LOW severity passing: ${PASSING_LOW_COUNT}"
 
 # Build the output JSON
 log_info "Generating JSON output..."
 
-# Create the JSON structure (no cluster name to avoid leaking internal info)
 OUTPUT_JSON=$(jq -n \
 	--arg version "$OCP_VERSION" \
 	--arg scan_date "$SCAN_DATE" \
