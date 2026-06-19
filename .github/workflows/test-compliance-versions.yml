@@ -39,7 +39,7 @@ jobs:
             developers.redhat.com
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set inputs
         id: inputs

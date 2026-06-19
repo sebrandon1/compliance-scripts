@@ -35,7 +35,7 @@ jobs:
             developers.redhat.com
 
       - name: Checkout compliance-scripts
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Validate group ID
         id: group

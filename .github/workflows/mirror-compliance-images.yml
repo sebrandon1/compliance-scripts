@@ -187,7 +187,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout scripts
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Check Red Hat Status
         uses: palmsoftware/redhat-status@v0
