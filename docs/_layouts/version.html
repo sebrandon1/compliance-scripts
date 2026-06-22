@@ -18,6 +18,9 @@ layout: default
   {% if version_data %}
   <div class="scan-info">
     <p><strong>Last Scan:</strong> {{ version_data.scan_date | date: "%Y-%m-%d %H:%M UTC" }}</p>
+    {% if version_data.content_image %}
+    <p><strong>Content Image:</strong> <code>{{ version_data.content_image }}</code></p>
+    {% endif %}
   </div>
 
   <div class="summary-cards">

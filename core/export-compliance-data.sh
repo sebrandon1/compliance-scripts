@@ -49,6 +49,18 @@ log_info "Cluster: connected"
 # Get current timestamp
 SCAN_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+# Capture content image from ProfileBundles
+log_info "Capturing content image..."
+CONTENT_IMAGE=$(oc get profilebundle -n "${NAMESPACE}" -o jsonpath='{.items[0].spec.contentImage}' 2>/dev/null || echo "unknown")
+CONTENT_IMAGE_DIGEST=$(oc get profilebundle -n "${NAMESPACE}" -o jsonpath='{.items[0].status.dataStreamStatus.image}' 2>/dev/null || echo "")
+if [[ -z "$CONTENT_IMAGE_DIGEST" ]]; then
+	CONTENT_IMAGE_DIGEST=$(skopeo inspect "docker://${CONTENT_IMAGE}" 2>/dev/null | jq -r '.Digest // empty' || echo "")
+fi
+log_info "Content image: ${CONTENT_IMAGE}"
+if [[ -n "$CONTENT_IMAGE_DIGEST" ]]; then
+	log_info "Content digest: ${CONTENT_IMAGE_DIGEST}"
+fi
+
 log_info "Collecting ComplianceCheckResults..."
 
 # Collect all check results
@@ -152,6 +164,8 @@ log_info "Generating JSON output..."
 OUTPUT_JSON=$(jq -n \
 	--arg version "$OCP_VERSION" \
 	--arg scan_date "$SCAN_DATE" \
+	--arg content_image "$CONTENT_IMAGE" \
+	--arg content_image_digest "$CONTENT_IMAGE_DIGEST" \
 	--argjson total "$TOTAL_CHECKS" \
 	--argjson passing "$PASSING" \
 	--argjson failing "$FAILING" \
@@ -169,6 +183,8 @@ OUTPUT_JSON=$(jq -n \
 	'{
         version: $version,
         scan_date: $scan_date,
+        content_image: $content_image,
+        content_image_digest: (if $content_image_digest == "" then null else $content_image_digest end),
         summary: {
             total_checks: $total,
             passing: $passing,
@@ -200,6 +216,7 @@ log_success "Successfully exported to ${OUTPUT_FILE}"
 print_summary \
 	"OCP Version" "${OCP_VERSION}" \
 	"Scan Date" "${SCAN_DATE}" \
+	"Content Image" "${CONTENT_IMAGE}" \
 	"Total Checks" "${TOTAL_CHECKS}" \
 	"Coverage" "$(echo "scale=1; ${PASSING} * 100 / ${TOTAL_CHECKS}" | bc)%" \
 	"Failing HIGH" "${HIGH_COUNT}" \
