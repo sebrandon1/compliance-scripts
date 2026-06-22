@@ -78,11 +78,13 @@ def diff_scans(old_data, new_data):
         "old": {
             "version": old_data.get("version", "?"),
             "scan_date": old_data.get("scan_date", "?"),
+            "content_image": old_data.get("content_image", ""),
             "summary": old_summary,
         },
         "new": {
             "version": new_data.get("version", "?"),
             "scan_date": new_data.get("scan_date", "?"),
+            "content_image": new_data.get("content_image", ""),
             "summary": new_summary,
         },
         "pass_to_fail": pass_to_fail,
@@ -104,7 +106,11 @@ def print_diff(result):
     print("  COMPLIANCE SCAN DIFF")
     print("=" * 65)
     print(f"  Old: v{old['version']}  {old['scan_date']}")
+    if old.get("content_image"):
+        print(f"       {old['content_image']}")
     print(f"  New: v{new['version']}  {new['scan_date']}")
+    if new.get("content_image"):
+        print(f"       {new['content_image']}")
     print()
 
     headers = ["", "Old", "New", "Delta"]

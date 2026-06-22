@@ -1,6 +1,8 @@
 {
   "version": "5.0",
-  "scan_date": "2026-06-22T14:46:36Z",
+  "scan_date": "2026-06-22T16:27:53Z",
+  "content_image": "quay.io/bapalm/k8scontent:95014682ef33",
+  "content_image_digest": null,
   "summary": {
     "total_checks": 914,
     "passing": 354,
