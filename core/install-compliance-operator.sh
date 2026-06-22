@@ -59,13 +59,13 @@ if oc get csidriver kubevirt.io.hostpath-provisioner &>/dev/null; then
 	HOSTPATH_CSI_DEPLOYED=true
 fi
 
-# Check for default StorageClass
-DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}' 2>/dev/null || true)
+# Check for usable StorageClass (default > crc-csi-hostpath > first available)
+DEFAULT_SC=$(get_default_storage_class)
 
 if [[ -z "$DEFAULT_SC" ]] && [[ "$HOSTPATH_CSI_DEPLOYED" == "false" ]]; then
 	echo ""
 	echo "════════════════════════════════════════════════════════════════════"
-	echo "📦 No default StorageClass detected - deploying HostPath CSI driver"
+	echo "📦 No StorageClass detected - deploying HostPath CSI driver"
 	echo "════════════════════════════════════════════════════════════════════"
 	echo ""
 	log_info "Deploying KubeVirt HostPath CSI driver (same as CRC uses)"

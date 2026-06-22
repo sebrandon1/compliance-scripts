@@ -2,12 +2,13 @@
 layout: default
 ---
 
-{% assign group = site.data.tracking.groups[page.group_id] %}
-{% assign meta = site.data.tracking.meta %}
+{% include resolve-tracking.html %}
+{% assign group = tracking.groups[page.group_id] %}
+{% assign meta = tracking.meta %}
 
 {% assign certsuite_total = 0 %}
 {% assign certsuite_covered = 0 %}
-{% for rem in site.data.tracking.remediations %}
+{% for rem in tracking.remediations %}
   {% if rem[1].group == page.group_id %}
     {% assign certsuite_total = certsuite_total | plus: 1 %}
     {% if rem[1].certsuite %}
@@ -195,7 +196,7 @@ layout: default
   {% endif %}
 
   {% assign has_certsuite = false %}
-  {% for rem in site.data.tracking.remediations %}
+  {% for rem in tracking.remediations %}
     {% if rem[1].group == page.group_id and rem[1].certsuite %}
       {% assign has_certsuite = true %}
       {% break %}
@@ -215,7 +216,7 @@ layout: default
         </tr>
       </thead>
       <tbody>
-      {% for rem in site.data.tracking.remediations %}
+      {% for rem in tracking.remediations %}
         {% if rem[1].group == page.group_id and rem[1].certsuite %}
           {% for test in rem[1].certsuite %}
           <tr>

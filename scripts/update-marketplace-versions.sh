@@ -63,11 +63,11 @@ if [[ -z "$RAW_TAGS" ]]; then
 fi
 
 VERSIONS=$(echo "$RAW_TAGS" | jq -r '.Tags[]' |
-	grep -E '^v4\.[0-9]+$' |
-	sort -t. -k2 -n)
+	grep -E '^v[0-9]+\.[0-9]+$' |
+	sed 's/^v//' | sort -t. -k1,1n -k2,2n | sed 's/^/v/')
 
 if [[ -z "$VERSIONS" ]]; then
-	log_error "No v4.XX tags found"
+	log_error "No versioned tags found"
 	exit 1
 fi
 

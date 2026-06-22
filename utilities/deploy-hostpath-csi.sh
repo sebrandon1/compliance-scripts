@@ -73,6 +73,16 @@ log_info "Detected cluster version: ${CLUSTER_VERSION}"
 MAJOR=$(echo "$CLUSTER_VERSION" | cut -d'.' -f1)
 MINOR=$(echo "$CLUSTER_VERSION" | cut -d'.' -f2)
 
+# OCP 5.x+ images are still under the openshift4/ registry path.
+# Normalize to search the 4.x image tags when running on 5.x+.
+SEARCH_MAJOR=4
+if [[ "$MAJOR" -le 4 ]]; then
+	SEARCH_MINOR=$MINOR
+else
+	SEARCH_MINOR=19 # bump when 4.20+ ships
+	log_info "OCP ${MAJOR}.x detected — searching openshift4/ images from v4.${SEARCH_MINOR} downward"
+fi
+
 # Define all required images
 HOSTPATH_IMAGE_BASE="registry.redhat.io/container-native-virtualization/hostpath-csi-driver-rhel9"
 NODE_REGISTRAR_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-node-driver-registrar"
@@ -83,8 +93,8 @@ PROVISIONER_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-external-provision
 IMAGE_TAG=""
 
 log_info "Searching for compatible image version (checking all required images)..."
-for ((i = MINOR; i >= 15; i--)); do
-	TEST_TAG="v${MAJOR}.${i}"
+for ((i = SEARCH_MINOR; i >= 15; i--)); do
+	TEST_TAG="v${SEARCH_MAJOR}.${i}"
 
 	log_debug "Testing version ${TEST_TAG}..."
 

@@ -1,6 +1,7 @@
 ---
 layout: default
 title: OCP 4.22 Remediation Groups
+version: "4.22"
 ---
 
 # OCP 4.22 Remediation Groups
@@ -156,7 +157,8 @@ var currentFilter = 'all';
 var currentUpstream = 'all';
 var searchTerm = '';
 
-{% assign groups = site.data.tracking.groups %}
+{% include resolve-tracking.html %}
+{% assign groups = tracking.groups %}
 var upstreamVerdicts = {
 {% for group in groups %}  "{{ group[0] }}": "{{ group[1].upstream_verdict }}"{% unless forloop.last %},
 {% endunless %}{% endfor %}

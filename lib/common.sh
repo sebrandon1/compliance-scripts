@@ -19,9 +19,11 @@ DEFAULT_COMPLIANCE_NAMESPACE="openshift-compliance"
 _CLEANUP_DIRS=()
 
 _cleanup_temp_dirs() {
-    for d in "${_CLEANUP_DIRS[@]}"; do
-        rm -rf "$d"
-    done
+    if (( ${#_CLEANUP_DIRS[@]} > 0 )); then
+        for d in "${_CLEANUP_DIRS[@]}"; do
+            rm -rf "$d"
+        done
+    fi
 }
 trap _cleanup_temp_dirs EXIT
 
