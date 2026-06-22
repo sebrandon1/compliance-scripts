@@ -108,6 +108,10 @@ jobs:
             https://github.com/ComplianceAsCode/content.git content-src
           cd content-src
           VERSION_TAG=$(git tag --points-at HEAD 2>/dev/null | grep "^v" | head -1 || true)
+          if [[ -z "$VERSION_TAG" ]] && [[ "$(git rev-parse --is-shallow-repository)" == "true" ]]; then
+            COMMIT_SHA=$(git rev-parse HEAD)
+            VERSION_TAG=$(git ls-remote --tags origin | grep "^${COMMIT_SHA}" | sed 's|.*refs/tags/||; s|\^{}||' | grep "^v" | head -1 || true)
+          fi
           echo "VERSION_TAG=$VERSION_TAG" >> "$GITHUB_ENV"
 
       - name: Set up QEMU

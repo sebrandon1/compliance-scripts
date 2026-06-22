@@ -1,3 +1,4 @@
+{% include resolve-tracking.html %}
 <table class="remediation-table">
   <thead>
     <tr>
@@ -12,12 +13,12 @@
   <tbody>
     {% for check in include.checks %}
     {% assign base_name = check.name | remove: "rhcos4-e8-worker-" | remove: "rhcos4-e8-master-" | remove: "rhcos4-moderate-worker-" | remove: "rhcos4-moderate-master-" | remove: "ocp4-cis-" | remove: "ocp4-e8-" | remove: "ocp4-moderate-" | remove: "ocp4-pci-dss-" %}
-    {% assign rem = site.data.tracking.remediations[base_name] %}
+    {% assign rem = tracking.remediations[base_name] %}
     {% if rem %}
       {% assign group_id = rem.group %}
-      {% assign tracking = site.data.tracking.groups[group_id] %}
+      {% assign group_tracking = tracking.groups[group_id] %}
     {% else %}
-      {% assign tracking = nil %}
+      {% assign group_tracking = nil %}
     {% endif %}
     {% if check.name contains "rhcos4-" %}
       {% assign check_platform = "rhcos" %}
@@ -56,18 +57,18 @@
         </span>
       </td>
       <td>
-        {% if tracking.jira and tracking.jira != "" %}
-        <a href="{{ site.data.tracking.jira_base_url }}{{ tracking.jira }}" target="_blank" class="jira-link">
-          {{ tracking.jira }}
+        {% if group_tracking.jira and group_tracking.jira != "" %}
+        <a href="{{ tracking.meta.jira_base_url }}{{ group_tracking.jira }}" target="_blank" class="jira-link">
+          {{ group_tracking.jira }}
         </a>
         {% else %}
         <span class="no-tracking">-</span>
         {% endif %}
       </td>
       <td>
-        {% if tracking.pr and tracking.pr != "" %}
-        <a href="{{ site.data.tracking.pr_base_url }}{{ tracking.pr }}" target="_blank" class="pr-link">
-          #{{ tracking.pr }}
+        {% if group_tracking.pr and group_tracking.pr != "" %}
+        <a href="{{ tracking.meta.pr_base_url }}{{ group_tracking.pr }}" target="_blank" class="pr-link">
+          #{{ group_tracking.pr }}
         </a>
         {% else %}
         <span class="no-tracking">-</span>
@@ -75,8 +76,8 @@
       </td>
       <td>
         {% if rem %}
-        <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group_id }}.html" class="tracking-status {{ tracking.status }}">
-          {{ group_id }}: {{ tracking.title }}
+        <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group_id }}.html" class="tracking-status {{ group_tracking.status }}">
+          {{ group_id }}: {{ group_tracking.title }}
         </a>
         {% else %}
         <span class="tracking-status pending">Not Tracked</span>

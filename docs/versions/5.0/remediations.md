@@ -1,15 +1,15 @@
 ---
-title: OCP 4.22 Remediation Groupings
-version: "4.22"
+title: OCP 5.0 Remediation Groupings
+version: "5.0"
 ---
 
-# OCP 4.22 Remediation Groupings
+# OCP 5.0 Remediation Groupings
 
-[← Back to OCP 4.22 Compliance Status](../4.22.html) | [View Detailed Group Pages](groups/)
+[← Back to OCP 5.0 Compliance Status](../5.0.html) | [View Detailed Group Pages](groups/)
 
-This page catalogs all compliance remediation groups for **OCP 4.22**, dynamically generated from [tracking.json](https://github.com/sebrandon1/compliance-scripts/blob/main/docs/_data/tracking.json).
+This page catalogs all compliance remediation groups for **OCP 5.0**, dynamically generated from tracking data.
 
-> **Target baseline**: RHCOS 9.8 (OCP 4.22) with compliance-operator v1.8.2 and pinned content [quay.io/bapalm/k8scontent:v0.1.80](https://quay.io/repository/bapalm/k8scontent).
+> **Target baseline**: RHCOS 10.2 (OCP 5.0) with compliance-operator and pinned content image.
 
 <div class="filter-bar">
   <div class="filter-search">
@@ -73,7 +73,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 
 | Status | Count |
 |--------|-------|
-| ✅ PASS on vanilla RHCOS 9.8+ | {{ pass_vanilla_count }} groups |
+| ✅ PASS on vanilla RHCOS 10.2+ | {{ pass_vanilla_count }} groups |
 | 🟢 Verified (remediation works) | {{ verified_count }} groups |
 | 🔵 In Progress | {{ in_progress_count }} groups |
 | 🟡 Pending | {{ pending_count }} groups |
@@ -192,7 +192,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 
 <details markdown="1"{% unless g.status contains "pass-vanilla" %} open{% endunless %}>
 <summary><strong>{{ gid }}: {{ g.title }}</strong> —
-{% if g.status contains "pass-vanilla" %}✅ PASS (vanilla RHCOS 9.8+)
+{% if g.status contains "pass-vanilla" %}✅ PASS (vanilla RHCOS 10.2+)
 {% elsif g.status == "verified" %}🟢 Verified
 {% elsif g.status == "in_progress" %}🔵 In Progress
 {% elsif g.status == "pending" %}🟡 Pending
@@ -202,7 +202,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 </summary>
 
 {% if g.status contains "pass-vanilla" %}
-> These checks PASS on vanilla RHCOS 9.8+ (OCP 4.22+) without MachineConfig remediation.
+> These checks PASS on vanilla RHCOS 10.2+ (OCP 5.0+) without MachineConfig remediation.
 {% endif %}
 
 {% if g.jira %}**Jira**: [{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% endif %}

@@ -13,6 +13,7 @@ layout: default
   {% assign version_slug = page.version | replace: ".", "_" %}
   {% assign data_file = "ocp-" | append: version_slug %}
   {% assign version_data = site.data[data_file] %}
+  {% include resolve-tracking.html %}
 
   {% if version_data %}
   <div class="scan-info">
@@ -65,7 +66,7 @@ layout: default
       <h3>In Progress</h3>
       <span class="number" id="in-progress-groups">
         {% assign ip_count = 0 %}
-        {% for group in site.data.tracking.groups %}
+        {% for group in tracking.groups %}
           {% if group[1].status == "in_progress" %}
             {% assign ip_count = ip_count | plus: 1 %}
           {% endif %}
@@ -77,9 +78,9 @@ layout: default
       <h3>Projected Coverage</h3>
       <span class="number" id="projected-coverage">
         {% assign fixable = 0 %}
-        {% for rem in site.data.tracking.remediations %}
+        {% for rem in tracking.remediations %}
           {% assign group_id = rem[1].group %}
-          {% assign group = site.data.tracking.groups[group_id] %}
+          {% assign group = tracking.groups[group_id] %}
           {% if group.status == "in_progress" %}
             {% assign fixable = fixable | plus: 2 %}
           {% endif %}
