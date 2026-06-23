@@ -14,7 +14,7 @@ on:
       ocp_versions:
         description: 'Comma-separated OCP versions to scan (e.g., 4.21,4.22)'
         required: false
-        default: '4.21,4.22'
+        default: '4.21,4.22,5.0'
       content_tag:
         description: 'k8scontent image tag'
         required: false
@@ -46,7 +46,7 @@ jobs:
       - name: Build version matrix
         id: matrix
         run: |
-          VERSIONS="${{ inputs.ocp_versions || '4.21,4.22' }}"
+          VERSIONS="${{ inputs.ocp_versions || '4.21,4.22,5.0' }}"
           JSON=$(echo "$VERSIONS" | tr ',' '\n' | jq -R . | jq -sc .)
           echo "versions=$JSON" >> "$GITHUB_OUTPUT"
           echo "Scanning versions: $JSON"

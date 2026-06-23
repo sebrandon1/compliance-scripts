@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         co_ref: [v1.7.0, v1.8.2]
-        ocp_version: ['4.21']
+        ocp_version: ['4.21', '4.22']
     permissions:
       contents: read
     steps:
@@ -66,7 +66,7 @@ jobs:
           fi
 
       - name: Setup quick-ocp cluster (OCP ${{ steps.inputs.outputs.ocp_version }})
-        uses: palmsoftware/quick-ocp@v0.0.34
+        uses: palmsoftware/quick-ocp@v0.0.35
         with:
           ocpPullSecret: $OCP_PULL_SECRET
           desiredOCPVersion: ${{ steps.inputs.outputs.ocp_version }}
