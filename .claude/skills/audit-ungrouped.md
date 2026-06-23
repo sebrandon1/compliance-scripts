@@ -31,17 +31,27 @@ Dedup across profiles — same check from E8 and Moderate counts once.
 
 Cross-reference check names against `tracking.json` remediations. Report grouped vs ungrouped counts.
 
-### Step 4: Suggest New Groups
+### Step 4: Auto-Suggest Groups
 
-Categorize ungrouped checks by type prefix and suggest group IDs:
+Run the auto-grouping script to suggest which existing group each ungrouped check belongs to:
 
-| Suggested Group | Title | Checks | Profile |
-|----------------|-------|--------|---------|
-| M31 | ... | 5 | rhcos4-moderate |
+```bash
+python3 scripts/suggest-groups.py docs/_data/ocp-<VERSION>.json
+```
+
+Or for version-specific tracking:
+
+```bash
+python3 scripts/suggest-groups.py --tracking docs/_data/tracking-5_0.json docs/_data/ocp-5_0.json
+```
+
+The script outputs suggestions ranked by confidence (high >0.9, medium 0.5-0.9, unmatched). Review the suggestions and note any that need manual override.
 
 ### Step 5: Offer Next Steps
 
-Ask the user if they want to create any of the suggested groups using `/new-group`.
+For checks with high/medium confidence suggestions — ask the user if they want to add these mappings to tracking.json.
+
+For unmatched checks — ask if the user wants to create new groups using `/new-group`.
 
 ## Important Notes
 

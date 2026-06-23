@@ -270,6 +270,10 @@ full-workflow: banner install-compliance-operator apply-periodic-scan create-sca
 # 🧪 Testing & Validation
 # ────────────────────────────────────────────────────────────────────────────────
 
+suggest-groups: ## 🔍 Suggest remediation groups for ungrouped checks
+	@if [ -z "$(SCAN)" ]; then echo "Usage: make suggest-groups SCAN=docs/_data/ocp-5_0.json"; exit 1; fi
+	@python3 scripts/suggest-groups.py $(SCAN)
+
 validate-compliance: ## ✅ Validate compliance results against expected baseline
 	@echo "$(BOLD)$(BLUE)✅ Validating compliance results...$(RESET)"
 	@if [ -z "$(EXPECTED)" ]; then echo "Usage: make validate-compliance EXPECTED=tests/expected-results-4.21.json"; exit 1; fi
