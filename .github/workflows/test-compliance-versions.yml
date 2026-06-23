@@ -20,7 +20,7 @@ permissions: read-all
 
 jobs:
   test-compliance:
-    name: test-compliance (${{ matrix.co_ref }}, ${{ matrix.ocp_version }}, k8scontent:v0.1.80)
+    name: test-compliance (${{ matrix.co_ref }}, ${{ matrix.ocp_version }}, k8scontent:v0.1.81)
     runs-on: ubuntu-latest
     if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
     strategy:
@@ -88,7 +88,7 @@ jobs:
           CO_REF: ${{ steps.inputs.outputs.co_ref }}
           RELATED_IMAGE_OPERATOR: quay.io/bapalm/compliance-operator:234bdd200637
           RELATED_IMAGE_OPENSCAP: quay.io/bapalm/openscap-ocp:234bdd200637
-          RELATED_IMAGE_PROFILE: quay.io/bapalm/k8scontent:v0.1.80
+          RELATED_IMAGE_PROFILE: quay.io/bapalm/k8scontent:v0.1.81
         run: make test-compliance
 
       - name: Validate E8 results against baseline
