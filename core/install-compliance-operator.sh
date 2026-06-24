@@ -9,11 +9,12 @@ NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
 OPERATOR_NAME="compliance-operator"
 SUBSCRIPTION_NAME="compliance-operator-sub"
 
-# Pinned image overrides for reproducible scanning.
-# Set these env vars to override, or leave empty to use upstream defaults.
-PINNED_OPERATOR_IMAGE="${RELATED_IMAGE_OPERATOR:-quay.io/bapalm/compliance-operator:234bdd200637}"
-PINNED_OPENSCAP_IMAGE="${RELATED_IMAGE_OPENSCAP:-quay.io/bapalm/openscap-ocp:234bdd200637}"
-PINNED_CONTENT_IMAGE="${RELATED_IMAGE_PROFILE:-quay.io/bapalm/k8scontent:v0.1.80}"
+# shellcheck source=../versions.env
+source "$SCRIPT_DIR/versions.env"
+
+PINNED_OPERATOR_IMAGE="${RELATED_IMAGE_OPERATOR:-${IMAGE_REGISTRY}/compliance-operator:${OPERATOR_IMAGE_TAG}}"
+PINNED_OPENSCAP_IMAGE="${RELATED_IMAGE_OPENSCAP:-${IMAGE_REGISTRY}/openscap-ocp:${OPENSCAP_IMAGE_TAG}}"
+PINNED_CONTENT_IMAGE="${RELATED_IMAGE_PROFILE:-${IMAGE_REGISTRY}/k8scontent:${CONTENT_IMAGE_TAG}}"
 
 usage() {
 	cat <<USAGE

@@ -16,15 +16,15 @@ on:
         required: false
         default: '4.21,4.22'
       content_tag:
-        description: 'k8scontent image tag'
+        description: 'k8scontent image tag (sync with versions.env)'
         required: false
-        default: 'v0.1.80'
+        default: 'v0.1.81'
       openscap_tag:
-        description: 'openscap-ocp image tag'
+        description: 'openscap-ocp image tag (sync with versions.env)'
         required: false
         default: '234bdd200637'
       must_gather_tag:
-        description: 'must-gather-ocp image tag'
+        description: 'must-gather-ocp image tag (sync with versions.env)'
         required: false
         default: '234bdd200637'
       profiles:
@@ -73,7 +73,7 @@ jobs:
 
       - name: Run RHCOS static scan (OCP ${{ matrix.ocp_version }})
         env:
-          CONTENT_TAG: ${{ inputs.content_tag || 'v0.1.80' }}
+          CONTENT_TAG: ${{ inputs.content_tag || 'v0.1.81' }}
           OPENSCAP_TAG: ${{ inputs.openscap_tag || '234bdd200637' }}
           MUST_GATHER_TAG: ${{ inputs.must_gather_tag || '234bdd200637' }}
           PROFILES: ${{ inputs.profiles || 'xccdf_org.ssgproject.content_profile_e8,xccdf_org.ssgproject.content_profile_moderate' }}

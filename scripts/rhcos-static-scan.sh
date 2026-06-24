@@ -5,13 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+# shellcheck source=../versions.env
+source "$SCRIPT_DIR/versions.env"
+
 OCP_VERSION="${1:-}"
-CONTENT_IMAGE="${CONTENT_IMAGE:-quay.io/bapalm/k8scontent}"
-CONTENT_TAG="${CONTENT_TAG:-v0.1.80}"
-OPENSCAP_IMAGE="${OPENSCAP_IMAGE:-quay.io/bapalm/openscap-ocp}"
-OPENSCAP_TAG="${OPENSCAP_TAG:-234bdd200637}"
-MUST_GATHER_IMAGE="${MUST_GATHER_IMAGE:-quay.io/bapalm/must-gather-ocp}"
-MUST_GATHER_TAG="${MUST_GATHER_TAG:-234bdd200637}"
+CONTENT_IMAGE="${CONTENT_IMAGE:-${IMAGE_REGISTRY}/k8scontent}"
+CONTENT_TAG="${CONTENT_TAG:-${CONTENT_IMAGE_TAG}}"
+OPENSCAP_IMAGE="${OPENSCAP_IMAGE:-${IMAGE_REGISTRY}/openscap-ocp}"
+OPENSCAP_TAG="${OPENSCAP_TAG:-${OPENSCAP_IMAGE_TAG}}"
+MUST_GATHER_IMAGE="${MUST_GATHER_IMAGE:-${IMAGE_REGISTRY}/must-gather-ocp}"
+MUST_GATHER_TAG="${MUST_GATHER_TAG:-${MUST_GATHER_IMAGE_TAG}}"
 PULL_SECRET="${PULL_SECRET:-$HOME/Downloads/pull-secret.txt}"
 PROFILES="${PROFILES:-xccdf_org.ssgproject.content_profile_e8,xccdf_org.ssgproject.content_profile_moderate}"
 RESULTS_DIR="${RESULTS_DIR:-/tmp/rhcos-scan-results}"
@@ -29,11 +32,11 @@ Arguments:
 
 Environment:
   CONTENT_IMAGE     Content image repo (default: quay.io/bapalm/k8scontent)
-  CONTENT_TAG       Content image tag (default: v0.1.80)
-  OPENSCAP_IMAGE    Scanner image repo (default: quay.io/bapalm/openscap-ocp)
-  OPENSCAP_TAG      Scanner image tag (default: 234bdd200637)
-  MUST_GATHER_IMAGE Must-gather image repo (default: quay.io/bapalm/must-gather-ocp)
-  MUST_GATHER_TAG   Must-gather image tag (default: 234bdd200637)
+  CONTENT_TAG       Content image tag (default: from versions.env)
+  OPENSCAP_IMAGE    Scanner image repo (default: ${IMAGE_REGISTRY}/openscap-ocp)
+  OPENSCAP_TAG      Scanner image tag (default: from versions.env)
+  MUST_GATHER_IMAGE Must-gather image repo (default: ${IMAGE_REGISTRY}/must-gather-ocp)
+  MUST_GATHER_TAG   Must-gather image tag (default: from versions.env)
   PULL_SECRET       Path to OCP pull secret (default: ~/Downloads/pull-secret.txt)
   PROFILES          Comma-separated SCAP profiles (default: e8,moderate)
   RESULTS_DIR       Output directory (default: /tmp/rhcos-scan-results)
