@@ -207,9 +207,15 @@ OUTPUT_JSON=$(jq -n \
         manual_checks: $manual_checks
     }')
 
-# Write output file
+# Write output file, preserving any manually added top-level keys
 mkdir -p "$OUTPUT_DIR"
-echo "$OUTPUT_JSON" | jq '.' >"$OUTPUT_FILE"
+if [[ -f "$OUTPUT_FILE" ]]; then
+	EXISTING=$(cat "$OUTPUT_FILE")
+	echo "$OUTPUT_JSON" | jq --argjson existing "$EXISTING" \
+		'$existing * .' >"$OUTPUT_FILE"
+else
+	echo "$OUTPUT_JSON" | jq '.' >"$OUTPUT_FILE"
+fi
 
 log_success "Successfully exported to ${OUTPUT_FILE}"
 
