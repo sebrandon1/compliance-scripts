@@ -13,6 +13,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+usage() {
+	echo "Usage: $(basename "$0") [image:tag ...]"
+	echo ""
+	echo "Verify container images have required architectures (amd64, arm64)."
+	echo "With no arguments, checks all known mirror images on quay.io/bapalm."
+	exit 0
+}
+
+[[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
+
 REQUIRED_ARCHES=("amd64" "arm64")
 
 require_cmd skopeo jq

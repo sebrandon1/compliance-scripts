@@ -5,6 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+usage() {
+	echo "Usage: $(basename "$0") [namespace]"
+	echo ""
+	echo "Force-delete a namespace stuck in Terminating state by removing finalizers."
+	echo "Defaults to the compliance namespace if not specified."
+	exit 0
+}
+
+[[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
+
 NAMESPACE="${1:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 
 log_info "Checking if namespace '$NAMESPACE' is stuck in Terminating..."
