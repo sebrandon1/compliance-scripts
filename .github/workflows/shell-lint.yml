@@ -2,9 +2,7 @@ name: Shell Lint
 
 on:
   pull_request:
-    paths:
-      - '**.sh'
-      - 'Makefile'
+    branches: [main]
 
 permissions: read-all
 

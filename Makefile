@@ -471,6 +471,8 @@ update-dashboard: ## 🔄 Export compliance data and open a PR to update the das
 	fi
 	@echo "$(BOLD)$(BLUE)🔄 Updating compliance dashboard for OCP $(OCP_VERSION)...$(RESET)"
 	@./core/export-compliance-data.sh $(OCP_VERSION)
+	@echo "$(BOLD)$(BLUE)🔍 Validating exported data...$(RESET)"
+	@python3 scripts/validate-dashboard-data.py docs/_data/ || (echo "$(RED)❌ Validation failed, aborting PR creation$(RESET)" && exit 1)
 	@branch="update-dashboard-$(OCP_VERSION)-$$(date +%Y%m%d)"; \
 	git checkout -b "$$branch"; \
 	git add docs/_data/; \

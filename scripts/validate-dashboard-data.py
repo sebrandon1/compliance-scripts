@@ -152,14 +152,18 @@ def main():
         else:
             print("OK")
 
-    tracking_path = os.path.join(data_dir, "tracking.json")
-    if os.path.exists(tracking_path):
+    tracking_files = (
+        glob.glob(os.path.join(data_dir, "tracking.json"))
+        + glob.glob(os.path.join(data_dir, "tracking-*.json"))
+    )
+    for filepath in sorted(tracking_files):
         total_files += 1
-        print("Validating tracking.json...", end=" ")
-        errors = validate_tracking(tracking_path)
+        basename = os.path.basename(filepath)
+        print(f"Validating {basename}...", end=" ")
+        errors = validate_tracking(filepath)
         if errors:
             print("FAIL")
-            all_errors["tracking.json"] = errors
+            all_errors[basename] = errors
         else:
             print("OK")
 
