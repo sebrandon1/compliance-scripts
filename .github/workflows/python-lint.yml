@@ -2,10 +2,7 @@ name: Python Lint and Test
 
 on:
   pull_request:
-    paths:
-      - '**.py'
-      - '**.sh'
-      - 'Makefile'
+    branches: [main]
 
 permissions: read-all
 

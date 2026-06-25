@@ -81,8 +81,12 @@ def parse_machineconfig_files(src_dir):
             fpath = os.path.join(root, fname)
             if not os.path.isfile(fpath):
                 continue
-            with open(fpath) as f:
-                docs = list(yaml.safe_load_all(f))
+            try:
+                with open(fpath) as f:
+                    docs = list(yaml.safe_load_all(f))
+            except yaml.YAMLError as e:
+                print(f"WARNING: Skipping {fpath}: {e}", file=sys.stderr)
+                continue
             for doc in docs:
                 if not doc or doc.get('kind') != 'MachineConfig':
                     continue
