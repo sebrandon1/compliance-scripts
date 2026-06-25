@@ -230,6 +230,26 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 - **MAN** = Manual checks (MAN1–MAN5)
 
 <script>
+function updateHash() {
+  var params = [];
+  if (currentFilter !== 'all') params.push('status=' + currentFilter);
+  if (currentPlatform !== 'all') params.push('platform=' + currentPlatform);
+  if (currentUpstream !== 'all') params.push('upstream=' + currentUpstream);
+  var search = (document.getElementById('table-search').value || '');
+  if (search) params.push('q=' + encodeURIComponent(search));
+  history.replaceState(null, '', params.length ? '#' + params.join('&') : location.pathname);
+}
+function parseHash() {
+  var hash = location.hash.slice(1);
+  if (!hash) return {};
+  var result = {};
+  hash.split('&').forEach(function(part) {
+    var idx = part.indexOf('=');
+    if (idx === -1) return;
+    result[part.slice(0, idx)] = decodeURIComponent(part.slice(idx + 1));
+  });
+  return result;
+}
 var currentFilter = 'all';
 var currentPlatform = 'all';
 var currentUpstream = 'all';
@@ -272,6 +292,16 @@ function filterTables() {
     if (matchSearch && matchFilter && matchPlatform && matchUpstream) shown++;
   });
   document.getElementById('filter-counts').textContent = shown + ' of ' + total + ' groups';
+  updateHash();
 }
-filterTables();
+(function restoreFromHash() {
+  var h = parseHash();
+  if (h.status) setStatusFilter(h.status);
+  if (h.platform) setPlatformFilter(h.platform);
+  if (h.upstream) setUpstreamFilter(h.upstream);
+  if (h.q) {
+    document.getElementById('table-search').value = h.q;
+  }
+  filterTables();
+})();
 </script>

@@ -248,14 +248,35 @@ layout: default
 </div>
 
 <script>
+function updateHash() {
+  var params = [];
+  if (currentTab !== 'failing') params.push('tab=' + currentTab);
+  if (currentCheckFilter !== 'all') params.push('filter=' + currentCheckFilter);
+  if (checkSearchTerm) params.push('q=' + encodeURIComponent(checkSearchTerm));
+  history.replaceState(null, '', params.length ? '#' + params.join('&') : location.pathname);
+}
+
+function parseHash() {
+  var hash = location.hash.slice(1);
+  if (!hash) return {};
+  var result = {};
+  hash.split('&').forEach(function(part) {
+    var idx = part.indexOf('=');
+    if (idx === -1) return;
+    result[part.slice(0, idx)] = decodeURIComponent(part.slice(idx + 1));
+  });
+  return result;
+}
+
+var currentTab = 'failing';
+
 function switchTab(tabName) {
-  // Remove active class from all buttons and panels
+  currentTab = tabName;
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-
-  // Add active class to selected button and panel
   document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
   document.getElementById('panel-' + tabName).classList.add('active');
+  updateHash();
 }
 
 var currentCheckFilter = 'all';
@@ -311,7 +332,18 @@ function filterChecks() {
   if (countsEl) {
     countsEl.textContent = visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
   }
+  updateHash();
 }
+
+(function restoreFromHash() {
+  var h = parseHash();
+  if (h.tab) switchTab(h.tab);
+  if (h.filter) setCheckFilter(h.filter);
+  if (h.q) {
+    document.getElementById('check-search').value = h.q;
+    filterChecks();
+  }
+})();
 
 function exportStatusJSON() {
   var dataEl = document.getElementById('group-data');
