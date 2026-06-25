@@ -20,13 +20,13 @@ on:
         required: false
         default: 'v0.1.81'
       openscap_tag:
-        description: 'openscap-ocp image tag (sync with versions.env)'
+        description: 'openscap-ocp image tag (sync with versions.env CO_IMAGE_TAG)'
         required: false
-        default: '234bdd200637'
+        default: 'v1.9.0'
       must_gather_tag:
-        description: 'must-gather-ocp image tag (sync with versions.env)'
+        description: 'must-gather-ocp image tag (sync with versions.env CO_IMAGE_TAG)'
         required: false
-        default: '234bdd200637'
+        default: 'v1.9.0'
       profiles:
         description: 'Comma-separated SCAP profiles to scan'
         required: false
@@ -74,8 +74,8 @@ jobs:
       - name: Run RHCOS static scan (OCP ${{ matrix.ocp_version }})
         env:
           CONTENT_TAG: ${{ inputs.content_tag || 'v0.1.81' }}
-          OPENSCAP_TAG: ${{ inputs.openscap_tag || '234bdd200637' }}
-          MUST_GATHER_TAG: ${{ inputs.must_gather_tag || '234bdd200637' }}
+          OPENSCAP_TAG: ${{ inputs.openscap_tag || 'v1.9.0' }}
+          MUST_GATHER_TAG: ${{ inputs.must_gather_tag || 'v1.9.0' }}
           PROFILES: ${{ inputs.profiles || 'xccdf_org.ssgproject.content_profile_e8,xccdf_org.ssgproject.content_profile_moderate' }}
           PULL_SECRET: /tmp/pull-secret.json
           RESULTS_DIR: /tmp/rhcos-scan-results

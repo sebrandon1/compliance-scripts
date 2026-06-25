@@ -36,12 +36,14 @@ COMPLIANCE_OPERATOR_IMAGES=(
 )
 
 MIRROR_IMAGES=(
-	"quay.io/bapalm/compliance-operator:v1.7.0"
-	"quay.io/bapalm/k8scontent:v1.7.0"
-	"quay.io/bapalm/compliance-operator-catalog:v1.7.0"
 	"quay.io/bapalm/compliance-operator:v1.8.2"
-	"quay.io/bapalm/k8scontent:v1.8.2"
+	"quay.io/bapalm/openscap-ocp:v1.8.2"
+	"quay.io/bapalm/compliance-operator-bundle:v1.8.2"
 	"quay.io/bapalm/compliance-operator-catalog:v1.8.2"
+	"quay.io/bapalm/compliance-operator:v1.9.0"
+	"quay.io/bapalm/openscap-ocp:v1.9.0"
+	"quay.io/bapalm/compliance-operator-bundle:v1.9.0"
+	"quay.io/bapalm/compliance-operator-catalog:v1.9.0"
 )
 
 OPENSHIFT_MARKETPLACE_IMAGES=(

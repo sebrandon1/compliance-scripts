@@ -26,8 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        co_ref: [v1.7.0, v1.8.2]
-        ocp_version: ['4.21']
+        co_ref: [v1.7.0, v1.8.2, v1.9.0]
+        ocp_version: ['4.20', '4.21']
     permissions:
       contents: read
     steps:
@@ -88,15 +88,13 @@ jobs:
         run: |
           source versions.env
           echo "content_tag=${CONTENT_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "operator_tag=${OPERATOR_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "openscap_tag=${OPENSCAP_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
           echo "registry=${IMAGE_REGISTRY}" >> "$GITHUB_OUTPUT"
 
       - name: Run compliance validation (CO ${{ steps.inputs.outputs.co_ref }}, OCP ${{ steps.inputs.outputs.ocp_version }})
         env:
           CO_REF: ${{ steps.inputs.outputs.co_ref }}
-          RELATED_IMAGE_OPERATOR: ${{ steps.versions.outputs.registry }}/compliance-operator:${{ steps.versions.outputs.operator_tag }}
-          RELATED_IMAGE_OPENSCAP: ${{ steps.versions.outputs.registry }}/openscap-ocp:${{ steps.versions.outputs.openscap_tag }}
+          RELATED_IMAGE_OPERATOR: ${{ steps.versions.outputs.registry }}/compliance-operator:${{ steps.inputs.outputs.co_ref }}
+          RELATED_IMAGE_OPENSCAP: ${{ steps.versions.outputs.registry }}/openscap-ocp:${{ steps.inputs.outputs.co_ref }}
           RELATED_IMAGE_PROFILE: ${{ steps.versions.outputs.registry }}/k8scontent:${{ steps.versions.outputs.content_tag }}
         run: make test-compliance
 
