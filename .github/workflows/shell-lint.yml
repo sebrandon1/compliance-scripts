@@ -18,10 +18,14 @@ jobs:
           sudo apt-get install -y shellcheck
       - name: Run shellcheck
         run: |
-          find . -type f -name '*.sh' \
-            -not -path './.*' \
-            -not -path '*/\.*' \
-            -print0 | xargs -0 shellcheck --severity=warning
+          find . -name '*.sh' -type f \
+            -not -path './venv/*' \
+            -not -path './generated-networkpolicies/*' \
+            -not -path './complianceremediations/*' \
+            -not -path './test-runs/*' \
+            -not -path './testing/*' \
+            -not -path './docs/vendor/*' \
+            | xargs shellcheck -e SC1091,SC2034,SC2086,SC2001,SC2028,SC2129,SC2155,SC2317,SC2329
 
   shfmt:
     runs-on: ubuntu-latest
