@@ -72,8 +72,9 @@ class TestParseMachineConfigFiles:
         with open(fpath, 'w') as f:
             yaml.dump(mc, f)
 
-        result = combine.parse_machineconfig_files(tmpdir)
+        result, skipped = combine.parse_machineconfig_files(tmpdir)
         assert len(result) == 1
+        assert len(skipped) == 0
         key = list(result.keys())[0]
         assert key[0] == "/etc/sysctl.d/99-test.conf"
         assert len(result[key]) == 1
@@ -86,7 +87,7 @@ class TestParseMachineConfigFiles:
         with open(os.path.join(high_dir, "test.yaml"), 'w') as f:
             yaml.dump(mc, f)
 
-        result = combine.parse_machineconfig_files(tmpdir)
+        result, _ = combine.parse_machineconfig_files(tmpdir)
         key = list(result.keys())[0]
         assert key[1] == "high"
 
@@ -98,7 +99,7 @@ class TestParseMachineConfigFiles:
         with open(os.path.join(tmpdir, "mc2.yaml"), 'w') as f:
             yaml.dump(mc2, f)
 
-        result = combine.parse_machineconfig_files(tmpdir)
+        result, _ = combine.parse_machineconfig_files(tmpdir)
         assert len(result) == 1
         key = list(result.keys())[0]
         assert len(result[key]) == 2
@@ -108,14 +109,14 @@ class TestParseMachineConfigFiles:
         with open(os.path.join(tmpdir, "configmap.yaml"), 'w') as f:
             yaml.dump(doc, f)
 
-        result = combine.parse_machineconfig_files(tmpdir)
+        result, _ = combine.parse_machineconfig_files(tmpdir)
         assert len(result) == 0
 
     def test_skips_non_yaml(self, tmpdir):
         with open(os.path.join(tmpdir, "readme.txt"), 'w') as f:
             f.write("not a yaml file")
 
-        result = combine.parse_machineconfig_files(tmpdir)
+        result, _ = combine.parse_machineconfig_files(tmpdir)
         assert len(result) == 0
 
     def test_skips_combo_dir(self, tmpdir):
@@ -125,8 +126,36 @@ class TestParseMachineConfigFiles:
         with open(os.path.join(combo_dir, "test.yaml"), 'w') as f:
             yaml.dump(mc, f)
 
-        result = combine.parse_machineconfig_files(tmpdir)
+        result, _ = combine.parse_machineconfig_files(tmpdir)
         assert len(result) == 0
+
+    def test_malformed_yaml_skipped_and_reported(self, tmpdir):
+        with open(os.path.join(tmpdir, "bad.yaml"), 'w') as f:
+            f.write(":\n  invalid: yaml: content\n  - broken\n")
+        mc = make_mc_yaml("/etc/sysctl.d/99-test.conf", ["net.ipv4.ip_forward=1"])
+        with open(os.path.join(tmpdir, "good.yaml"), 'w') as f:
+            yaml.dump(mc, f)
+
+        result, skipped = combine.parse_machineconfig_files(tmpdir)
+        assert len(result) == 1
+        assert len(skipped) == 1
+        assert "bad.yaml" in skipped[0][0]
+
+    def test_mixed_valid_and_invalid_files(self, tmpdir):
+        mc1 = make_mc_yaml("/etc/test.conf", ["line1"], "mc1")
+        with open(os.path.join(tmpdir, "good1.yaml"), 'w') as f:
+            yaml.dump(mc1, f)
+        with open(os.path.join(tmpdir, "bad1.yaml"), 'w') as f:
+            f.write("{{{invalid yaml")
+        mc2 = make_mc_yaml("/etc/test.conf", ["line2"], "mc2")
+        with open(os.path.join(tmpdir, "good2.yaml"), 'w') as f:
+            yaml.dump(mc2, f)
+        with open(os.path.join(tmpdir, "bad2.yaml"), 'w') as f:
+            f.write("- - - :\n  bad:\n-")
+
+        result, skipped = combine.parse_machineconfig_files(tmpdir)
+        assert len(result) == 1
+        assert len(skipped) == 2
 
 
 class TestWriteComboYaml:
