@@ -9,6 +9,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+usage() {
+	echo "Usage: $(basename "$0")"
+	echo ""
+	echo "Deploy the KubeVirt HostPath CSI Driver for compliance operator storage."
+	exit 0
+}
+
+[[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
+
 NAMESPACE="hostpath-provisioner"
 STORAGE_CLASS_NAME="crc-csi-hostpath-provisioner"
 

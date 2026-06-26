@@ -23,12 +23,20 @@ NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
 OUTPUT_DIR="${REPO_ROOT}/docs/_data"
 TRACKING_FILE="${OUTPUT_DIR}/tracking.json"
 
-# Validate arguments
+usage() {
+	echo "Usage: $(basename "$0") <ocp-version>"
+	echo ""
+	echo "Export ComplianceCheckResults from the connected cluster to JSON"
+	echo "for the GitHub Pages compliance dashboard."
+	echo ""
+	echo "Example: $(basename "$0") 4.22"
+	exit "${1:-0}"
+}
+
+[[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
+
 if [[ $# -lt 1 ]]; then
-	log_error "OCP version required"
-	echo "Usage: $0 <ocp-version>"
-	echo "Example: $0 4.17"
-	exit 1
+	usage 1
 fi
 
 OCP_VERSION="$1"

@@ -20,6 +20,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+usage() {
+	echo "Usage: $(basename "$0")"
+	echo ""
+	echo "Generate a Markdown compliance report from ComplianceCheckResults"
+	echo "on the connected cluster. Output: ComplianceCheckResults.md"
+	exit 0
+}
+
+[[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
+
 require_cmd oc
 
 output_file="ComplianceCheckResults.md"

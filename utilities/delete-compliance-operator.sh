@@ -13,9 +13,21 @@ PURGE_CRDS=false
 USE_MAKE_TEAR_DOWN=false
 REPO_PATH="${COMPLIANCE_OPERATOR_REPO:-}"
 
-# Parse args
+usage() {
+	echo "Usage: $(basename "$0") [--purge-crds] [--use-make-tear-down] [--repo-path <path>]"
+	echo ""
+	echo "Remove the Compliance Operator from the cluster."
+	echo "  --purge-crds          Also delete CRDs"
+	echo "  --use-make-tear-down  Use 'make tear-down' from operator repo"
+	echo "  --repo-path <path>    Path to compliance-operator repo checkout"
+	exit 0
+}
+
 while [[ $# -gt 0 ]]; do
 	case "$1" in
+	-h | --help)
+		usage
+		;;
 	--purge-crds)
 		PURGE_CRDS=true
 		shift
