@@ -55,9 +55,14 @@ def safe_shortname(path):
 
 
 def parse_machineconfig_files(src_dir):
-    """Parse all MachineConfig YAMLs and group by (file path, severity)."""
+    """Parse all MachineConfig YAMLs and group by (file path, severity).
+
+    Returns (files_map, skipped) where skipped is a list of (filepath, error)
+    tuples for files that could not be parsed.
+    """
     files_map = defaultdict(
         list)  # (path, severity) -> list of (source_file, role, decoded_lines)
+    skipped = []
 
     severity_names = {"high", "medium", "low"}
 
@@ -85,7 +90,9 @@ def parse_machineconfig_files(src_dir):
                 with open(fpath) as f:
                     docs = list(yaml.safe_load_all(f))
             except yaml.YAMLError as e:
-                print(f"WARNING: Skipping {fpath}: {e}", file=sys.stderr)
+                print(f"WARNING: Skipping {fpath}: YAML parse error: {e}",
+                      file=sys.stderr)
+                skipped.append((fpath, str(e)))
                 continue
 
             for doc in docs:
@@ -122,7 +129,7 @@ def parse_machineconfig_files(src_dir):
                             'basename': os.path.basename(fpath)
                         })
 
-    return files_map
+    return files_map, skipped
 
 
 def extract_meaningful_settings(lines):
@@ -380,7 +387,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     # Parse MachineConfig files
-    files_map = parse_machineconfig_files(src_dir)
+    files_map, skipped = parse_machineconfig_files(src_dir)
 
     # Filter by severity if specified
     if severity_filter is not None:
@@ -426,6 +433,13 @@ def main():
     print(f"\n{'=' * 60}")
     print(f"Generated {len(created_files)} files in {out_dir}/")
     print(f"{'=' * 60}")
+
+    if skipped:
+        print(f"\nWARNING: {len(skipped)} file(s) skipped due to YAML parse errors:",
+              file=sys.stderr)
+        for fpath, err in skipped:
+            print(f"  - {fpath}: {err}", file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

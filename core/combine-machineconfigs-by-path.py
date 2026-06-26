@@ -57,8 +57,12 @@ def parse_machineconfig_files(src_dir):
     """Parse all MachineConfig YAMLs under src_dir (recursively) and group by
     (file path, severity), where severity is inferred from directory names
     containing one of: high, medium, low. If none found, severity is None.
+
+    Returns (combo_map, skipped) where skipped is a list of (filepath, error)
+    tuples for files that could not be parsed.
     """
     combo_map = defaultdict(list)  # (path, severity) -> list of (source_file, decoded_lines)
+    skipped = []
 
     severity_names = {"high", "medium", "low"}
 
@@ -85,7 +89,9 @@ def parse_machineconfig_files(src_dir):
                 with open(fpath) as f:
                     docs = list(yaml.safe_load_all(f))
             except yaml.YAMLError as e:
-                print(f"WARNING: Skipping {fpath}: {e}", file=sys.stderr)
+                print(f"WARNING: Skipping {fpath}: YAML parse error: {e}",
+                      file=sys.stderr)
+                skipped.append((fpath, str(e)))
                 continue
             for doc in docs:
                 if not doc or doc.get('kind') != 'MachineConfig':
@@ -99,7 +105,7 @@ def parse_machineconfig_files(src_dir):
                         decoded = urllib.parse.unquote(source[6:])
                         lines = [line for line in decoded.splitlines() if line.strip()]
                         combo_map[(path, severity)].append((os.path.relpath(fpath, src_dir), lines))
-    return combo_map
+    return combo_map, skipped
 
 
 def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
@@ -254,7 +260,7 @@ Examples:
         os.makedirs(out_dir, exist_ok=True)
 
     # Parse and group MachineConfig YAMLs by (file path, severity)
-    combo_map = parse_machineconfig_files(src_dir)
+    combo_map, skipped = parse_machineconfig_files(src_dir)
     # If a severity filter is provided, reduce the map to only those severities
     if severity_filter is not None:
         combo_map = {
@@ -294,6 +300,13 @@ Examples:
             print("Skipping move of originals (--no-move specified)")
 
         print(f"All combo files created in {out_dir}/.")
+
+    if skipped:
+        print(f"\nWARNING: {len(skipped)} file(s) skipped due to YAML parse errors:",
+              file=sys.stderr)
+        for fpath, err in skipped:
+            print(f"  - {fpath}: {err}", file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":
