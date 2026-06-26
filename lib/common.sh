@@ -238,6 +238,39 @@ retry() {
     done
 }
 
+# Run a command with retry and structured error reporting.
+# Usage: run_safe [--retries N] [--delay S] <command...>
+#   --retries N   Number of retry attempts (default: 3)
+#   --delay S     Initial delay between retries in seconds, doubles each attempt (default: 2)
+# Returns the command's exit code. Logs warnings on retry, error on final failure.
+run_safe() {
+    local retries=3
+    local delay=2
+    while [[ $# -gt 0 && "$1" == --* ]]; do
+        case "$1" in
+        --retries) retries="$2"; shift 2 ;;
+        --delay) delay="$2"; shift 2 ;;
+        *) break ;;
+        esac
+    done
+
+    local attempt=1
+    while true; do
+        if "$@"; then
+            return 0
+        fi
+        local rc=$?
+        if [[ $attempt -ge $retries ]]; then
+            log_error "Command failed after $retries attempts: $*"
+            return $rc
+        fi
+        log_warn "Attempt $attempt/$retries failed (rc=$rc), retrying in ${delay}s: $*"
+        sleep "$delay"
+        delay=$((delay * 2))
+        attempt=$((attempt + 1))
+    done
+}
+
 # Wait for a condition to become true with fixed-interval polling
 # Usage: wait_for 30 10 "Waiting for pods to be Ready" check_pods_ready
 #        (30 attempts, 10s interval, description for log messages)
@@ -366,7 +399,7 @@ apply_resource() {
         log_info "[DRY-RUN] Would apply: $file"
         oc apply --dry-run=server -f "$file"
     else
-        oc apply -f "$file"
+        run_safe --retries 3 --delay 2 oc apply -f "$file"
     fi
 }
 
