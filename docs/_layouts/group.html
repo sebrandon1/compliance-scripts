@@ -67,7 +67,7 @@ layout: default
       {% endif %}
 
       {% if group.pr %}
-      <a href="{{ meta.pr_base_url }}{{ group.pr }}" class="pr-link">
+      <a href="{{ meta.pr_base_url }}{{ group.pr }}" class="pr-link{% if group.pr_state == 'merged' %} merged{% endif %}">
         PR #{{ group.pr }}
         {% if group.pr_state %}({{ group.pr_state }}){% endif %}
       </a>

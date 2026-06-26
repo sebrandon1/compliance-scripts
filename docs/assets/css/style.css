@@ -552,6 +552,18 @@ a.jira-badge:hover, a.pr-badge:hover {
   text-decoration: none !important;
 }
 
+a.pr-badge.merged, a.pr-link.merged {
+  background: #2da44e20 !important;
+  border-color: #2da44e !important;
+  color: #1a7f37 !important;
+}
+
+[data-theme="dark"] a.pr-badge.merged, [data-theme="dark"] a.pr-link.merged {
+  background: #2ea04320 !important;
+  border-color: #3fb950 !important;
+  color: #3fb950 !important;
+}
+
 /* Compare button in table - high specificity */
 a.compare-btn {
   display: inline-flex !important;

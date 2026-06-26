@@ -173,7 +173,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
       </td>
       <td>
         {% if g.pr %}
-          <a href="{{ meta.pr_base_url }}{{ g.pr }}" class="pr-badge">#{{ g.pr }}</a>
+          <a href="{{ meta.pr_base_url }}{{ g.pr }}" class="pr-badge{% if g.pr_state == 'merged' %} merged{% endif %}">#{{ g.pr }}{% if g.pr_state == "merged" %} ✓{% endif %}</a>
         {% else %}-{% endif %}
       </td>
     </tr>
@@ -198,7 +198,7 @@ This page catalogs all compliance remediation groups for **OCP 4.22**, dynamical
 {% elsif g.status == "pending" %}🟡 Pending
 {% elsif g.status == "partial" %}🟠 Partial
 {% else %}{{ g.status }}{% endif %}
-{% if g.pr %} — <a href="{{ meta.pr_base_url }}{{ g.pr }}">PR #{{ g.pr }}</a>{% endif %}
+{% if g.pr %} — <a href="{{ meta.pr_base_url }}{{ g.pr }}">PR #{{ g.pr }}{% if g.pr_state == "merged" %} (merged){% endif %}</a>{% endif %}
 </summary>
 
 {% if g.status contains "pass-vanilla" %}
