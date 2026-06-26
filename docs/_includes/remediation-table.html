@@ -67,8 +67,8 @@
       </td>
       <td>
         {% if group_tracking.pr and group_tracking.pr != "" %}
-        <a href="{{ tracking.meta.pr_base_url }}{{ group_tracking.pr }}" target="_blank" class="pr-link">
-          #{{ group_tracking.pr }}
+        <a href="{{ tracking.meta.pr_base_url }}{{ group_tracking.pr }}" target="_blank" class="pr-link{% if group_tracking.pr_state == 'merged' %} merged{% endif %}">
+          #{{ group_tracking.pr }}{% if group_tracking.pr_state == "merged" %} ✓{% endif %}
         </a>
         {% else %}
         <span class="no-tracking">-</span>
