@@ -58,9 +58,11 @@ layout: default
   {% endif %}
 
   <div class="coverage-bar">
-    {% assign coverage = version_data.summary.passing | times: 100 | divided_by: version_data.summary.total_checks %}
-    <div class="progress" style="width: {{ coverage }}%"></div>
-    <span class="coverage-text">{{ coverage }}% Coverage</span>
+    {% assign coverage_x10 = version_data.summary.passing | times: 1000 | divided_by: version_data.summary.total_checks %}
+    {% assign coverage_int = coverage_x10 | divided_by: 10 %}
+    {% assign coverage_frac = coverage_x10 | modulo: 10 %}
+    <div class="progress" style="width: {{ coverage_int }}.{{ coverage_frac }}%"></div>
+    <span class="coverage-text">{{ coverage_int }}.{{ coverage_frac }}% Coverage</span>
   </div>
 
   <!-- Projected Coverage -->
@@ -89,8 +91,10 @@ layout: default
           {% endif %}
         {% endfor %}
         {% assign projected_passing = version_data.summary.passing | plus: fixable %}
-        {% assign projected_pct = projected_passing | times: 100 | divided_by: version_data.summary.total_checks %}
-        {{ projected_pct }}%
+        {% assign projected_x10 = projected_passing | times: 1000 | divided_by: version_data.summary.total_checks %}
+        {% assign projected_int = projected_x10 | divided_by: 10 %}
+        {% assign projected_frac = projected_x10 | modulo: 10 %}
+        {{ projected_int }}.{{ projected_frac }}%
       </span>
       <div style="font-size: 0.8em; color: #666; margin-top: 0.25rem;">+{{ fixable }} checks if active PRs merge</div>
     </div>
@@ -121,7 +125,7 @@ layout: default
       "passing": {{ version_data.summary.passing }},
       "failing": {{ version_data.summary.failing }},
       "manual": {{ version_data.summary.manual }},
-      "coverage_percent": {{ coverage }}
+      "coverage_percent": {{ coverage_int }}.{{ coverage_frac }}
     },
     "groups": [
       {% for group in version_groups %}
