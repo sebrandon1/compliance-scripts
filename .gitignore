@@ -1,11 +1,33 @@
 complianceremediations/
 __pycache__/
+*.pyc
 ComplianceCheckResults.md
 created_file_paths.txt
 generated-networkpolicies/
+output/
 
 # Test data directories
 test-runs/
 testing/
 testing-plan.md
 applied-yamls-*.txt
+
+# Python virtual environments
+venv/
+.venv/
+
+# Environment files
+.env
+!.env.example
+
+# IDE and OS
+.DS_Store
+
+# Tool artifacts
+.playwright-mcp/
+.pytest_cache/
+docs/_site/
+*.png
+
+# Claude Code worktrees
+.claude/worktrees/
