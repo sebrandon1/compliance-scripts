@@ -40,6 +40,10 @@ if [[ $# -lt 1 ]]; then
 fi
 
 OCP_VERSION="$1"
+if [[ ! "$OCP_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+	log_error "Invalid OCP version format: '$OCP_VERSION' (expected X.Y, e.g., 4.22 or 5.0)"
+	exit 1
+fi
 # Replace dots with underscores for Jekyll compatibility
 VERSION_SLUG="${OCP_VERSION//./_}"
 OUTPUT_FILE="${OUTPUT_DIR}/ocp-${VERSION_SLUG}.json"
