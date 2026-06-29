@@ -296,17 +296,28 @@ function filterChecks() {
   var totalCount = 0;
 
   tables.forEach(function(table) {
+    var isPassingTable = table.classList.contains('passing-table');
     var rows = table.querySelectorAll('tbody tr');
     rows.forEach(function(row) {
       totalCount++;
       var text = row.textContent.toLowerCase();
-      var jiraCell = row.cells[2] ? row.cells[2].textContent.trim() : '';
-      var prCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
-      var statusCell = row.cells[4] ? row.cells[4].textContent.trim() : '';
 
-      var hasJira = jiraCell !== '-' && jiraCell !== '';
-      var hasPR = prCell !== '-' && prCell !== '';
-      var isTracked = statusCell !== 'Not Tracked' && statusCell !== '';
+      var hasJira, hasPR, isTracked;
+      if (isPassingTable) {
+        // Passing table has 3 columns: Check Name, Platform, Status
+        // No Jira, PR, or Tracking Status columns exist
+        hasJira = false;
+        hasPR = false;
+        isTracked = false;
+      } else {
+        // Remediation table has 6 columns: Check Name, Platform, Status, Jira, PR, Tracking Status
+        var jiraCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
+        var prCell = row.cells[4] ? row.cells[4].textContent.trim() : '';
+        var statusCell = row.cells[5] ? row.cells[5].textContent.trim() : '';
+        hasJira = jiraCell !== '-' && jiraCell !== '';
+        hasPR = prCell !== '-' && prCell !== '';
+        isTracked = statusCell !== 'Not Tracked' && statusCell !== '';
+      }
 
       var matchesSearch = checkSearchTerm === '' || text.includes(checkSearchTerm);
       var rowPlatform = row.getAttribute('data-platform') || '';
