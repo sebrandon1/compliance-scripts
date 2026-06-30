@@ -231,6 +231,51 @@ fi
 
 log_success "Successfully exported to ${OUTPUT_FILE}"
 
+# Append scan snapshot to history
+HISTORY_FILE="${OUTPUT_DIR}/scan-history.json"
+CLUSTER_NAME="${CLUSTER_NAME:-}"
+if [[ -z "$CLUSTER_NAME" ]]; then
+	CLUSTER_NAME=$(oc get infrastructure cluster -o jsonpath='{.status.infrastructureName}' 2>/dev/null || echo "unknown")
+fi
+
+HISTORY_ENTRY=$(jq -n \
+	--arg version "$OCP_VERSION" \
+	--arg scan_date "$SCAN_DATE" \
+	--arg content_image "$CONTENT_IMAGE" \
+	--arg content_image_digest "$CONTENT_IMAGE_DIGEST" \
+	--arg cluster "$CLUSTER_NAME" \
+	--argjson total "$TOTAL_CHECKS" \
+	--argjson passing "$PASSING" \
+	--argjson failing "$FAILING" \
+	--argjson manual "$MANUAL" \
+	--argjson skipped "$SKIPPED" \
+	--argjson rhcos_failing "$RHCOS_FAILING" \
+	--argjson ocp_failing "$OCP_FAILING" \
+	'{
+		version: $version,
+		scan_date: $scan_date,
+		content_image: (if $content_image == "unknown" then null else $content_image end),
+		content_image_digest: (if $content_image_digest == "" then null else $content_image_digest end),
+		cluster: $cluster,
+		summary: {
+			total_checks: $total,
+			passing: $passing,
+			failing: $failing,
+			manual: $manual,
+			skipped: $skipped,
+			rhcos_failing: $rhcos_failing,
+			ocp_failing: $ocp_failing
+		}
+	}')
+
+if [[ -f "$HISTORY_FILE" ]]; then
+	EXISTING_HISTORY=$(cat "$HISTORY_FILE")
+else
+	EXISTING_HISTORY="[]"
+fi
+echo "$EXISTING_HISTORY" | jq --argjson entry "$HISTORY_ENTRY" '. + [$entry]' >"$HISTORY_FILE"
+log_info "Appended scan snapshot to ${HISTORY_FILE}"
+
 print_summary \
 	"OCP Version" "${OCP_VERSION}" \
 	"Scan Date" "${SCAN_DATE}" \

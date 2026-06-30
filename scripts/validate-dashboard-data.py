@@ -128,6 +128,39 @@ def validate_tracking(filepath):
     return errors
 
 
+def validate_scan_history(filepath):
+    """Validate scan-history.json structure."""
+    errors = []
+    with open(filepath) as f:
+        data = json.load(f)
+
+    if not isinstance(data, list):
+        errors.append("scan-history.json must be a JSON array")
+        return errors
+
+    required_fields = {"version", "scan_date", "summary"}
+    for i, entry in enumerate(data):
+        if not isinstance(entry, dict):
+            errors.append(f"Entry [{i}] must be an object")
+            continue
+
+        missing = required_fields - set(entry.keys())
+        if missing:
+            errors.append(f"Entry [{i}] missing fields: {missing}")
+
+        if "summary" in entry:
+            summary = entry["summary"]
+            for field in ["total_checks", "passing", "failing", "manual"]:
+                val = summary.get(field)
+                if val is not None and not isinstance(val, int):
+                    errors.append(
+                        f"Entry [{i}] summary.{field} must be int, "
+                        f"got {type(val).__name__}"
+                    )
+
+    return errors
+
+
 def main():
     data_dir = sys.argv[1] if len(sys.argv) > 1 else "docs/_data"
 
@@ -164,6 +197,17 @@ def main():
         if errors:
             print("FAIL")
             all_errors[basename] = errors
+        else:
+            print("OK")
+
+    history_file = os.path.join(data_dir, "scan-history.json")
+    if os.path.exists(history_file):
+        total_files += 1
+        print("Validating scan-history.json...", end=" ")
+        errors = validate_scan_history(history_file)
+        if errors:
+            print("FAIL")
+            all_errors["scan-history.json"] = errors
         else:
             print("OK")
 
