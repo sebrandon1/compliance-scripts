@@ -169,73 +169,17 @@
       "priority": 3,
       "priority_label": "Medium",
       "jira": "CNF-21196",
-      "pr": 822,
-      "compare": "compliance/5.0/m2-kernel-sysctl",
-      "status": "verified",
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla",
       "jira_status": "In Progress",
-      "pr_state": "merged",
+      "pr_state": null,
       "prev_group": "M1",
       "next_group": "M3",
-      "last_sync": "2026-06-22",
-      "status_note": "Verified on OCP 5.0 (cnfdt16, RHCOS 10.2). kernel.randomize_va_space=2 and unprivileged_bpf_disabled=1 are already kernel defaults (no MC needed). net.core.bpf_jit_harden still defaults to 0 and kernel.yama.ptrace_scope still overridden to 0 by elfutils. Fedora 44 changes have NOT propagated to RHEL 10.",
+      "last_sync": "2026-06-30",
+      "status_note": "All 4 sysctl settings (randomize_va_space, unprivileged_bpf_disabled, bpf_jit_harden, yama.ptrace_scope) are set to desired values by default in RHCOS 10.2 (OCP 5.0). No MachineConfig needed. telco-reference PR #822 was reverted (PR #837). OCP 4.22 and earlier still require remediation.",
       "platform": "rhcos",
-      "upstream": [
-        {
-          "setting": "net.core.bpf_jit_harden=2",
-          "repo": "openshift/os",
-          "repo_url": "https://github.com/openshift/os",
-          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
-          "rationale": "Prevents BPF JIT spraying attacks. KSPP recommended. Zero workload impact.",
-          "risk": "low",
-          "scope": "upstream",
-          "scope_reason": "Negligible performance impact. Protects against JIT spraying on all clusters. KSPP recommended.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
-          "pr_history": [
-            {
-              "repo": "coreos/rhel-coreos-config",
-              "pr": 264,
-              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
-              "state": "closed",
-              "opened": "2026-06-02",
-              "closed": "2026-06-04",
-              "outcome": "redirected",
-              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level. Fedora 44 Change Proposal changed bpf_jit_harden from 0 to 2 by default \u2014 may flow to RHEL 10. Hold and verify.",
-              "references": [
-                "https://github.com/coreos/rhel-coreos-config/pull/264",
-                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
-              ]
-            }
-          ]
-        },
-        {
-          "setting": "kernel.yama.ptrace_scope=1",
-          "repo": "Fedora/RHEL (elfutils RPM)",
-          "repo_url": "https://github.com/openshift/os",
-          "file": "Override /usr/lib/sysctl.d/10-default-yama-scope.conf",
-          "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 44 Change Proposal changed ptrace_scope from 1 to 2.",
-          "risk": "medium",
-          "scope": "upstream",
-          "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts.",
-          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
-          "pr_history": [
-            {
-              "repo": "coreos/rhel-coreos-config",
-              "pr": 264,
-              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
-              "state": "closed",
-              "opened": "2026-06-02",
-              "closed": "2026-06-04",
-              "outcome": "redirected",
-              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Fedora 44 Change Proposal changed ptrace_scope from 1 to 2 and bpf_jit_harden from 0 to 2 by default. These may resolve at the RHEL/Fedora level without needing RHCOS-specific overrides.",
-              "references": [
-                "https://github.com/coreos/rhel-coreos-config/pull/264",
-                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
-              ]
-            }
-          ]
-        }
-      ],
-      "upstream_verdict": "ran-only"
+      "upstream_verdict": "pass-vanilla"
     },
     "M3": {
       "title": "Audit Rules - DAC Modifications",
