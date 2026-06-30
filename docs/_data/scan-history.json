@@ -1,0 +1,68 @@
+[
+  {
+    "version": "4.21",
+    "scan_date": "2026-01-14T20:19:36Z",
+    "content_image": null,
+    "content_image_digest": null,
+    "cluster": "cnfdt16",
+    "notes": "Partial scan — only 205 checks collected (pre-export-script improvements)",
+    "summary": {
+      "total_checks": 205,
+      "passing": 100,
+      "failing": 78,
+      "manual": 27,
+      "skipped": 0
+    }
+  },
+  {
+    "version": "4.22",
+    "scan_date": "2026-05-05T13:09:41Z",
+    "content_image": null,
+    "content_image_digest": null,
+    "cluster": "cnfdt16",
+    "notes": "Baseline scan with hardening MachineConfigs applied",
+    "summary": {
+      "total_checks": 910,
+      "passing": 773,
+      "failing": 58,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 14,
+      "ocp_failing": 44
+    }
+  },
+  {
+    "version": "4.22",
+    "scan_date": "2026-06-04T19:01:51Z",
+    "content_image": null,
+    "content_image_digest": null,
+    "cluster": "cnfdt16",
+    "notes": "Vanilla scan — no hardening MachineConfigs applied",
+    "summary": {
+      "total_checks": 918,
+      "passing": 339,
+      "failing": 500,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 452,
+      "ocp_failing": 48
+    }
+  },
+  {
+    "version": "5.0",
+    "scan_date": "2026-06-22T16:27:53Z",
+    "content_image": "quay.io/bapalm/k8scontent:95014682ef33",
+    "content_image_digest": null,
+    "cluster": "cnfdt16",
+    "notes": "Vanilla scan — no hardening MachineConfigs applied",
+    "summary": {
+      "total_checks": 914,
+      "passing": 354,
+      "failing": 481,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 436,
+      "ocp_failing": 45
+    }
+  }
+]
