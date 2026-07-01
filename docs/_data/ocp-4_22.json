@@ -1,14 +1,14 @@
 {
   "version": "4.22",
-  "scan_date": "2026-06-04T19:01:51Z",
+  "scan_date": "2026-07-01T04:38:30Z",
   "summary": {
-    "total_checks": 918,
-    "passing": 339,
-    "failing": 500,
+    "total_checks": 916,
+    "passing": 334,
+    "failing": 503,
     "manual": 79,
     "skipped": 0,
-    "rhcos_failing": 452,
-    "ocp_failing": 48
+    "rhcos_failing": 454,
+    "ocp_failing": 49
   },
   "remediations": {
     "high": [
@@ -442,6 +442,15 @@
         "check": "ocp4-moderate-openshift-motd-exists",
         "status": "FAIL",
         "description": "Ensure that the OpenShift MOTD is set\nTo configure OpenShift's MOTD, create a *ConfigMap* called motd in the openshift namespace. The object should look as follows:\n\n---\napiVersion: v1\nkind: ConfigMap\nmetadata:\nname: motd\nnamespace: openshift\ndata:\n message: \"A relevant MOTD\"\n\nWhere message is a mandatory key. The DoD required text is either:\n\nYou are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only. By using this IS (which includes any device attached to this IS), you consent to the following conditions:\n\n-The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.\n\n-At any time, the USG may inspect and seize data stored on this IS.\n\n-Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.\n\n-This IS includes security measures (e.g., authentication and access controls) to protect USG interests -- not for your personal benefit or privacy.\n\n-Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.\n\nOR:\n\nI've read & consent to terms in IS user agreement.",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-resource-requests-limits-in-daemonset",
+        "check": "ocp4-moderate-resource-requests-limits-in-daemonset",
+        "status": "FAIL",
+        "description": "Ensure that all daemonsets has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -4202,6 +4211,15 @@
         "platform": "rhcos"
       },
       {
+        "name": "rhcos4-moderate-master-chronyd-configure-local-socket",
+        "check": "rhcos4-moderate-master-chronyd-configure-local-socket",
+        "status": "FAIL",
+        "description": "Configure chrony-wait.service to use Unix socket\nThe default chrony-wait.service attempts to connect via network (127.0.0.1, ::1) which fails when cmdport is set to 0. The service unit must be replaced to use chronyc without network address specification, allowing it to use the Unix socket for local communication with chronyd.",
+        "severity": "low",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
         "name": "rhcos4-moderate-master-chronyd-no-chronyc-network",
         "check": "rhcos4-moderate-master-chronyd-no-chronyc-network",
         "status": "FAIL",
@@ -4323,6 +4341,15 @@
         "check": "rhcos4-moderate-worker-chronyd-client-only",
         "status": "FAIL",
         "description": "Disable chrony daemon from acting as server\nThe port option in /etc/chrony.conf can be set to 0 to make chrony daemon to never open any listening port for server operation and to operate strictly in a client-only mode.",
+        "severity": "low",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-worker-chronyd-configure-local-socket",
+        "check": "rhcos4-moderate-worker-chronyd-configure-local-socket",
+        "status": "FAIL",
+        "description": "Configure chrony-wait.service to use Unix socket\nThe default chrony-wait.service attempts to connect via network (127.0.0.1, ::1) which fails when cmdport is set to 0. The service unit must be replaced to use chronyc without network address specification, allowing it to use the Unix socket for local communication with chronyd.",
         "severity": "low",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -4489,15 +4516,6 @@
         "check": "ocp4-cis-api-server-kubelet-client-key",
         "status": "PASS",
         "description": "Configure the kubelet Certificate Key for the API Server\nTo enable certificate based kubelet authentication, edit the config configmap in the openshift-kube-apiserver namespace and set the below parameter in the config.yaml key if it is not already configured:\n\n\"apiServerArguments\":{\n...\n \"kubelet-client-key\":\"/etc/kubernetes/static-pod-resources/secrets/kubelet-client/tls.key\",\n...\n}",
-        "severity": "high",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-cis-api-server-token-auth",
-        "check": "ocp4-cis-api-server-token-auth",
-        "status": "PASS",
-        "description": "Disable Token-based Authentication\nTo ensure OpenShift does not accept token-based authentication, follow the OpenShift documentation and configure alternate mechanisms for authentication. Then, edit the API Server pod specification file Edit the openshift-kube-apiserver configmap and remove the token-auth-file parameter:\n\n\"apiServerArguments\":{\n ...\n \"token-auth-file\":[\n   \"/path/to/any/file\"\n ],\n ...",
         "severity": "high",
         "profile": "CIS",
         "platform": "ocp"
@@ -4704,7 +4722,7 @@
         "name": "rhcos4-e8-master-accounts-no-uid-except-zero",
         "check": "rhcos4-e8-master-accounts-no-uid-except-zero",
         "status": "PASS",
-        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed, locked or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
         "severity": "high",
         "profile": "E8",
         "platform": "rhcos"
@@ -4731,7 +4749,7 @@
         "name": "rhcos4-e8-worker-accounts-no-uid-except-zero",
         "check": "rhcos4-e8-worker-accounts-no-uid-except-zero",
         "status": "PASS",
-        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed, locked or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
         "severity": "high",
         "profile": "E8",
         "platform": "rhcos"
@@ -4758,7 +4776,7 @@
         "name": "rhcos4-moderate-master-accounts-no-uid-except-zero",
         "check": "rhcos4-moderate-master-accounts-no-uid-except-zero",
         "status": "PASS",
-        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed, locked or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
         "severity": "high",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -4785,7 +4803,7 @@
         "name": "rhcos4-moderate-worker-accounts-no-uid-except-zero",
         "check": "rhcos4-moderate-worker-accounts-no-uid-except-zero",
         "status": "PASS",
-        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed, locked or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
         "severity": "high",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -4887,15 +4905,6 @@
         "check": "ocp4-cis-api-server-auth-mode-rbac",
         "status": "PASS",
         "description": "Ensure authorization-mode RBAC is configured\nTo ensure OpenShift restricts different identities to a defined set of operations they are allowed to perform, check that the API server's authorization-mode configuration option list contains RBAC.",
-        "severity": "medium",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-cis-api-server-basic-auth",
-        "check": "ocp4-cis-api-server-basic-auth",
-        "status": "PASS",
-        "description": "Disable basic-auth-file for the API Server\nBasic Authentication should not be used for any reason. If needed, edit API Edit the openshift-kube-apiserver configmap and remove the basic-auth-file parameter:\n\n\"apiServerArguments\":{\n ...\n \"basic-auth-file\":[\n   \"/path/to/any/file\"\n ],\n ...\n\nAlternate authentication mechanisms such as tokens and certificates will need to be used. Username and password for basic authentication will be disabled.",
         "severity": "medium",
         "profile": "CIS",
         "platform": "ocp"
@@ -5814,15 +5823,6 @@
         "check": "ocp4-moderate-rbac-debug-role-protects-pprof",
         "status": "PASS",
         "description": "Profiling is protected by RBAC\nEnsure that the cluster-debugger cluster role includes the /debug/pprof resource URL. This demonstrates that profiling is protected by RBAC, with a specific cluster role to allow access.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-resource-requests-limits-in-daemonset",
-        "check": "ocp4-moderate-resource-requests-limits-in-daemonset",
-        "status": "PASS",
-        "description": "Ensure that all daemonsets has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -7333,24 +7333,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-cis-controller-insecure-port-disabled",
-        "check": "ocp4-cis-controller-insecure-port-disabled",
-        "status": "PASS",
-        "description": "Ensure Controller insecure port argument is unset\nTo ensure the Controller Manager service is bound to secure loopback address and a secure port, set the RotateKubeletServerCertificate option to true in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"port\": [\"0\"],\n...\n\nIt is also acceptable for a system to deprecate the insecure port:\n\n\"extendedArguments\": {\n...\n...",
-        "severity": "low",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-cis-controller-secure-port",
-        "check": "ocp4-cis-controller-secure-port",
-        "status": "PASS",
-        "description": "Ensure Controller secure-port argument is set\nTo ensure the Controller Manager service is bound to secure loopback address using a secure port, set the RotateKubeletServerCertificate option to true in the openshift-kube-controller-manager configmap on the master node(s):\n\n\"extendedArguments\": {\n...\n \"secure-port\": [\"10257\"],\n...",
-        "severity": "low",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-cis-ocp-api-server-audit-log-maxbackup",
         "check": "ocp4-cis-ocp-api-server-audit-log-maxbackup",
         "status": "PASS",
@@ -8217,5 +8199,7 @@
       "profile": "Moderate",
       "platform": "rhcos"
     }
-  ]
+  ],
+  "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+  "content_image_digest": null
 }
