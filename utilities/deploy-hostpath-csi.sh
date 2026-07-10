@@ -88,7 +88,7 @@ SEARCH_MAJOR=4
 if [[ "$MAJOR" -le 4 ]]; then
 	SEARCH_MINOR=$MINOR
 else
-	SEARCH_MINOR=19 # bump when 4.20+ ships
+	SEARCH_MINOR=23
 	log_info "OCP ${MAJOR}.x detected — searching openshift4/ images from v4.${SEARCH_MINOR} downward"
 fi
 
@@ -142,8 +142,8 @@ done
 # Fallback if no image found
 if [[ -z "$IMAGE_TAG" ]]; then
 	log_warn "Could not find compatible image by probing registry"
-	log_warn "Defaulting to v4.19 (known working version)"
-	IMAGE_TAG="v4.19"
+	log_warn "Defaulting to v4.23 (known working version)"
+	IMAGE_TAG="v4.23"
 fi
 
 log_info "Using image tag: ${IMAGE_TAG} for all CSI components"
