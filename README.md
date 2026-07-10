@@ -36,6 +36,8 @@ make full-workflow
 |-------|-------------|
 | [Scripts Reference](docs/scripts-reference.md) | All scripts with flags, examples, and usage |
 | [Make Targets](docs/make-targets.md) | Complete list of Makefile targets |
+| [Runbook](docs/RUNBOOK.md) | Step-by-step procedures for onboarding new OCP versions and maintaining compliance tracking |
+| [QE Guide](docs/QE-GUIDE.md) | Quality engineering guide for validating scan results and testing remediations |
 | [Troubleshooting](docs/troubleshooting.md) | Common issues, CI failures, operator versioning |
 | [Modular Approach](model-context/MODULAR_APPROACH.md) | Modular MachineConfig design using `.d` directories |
 
@@ -49,11 +51,12 @@ make full-workflow
 
 ```
 core/               Main compliance workflow scripts
-utilities/          Cleanup and management utilities
+utilities/          Cleanup, management, and image mirroring utilities
 modular/            Modular MachineConfig tools using .d directory includes
 lab-tools/          BeakerLab-specific utilities (provisioning, kubeconfig)
 misc/               Helpers (network policies, pull secrets, loopback devices)
-scripts/            Preflight checks and validation scripts
+scripts/            Preflight checks, validation, and analysis scripts
+tests/              Python unit tests and expected-results baselines
 lib/                Shared library functions (common.sh)
 docs/               Jekyll-based compliance dashboard (GitHub Pages)
 ```

@@ -18,6 +18,9 @@ make bash-lint         # Bash only (shellcheck + shfmt)
 ### Testing
 ```bash
 make test-compliance   # Run CI validation on a connected OpenShift cluster
+make python-test       # Run Python unit tests (pytest)
+make validate-compliance EXPECTED=tests/expected-results-4.21.json  # Validate results against baseline
+make generate-expected OCP_VERSION=4.22  # Generate expected results from live cluster
 ```
 
 ### Full Workflow
@@ -30,6 +33,7 @@ make full-workflow     # Execute complete compliance workflow (requires cluster)
 make install-compliance-operator
 make apply-periodic-scan
 make create-scan
+make wait-for-scans
 make collect-complianceremediations
 make combine-machineconfigs
 make organize-machine-configs
@@ -42,8 +46,18 @@ make clean
 make preflight                     # Check all dependencies and prerequisites
 make verify-images                 # Verify container images are accessible
 make validate-machineconfigs       # Validate MachineConfig YAML files
+make detect-conflicts              # Detect file path conflicts between MachineConfig YAMLs
 make filter-machineconfigs         # Filter specific flags from MachineConfigs
+make suggest-groups SCAN=docs/_data/ocp-5_0.json  # Suggest remediation groups for ungrouped checks
+make diff-scans OLD=old.json NEW=new.json          # Compare two scan exports and report differences
+make validate-dashboard-data       # Validate dashboard JSON data files
 make clean-complianceremediations  # Reset complianceremediations directory only
+```
+
+### Image Management
+```bash
+make mirror-images CO_REF=v1.7.0           # Mirror compliance-operator images to quay.io/bapalm
+make rhcos-static-scan OCP_VERSION=4.21    # Run offline OSCAP scan against RHCOS rootfs
 ```
 
 ### Dashboard and Export
@@ -58,13 +72,14 @@ make install-jekyll                       # Install Jekyll dependencies
 
 ### Script Organization
 - **`core/`** - Main compliance workflow scripts (install operator, run scans, collect remediations)
-- **`utilities/`** - Cleanup and management scripts (delete operator, restart scans, deploy CSI)
+- **`utilities/`** - Cleanup, management, and mirroring scripts (delete operator, restart scans, deploy CSI, mirror images, build k8scontent)
 - **`modular/`** - Modular MachineConfig tools using `.d` directory includes
 - **`lab-tools/`** - BeakerLab-specific utilities (cluster provisioning, kubeconfig fetch)
 - **`misc/`** - Helpers (network policies, pull secrets, loopback devices)
-- **`scripts/`** - Preflight checks and validation scripts
+- **`scripts/`** - Preflight checks, validation, conflict detection, scan comparison, OSCAP parsing, and group suggestion scripts
+- **`tests/`** - Python unit tests (pytest) and expected-results baselines for compliance validation
 - **`lib/`** - Shared library functions (`common.sh`)
-- **`docs/`** - Jekyll-based compliance dashboard (GitHub Pages)
+- **`docs/`** - Jekyll-based compliance dashboard (GitHub Pages), plus RUNBOOK.md and QE-GUIDE.md
 - **`curated-configs/`** - Curated configuration files
 
 ### Key Workflow
@@ -120,7 +135,7 @@ pip install -r requirements.txt
 
 ### Bash
 - Scripts use `shellcheck` and `shfmt` for linting
-- Excluded shellcheck codes: SC1091, SC2034, SC2086, SC2001, SC2028, SC2129, SC2155
+- Excluded shellcheck codes: SC1091, SC2034, SC2086, SC2001, SC2028, SC2129, SC2155, SC2317, SC2329
 - Run `shfmt -w core utilities modular lab-tools misc` to auto-fix formatting
 
 ### Python
@@ -135,8 +150,11 @@ pip install -r requirements.txt
   - `requests` - HTTP library
   - `beautifulsoup4` - HTML parsing
   - `playwright` - Browser automation
+- `pytest` - for Python unit tests
 - `shellcheck` and `shfmt` - for bash linting
 - `jekyll` - for local dashboard development (optional)
+- `skopeo` - for image mirroring (optional)
+- `openscap-scanner` (`oscap`) - for RHCOS static scans (optional)
 
 ## Troubleshooting
 
