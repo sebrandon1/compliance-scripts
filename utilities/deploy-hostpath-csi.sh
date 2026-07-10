@@ -57,9 +57,21 @@ check_image_exists() {
 	log_debug "Checking if image exists: $image"
 
 	# Try to get image manifest without pulling the full image
+	# Use --override-os linux on non-Linux hosts (e.g., macOS) and try authfile if available
+	local authfile_flag=""
+	local os_flag=""
+	if [ -f "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/containers/auth.json" ]; then
+		authfile_flag="--authfile ${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/containers/auth.json"
+	elif [ -f "$HOME/.docker/config.json" ]; then
+		authfile_flag="--authfile $HOME/.docker/config.json"
+	fi
+	if [[ "$(uname -s)" != "Linux" ]]; then
+		os_flag="--override-os linux --override-arch amd64"
+	fi
+
 	if podman manifest inspect "$image" &>/dev/null; then
 		return 0
-	elif skopeo inspect "docker://$image" &>/dev/null; then
+	elif skopeo inspect $authfile_flag $os_flag "docker://$image" &>/dev/null; then
 		return 0
 	else
 		return 1
@@ -94,9 +106,9 @@ fi
 
 # Define all required images
 HOSTPATH_IMAGE_BASE="registry.redhat.io/container-native-virtualization/hostpath-csi-driver-rhel9"
-NODE_REGISTRAR_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-node-driver-registrar"
-LIVENESS_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-livenessprobe"
-PROVISIONER_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-external-provisioner"
+NODE_REGISTRAR_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-node-driver-registrar-rhel9"
+LIVENESS_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-livenessprobe-rhel9"
+PROVISIONER_IMAGE_BASE="registry.redhat.io/openshift4/ose-csi-external-provisioner-rhel9"
 
 # Try to find the most recent compatible image version where ALL images exist
 IMAGE_TAG=""
@@ -323,7 +335,7 @@ spec:
       
       # Node driver registrar
       - name: node-driver-registrar
-        image: registry.redhat.io/openshift4/ose-csi-node-driver-registrar:${IMAGE_TAG}
+        image: registry.redhat.io/openshift4/ose-csi-node-driver-registrar-rhel9:${IMAGE_TAG}
         imagePullPolicy: IfNotPresent
         args:
         - --v=3
@@ -346,7 +358,7 @@ spec:
       
       # Liveness probe
       - name: liveness-probe
-        image: registry.redhat.io/openshift4/ose-csi-livenessprobe:${IMAGE_TAG}
+        image: registry.redhat.io/openshift4/ose-csi-livenessprobe-rhel9:${IMAGE_TAG}
         imagePullPolicy: IfNotPresent
         args:
         - --csi-address=/csi/csi.sock
@@ -357,7 +369,7 @@ spec:
       
       # CSI provisioner
       - name: csi-provisioner
-        image: registry.redhat.io/openshift4/ose-csi-external-provisioner:${IMAGE_TAG}
+        image: registry.redhat.io/openshift4/ose-csi-external-provisioner-rhel9:${IMAGE_TAG}
         imagePullPolicy: IfNotPresent
         args:
         - --v=5
