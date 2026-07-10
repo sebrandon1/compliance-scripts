@@ -194,7 +194,7 @@ print_duration() {
 # Usage: setup_cleanup
 setup_cleanup() {
     start_timer
-    trap 'print_duration' EXIT
+    trap '_cleanup_temp_dirs; print_duration' EXIT
 }
 
 # ============================================================================
