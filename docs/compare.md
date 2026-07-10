@@ -69,7 +69,7 @@ function runCompare() {
   var el = document.getElementById('compare-results');
 
   if (oldV === newV) {
-    el.innerHTML = '<p style="color: #888;">Select two different versions to compare.</p>';
+    el.innerHTML = '<p style="color: var(--color-text-muted);">Select two different versions to compare.</p>';
     return;
   }
 
@@ -77,7 +77,7 @@ function runCompare() {
   var newData = versionData[newV];
 
   if (!oldData || !newData) {
-    el.innerHTML = '<p style="color: #c00;">No scan data available for one or both versions.</p>';
+    el.innerHTML = '<p style="color: var(--color-fail);">No scan data available for one or both versions.</p>';
     return;
   }
 
@@ -130,7 +130,7 @@ function runCompare() {
   if (total === 0) {
     html += '<p>No differences found between ' + oldV + ' and ' + newV + '.</p>';
   } else {
-    html += '<p style="margin-top: 1rem; color: #666;">' + total + ' total difference(s): ' +
+    html += '<p style="margin-top: 1rem; color: var(--color-text-secondary);">' + total + ' total difference(s): ' +
       regressions.length + ' regressions, ' + fixes.length + ' fixes, ' +
       added.length + ' new, ' + removed.length + ' removed, ' +
       manualChanges.length + ' other</p>';
@@ -144,13 +144,17 @@ function summaryCard(label, oldVal, newVal, deltaLabel) {
     return '<div class="card" style="min-width:120px;text-align:center;">' +
       '<div style="font-weight:bold;margin-bottom:0.3rem;">' + label + '</div>' +
       '<div>' + oldVal + '</div><div>' + newVal + '</div>' +
-      (deltaLabel ? '<div style="color:#666;font-size:0.8em;">' + deltaLabel + '</div>' : '') +
+      (deltaLabel ? '<div style="color:var(--color-text-secondary);font-size:0.8em;">' + deltaLabel + '</div>' : '') +
       '</div>';
   }
   var delta = newVal - oldVal;
   var sign = delta > 0 ? '+' : '';
-  var color = label === 'Failing' ? (delta > 0 ? '#c00' : '#080') :
-              label === 'Passing' ? (delta > 0 ? '#080' : '#c00') : '#666';
+  var cs = getComputedStyle(document.documentElement);
+  var cFail = cs.getPropertyValue('--color-fail').trim() || '#c00';
+  var cPass = cs.getPropertyValue('--color-pass').trim() || '#080';
+  var cMuted = cs.getPropertyValue('--color-text-secondary').trim() || '#666';
+  var color = label === 'Failing' ? (delta > 0 ? cFail : cPass) :
+              label === 'Passing' ? (delta > 0 ? cPass : cFail) : cMuted;
   return '<div class="card" style="min-width:120px;text-align:center;">' +
     '<div style="font-weight:bold;margin-bottom:0.3rem;">' + label + '</div>' +
     '<div>' + oldVal + ' &rarr; ' + newVal + '</div>' +

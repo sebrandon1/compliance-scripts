@@ -19,6 +19,7 @@
   --color-code-bg: #e9ecef;
   --color-hover: #f0f4ff;
   --color-shadow: rgba(0,0,0,0.1);
+  --color-text-secondary: #666;
 }
 
 /* Dark theme */
@@ -39,6 +40,7 @@
   --color-code-bg: #334155;
   --color-hover: #334155;
   --color-shadow: rgba(0,0,0,0.3);
+  --color-text-secondary: #94a3b8;
 }
 
 * {
