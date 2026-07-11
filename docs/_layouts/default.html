@@ -151,7 +151,7 @@
         break;
       case '/':
         e.preventDefault();
-        var searchInput = document.getElementById('table-search');
+        var searchInput = document.getElementById('table-search') || document.getElementById('check-search');
         if (searchInput) searchInput.focus();
         break;
       case 'j':
@@ -172,17 +172,10 @@
         firstKey = 'g';
         setTimeout(function() { waitingForSecondKey = false; firstKey = ''; }, 1000);
         break;
-      case '1':
-        clickFilterButton('all');
-        break;
-      case '2':
-        clickFilterButton('pending');
-        break;
-      case '3':
-        clickFilterButton('in_progress');
-        break;
-      case '4':
-        clickFilterButton('complete');
+      case '1': case '2': case '3': case '4':
+        var btns = document.querySelectorAll('.filter-buttons [data-filter]');
+        var idx = parseInt(e.key) - 1;
+        if (btns[idx]) btns[idx].click();
         break;
     }
   });
