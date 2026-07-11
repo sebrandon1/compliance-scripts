@@ -5,6 +5,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=../versions.env
+source "$SCRIPT_DIR/versions.env"
 
 # Timeout for image checks (seconds)
 TIMEOUT="${TIMEOUT:-30}"
@@ -36,14 +38,11 @@ COMPLIANCE_OPERATOR_IMAGES=(
 )
 
 MIRROR_IMAGES=(
-	"quay.io/bapalm/compliance-operator:v1.8.2"
-	"quay.io/bapalm/openscap-ocp:v1.8.2"
-	"quay.io/bapalm/compliance-operator-bundle:v1.8.2"
-	"quay.io/bapalm/compliance-operator-catalog:v1.8.2"
-	"quay.io/bapalm/compliance-operator:v1.9.0"
-	"quay.io/bapalm/openscap-ocp:v1.9.0"
-	"quay.io/bapalm/compliance-operator-bundle:v1.9.0"
-	"quay.io/bapalm/compliance-operator-catalog:v1.9.0"
+	"${IMAGE_REGISTRY}/compliance-operator:${CO_IMAGE_TAG}"
+	"${IMAGE_REGISTRY}/openscap-ocp:${CO_IMAGE_TAG}"
+	"${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_IMAGE_TAG}"
+	"${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_IMAGE_TAG}"
+	"${IMAGE_REGISTRY}/k8scontent:${CONTENT_IMAGE_TAG}"
 )
 
 OPENSHIFT_MARKETPLACE_IMAGES=(
