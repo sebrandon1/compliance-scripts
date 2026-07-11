@@ -1,0 +1,2977 @@
+{
+  "meta": {
+    "jira_base_url": "https://issues.redhat.com/browse/",
+    "pr_base_url": "https://github.com/openshift-kni/telco-reference/pull/",
+    "compare_base_url": "https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:",
+    "epic": "CNF-19031",
+    "last_sync": null,
+    "last_upstream_audit": "2026-06-02",
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 1 upstream-candidate, 24 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
+  },
+  "groups": {
+    "H1": {
+      "title": "Crypto Policy",
+      "severity": "HIGH",
+      "priority": 1,
+      "priority_label": "Critical",
+      "jira": "CNF-21212",
+      "pr": "735",
+      "compare": "compliance/4.22/h1-crypto-policy",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": "open",
+      "prev_group": null,
+      "next_group": "H2",
+      "last_sync": "2026-05-05",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. E8 PASS. Moderate crypto policy FAIL (expects FIPS, we set DEFAULT:NO-SHA1).",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "DEFAULT:NO-SHA1 crypto policy",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Crypto policy preset in base image",
+          "rationale": "RHCOS ships DEFAULT policy. E8 requires NO-SHA1 sub-policy. Hardened container hosts should not use SHA1.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "General OCP clusters may need DEFAULT policy for broad TLS compatibility. NO-SHA1 is a hardening choice.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "RHEL 9 DEFAULT policy already restricts SHA-1 in signatures for TLS, SSH, IKEv2, DNSSEC, Kerberos. Fedora 41 completed full SHA-1 distrust in OpenSSL — will flow to RHEL 10. Forcing NO-SHA1 at base image level risks breaking third-party integrations relying on SHA-1 (Red Hat KB 7088966). Moderate compliance still fails because it expects FIPS, not just NO-SHA1. Crypto policy is a deployment-specific hardening choice, not a base image default.",
+              "references": [
+                "https://discussion.fedoraproject.org/t/f41-change-proposal-make-openssl-distrust-sha-1-signatures-by-default-system-wide/119457",
+                "https://access.redhat.com/solutions/7088966",
+                "https://www.redhat.com/en/blog/rhel-security-sha-1-package-signatures-distrusted-rhel-9"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "H2": {
+      "title": "PAM Empty Passwords",
+      "severity": "HIGH",
+      "priority": 1,
+      "priority_label": "Critical",
+      "jira": "CNF-21212",
+      "pr": "736",
+      "compare": "compliance/4.22/h2-pam-nullok",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": "open",
+      "prev_group": "H1",
+      "next_group": "H3",
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works. Branch pending.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Fix no_empty_passwords remediation for RHCOS 9",
+          "repo": "ComplianceAsCode/content",
+          "repo_url": "https://github.com/ComplianceAsCode/content",
+          "file": "Upstream remediation fix (PR #14602)",
+          "rationale": "Compliance operator's own remediation uses broken authselect path on RHCOS 9. Upstream fix uses direct sed instead.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
+          "pr_history": [
+            {
+              "repo": "ComplianceAsCode/content",
+              "pr": 14602,
+              "url": "https://github.com/ComplianceAsCode/content/pull/14602",
+              "state": "open",
+              "opened": "2026-04-28",
+              "outcome": null,
+              "reason": null
+            }
+          ]
+        },
+        {
+          "setting": "Remove nullok from PAM in RHCOS base image",
+          "repo": "coreos/rhel-coreos-config",
+          "repo_url": "https://github.com/coreos/rhel-coreos-config",
+          "file": "packages-openshift.yaml (authselect without-nullok postprocess)",
+          "rationale": "RHCOS ships with nullok in PAM, allowing empty password login. Should be removed in the base image so remediation is unnecessary.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Empty passwords should never be allowed on any OCP node. This is a security bug, not a hardening choice.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/pull/255",
+          "pr_history": [
+            {
+              "repo": "openshift/os",
+              "pr": 1934,
+              "url": "https://github.com/openshift/os/pull/1934",
+              "state": "closed",
+              "opened": "2026-05-11",
+              "closed": "2026-05-12",
+              "outcome": "redirected",
+              "reason": "Maintainer (@travier) directed change to base layer (coreos/rhel-coreos-config) instead of openshift/os. OS-level config belongs in the base image."
+            },
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 255,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/255",
+              "state": "open",
+              "opened": "2026-05-12",
+              "outcome": null,
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "upstream-candidate"
+    },
+    "H3": {
+      "title": "SSHD Empty Passwords",
+      "severity": "HIGH",
+      "priority": 1,
+      "priority_label": "Critical",
+      "jira": "CNF-21326",
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla-rhcos9.8",
+      "jira_status": "Closed",
+      "pr_state": null,
+      "prev_group": "H2",
+      "next_group": "M1",
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos",
+      "upstream_verdict": "pass-vanilla"
+    },
+    "M1": {
+      "title": "SSHD Configuration",
+      "severity": "MEDIUM",
+      "priority": 2,
+      "priority_label": "High",
+      "jira": "CNF-22620",
+      "pr": null,
+      "compare": "compliance/4.22/m1-sshd-medium",
+      "status": "partial",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "H3",
+      "next_group": "M2",
+      "last_sync": "2026-06-04",
+      "status_note": "5/7 checks PASS on vanilla RHCOS 9.8. 2 FAIL: sshd-disable-gssapi-auth (GSSAPIAuthentication yes default) and sshd-disable-user-known-hosts (IgnoreUserKnownHosts no default). Upstream candidate for rhel-coreos-config 40-rhcos-defaults.conf.",
+      "platform": "rhcos",
+      "upstream_verdict": "pass-vanilla"
+    },
+    "M2": {
+      "title": "Kernel Hardening (Sysctl)",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-21196",
+      "pr": "737",
+      "compare": "compliance/4.22/m2-kernel-sysctl",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": "open",
+      "prev_group": "M1",
+      "next_group": "M3",
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "net.core.bpf_jit_harden=2",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
+          "rationale": "Prevents BPF JIT spraying attacks. KSPP recommended. Zero workload impact.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Negligible performance impact. Protects against JIT spraying on all clusters. KSPP recommended.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 264,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
+              "state": "closed",
+              "opened": "2026-06-02",
+              "closed": "2026-06-04",
+              "outcome": "redirected",
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Suggested proposing bpf_jit_harden further upstream at the RHEL/Fedora level. Fedora 44 Change Proposal changed bpf_jit_harden from 0 to 2 by default — may flow to RHEL 10. Hold and verify.",
+              "references": [
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
+              ]
+            }
+          ]
+        },
+        {
+          "setting": "kernel.yama.ptrace_scope=1",
+          "repo": "Fedora/RHEL (elfutils RPM)",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Override /usr/lib/sysctl.d/10-default-yama-scope.conf",
+          "rationale": "Kernel default IS 1 but elfutils RPM overrides to 0. RHCOS is a container host, not a dev workstation. Fedora 44 Change Proposal changed ptrace_scope from 1 to 2.",
+          "risk": "medium",
+          "scope": "upstream",
+          "scope_reason": "Kernel default is already 1. Only relaxed by elfutils RPM meant for developer workstations, not container hosts.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 264,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
+              "state": "closed",
+              "opened": "2026-06-02",
+              "closed": "2026-06-04",
+              "outcome": "redirected",
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults. Fedora 44 Change Proposal changed ptrace_scope from 1 to 2 and bpf_jit_harden from 0 to 2 by default. These may resolve at the RHEL/Fedora level without needing RHCOS-specific overrides.",
+              "references": [
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M3": {
+      "title": "Audit Rules - DAC Modifications",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23513",
+      "pr": null,
+      "compare": "compliance/4.22/m3-audit-dac",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M2",
+      "next_group": "M4",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "chmod/chown DAC audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-dac-modification.rules",
+          "rationale": "Standard CIS/STIG audit requirement. Tracks permission changes for forensic analysis.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Audit rules add overhead. Not all clusters need DAC modification forensic logging.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M4": {
+      "title": "Audit Rules - SELinux",
+      "severity": "MEDIUM",
+      "priority": 2,
+      "priority_label": "High",
+      "jira": "CNF-22621",
+      "pr": null,
+      "compare": "compliance/4.22/m4-audit-selinux",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M3",
+      "next_group": "M5",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "SELinux command audit rules (6 commands)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-selinux-commands.rules",
+          "rationale": "Tracks SELinux policy modifications. Critical for security audit trail on hardened systems.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "SELinux command auditing is valuable for hardened environments but adds audit log volume.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M5": {
+      "title": "Audit Rules - Kernel Modules",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23448",
+      "pr": "738",
+      "compare": "compliance/4.22/m5-audit-modules",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": "open",
+      "prev_group": "M4",
+      "next_group": "M6",
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Kernel module load/unload audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-kernel-modules.rules",
+          "rationale": "Tracks kernel module operations (init_module, delete_module). Essential for detecting rootkit installation.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Module loading auditing is critical for security-sensitive deployments but unnecessary for general workloads.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M6": {
+      "title": "Audit Rules - Time Modifications",
+      "severity": "MEDIUM",
+      "priority": 2,
+      "priority_label": "High",
+      "jira": "CNF-22622",
+      "pr": null,
+      "compare": "compliance/4.22/m6-audit-time",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M5",
+      "next_group": "M7",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Time modification audit rules (5 syscalls)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-time-change.rules",
+          "rationale": "Tracks time changes that could be used to manipulate log timestamps for forensic evasion.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Time change auditing matters for forensic integrity but adds log volume on all nodes.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M7": {
+      "title": "Audit Rules - Login Monitoring",
+      "severity": "MEDIUM",
+      "priority": 2,
+      "priority_label": "High",
+      "jira": "CNF-22623",
+      "pr": null,
+      "compare": "compliance/4.22/m7-audit-login",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M6",
+      "next_group": "M8",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Audit rules deployed and compiled into audit.rules.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Login/authentication audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-login-events.rules",
+          "rationale": "Tracks failed logins, sudo usage, and user/group modifications. Core authentication audit trail.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Login auditing is standard for compliance but may be excessive for dev/test clusters.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M8": {
+      "title": "Audit Rules - Network Config",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23449",
+      "pr": null,
+      "compare": "compliance/4.22/m8-audit-network",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M7",
+      "next_group": "M9",
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Network config audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-network-config.rules",
+          "rationale": "Tracks hostname/domainname changes and network environment modifications.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Network config auditing is important for hardened deployments but not universally needed.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M9": {
+      "title": "Auditd Configuration",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23514",
+      "pr": null,
+      "compare": "compliance/4.22/m9-auditd-config",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M8",
+      "next_group": "M10",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. auditd name_format=hostname.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "auditd name_format=hostname",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/auditd.conf",
+          "rationale": "Identifies audit log source by hostname. Critical for centralized log aggregation across multi-node clusters.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "All multi-node clusters benefit from hostname identification in audit logs for centralized aggregation.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/auditd-defaults",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Auditd configuration (name_format, data retention) is operational policy, not security hardening. CoreOS maintainers are ambivalent about the audit subsystem itself — FCOS debated whether to even include the audit RPM (fedora-coreos-tracker#461), and audit was called an 'odd fit' for CoreOS (coreos/bugs#140). name_format=hostname is deployment-specific (only matters for centralized log aggregation). Data retention settings are operational tuning, not base image defaults.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M10": {
+      "title": "API Server Encryption",
+      "severity": "MEDIUM",
+      "priority": 2,
+      "priority_label": "High",
+      "jira": "CNF-22624",
+      "pr": "678",
+      "compare": "compliance/4.22/m10-api-encryption",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": "open",
+      "prev_group": "M9",
+      "next_group": "M11",
+      "last_sync": "2026-05-05",
+      "notes": "Platform-level APIServer config, not a MachineConfig.",
+      "platform": "ocp",
+      "status_note": "Verified on cnfdt16 OCP 4.22. API encryption type=aescbc, all resources encrypted.",
+      "upstream_verdict": "platform-config"
+    },
+    "M11": {
+      "title": "Ingress TLS Ciphers",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23451",
+      "pr": null,
+      "compare": "compliance/4.22/m11-ingress-tls",
+      "status": "pass-vanilla-rhcos9.8",
+      "jira_status": "Closed",
+      "pr_state": null,
+      "prev_group": "M10",
+      "next_group": "M12",
+      "last_sync": "2026-05-04",
+      "notes": "Platform-level IngressController config, not a MachineConfig.",
+      "platform": "ocp",
+      "status_note": "Vanilla scan on OCP 4.22 confirms PASS. No remediation needed.",
+      "upstream_verdict": "pass-vanilla"
+    },
+    "M12": {
+      "title": "Audit Profile",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23452",
+      "pr": null,
+      "compare": "compliance/4.22/m12-audit-profile",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M11",
+      "next_group": "M13",
+      "last_sync": "2026-05-04",
+      "notes": "Platform-level APIServer audit profile, not a MachineConfig.",
+      "platform": "ocp",
+      "status_note": "Verified on cnfdt16 OCP 4.22. Audit profile set to WriteRequestBodies.",
+      "upstream_verdict": "platform-config"
+    },
+    "L1": {
+      "title": "SSHD LogLevel",
+      "severity": "LOW",
+      "priority": 4,
+      "priority_label": "Low",
+      "jira": null,
+      "pr": null,
+      "compare": null,
+      "status": "pass-vanilla-rhcos9.8",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "M30",
+      "next_group": "L2",
+      "last_sync": null,
+      "status_note": "PASS on vanilla RHCOS 9.8+ (OCP 4.22+). Older RHCOS versions still require remediation.",
+      "platform": "rhcos",
+      "upstream_verdict": "pass-vanilla"
+    },
+    "L2": {
+      "title": "Sysctl dmesg_restrict",
+      "severity": "LOW",
+      "priority": 4,
+      "priority_label": "Low",
+      "jira": "CNF-23450",
+      "pr": null,
+      "compare": "compliance/4.22/l2-sysctl-dmesg",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "L1",
+      "next_group": "MAN1",
+      "last_sync": null,
+      "status_note": "FAIL on vanilla RHCOS 9.8. Remediation tested and works.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "kernel.dmesg_restrict=1",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
+          "rationale": "Restricts kernel log access to root. Prevents unprivileged users from reading kernel ring buffer for info leakage.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Unprivileged users have no legitimate need to read kernel ring buffer on any OCP node.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-security",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": 264,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/264",
+              "state": "closed",
+              "opened": "2026-06-02",
+              "closed": "2026-06-04",
+              "outcome": "redirected",
+              "reason": "Maintainer (@dustymabe) prefers accepting RHEL defaults and changing at the RHEL level. dmesg_restrict is already CONFIG_SECURITY_DMESG_RESTRICT=y in kernel-ark but not enforced at runtime. Suggested proposing bpf_jit_harden further upstream. Fedora 44 Change Proposal may resolve bpf_jit_harden upstream. Hold and verify whether RHEL 10/RHCOS 10 inherits these defaults.",
+              "references": [
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M13": {
+      "title": "Extended DAC Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23515",
+      "pr": null,
+      "compare": "compliance/4.22/m13-audit-dac-extended",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M12",
+      "next_group": "M14",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 11 extended DAC audit rules deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Extended DAC audit rules (11 syscalls)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-dac-extended.rules",
+          "rationale": "Covers fchmod, fchown, xattr operations. Completes the DAC audit trail started by M3.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Extended DAC auditing adds significant log volume. Needed for compliance, not general use.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M14": {
+      "title": "Identity File Access Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23516",
+      "pr": null,
+      "compare": "compliance/4.22/m14-audit-identity-files",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M13",
+      "next_group": "M15",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 12 identity file audit rules deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Identity file access audit rules (12 checks)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-identity-files.rules",
+          "rationale": "Tracks open/openat/open_by_handle_at on /etc/passwd, shadow, group, gshadow. Detects credential harvesting.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Identity file access auditing is compliance-driven. Significant audit overhead for general clusters.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M15": {
+      "title": "File Deletion Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23517",
+      "pr": null,
+      "compare": "compliance/4.22/m15-audit-file-deletion",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M14",
+      "next_group": "M16",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 5 file deletion audit rules deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "File deletion audit rules (5 syscalls)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-file-deletion.rules",
+          "rationale": "Tracks rename, unlink, rmdir. Detects evidence tampering and unauthorized file removal.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "File deletion auditing is compliance-driven forensic logging.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M16": {
+      "title": "Unsuccessful File Modification Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23518",
+      "pr": null,
+      "compare": "compliance/4.22/m16-audit-unsuccessful-access",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M15",
+      "next_group": "M17",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 18 unsuccessful file modification audit rule files deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Unsuccessful file access audit rules (32 checks)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-unsuccessful-access.rules",
+          "rationale": "Tracks failed access attempts (EACCES/EPERM). Detects privilege escalation and unauthorized access probing.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "32 unsuccessful access rules generate substantial audit volume. Compliance-specific.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M17": {
+      "title": "Privileged Commands Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23519",
+      "pr": null,
+      "compare": "compliance/4.22/m17-audit-privileged-commands",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M16",
+      "next_group": "M18",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 22 privileged command audit rules deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Privileged command audit rules (22 commands)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-privileged-commands.rules",
+          "rationale": "Tracks execution of setuid/setgid binaries (su, sudo, mount, passwd, etc.). Required by CIS and STIG.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Privileged command auditing is compliance-driven. 22 rules add audit overhead.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M18": {
+      "title": "Session & MAC Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23520",
+      "pr": null,
+      "compare": "compliance/4.22/m18-audit-session-mac",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M17",
+      "next_group": "M19",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Session, MAC-policy, export, immutable audit rules deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Session, MAC, and media export audit rules",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-session-mac.rules",
+          "rationale": "Tracks session initiation, SELinux policy changes, media export, and makes audit config immutable.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Session/MAC auditing and audit immutability are compliance-specific hardening.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M19": {
+      "title": "Usergroup Modification Audit",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23521",
+      "pr": null,
+      "compare": "compliance/4.22/m19-audit-usergroup-files",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M18",
+      "next_group": "M20",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 5 usergroup modification file watches deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Usergroup modification file watches (5 files)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/rules.d/50-usergroup-modification.rules",
+          "rationale": "Watches /etc/passwd, group, shadow, gshadow, opasswd for modifications. Detects unauthorized account changes.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Usergroup file watches are compliance-driven forensic logging.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Audit rules are compliance monitoring policies, not security defaults. RHCOS ships no audit rules in rules.d by default — only samples in /usr/share/audit/sample-rules/ that Red Hat explicitly warns are 'not exhaustive nor up to date.' CoreOS maintainers debated whether to include the audit RPM at all (fedora-coreos-tracker#461) and called it 'an odd fit' (coreos/bugs#140). Audit messages already flood console on fresh boot (fedora-coreos-tracker#220). Deploying rules in the base image would substantially increase audit volume for all RHCOS deployments. The Compliance Operator's MachineConfig remediation model is the intended deployment path.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/bugs/issues/140",
+                "https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/security_hardening/auditing-the-system_security-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M20": {
+      "title": "Auditd Data Retention",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23522",
+      "pr": null,
+      "compare": "compliance/4.22/m20-auditd-data-retention",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M19",
+      "next_group": "M21",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Auditd data retention settings applied.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "auditd data retention settings",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/audit/auditd.conf",
+          "rationale": "Configures disk error/full actions and space_left thresholds. Ensures audit logs are preserved even under disk pressure.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "All clusters should handle audit log disk pressure gracefully rather than silently dropping events.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/auditd-defaults",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Same rationale as M9 — auditd data retention (space_left, disk_full_action, disk_error_action) is operational policy, not a security default. CoreOS maintainers are ambivalent about the audit subsystem (fedora-coreos-tracker#461). Retention thresholds are deployment-specific and depend on disk sizing.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/461",
+                "https://github.com/coreos/bugs/issues/140"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M21": {
+      "title": "Kernel Module Blacklist",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23523",
+      "pr": null,
+      "compare": "compliance/4.22/m21-kernel-module-blacklist",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M20",
+      "next_group": "M22",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 18 kernel module blacklist files deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "18 kernel module blacklist entries",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/modprobe.d/50-security-blacklist.conf",
+          "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
+          "risk": "medium",
+          "scope": "ran",
+          "scope_reason": "Some modules (SCTP) are used by telco workloads. Bluetooth/WiFi blacklist is safe but module selection is deployment-specific.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "18 modules is too broad for a base image blacklist. The only existing CoreOS module blacklist is nouveau (1 module, with specific bugzilla). Several modules have legitimate uses: SCTP for telco signaling (4G/5G), usb-storage for BMC KVM and provisioning, squashfs for snap/container runtimes, Bluetooth/WiFi for sensor nodes. Each module would need individual upstream justification. CoreOS tracker #249 discusses module management but not default blacklists.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/249",
+                "https://bugzilla.redhat.com/show_bug.cgi?id=1700056"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M22": {
+      "title": "Network Sysctl Hardening",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23524",
+      "pr": null,
+      "compare": "compliance/4.22/m22-sysctl-network",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M21",
+      "next_group": "M23",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 20 network sysctl hardening configs deployed.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "20 IPv4/IPv6 network sysctl values",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-network-hardening.conf",
+          "rationale": "Standard CIS/STIG network hardening: disable redirects, source routing, enable martian logging, syncookies. Universal for servers.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "Standard CIS/STIG network hardening. Universally recommended for all servers. No legitimate reason to accept ICMP redirects on a Kubernetes node.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/sysctl-network",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Maintainers defer to RHEL/systemd defaults for network sysctls. rp_filter was changed from strict (1) to loose (2) by systemd upstream in v240 — CoreOS maintainers accepted this (fedora-coreos-tracker#219). PR #264 feedback established pattern of not carrying RHCOS-specific sysctl overrides. Some settings (accept_ra=0, send_redirects=0) could break IPv6 SLAAC or multi-homed configurations. RHEL 9 is non-compliant on 13/15 IPv4 STIG controls by design.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/219",
+                "https://github.com/coreos/rhel-coreos-config/pull/264",
+                "https://github.com/Bnwokoma/rhel9-stig-hardening"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M23": {
+      "title": "Kernel Sysctl Extended",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23525",
+      "pr": null,
+      "compare": "compliance/4.22/m23-sysctl-kernel-extended",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M22",
+      "next_group": "M24",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. core_pattern, kexec_load_disabled, perf_event_paranoid set.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "kernel.core_pattern, kexec_load_disabled, perf_event_paranoid",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/usr/lib/sysctl.d/50-security-hardening.conf",
+          "rationale": "Disables core dumps (data leakage), kexec (rootkit persistence), restricts perf_event (info disclosure). Standard KSPP hardening.",
+          "risk": "medium",
+          "scope": "ran",
+          "scope_reason": "kexec_load_disabled is safe for upstream (RHCOS doesn't use kexec), but core_pattern and perf_event_paranoid break debugging and profiling tools needed by platform teams.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "perf_event_paranoid=2 is already the RHEL default since RHEL 7.3. kexec_load_disabled=1 is a one-way toggle that cannot be reverted without reboot — breaks kdump/kexec crash recovery, which is a supported RHCOS feature. core_pattern modification is operational policy already covered by M26 coredump disable. All three settings defer to RHEL defaults per maintainer preference (PR #264 pattern).",
+              "references": [
+                "https://docs.kernel.org/admin-guide/sysctl/kernel.html",
+                "https://github.com/coreos/rhel-coreos-config/pull/264"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M24": {
+      "title": "CoreOS Kernel Arguments",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23526",
+      "pr": null,
+      "compare": "compliance/4.22/m24-coreos-kernel-args",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M23",
+      "next_group": "M25",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. 6 kernel args: audit, audit_backlog_limit, nousb, page_poison, pti, vsyscall.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "audit=1, audit_backlog_limit=8192, pti=on, page_poison=1, vsyscall=none",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Default kernel command line arguments",
+          "rationale": "KSPP-recommended boot parameters. Enable audit subsystem, kernel page table isolation, memory poisoning, vsyscall elimination.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "audit=1 and KSPP kernel args (pti, page_poison, vsyscall=none) are universally beneficial security defaults with negligible performance impact.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/kernel-boot-args",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Mostly redundant with existing defaults. pti=on is already the default on x86_64 for Meltdown-vulnerable CPUs. audit=1 is already effective — audit messages flood console on fresh FCOS boot (fedora-coreos-tracker#220). page_poison=1 is a legacy KSPP recommendation superseded by init_on_alloc/init_on_free in modern kernels. vsyscall=none may already be the default on modern builds. audit_backlog_limit=8192 is operational tuning. CoreOS hardening discussion (fedora-coreos-tracker#805) focused on GRUB passwords, not kernel args.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/220",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/805",
+                "https://madaidans-insecurities.github.io/guides/linux-hardening.html"
+              ]
+            }
+          ]
+        },
+        {
+          "setting": "nousb",
+          "repo": "openshift/os (opt-in only)",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "Optional hardening profile kernel arg",
+          "rationale": "Disables USB entirely. Prevents USB-based attacks but breaks BMC KVM and USB provisioning. Should be opt-in, not default.",
+          "risk": "high",
+          "scope": "ran",
+          "scope_reason": "Disabling USB entirely breaks BMC KVM and USB-based provisioning. Must be opt-in for specific hardened deployments only."
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M25": {
+      "title": "Chrony/NTP Configuration",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23527",
+      "pr": null,
+      "compare": "compliance/4.22/m25-chrony-hardening",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M24",
+      "next_group": "M26",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Chrony port=0, cmdport=0, maxpoll=10, 4 NTP servers.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "maxpoll 10, multiple NTP servers",
+          "repo": "openshift/machine-config-operator",
+          "repo_url": "https://github.com/openshift/machine-config-operator",
+          "file": "MCO chrony config template",
+          "rationale": "MCO generates chrony.conf at install time. maxpoll and server list are deployment-specific. Template should set maxpoll=10 by default.",
+          "risk": "low",
+          "scope": "site",
+          "scope_reason": "NTP server addresses and maxpoll intervals are site-specific. MCO template could default maxpoll=10 but server list must be configured per deployment.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "NTP server selection and chrony configuration are inherently site-specific. FCOS defaults to Fedora NTP pools but enterprise environments need internal time sources for PCI compliance (fedora-coreos-tracker#517). maxpoll=10 (1024s) is already the chrony default. port=0/cmdport=0 disables chrony listening which breaks NTP server functionality if the node needs to serve time. FCOS chrony config handling has known conflicts with user modifications (fedora-coreos-tracker#1449).",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/517",
+                "https://github.com/coreos/fedora-coreos-tracker/issues/1449",
+                "https://github.com/mlichvar/chrony/blob/master/doc/faq.adoc"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "site-specific"
+    },
+    "M26": {
+      "title": "Systemd Hardening",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23528",
+      "pr": null,
+      "compare": "compliance/4.22/m26-systemd-hardening",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M25",
+      "next_group": "M27",
+      "last_sync": "2026-05-04",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Coredump disabled, ctrl-alt-del masked, systemd-coredump masked.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "Disable coredumps (Storage=none, ProcessSizeMax=0)",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/systemd/coredump.conf.d/50-no-coredumps.conf",
+          "rationale": "Container hosts shouldn't store core dumps. Prevents sensitive data leakage and disk exhaustion from crashed processes.",
+          "risk": "medium",
+          "scope": "ran",
+          "scope_reason": "Disabling core dumps prevents crash debugging for node-level issues. Appropriate for hardened production but not dev/QE clusters."
+        },
+        {
+          "setting": "Mask ctrl-alt-del.target, CtrlAltDelBurstAction=none",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "systemd preset + /etc/systemd/system.conf.d/",
+          "rationale": "Prevents accidental or malicious reboot via keyboard. RHCOS nodes are headless servers, not interactive workstations.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "Bare-metal operators use Ctrl-Alt-Del via BMC console to recover hung nodes when SSH is unavailable. Masking it removes a useful recovery tool. Appropriate for hardened RAN production nodes where accidental reboots are catastrophic.",
+          "compare_url": "https://github.com/coreos/rhel-coreos-config/compare/main...sebrandon1:rhel-coreos-config:hardening/disable-ctrlaltdel",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "CoreOS maintainers addressed console security via GRUB bootloader passwords (coreos/fedora-coreos-tracker#134), not by disabling the reboot key sequence. Their position: Ctrl-Alt-Del is one step in an attack chain — the real fix is GRUB passwords, which prevent rd.break root shell access after reboot. Additionally, rhel-coreos-config maintainers prefer accepting RHEL defaults (PR #264 feedback). RHEL ships with Ctrl-Alt-Del enabled. Physical/BMC console access already implies ability to power cycle via IPMI, so disabling the keyboard shortcut doesn't meaningfully raise the security bar.",
+              "references": [
+                "https://github.com/coreos/fedora-coreos-tracker/issues/134",
+                "https://github.com/coreos/rhel-coreos-config/pull/264"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M27": {
+      "title": "SSHD Moderate Extensions",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23529",
+      "pr": null,
+      "compare": "compliance/4.22/m27-sshd-session-hardening",
+      "status": "verified",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M26",
+      "next_group": "M28",
+      "last_sync": "2026-05-05",
+      "status_note": "Verified on cnfdt16 OCP 4.22 RHCOS 9.8. Settings applied (sshd -T confirms ClientAliveInterval=300 ClientAliveCountMax=0). Moderate scanner FAIL is a known drop-in file detection limitation.",
+      "platform": "rhcos",
+      "upstream": [
+        {
+          "setting": "ClientAliveInterval=300, ClientAliveCountMax=0",
+          "repo": "openshift/os",
+          "repo_url": "https://github.com/openshift/os",
+          "file": "/etc/ssh/sshd_config.d/50-hardening.conf",
+          "rationale": "Automatically disconnects idle SSH sessions after 5 minutes. Prevents abandoned sessions from being hijacked.",
+          "risk": "low",
+          "scope": "ran",
+          "scope_reason": "5-minute idle timeout is aggressive. Platform teams may need longer SSH sessions for debugging. Appropriate for hardened production deployments.",
+          "pr_history": [
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "blocked",
+              "reason": "Session timeout via ClientAliveInterval/ClientAliveCountMax is operational policy, not a security default. The default ClientAliveInterval=0 means no keepalives. On OpenSSH 8.2p1+, these settings detect unresponsive TCP connections, not idle users — a CountMax=0 value disables termination entirely, which is counterproductive. RHCOS already has an SSHD drop-in at overlay.d/05rhcos/etc/ssh/sshd_config.d/40-rhcos-defaults.conf. The Compliance Operator Moderate scanner has a known drop-in detection limitation that causes FAIL even when settings are correctly applied.",
+              "references": [
+                "https://bbs.archlinux.org/viewtopic.php?id=254707",
+                "https://access.redhat.com/discussions/6960435"
+              ]
+            }
+          ]
+        }
+      ],
+      "upstream_verdict": "ran-only"
+    },
+    "M28": {
+      "title": "USBGuard",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": null,
+      "pr": null,
+      "compare": "compliance/4.22/m28-usbguard",
+      "status": "partial",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "M27",
+      "next_group": "M29",
+      "last_sync": null,
+      "notes": "USBGuard RPM not available on RHCOS. MC enables service and adds rules but package-usbguard-installed and service-usbguard-enabled always fail.",
+      "platform": "rhcos",
+      "upstream_verdict": "not-applicable"
+    },
+    "M29": {
+      "title": "System Access Controls",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23453",
+      "pr": null,
+      "compare": "compliance/4.22/m29-access-controls",
+      "status": "partial",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M28",
+      "next_group": "M30",
+      "last_sync": "2026-05-05",
+      "status_note": "Verified on cnfdt16 OCP 4.22. RHCOS node checks (securetty, audit trail) PASS. OCP platform checks (banner-or-login-template-set, openshift-motd-exists) still FAIL — require per-deployment configuration.",
+      "platform": "mixed",
+      "upstream_verdict": "platform-config"
+    },
+    "M30": {
+      "title": "OAuth Configuration",
+      "severity": "MEDIUM",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": "CNF-23454",
+      "pr": null,
+      "compare": "compliance/4.22/m30-oauth",
+      "status": "partial",
+      "jira_status": "In Progress",
+      "pr_state": null,
+      "prev_group": "M29",
+      "next_group": "L1",
+      "last_sync": "2026-05-05",
+      "notes": "oauth-or-oauthclient-inactivity-timeout passes. oauth-or-oauthclient-token-maxage is a platform-level OAuth config not addressable by MachineConfig.",
+      "platform": "mixed",
+      "status_note": "Verified on cnfdt16 OCP 4.22. accessTokenInactivityTimeout set. oauth-or-oauthclient-token-maxage and PCI-DSS inactivity-timeout still FAIL. Branch needs update with accessTokenMaxAgeSeconds.",
+      "upstream_verdict": "platform-config"
+    },
+    "MAN1": {
+      "title": "Workload Security",
+      "severity": "MANUAL",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": null,
+      "pr": null,
+      "compare": null,
+      "status": "pending",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "L2",
+      "next_group": "MAN2",
+      "last_sync": null,
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
+    },
+    "MAN2": {
+      "title": "RBAC & Access Control",
+      "severity": "MANUAL",
+      "priority": 2,
+      "priority_label": "High",
+      "jira": null,
+      "pr": null,
+      "compare": null,
+      "status": "pending",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "MAN1",
+      "next_group": "MAN3",
+      "last_sync": null,
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
+    },
+    "MAN3": {
+      "title": "Secrets Management",
+      "severity": "MANUAL",
+      "priority": 3,
+      "priority_label": "Medium",
+      "jira": null,
+      "pr": null,
+      "compare": null,
+      "status": "pending",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "MAN2",
+      "next_group": "MAN4",
+      "last_sync": null,
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
+    },
+    "MAN4": {
+      "title": "Audit Log Partitions",
+      "severity": "MANUAL",
+      "priority": 4,
+      "priority_label": "Low",
+      "jira": null,
+      "pr": null,
+      "compare": null,
+      "status": "pending",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "MAN3",
+      "next_group": "MAN5",
+      "last_sync": null,
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
+    },
+    "MAN5": {
+      "title": "Hardware/BIOS & Alerting",
+      "severity": "MANUAL",
+      "priority": 4,
+      "priority_label": "Low",
+      "jira": null,
+      "pr": null,
+      "compare": null,
+      "status": "pending",
+      "jira_status": null,
+      "pr_state": null,
+      "prev_group": "MAN4",
+      "next_group": null,
+      "last_sync": null,
+      "platform": "ocp",
+      "upstream_verdict": "not-applicable"
+    }
+  },
+  "remediations": {
+    "configure-crypto-policy": {
+      "group": "H1",
+      "file": "75-crypto-policy-high.yaml",
+      "description": "System-wide crypto policy (DEFAULT:NO-SHA1)"
+    },
+    "no-empty-passwords": {
+      "group": "H2",
+      "file": "75-pam-auth-high.yaml",
+      "description": "Disable nullok in PAM system-auth and password-auth"
+    },
+    "sshd-disable-empty-passwords": {
+      "group": "H3",
+      "file": "75-sshd-hardening.yaml",
+      "description": "Prevent SSH login with empty passwords"
+    },
+    "sshd-disable-root-login": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Disable direct root SSH access"
+    },
+    "sshd-disable-gssapi-auth": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Disable GSSAPI authentication"
+    },
+    "sshd-disable-rhosts": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Disable rhost authentication"
+    },
+    "sshd-disable-user-known-hosts": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Ignore user's known_hosts file"
+    },
+    "sshd-do-not-permit-user-env": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Block user environment variable passing"
+    },
+    "sshd-enable-strictmodes": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Enable strict mode checking"
+    },
+    "sshd-print-last-log": {
+      "group": "M1",
+      "file": "75-sshd-medium.yaml",
+      "description": "Display last login information"
+    },
+    "sshd-set-loglevel-info": {
+      "group": "L1",
+      "file": "75-sshd-low.yaml",
+      "description": "Set SSH logging to INFO level"
+    },
+    "sysctl-kernel-randomize-va-space": {
+      "group": "M2",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Full ASLR - randomizes memory layout"
+    },
+    "sysctl-kernel-unprivileged-bpf-disabled": {
+      "group": "M2",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Prevent BPF-based privilege escalation"
+    },
+    "sysctl-kernel-yama-ptrace-scope": {
+      "group": "M2",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Restrict ptrace to parent-child processes"
+    },
+    "sysctl-net-core-bpf-jit-harden": {
+      "group": "M2",
+      "file": "75-sysctl-medium.yaml",
+      "description": "Harden BPF JIT against spraying attacks"
+    },
+    "sysctl-kernel-dmesg-restrict": {
+      "group": "L2",
+      "file": "75-sysctl-low.yaml",
+      "description": "Restrict kernel log access to privileged users"
+    },
+    "audit-rules-dac-modification-fchmod": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchmod operations"
+    },
+    "audit-rules-dac-modification-fchmodat": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchmodat operations"
+    },
+    "audit-rules-dac-modification-fchown": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchown operations"
+    },
+    "audit-rules-dac-modification-fchownat": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fchownat operations"
+    },
+    "audit-rules-dac-modification-fremovexattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fremovexattr operations"
+    },
+    "audit-rules-dac-modification-fsetxattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit fsetxattr operations"
+    },
+    "audit-rules-dac-modification-lchown": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit lchown operations"
+    },
+    "audit-rules-dac-modification-lremovexattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit lremovexattr operations"
+    },
+    "audit-rules-dac-modification-lsetxattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit lsetxattr operations"
+    },
+    "audit-rules-dac-modification-removexattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit removexattr operations"
+    },
+    "audit-rules-dac-modification-setxattr": {
+      "group": "M13",
+      "file": "75-m13-audit-dac-ext.yaml",
+      "description": "Audit setxattr operations"
+    },
+    "audit-rules-etc-group-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/group access"
+    },
+    "audit-rules-etc-group-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/group access via openat"
+    },
+    "audit-rules-etc-group-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/group access via open_by_handle_at"
+    },
+    "audit-rules-etc-gshadow-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/gshadow access"
+    },
+    "audit-rules-etc-gshadow-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/gshadow access via openat"
+    },
+    "audit-rules-etc-gshadow-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/gshadow access via open_by_handle_at"
+    },
+    "audit-rules-etc-passwd-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/passwd access"
+    },
+    "audit-rules-etc-passwd-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/passwd access via openat"
+    },
+    "audit-rules-etc-passwd-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/passwd access via open_by_handle_at"
+    },
+    "audit-rules-etc-shadow-open": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/shadow access"
+    },
+    "audit-rules-etc-shadow-openat": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/shadow access via openat"
+    },
+    "audit-rules-etc-shadow-open-by-handle-at": {
+      "group": "M14",
+      "file": "75-m14-audit-identity.yaml",
+      "description": "Audit /etc/shadow access via open_by_handle_at"
+    },
+    "audit-rules-file-deletion-events-rename": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit rename operations"
+    },
+    "audit-rules-file-deletion-events-renameat": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit renameat operations"
+    },
+    "audit-rules-file-deletion-events-rmdir": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit rmdir operations"
+    },
+    "audit-rules-file-deletion-events-unlink": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit unlink operations"
+    },
+    "audit-rules-file-deletion-events-unlinkat": {
+      "group": "M15",
+      "file": "75-m15-audit-file-deletion.yaml",
+      "description": "Audit unlinkat operations"
+    },
+    "audit-rules-unsuccessful-file-modification-chmod": {
+      "group": "M16",
+      "file": "75-m16-audit-unsuccessful.yaml",
+      "description": "Audit failed chmod"
+    },
+    "audit-rules-unsuccessful-file-modification-open": {
+      "group": "M16",
+      "file": "75-m16-audit-unsuccessful.yaml",
+      "description": "Audit failed open"
+    },
+    "audit-rules-privileged-commands-su": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit su execution"
+    },
+    "audit-rules-privileged-commands-sudo": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit sudo execution"
+    },
+    "audit-rules-privileged-commands-passwd": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit passwd execution"
+    },
+    "audit-rules-privileged-commands-mount": {
+      "group": "M17",
+      "file": "75-m17-audit-privileged.yaml",
+      "description": "Audit mount execution"
+    },
+    "audit-rules-session-events": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Audit session events"
+    },
+    "audit-rules-mac-modification": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Audit MAC policy changes"
+    },
+    "audit-rules-media-export": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Audit media export"
+    },
+    "audit-rules-immutable": {
+      "group": "M18",
+      "file": "75-m18-audit-session-mac.yaml",
+      "description": "Make audit rules immutable"
+    },
+    "audit-rules-usergroup-modification-group": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/group"
+    },
+    "audit-rules-usergroup-modification-gshadow": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/gshadow"
+    },
+    "audit-rules-usergroup-modification-opasswd": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/opasswd"
+    },
+    "audit-rules-usergroup-modification-passwd": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/passwd"
+    },
+    "audit-rules-usergroup-modification-shadow": {
+      "group": "M19",
+      "file": "75-m19-audit-usergroup.yaml",
+      "description": "Watch /etc/shadow"
+    },
+    "auditd-data-disk-error-action": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set disk error action"
+    },
+    "auditd-data-disk-full-action": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set disk full action"
+    },
+    "auditd-data-retention-admin-space-left-action": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set admin space-left action"
+    },
+    "auditd-data-retention-space-left": {
+      "group": "M20",
+      "file": "75-m20-auditd-retention.yaml",
+      "description": "Set space-left threshold"
+    },
+    "kernel-module-bluetooth-disabled": {
+      "group": "M21",
+      "file": "75-m21-kernel-modules.yaml",
+      "description": "Disable Bluetooth"
+    },
+    "kernel-module-usb-storage-disabled": {
+      "group": "M21",
+      "file": "75-m21-kernel-modules.yaml",
+      "description": "Disable USB storage"
+    },
+    "kernel-module-sctp-disabled": {
+      "group": "M21",
+      "file": "75-m21-kernel-modules.yaml",
+      "description": "Disable SCTP"
+    },
+    "sysctl-net-ipv4-conf-all-accept-redirects": {
+      "group": "M22",
+      "file": "75-m22-net-sysctl.yaml",
+      "description": "Reject ICMP redirects"
+    },
+    "sysctl-net-ipv4-tcp-syncookies": {
+      "group": "M22",
+      "file": "75-m22-net-sysctl.yaml",
+      "description": "Enable TCP SYN cookies"
+    },
+    "sysctl-net-ipv6-conf-all-accept-ra": {
+      "group": "M22",
+      "file": "75-m22-net-sysctl.yaml",
+      "description": "Reject IPv6 router advertisements"
+    },
+    "sysctl-kernel-kexec-load-disabled": {
+      "group": "M23",
+      "file": "75-m23-kernel-sysctl-ext.yaml",
+      "description": "Disable kexec"
+    },
+    "sysctl-kernel-perf-event-paranoid": {
+      "group": "M23",
+      "file": "75-m23-kernel-sysctl-ext.yaml",
+      "description": "Restrict perf_event"
+    },
+    "sysctl-kernel-core-pattern": {
+      "group": "M23",
+      "file": "75-m23-kernel-sysctl-ext.yaml",
+      "description": "Disable core dumps"
+    },
+    "coreos-pti-kernel-argument": {
+      "group": "M24",
+      "file": "75-m24-coreos-kernel-args.yaml",
+      "description": "Enable PTI"
+    },
+    "coreos-audit-option": {
+      "group": "M24",
+      "file": "75-m24-coreos-kernel-args.yaml",
+      "description": "Enable audit"
+    },
+    "coreos-nousb-kernel-argument": {
+      "group": "M24",
+      "file": "75-m24-coreos-kernel-args.yaml",
+      "description": "Disable USB"
+    },
+    "chronyd-client-only": {
+      "group": "M25",
+      "file": "75-m25-chrony.yaml",
+      "description": "Restrict chrony to client mode"
+    },
+    "chronyd-no-chronyc-network": {
+      "group": "M25",
+      "file": "75-m25-chrony.yaml",
+      "description": "Disable chronyc network"
+    },
+    "disable-ctrlaltdel-burstaction": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable Ctrl-Alt-Del burst"
+    },
+    "disable-ctrlaltdel-reboot": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable Ctrl-Alt-Del reboot"
+    },
+    "coredump-disable-backtraces": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable coredump backtraces"
+    },
+    "coredump-disable-storage": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable coredump storage"
+    },
+    "disable-users-coredumps": {
+      "group": "M26",
+      "file": "75-m26-systemd.yaml",
+      "description": "Disable user coredumps"
+    },
+    "sshd-set-idle-timeout": {
+      "group": "M27",
+      "file": "75-m27-sshd-moderate.yaml",
+      "description": "Set SSH idle timeout"
+    },
+    "sshd-set-keepalive": {
+      "group": "M27",
+      "file": "75-m27-sshd-moderate.yaml",
+      "description": "Set SSH keepalive"
+    },
+    "package-usbguard-installed": {
+      "group": "M28",
+      "file": "75-m28-usbguard.yaml",
+      "description": "Install USBGuard"
+    },
+    "service-usbguard-enabled": {
+      "group": "M28",
+      "file": "75-m28-usbguard.yaml",
+      "description": "Enable USBGuard"
+    },
+    "usbguard-allow-hid-and-hub": {
+      "group": "M28",
+      "file": "75-m28-usbguard.yaml",
+      "description": "Allow HID/hub USB devices"
+    },
+    "banner-etc-issue": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Set login banner"
+    },
+    "ensure-logrotate-activated": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Ensure logrotate active"
+    },
+    "service-debug-shell-disabled": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Disable debug shell"
+    },
+    "no-tmux-in-shells": {
+      "group": "M29",
+      "file": "75-m29-access-controls.yaml",
+      "description": "Restrict tmux in shells"
+    },
+    "oauth-or-oauthclient-inactivity-timeout": {
+      "group": "M30",
+      "file": "75-m30-oauth.yaml",
+      "description": "Set OAuth inactivity timeout"
+    },
+    "oauth-or-oauthclient-token-maxage": {
+      "group": "M30",
+      "file": "75-m30-oauth.yaml",
+      "description": "Set OAuth token max age"
+    },
+    "configure-network-policies-namespaces": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Configure network policies per namespace",
+      "certsuite": [
+        {
+          "id": "networking-network-policy-deny-all",
+          "suite": "networking"
+        }
+      ]
+    },
+    "rbac-least-privilege": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Review RBAC least privilege"
+    },
+    "rbac-limit-cluster-admin": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Limit cluster-admin usage",
+      "certsuite": [
+        {
+          "id": "access-control-cluster-role-bindings",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "rbac-limit-secrets-access": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Restrict secrets access"
+    },
+    "rbac-pod-creation-access": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Minimize pod creation access"
+    },
+    "rbac-wildcard-use": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Minimize wildcard roles",
+      "certsuite": [
+        {
+          "id": "access-control-cluster-role-bindings",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-pod-role-bindings",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "accounts-restrict-service-account-tokens": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Restrict SA token automounting",
+      "certsuite": [
+        {
+          "id": "access-control-pod-automount-service-account-token",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "accounts-unique-service-account": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Use unique service accounts",
+      "certsuite": [
+        {
+          "id": "access-control-pod-service-account",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "general-apply-scc": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Apply SCCs to pods",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "general-default-namespace-use": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Don't use default namespace",
+      "certsuite": [
+        {
+          "id": "access-control-namespace",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "general-default-seccomp-profile": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Enable seccomp profiles",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "general-namespaces-in-use": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Use namespaces for isolation",
+      "certsuite": [
+        {
+          "id": "access-control-namespace",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-privilege-escalation": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit privilege escalation",
+      "certsuite": [
+        {
+          "id": "access-control-security-context-privilege-escalation",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-privileged-containers": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit privileged containers",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-root-containers": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit root containers",
+      "certsuite": [
+        {
+          "id": "access-control-security-context-non-root-user-id-check",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "secrets-consider-external-storage": {
+      "group": "MAN3",
+      "file": null,
+      "description": "Manual: Use external secret storage"
+    },
+    "secrets-no-environment-variables": {
+      "group": "MAN3",
+      "file": null,
+      "description": "Manual: Don't use env vars for secrets"
+    },
+    "audit-rules-dac-modification-chmod": {
+      "group": "M3",
+      "file": null,
+      "description": "Audit DAC chmod"
+    },
+    "audit-rules-dac-modification-chown": {
+      "group": "M3",
+      "file": null,
+      "description": "Audit DAC chown"
+    },
+    "audit-rules-execution-chcon": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux chcon"
+    },
+    "audit-rules-execution-restorecon": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux restorecon"
+    },
+    "audit-rules-execution-semanage": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux semanage"
+    },
+    "audit-rules-execution-setfiles": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux setfiles"
+    },
+    "audit-rules-execution-setsebool": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux setsebool"
+    },
+    "audit-rules-execution-seunshare": {
+      "group": "M4",
+      "file": null,
+      "description": "Audit SELinux seunshare"
+    },
+    "audit-rules-kernel-module-loading-delete": {
+      "group": "M5",
+      "file": null,
+      "description": "Audit kernel module delete"
+    },
+    "audit-rules-kernel-module-loading-finit": {
+      "group": "M5",
+      "file": null,
+      "description": "Audit kernel module finit"
+    },
+    "audit-rules-kernel-module-loading-init": {
+      "group": "M5",
+      "file": null,
+      "description": "Audit kernel module init"
+    },
+    "audit-rules-time-adjtimex": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time adjtimex"
+    },
+    "audit-rules-time-clock-settime": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time clock_settime"
+    },
+    "audit-rules-time-settimeofday": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time settimeofday"
+    },
+    "audit-rules-time-stime": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time stime"
+    },
+    "audit-rules-time-watch-localtime": {
+      "group": "M6",
+      "file": null,
+      "description": "Audit time localtime"
+    },
+    "audit-rules-login-events-faillock": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login faillock"
+    },
+    "audit-rules-login-events-lastlog": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login lastlog"
+    },
+    "audit-rules-login-events-tallylog": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login tallylog"
+    },
+    "audit-rules-login-events": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit login events"
+    },
+    "audit-rules-sysadmin-actions": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit sysadmin actions"
+    },
+    "audit-rules-usergroup-modification": {
+      "group": "M7",
+      "file": null,
+      "description": "Audit usergroup modification"
+    },
+    "audit-rules-networkconfig-modification": {
+      "group": "M8",
+      "file": null,
+      "description": "Audit network config"
+    },
+    "auditd-name-format": {
+      "group": "M9",
+      "file": null,
+      "description": "Auditd name format"
+    },
+    "api-server-encryption-provider-cipher": {
+      "group": "M10",
+      "file": null,
+      "description": "API encryption"
+    },
+    "audit-profile-set": {
+      "group": "M12",
+      "file": null,
+      "description": "Audit profile"
+    },
+    "audit-log-forwarding-enabled": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: Audit log forwarding"
+    },
+    "audit-log-forwarding-uses-tls": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: Audit log forwarding TLS"
+    },
+    "idp-is-configured": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Configure identity provider"
+    },
+    "kubeadmin-removed": {
+      "group": "MAN2",
+      "file": null,
+      "description": "Manual: Remove kubeadmin"
+    },
+    "banner-or-login-template-set": {
+      "group": "M29",
+      "file": null,
+      "description": "Login banner template"
+    },
+    "scc-drop-container-capabilities": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Drop container capabilities",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-sys-admin-capability-check",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-container-allowed-capabilities": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit container capabilities",
+      "certsuite": [
+        {
+          "id": "access-control-security-context",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-bpf-capability-check",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-ipc-lock-capability-check",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-net-admin-capability-check",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-sys-admin-capability-check",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-ipc-namespace": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit IPC namespace",
+      "certsuite": [
+        {
+          "id": "access-control-pod-host-ipc",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-net-raw-capability": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit NET_RAW",
+      "certsuite": [
+        {
+          "id": "access-control-net-raw-capability-check",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-network-namespace": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit network namespace",
+      "certsuite": [
+        {
+          "id": "access-control-pod-host-network",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "scc-limit-process-id-namespace": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Limit PID namespace",
+      "certsuite": [
+        {
+          "id": "access-control-pod-host-pid",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "general-configure-imagepolicywebhook": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Image provenance"
+    },
+    "no-direct-root-logins": {
+      "group": "M29",
+      "file": null,
+      "description": "No direct root logins"
+    },
+    "service-systemd-coredump-disabled": {
+      "group": "M26",
+      "file": null,
+      "description": "Systemd coredump disabled"
+    },
+    "directory-access-var-log-audit": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: Audit log access"
+    },
+    "partition-for-var-log": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: /var/log partition"
+    },
+    "partition-for-var-log-audit": {
+      "group": "MAN4",
+      "file": null,
+      "description": "Manual: /var/log/audit partition"
+    },
+    "bios-disable-usb-boot": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Disable USB boot"
+    },
+    "wireless-disable-in-bios": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Disable WiFi in BIOS"
+    },
+    "openshift-motd-exists": {
+      "group": "M29",
+      "file": null,
+      "description": "MOTD configuration"
+    },
+    "audit-rules-unsuccessful-file-modification-chown": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed chown"
+    },
+    "audit-rules-unsuccessful-file-modification-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed creat"
+    },
+    "audit-rules-unsuccessful-file-modification-fchmod": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchmod"
+    },
+    "audit-rules-unsuccessful-file-modification-fchmodat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchmodat"
+    },
+    "audit-rules-unsuccessful-file-modification-fchown": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchown"
+    },
+    "audit-rules-unsuccessful-file-modification-fchownat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fchownat"
+    },
+    "audit-rules-unsuccessful-file-modification-fremovexattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fremovexattr"
+    },
+    "audit-rules-unsuccessful-file-modification-fsetxattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed fsetxattr"
+    },
+    "audit-rules-unsuccessful-file-modification-ftruncate": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed ftruncate"
+    },
+    "audit-rules-unsuccessful-file-modification-lchown": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed lchown"
+    },
+    "audit-rules-unsuccessful-file-modification-lremovexattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed lremovexattr"
+    },
+    "audit-rules-unsuccessful-file-modification-lsetxattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed lsetxattr"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at-o-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at-o-creat"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at-o-trunc-write": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at-o-trunc-write"
+    },
+    "audit-rules-unsuccessful-file-modification-open-by-handle-at-rule-order": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-by-handle-at-rule-order"
+    },
+    "audit-rules-unsuccessful-file-modification-open-o-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-o-creat"
+    },
+    "audit-rules-unsuccessful-file-modification-open-o-trunc-write": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-o-trunc-write"
+    },
+    "audit-rules-unsuccessful-file-modification-open-rule-order": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed open-rule-order"
+    },
+    "audit-rules-unsuccessful-file-modification-openat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat"
+    },
+    "audit-rules-unsuccessful-file-modification-openat-o-creat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat-o-creat"
+    },
+    "audit-rules-unsuccessful-file-modification-openat-o-trunc-write": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat-o-trunc-write"
+    },
+    "audit-rules-unsuccessful-file-modification-openat-rule-order": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed openat-rule-order"
+    },
+    "audit-rules-unsuccessful-file-modification-removexattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed removexattr"
+    },
+    "audit-rules-unsuccessful-file-modification-rename": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed rename"
+    },
+    "audit-rules-unsuccessful-file-modification-renameat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed renameat"
+    },
+    "audit-rules-unsuccessful-file-modification-setxattr": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed setxattr"
+    },
+    "audit-rules-unsuccessful-file-modification-truncate": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed truncate"
+    },
+    "audit-rules-unsuccessful-file-modification-unlink": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed unlink"
+    },
+    "audit-rules-unsuccessful-file-modification-unlinkat": {
+      "group": "M16",
+      "file": null,
+      "description": "Audit failed unlinkat"
+    },
+    "audit-rules-privileged-commands-at": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged at"
+    },
+    "audit-rules-privileged-commands-chage": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged chage"
+    },
+    "audit-rules-privileged-commands-chsh": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged chsh"
+    },
+    "audit-rules-privileged-commands-crontab": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged crontab"
+    },
+    "audit-rules-privileged-commands-gpasswd": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged gpasswd"
+    },
+    "audit-rules-privileged-commands-newgidmap": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged newgidmap"
+    },
+    "audit-rules-privileged-commands-newgrp": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged newgrp"
+    },
+    "audit-rules-privileged-commands-newuidmap": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged newuidmap"
+    },
+    "audit-rules-privileged-commands-pam-timestamp-check": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged pam-timestamp-check"
+    },
+    "audit-rules-privileged-commands-postdrop": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged postdrop"
+    },
+    "audit-rules-privileged-commands-postqueue": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged postqueue"
+    },
+    "audit-rules-privileged-commands-pt-chown": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged pt-chown"
+    },
+    "audit-rules-privileged-commands-ssh-keysign": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged ssh-keysign"
+    },
+    "audit-rules-privileged-commands-sudoedit": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged sudoedit"
+    },
+    "audit-rules-privileged-commands-umount": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged umount"
+    },
+    "audit-rules-privileged-commands-unix-chkpwd": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged unix-chkpwd"
+    },
+    "audit-rules-privileged-commands-userhelper": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged userhelper"
+    },
+    "audit-rules-privileged-commands-usernetctl": {
+      "group": "M17",
+      "file": null,
+      "description": "Audit privileged usernetctl"
+    },
+    "kernel-module-atm-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable atm"
+    },
+    "kernel-module-can-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable can"
+    },
+    "kernel-module-cfg80211-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable cfg80211"
+    },
+    "kernel-module-cramfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable cramfs"
+    },
+    "kernel-module-firewire-core-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable firewire-core"
+    },
+    "kernel-module-freevxfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable freevxfs"
+    },
+    "kernel-module-hfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable hfs"
+    },
+    "kernel-module-hfsplus-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable hfsplus"
+    },
+    "kernel-module-iwlmvm-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable iwlmvm"
+    },
+    "kernel-module-iwlwifi-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable iwlwifi"
+    },
+    "kernel-module-jffs2-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable jffs2"
+    },
+    "kernel-module-mac80211-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable mac80211"
+    },
+    "kernel-module-squashfs-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable squashfs"
+    },
+    "kernel-module-tipc-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable tipc"
+    },
+    "kernel-module-udf-disabled": {
+      "group": "M21",
+      "file": null,
+      "description": "Disable udf"
+    },
+    "sysctl-net-ipv4-conf-all-accept-source-route": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-accept-source-route"
+    },
+    "sysctl-net-ipv4-conf-all-log-martians": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-log-martians"
+    },
+    "sysctl-net-ipv4-conf-all-rp-filter": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-rp-filter"
+    },
+    "sysctl-net-ipv4-conf-all-secure-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-secure-redirects"
+    },
+    "sysctl-net-ipv4-conf-all-send-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-all-send-redirects"
+    },
+    "sysctl-net-ipv4-conf-default-accept-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-accept-redirects"
+    },
+    "sysctl-net-ipv4-conf-default-log-martians": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-log-martians"
+    },
+    "sysctl-net-ipv4-conf-default-rp-filter": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-rp-filter"
+    },
+    "sysctl-net-ipv4-conf-default-secure-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-secure-redirects"
+    },
+    "sysctl-net-ipv4-conf-default-send-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-conf-default-send-redirects"
+    },
+    "sysctl-net-ipv4-icmp-echo-ignore-broadcasts": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-icmp-echo-ignore-broadcasts"
+    },
+    "sysctl-net-ipv4-icmp-ignore-bogus-error-responses": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv4-icmp-ignore-bogus-error-responses"
+    },
+    "sysctl-net-ipv6-conf-all-accept-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-all-accept-redirects"
+    },
+    "sysctl-net-ipv6-conf-all-accept-source-route": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-all-accept-source-route"
+    },
+    "sysctl-net-ipv6-conf-default-accept-ra": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-default-accept-ra"
+    },
+    "sysctl-net-ipv6-conf-default-accept-redirects": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-default-accept-redirects"
+    },
+    "sysctl-net-ipv6-conf-default-accept-source-route": {
+      "group": "M22",
+      "file": null,
+      "description": "Net sysctl ipv6-conf-default-accept-source-route"
+    },
+    "coreos-audit-backlog-limit-kernel-argument": {
+      "group": "M24",
+      "file": null,
+      "description": "CoreOS kernel arg"
+    },
+    "coreos-page-poison-kernel-argument": {
+      "group": "M24",
+      "file": null,
+      "description": "CoreOS kernel arg"
+    },
+    "coreos-vsyscall-kernel-argument": {
+      "group": "M24",
+      "file": null,
+      "description": "CoreOS kernel arg"
+    },
+    "chronyd-or-ntpd-set-maxpoll": {
+      "group": "M25",
+      "file": null,
+      "description": "Chrony config"
+    },
+    "chronyd-or-ntpd-specify-multiple-servers": {
+      "group": "M25",
+      "file": null,
+      "description": "Chrony config"
+    },
+    "acs-sensor-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: ACS sensor deployment"
+    },
+    "cluster-version-operator-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: CVO check",
+      "certsuite": [
+        {
+          "id": "platform-alteration-cluster-operator-health",
+          "suite": "platform-alteration"
+        }
+      ]
+    },
+    "cluster-wide-proxy-set": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Cluster proxy configuration"
+    },
+    "container-security-operator-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Container security operator"
+    },
+    "default-ingress-ca-replaced": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Replace default ingress CA"
+    },
+    "enable-fips-mode": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Enable FIPS mode"
+    },
+    "file-integrity-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: File integrity operator"
+    },
+    "file-integrity-notification-enabled": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: File integrity notifications"
+    },
+    "fips-mode-enabled-on-all-nodes": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: FIPS on all nodes"
+    },
+    "ingress-controller-certificate": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Ingress controller certificate"
+    },
+    "machine-volume-encrypted": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Encrypt machine volumes"
+    },
+    "ocp-allowed-registries": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Configure allowed registries"
+    },
+    "ocp-allowed-registries-for-import": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Allowed registries for import"
+    },
+    "resource-requests-limits-in-daemonset": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Resource requests in daemonsets",
+      "certsuite": [
+        {
+          "id": "access-control-requests",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "resource-requests-quota": {
+      "group": "MAN1",
+      "file": null,
+      "description": "Manual: Resource quotas",
+      "certsuite": [
+        {
+          "id": "access-control-namespace-resource-quota",
+          "suite": "access-control"
+        },
+        {
+          "id": "access-control-requests",
+          "suite": "access-control"
+        }
+      ]
+    },
+    "security-profiles-operator-exists": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Security profiles operator"
+    },
+    "ingress-controller-tls-cipher-suites": {
+      "group": "M11",
+      "file": null,
+      "description": "Ingress TLS ciphers"
+    },
+    "alert-receiver-configured": {
+      "group": "MAN5",
+      "file": null,
+      "description": "Manual: Configure alert receiver"
+    }
+  }
+}

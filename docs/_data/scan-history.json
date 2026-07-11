@@ -96,5 +96,21 @@
       "rhcos_failing": 454,
       "ocp_failing": 49
     }
+  },
+  {
+    "version": "5.0",
+    "scan_date": "2026-07-10T22:13:37Z",
+    "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+    "content_image_digest": null,
+    "cluster": "cnfdt16-7c6ff",
+    "summary": {
+      "total_checks": 914,
+      "passing": 336,
+      "failing": 499,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 450,
+      "ocp_failing": 49
+    }
   }
 ]

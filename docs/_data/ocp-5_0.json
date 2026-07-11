@@ -1,16 +1,16 @@
 {
   "version": "5.0",
-  "scan_date": "2026-06-30T21:21:45Z",
+  "scan_date": "2026-07-10T22:13:37Z",
   "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
   "content_image_digest": null,
   "summary": {
     "total_checks": 914,
-    "passing": 354,
-    "failing": 481,
+    "passing": 336,
+    "failing": 499,
     "manual": 79,
     "skipped": 0,
-    "rhcos_failing": 436,
-    "ocp_failing": 45
+    "rhcos_failing": 450,
+    "ocp_failing": 49
   },
   "remediations": {
     "high": [
@@ -170,6 +170,15 @@
     ],
     "medium": [
       {
+        "name": "ocp4-cis-api-server-encryption-provider-cipher",
+        "check": "ocp4-cis-api-server-encryption-provider-cipher",
+        "status": "FAIL",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium",
+        "profile": "CIS",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-cis-audit-log-forwarding-enabled",
         "check": "ocp4-cis-audit-log-forwarding-enabled",
         "status": "FAIL",
@@ -224,6 +233,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-e8-api-server-encryption-provider-cipher",
+        "check": "ocp4-e8-api-server-encryption-provider-cipher",
+        "status": "FAIL",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-e8-ocp-allowed-registries",
         "check": "ocp4-e8-ocp-allowed-registries",
         "status": "FAIL",
@@ -239,6 +257,15 @@
         "description": "Allowed registries for import are configured\nThe configuration allowedRegistriesForImport limits the container image registries from which normal users may import images. This is important to control, as a user who can stand up a malicious registry can then import content which claims to include the SHAs of legitimate content layers. You can set the allowed repositories for import by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-import-registries-patch.yaml\n\nspec:\n allowedRegistriesForImport:\n - domainName: my-trusted-registry.internal.example.com\n   insecure: false\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-import-registries-patch.yaml)\" --type=merge",
         "severity": "medium",
         "profile": "E8",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-api-server-encryption-provider-cipher",
+        "check": "ocp4-moderate-api-server-encryption-provider-cipher",
+        "status": "FAIL",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
+        "severity": "medium",
+        "profile": "Moderate",
         "platform": "ocp"
       },
       {
@@ -273,6 +300,15 @@
         "check": "ocp4-moderate-banner-or-login-template-set",
         "status": "FAIL",
         "description": "Ensure that a OpenShift OAuth login template or a classification banner is set\nA legal notice must be configured.\n\nThis is achievable via the OAuth object by creating a custom login page, storing it in a Kubernetes Secret and referencing it in the appropriate field as described in the documentation ( https://docs.openshift.com/container-platform/latest/web_console/customizing-the-web-console.html#customizing-the-login-page_customizing-web-console )\n\nAnother way of achieving this is via a custom classification banner which is possible to set via the ConsoleNotification CRD as described in the documentation ( https://docs.openshift.com/container-platform/4.7/web_console/customizing-the-web-console.html#creating-custom-notification-banners_customizing-web-console )",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-cluster-version-operator-exists",
+        "check": "ocp4-moderate-cluster-version-operator-exists",
+        "status": "FAIL",
+        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -395,15 +431,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "status": "FAIL",
-        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-moderate-resource-requests-quota",
         "check": "ocp4-moderate-resource-requests-quota",
         "status": "FAIL",
@@ -417,6 +444,15 @@
         "check": "ocp4-pci-dss-acs-sensor-exists",
         "status": "FAIL",
         "description": "Ensure that Advanced Cluster Security (ACS) Sensor is deployed\nRed Hat Advanced Cluster Security (ACS) for Kubernetes provides comprehensive security for containerized environments. It offers deep visibility into deployed resources across Kubernetes clusters, enabling teams to detect vulnerabilities in all images, manage compliance, and enforce security policies. By integrating ACS into the Kubernetes environment, organizations can automate security checks and configurations, ensuring that every deployed application is scanned and secured according to best practices and organizational policies. Sensor is the service responsible for analyzing and monitoring the cluster. Sensor listens to the OpenShift Container Platform or Kubernetes API and Collector events to report the current state of the cluster. Sensor also triggers deploy-time and runtime violations based on RHACS Cloud Service policies. In addition, Sensor is responsible for all cluster interactions, such as applying network policies, initiating reprocessing of RHACS Cloud Service policies, and interacting with the Admission controller.",
+        "severity": "medium",
+        "profile": "PCI-DSS",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-pci-dss-api-server-encryption-provider-cipher",
+        "check": "ocp4-pci-dss-api-server-encryption-provider-cipher",
+        "status": "FAIL",
+        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
         "severity": "medium",
         "profile": "PCI-DSS",
         "platform": "ocp"
@@ -764,6 +800,42 @@
         "platform": "rhcos"
       },
       {
+        "name": "rhcos4-e8-master-sysctl-kernel-randomize-va-space",
+        "check": "rhcos4-e8-master-sysctl-kernel-randomize-va-space",
+        "status": "FAIL",
+        "description": "Enable Randomized Layout of Virtual Address Space\nTo set the runtime status of the kernel.randomize_va_space kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.randomize_va_space=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.randomize_va_space = 2",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled",
+        "check": "rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled",
+        "status": "FAIL",
+        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope",
+        "check": "rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope",
+        "status": "FAIL",
+        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-master-sysctl-net-core-bpf-jit-harden",
+        "check": "rhcos4-e8-master-sysctl-net-core-bpf-jit-harden",
+        "status": "FAIL",
+        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
         "name": "rhcos4-e8-worker-audit-rules-dac-modification-chmod",
         "check": "rhcos4-e8-worker-audit-rules-dac-modification-chmod",
         "status": "FAIL",
@@ -993,6 +1065,42 @@
         "check": "rhcos4-e8-worker-sshd-disable-user-known-hosts",
         "status": "FAIL",
         "description": "Disable SSH Support for User Known Hosts\nSSH can allow system users to connect to systems if a cache of the remote systems public keys is available. This should be disabled.\n\nTo ensure this behavior is disabled, add or correct the following line in /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf :\n\nIgnoreUserKnownHosts yes",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-randomize-va-space",
+        "check": "rhcos4-e8-worker-sysctl-kernel-randomize-va-space",
+        "status": "FAIL",
+        "description": "Enable Randomized Layout of Virtual Address Space\nTo set the runtime status of the kernel.randomize_va_space kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.randomize_va_space=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.randomize_va_space = 2",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled",
+        "check": "rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled",
+        "status": "FAIL",
+        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope",
+        "check": "rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope",
+        "status": "FAIL",
+        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden",
+        "check": "rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden",
+        "status": "FAIL",
+        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
         "severity": "medium",
         "profile": "E8",
         "platform": "rhcos"
@@ -2325,6 +2433,33 @@
         "check": "rhcos4-moderate-master-sysctl-kernel-kexec-load-disabled",
         "status": "FAIL",
         "description": "Disable Kernel Image Loading\nTo set the runtime status of the kernel.kexec_load_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.kexec_load_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.kexec_load_disabled = 1",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-master-sysctl-kernel-unprivileged-bpf-disabled",
+        "check": "rhcos4-moderate-master-sysctl-kernel-unprivileged-bpf-disabled",
+        "status": "FAIL",
+        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-master-sysctl-kernel-yama-ptrace-scope",
+        "check": "rhcos4-moderate-master-sysctl-kernel-yama-ptrace-scope",
+        "status": "FAIL",
+        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-master-sysctl-net-core-bpf-jit-harden",
+        "check": "rhcos4-moderate-master-sysctl-net-core-bpf-jit-harden",
+        "status": "FAIL",
+        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -3824,6 +3959,33 @@
         "platform": "rhcos"
       },
       {
+        "name": "rhcos4-moderate-worker-sysctl-kernel-unprivileged-bpf-disabled",
+        "check": "rhcos4-moderate-worker-sysctl-kernel-unprivileged-bpf-disabled",
+        "status": "FAIL",
+        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-worker-sysctl-kernel-yama-ptrace-scope",
+        "check": "rhcos4-moderate-worker-sysctl-kernel-yama-ptrace-scope",
+        "status": "FAIL",
+        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-worker-sysctl-net-core-bpf-jit-harden",
+        "check": "rhcos4-moderate-worker-sysctl-net-core-bpf-jit-harden",
+        "status": "FAIL",
+        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
         "name": "rhcos4-moderate-worker-sysctl-net-ipv4-conf-all-accept-redirects",
         "check": "rhcos4-moderate-worker-sysctl-net-ipv4-conf-all-accept-redirects",
         "status": "FAIL",
@@ -4759,15 +4921,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-cis-api-server-encryption-provider-cipher",
-        "check": "ocp4-cis-api-server-encryption-provider-cipher",
-        "status": "PASS",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
-        "severity": "medium",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-cis-api-server-etcd-ca",
         "check": "ocp4-cis-api-server-etcd-ca",
         "status": "PASS",
@@ -5128,15 +5281,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-e8-api-server-encryption-provider-cipher",
-        "check": "ocp4-e8-api-server-encryption-provider-cipher",
-        "status": "PASS",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-e8-api-server-tls-cipher-suites",
         "check": "ocp4-e8-api-server-tls-cipher-suites",
         "status": "PASS",
@@ -5285,15 +5429,6 @@
         "check": "ocp4-moderate-api-server-client-ca",
         "status": "PASS",
         "description": "Configure the Client Certificate Authority for the API Server\nCertificates must be provided to fully setup TLS client certificate authentication. To ensure the API Server utilizes its own TLS certificates, the clientCA must be configured. Verify that servingInfo has the clientCA configured in the openshift-kube-apiserver config configmap to something similar to:\n\n\"apiServerArguments\": {\n ...\n   \"client-ca-file\": [\n     \"/etc/kubernetes/static-pod-certs/configmaps/client-ca/ca-bundle.crt\"\n   ],\n ...",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-api-server-encryption-provider-cipher",
-        "check": "ocp4-moderate-api-server-encryption-provider-cipher",
-        "status": "PASS",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -5474,15 +5609,6 @@
         "check": "ocp4-moderate-audit-logging-enabled",
         "status": "PASS",
         "description": "Ensure that API server audit logging is enabled\nOpenShift has the ability to audit API server requests. Audit provides a security-relevant chronological set of records documenting the sequence of activities that have affected system by individual users, administrators, or other components of the system. Audit works at the API server level, logging all requests coming to the server. Verify that audit logging is enabled by checking that the API server audit log configuration is not set to `None`, which explicitly disables the functionality. For more information on how to configure the audit profile, please visit the documentation ( https://docs.openshift.com/container-platform/latest/security/audit-log-policy-config.html )",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-cluster-version-operator-exists",
-        "check": "ocp4-moderate-cluster-version-operator-exists",
-        "status": "PASS",
-        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -5695,6 +5821,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "status": "PASS",
+        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-moderate-resource-requests-limits-in-statefulset",
         "check": "ocp4-moderate-resource-requests-limits-in-statefulset",
         "status": "PASS",
@@ -5861,15 +5996,6 @@
         "check": "ocp4-pci-dss-api-server-client-ca",
         "status": "PASS",
         "description": "Configure the Client Certificate Authority for the API Server\nCertificates must be provided to fully setup TLS client certificate authentication. To ensure the API Server utilizes its own TLS certificates, the clientCA must be configured. Verify that servingInfo has the clientCA configured in the openshift-kube-apiserver config configmap to something similar to:\n\n\"apiServerArguments\": {\n ...\n   \"client-ca-file\": [\n     \"/etc/kubernetes/static-pod-certs/configmaps/client-ca/ca-bundle.crt\"\n   ],\n ...",
-        "severity": "medium",
-        "profile": "PCI-DSS",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-pci-dss-api-server-encryption-provider-cipher",
-        "check": "ocp4-pci-dss-api-server-encryption-provider-cipher",
-        "status": "PASS",
-        "description": "Configure the Encryption Provider Cipher\nWhen you enable etcd encryption, the following OpenShift API server and Kubernetes API server resources are encrypted:\n\n* Secrets\n* ConfigMaps\n* Routes\n* OAuth access tokens\n* OAuth authorize tokens\n\nWhen you enable etcd encryption, encryption keys are created. These keys are rotated on a weekly basis. You must have these keys in order to restore from an etcd backup.\n\nTo ensure the correct cipher, set the encryption type to aescbc or aesgcm in the apiserver object which configures the API server itself.\n\nspec:\n encryption:\n   type: aescbc\n\nFor more information, follow the relevant documentation ( https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html ).",
         "severity": "medium",
         "profile": "PCI-DSS",
         "platform": "ocp"
@@ -6433,42 +6559,6 @@
         "platform": "rhcos"
       },
       {
-        "name": "rhcos4-e8-master-sysctl-kernel-randomize-va-space",
-        "check": "rhcos4-e8-master-sysctl-kernel-randomize-va-space",
-        "status": "PASS",
-        "description": "Enable Randomized Layout of Virtual Address Space\nTo set the runtime status of the kernel.randomize_va_space kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.randomize_va_space=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.randomize_va_space = 2",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled",
-        "check": "rhcos4-e8-master-sysctl-kernel-unprivileged-bpf-disabled",
-        "status": "PASS",
-        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope",
-        "check": "rhcos4-e8-master-sysctl-kernel-yama-ptrace-scope",
-        "status": "PASS",
-        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-master-sysctl-net-core-bpf-jit-harden",
-        "check": "rhcos4-e8-master-sysctl-net-core-bpf-jit-harden",
-        "status": "PASS",
-        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
         "name": "rhcos4-e8-worker-auditd-data-retention-flush",
         "check": "rhcos4-e8-worker-auditd-data-retention-flush",
         "status": "PASS",
@@ -6572,42 +6662,6 @@
         "check": "rhcos4-e8-worker-sysctl-kernel-kptr-restrict",
         "status": "PASS",
         "description": "Restrict Exposed Kernel Pointer Addresses Access\nTo set the runtime status of the kernel.kptr_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.kptr_restrict= 1 \n        \n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.kptr_restrict =  1",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-worker-sysctl-kernel-randomize-va-space",
-        "check": "rhcos4-e8-worker-sysctl-kernel-randomize-va-space",
-        "status": "PASS",
-        "description": "Enable Randomized Layout of Virtual Address Space\nTo set the runtime status of the kernel.randomize_va_space kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.randomize_va_space=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.randomize_va_space = 2",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled",
-        "check": "rhcos4-e8-worker-sysctl-kernel-unprivileged-bpf-disabled",
-        "status": "PASS",
-        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope",
-        "check": "rhcos4-e8-worker-sysctl-kernel-yama-ptrace-scope",
-        "status": "PASS",
-        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden",
-        "check": "rhcos4-e8-worker-sysctl-net-core-bpf-jit-harden",
-        "status": "PASS",
-        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
         "severity": "medium",
         "profile": "E8",
         "platform": "rhcos"
@@ -6914,33 +6968,6 @@
         "check": "rhcos4-moderate-master-sysctl-kernel-kptr-restrict",
         "status": "PASS",
         "description": "Restrict Exposed Kernel Pointer Addresses Access\nTo set the runtime status of the kernel.kptr_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.kptr_restrict= 1 \n        \n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.kptr_restrict =  1",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-master-sysctl-kernel-unprivileged-bpf-disabled",
-        "check": "rhcos4-moderate-master-sysctl-kernel-unprivileged-bpf-disabled",
-        "status": "PASS",
-        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-master-sysctl-kernel-yama-ptrace-scope",
-        "check": "rhcos4-moderate-master-sysctl-kernel-yama-ptrace-scope",
-        "status": "PASS",
-        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-master-sysctl-net-core-bpf-jit-harden",
-        "check": "rhcos4-moderate-master-sysctl-net-core-bpf-jit-harden",
-        "status": "PASS",
-        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -7256,33 +7283,6 @@
         "check": "rhcos4-moderate-worker-sysctl-kernel-kptr-restrict",
         "status": "PASS",
         "description": "Restrict Exposed Kernel Pointer Addresses Access\nTo set the runtime status of the kernel.kptr_restrict kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.kptr_restrict= 1 \n        \n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.kptr_restrict =  1",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-worker-sysctl-kernel-unprivileged-bpf-disabled",
-        "check": "rhcos4-moderate-worker-sysctl-kernel-unprivileged-bpf-disabled",
-        "status": "PASS",
-        "description": "Disable Access to Network bpf() Syscall From Unprivileged Processes\nTo set the runtime status of the kernel.unprivileged_bpf_disabled kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.unprivileged_bpf_disabled=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.unprivileged_bpf_disabled = 1",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-worker-sysctl-kernel-yama-ptrace-scope",
-        "check": "rhcos4-moderate-worker-sysctl-kernel-yama-ptrace-scope",
-        "status": "PASS",
-        "description": "Restrict usage of ptrace to descendant processes\nTo set the runtime status of the kernel.yama.ptrace_scope kernel parameter, run the following command:\n\n$ sudo sysctl -w kernel.yama.ptrace_scope=1\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nkernel.yama.ptrace_scope = 1",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-worker-sysctl-net-core-bpf-jit-harden",
-        "check": "rhcos4-moderate-worker-sysctl-net-core-bpf-jit-harden",
-        "status": "PASS",
-        "description": "Harden the operation of the BPF just-in-time compiler\nTo set the runtime status of the net.core.bpf_jit_harden kernel parameter, run the following command:\n\n$ sudo sysctl -w net.core.bpf_jit_harden=2\n\nTo make sure that the setting is persistent, add the following line to a file in the directory /etc/sysctl.d :\n\nnet.core.bpf_jit_harden = 2",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "rhcos"
