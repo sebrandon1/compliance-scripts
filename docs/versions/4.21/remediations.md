@@ -1,5 +1,6 @@
 ---
 title: OCP 4.21 Remediation Groupings
+version: "4.21"
 ---
 
 # OCP 4.21 Remediation Groupings
