@@ -12,6 +12,8 @@ import argparse
 from collections import defaultdict
 
 
+IGNITION_VERSION = '3.5.0'
+
 # Configuration for paths that support .d directory includes
 MODULAR_PATHS = {
     '/etc/ssh/sshd_config': {
@@ -176,7 +178,7 @@ def generate_base_yaml(path, severity, config, out_dir, counter):
         'spec': {
             'config': {
                 'ignition': {
-                    'version': '3.1.0'
+                    'version': IGNITION_VERSION
                 },
                 'storage': {
                     'files': [
@@ -263,7 +265,7 @@ def generate_modular_yaml(
         'spec': {
             'config': {
                 'ignition': {
-                    'version': '3.1.0'
+                    'version': IGNITION_VERSION
                 },
                 'storage': {
                     'files': [
@@ -321,7 +323,7 @@ def write_combo_yaml(path, severity, sources, out_dir):
         'spec': {
             'config': {
                 'ignition': {
-                    'version': '3.1.0'
+                    'version': IGNITION_VERSION
                 },
                 'storage': {
                     'files': [
