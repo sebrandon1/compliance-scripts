@@ -67,6 +67,33 @@ def validate_scan_export(filepath):
                             f"remediations.{severity}[{i}] missing '{field}'"
                         )
 
+    if "passing_checks" in data:
+        if not isinstance(data["passing_checks"], dict):
+            errors.append("'passing_checks' must be a dict")
+        else:
+            for severity in ["high", "medium", "low"]:
+                items = data["passing_checks"].get(severity, [])
+                if not isinstance(items, list):
+                    errors.append(
+                        f"passing_checks.{severity} must be a list"
+                    )
+                    continue
+                for i, item in enumerate(items):
+                    if "name" not in item:
+                        errors.append(
+                            f"passing_checks.{severity}[{i}] missing 'name'"
+                        )
+
+    if "manual_checks" in data:
+        if not isinstance(data["manual_checks"], list):
+            errors.append("'manual_checks' must be a list")
+        else:
+            for i, item in enumerate(data["manual_checks"]):
+                if "name" not in item:
+                    errors.append(
+                        f"manual_checks[{i}] missing 'name'"
+                    )
+
     return errors
 
 
