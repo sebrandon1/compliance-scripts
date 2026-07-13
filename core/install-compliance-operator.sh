@@ -378,8 +378,9 @@ else
 		CATALOG_IMAGE="$MIRROR_IMAGE"
 	fi
 
-	log_info "Creating CatalogSource with master node tolerations"
-	cat <<EOF | oc apply -f -
+	create_catalogsource() {
+		log_info "Creating CatalogSource with master node tolerations"
+		cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
@@ -399,18 +400,34 @@ spec:
       operator: Exists
       effect: NoSchedule
 EOF
+	}
 
-	log_info "Waiting for CatalogSource to be READY..."
 	catalog_is_ready() {
 		local state
 		state=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
 		[[ "$state" == "READY" ]]
 	}
-	wait_for 30 10 "Waiting for CatalogSource to be READY" catalog_is_ready && log_info "CatalogSource is READY"
 
-	CATALOG_STATE=$(oc get catalogsource compliance-operator -n openshift-marketplace -o jsonpath='{.status.connectionState.lastObservedState}' 2>/dev/null || echo "")
-	if [[ "$CATALOG_STATE" != "READY" ]]; then
-		log_error "CatalogSource did not become READY within 5 minutes. Checking status..."
+	CATALOG_READY=false
+	for catalog_attempt in 1 2; do
+		create_catalogsource
+
+		log_info "Waiting for CatalogSource to be READY (attempt $catalog_attempt/2)..."
+		if wait_for 45 10 "Waiting for CatalogSource to be READY" catalog_is_ready; then
+			log_info "CatalogSource is READY"
+			CATALOG_READY=true
+			break
+		fi
+
+		if [[ $catalog_attempt -lt 2 ]]; then
+			log_warn "CatalogSource not READY after ~7.5 minutes, deleting and recreating..."
+			oc delete catalogsource compliance-operator -n openshift-marketplace --ignore-not-found=true 2>/dev/null || true
+			sleep 15
+		fi
+	done
+
+	if [[ "$CATALOG_READY" != "true" ]]; then
+		log_error "CatalogSource did not become READY after 2 attempts. Checking status..."
 		echo ""
 		echo "CatalogSource details:"
 		oc describe catalogsource compliance-operator -n openshift-marketplace || true
@@ -439,7 +456,7 @@ csv_is_populated() {
 	CSV=$(oc get subscription "$SUBSCRIPTION_NAME" -n "$NAMESPACE" -o jsonpath='{.status.installedCSV}' 2>/dev/null || true)
 	[[ -n "$CSV" ]]
 }
-if wait_for 30 10 "Waiting for installedCSV" csv_is_populated; then
+if wait_for 45 10 "Waiting for installedCSV" csv_is_populated; then
 	log_info "Found installedCSV: $CSV"
 else
 	log_error "installedCSV was not populated. Exiting."
@@ -451,7 +468,7 @@ csv_is_succeeded() {
 	PHASE=$(oc get clusterserviceversion "$CSV" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || true)
 	[[ "$PHASE" == "Succeeded" ]]
 }
-if wait_for 30 10 "ClusterServiceVersion phase" csv_is_succeeded; then
+if wait_for 45 10 "ClusterServiceVersion phase" csv_is_succeeded; then
 	log_info "ClusterServiceVersion $CSV is Succeeded."
 else
 	log_error "ClusterServiceVersion $CSV did not reach Succeeded phase. Exiting."

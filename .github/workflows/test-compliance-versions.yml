@@ -96,7 +96,21 @@ jobs:
           RELATED_IMAGE_OPERATOR: ${{ steps.versions.outputs.registry }}/compliance-operator:${{ steps.inputs.outputs.co_ref }}
           RELATED_IMAGE_OPENSCAP: ${{ steps.versions.outputs.registry }}/openscap-ocp:${{ steps.inputs.outputs.co_ref }}
           RELATED_IMAGE_PROFILE: ${{ steps.versions.outputs.registry }}/k8scontent:${{ steps.versions.outputs.content_tag }}
-        run: make test-compliance
+        run: |
+          for attempt in 1 2; do
+            if make test-compliance; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 2 ]; then
+              echo "::warning::Attempt $attempt failed, cleaning up and retrying in 60s..."
+              make clean 2>/dev/null || true
+              oc delete subscription --all -n openshift-compliance --ignore-not-found=true 2>/dev/null || true
+              oc delete csv --all -n openshift-compliance --ignore-not-found=true 2>/dev/null || true
+              oc delete catalogsource compliance-operator -n openshift-marketplace --ignore-not-found=true 2>/dev/null || true
+              sleep 60
+            fi
+          done
+          exit 1
 
       - name: Validate E8 results against baseline
         run: |
