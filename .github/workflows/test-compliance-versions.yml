@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        co_ref: [v1.7.0, v1.8.2, v1.9.0]
+        co_ref: [v1.8.2, v1.9.0]
         ocp_version: ['4.20', '4.21']
     permissions:
       contents: read
