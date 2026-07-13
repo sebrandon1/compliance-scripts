@@ -29,7 +29,6 @@ NAMESPACE=$(get_compliance_namespace)
 DESTINATION_DIR="${REMEDIATION_DIR:-complianceremediations}"
 SEVERITY_FILTER="${SEVERITY_FILTER:-}"
 CLEAN_OUTPUT=0
-DRY_RUN="${DRY_RUN:-false}"
 
 usage() {
 	echo "Usage: $0 [OPTIONS]"
