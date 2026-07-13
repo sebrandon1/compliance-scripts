@@ -137,10 +137,8 @@ EOYAML
 	if [[ "$DRY_RUN" == "true" ]]; then
 		echo "---"
 		echo "$yaml_content"
-		echo "$yaml_content" | oc apply --dry-run=server -f -
-	else
-		echo "$yaml_content" | oc apply -f -
 	fi
+	echo "$yaml_content" | apply_inline
 }
 
 # ============================================================================

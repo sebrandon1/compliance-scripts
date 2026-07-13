@@ -33,7 +33,6 @@ load_env
 NAMESPACE=$(get_compliance_namespace)
 NO_PVC="${NO_PVC:-false}"
 PLATFORM="${PLATFORM:-all}"
-DRY_RUN="${DRY_RUN:-false}"
 
 usage() {
 	echo "Usage: $0 [OPTIONS]"

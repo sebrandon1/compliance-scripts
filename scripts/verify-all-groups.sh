@@ -220,12 +220,7 @@ while IFS= read -r group_id; do
 		[[ ! -f "$mc_path" ]] && continue
 		kind=$(yq e '.kind' "$mc_path" 2>/dev/null || echo "")
 		if [[ "$kind" == "MachineConfig" || "$kind" == "APIServer" || "$kind" == "OAuth" ]]; then
-			if [[ "$DRY_RUN" == "true" ]]; then
-				log_info "  [DRY-RUN] Would apply: $(basename "$mc_path") ($kind)"
-			else
-				log_info "  Applying: $(basename "$mc_path") ($kind)"
-				oc apply -f "$mc_path"
-			fi
+			apply_resource "$mc_path"
 			APPLIED_TOTAL=$((APPLIED_TOTAL + 1))
 		fi
 	done
