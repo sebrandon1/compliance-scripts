@@ -36,3 +36,18 @@ jobs:
         run: pip install pytest pyyaml
       - name: Run tests
         run: make python-test
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: pip install mypy pyyaml types-PyYAML types-requests types-beautifulsoup4
+      - name: Run mypy
+        continue-on-error: true
+        run: mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py
