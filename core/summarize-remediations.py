@@ -3,12 +3,10 @@
 Summarize compliance remediation descriptions using Claude API.
 Adds a concise "summary" field to each check in the JSON data file.
 
-Usage: ./summarize-remediations.py <json-file>
-Example: ./summarize-remediations.py docs/_data/ocp-4_21.json
-
 Requires: ANTHROPIC_API_KEY environment variable
 """
 
+import argparse
 import json
 import os
 import sys
@@ -70,11 +68,16 @@ def process_checks(client, checks: list) -> list:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: ./summarize-remediations.py <json-file>", file=sys.stderr)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description="Generate AI summaries for compliance remediations"
+    )
+    parser.add_argument(
+        "json_file",
+        help="Path to the compliance JSON file"
+    )
+    args = parser.parse_args()
 
-    json_file = sys.argv[1]
+    json_file = args.json_file
 
     if not os.path.exists(json_file):
         print(f"Error: File not found: {json_file}", file=sys.stderr)
