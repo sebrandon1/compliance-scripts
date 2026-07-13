@@ -5,8 +5,10 @@ Uses pattern matching to generate concise summaries.
 """
 
 import json
+import os
 import re
 import sys
+import tempfile
 
 
 def generate_summary(name: str, description: str) -> str:
@@ -317,8 +319,16 @@ def main():
         total += process_checks(data["passing_checks"]["low"])
 
     print(f"\nWriting {total} summaries to {json_file}...")
-    with open(json_file, 'w') as f:
-        json.dump(data, f, indent=2)
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        suffix='.json', dir=os.path.dirname(os.path.abspath(json_file))
+    )
+    try:
+        with os.fdopen(tmp_fd, 'w') as f:
+            json.dump(data, f, indent=2)
+        os.replace(tmp_path, json_file)
+    except BaseException:
+        os.unlink(tmp_path)
+        raise
 
     print("Done!")
 
