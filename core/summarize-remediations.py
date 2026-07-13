@@ -12,6 +12,7 @@ Requires: ANTHROPIC_API_KEY environment variable
 import json
 import os
 import sys
+import tempfile
 import anthropic
 
 
@@ -109,8 +110,16 @@ def main():
 
     # Write back
     print(f"\nWriting updated data to {json_file}...")
-    with open(json_file, 'w') as f:
-        json.dump(data, f, indent=2)
+    tmp_fd, tmp_path = tempfile.mkstemp(
+        suffix='.json', dir=os.path.dirname(os.path.abspath(json_file))
+    )
+    try:
+        with os.fdopen(tmp_fd, 'w') as f:
+            json.dump(data, f, indent=2)
+        os.replace(tmp_path, json_file)
+    except BaseException:
+        os.unlink(tmp_path)
+        raise
 
     print("Done!")
 
