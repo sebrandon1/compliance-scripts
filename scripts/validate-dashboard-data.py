@@ -9,6 +9,7 @@ Usage: python3 scripts/validate-dashboard-data.py [docs/_data/]
 """
 import json
 import os
+import re
 import sys
 import glob
 
@@ -98,7 +99,7 @@ def validate_scan_export(filepath):
 
 
 def validate_tracking(filepath):
-    """Validate tracking.json structure."""
+    """Validate tracking.json structure and field consistency."""
     errors = []
     with open(filepath) as f:
         data = json.load(f)
@@ -112,45 +113,204 @@ def validate_tracking(filepath):
         if not isinstance(data["groups"], dict):
             errors.append("'groups' must be a dict")
         else:
-            required_group_fields = {
-                "title", "severity", "priority", "status", "platform"
-            }
-            for gid, group in data["groups"].items():
-                missing = required_group_fields - set(group.keys())
-                if missing:
-                    errors.append(
-                        f"groups.{gid} missing fields: {missing}"
-                    )
-
-                valid_severities = {"HIGH", "MEDIUM", "LOW", "MANUAL"}
-                if group.get("severity") not in valid_severities:
-                    errors.append(
-                        f"groups.{gid} invalid severity: "
-                        f"'{group.get('severity')}'"
-                    )
-
-                valid_platforms = {"rhcos", "ocp", "mixed"}
-                if group.get("platform") not in valid_platforms:
-                    errors.append(
-                        f"groups.{gid} invalid platform: "
-                        f"'{group.get('platform')}'"
-                    )
+            errors.extend(_validate_tracking_groups(data["groups"]))
 
     if "remediations" in data:
         if not isinstance(data["remediations"], dict):
             errors.append("'remediations' must be a dict")
         else:
-            group_ids = set(data.get("groups", {}).keys())
-            for rem_name, rem in data["remediations"].items():
-                if "group" not in rem:
-                    errors.append(
-                        f"remediations.{rem_name} missing 'group'"
-                    )
-                elif rem["group"] not in group_ids:
-                    errors.append(
-                        f"remediations.{rem_name} references "
-                        f"unknown group '{rem['group']}'"
-                    )
+            errors.extend(_validate_tracking_remediations(
+                data["remediations"],
+                set(data.get("groups", {}).keys())
+            ))
+
+    return errors
+
+
+# Valid enum values for tracking group fields
+VALID_SEVERITIES = {"HIGH", "MEDIUM", "LOW", "MANUAL"}
+VALID_PLATFORMS = {"rhcos", "ocp", "mixed"}
+VALID_STATUSES = {
+    "verified", "verified-needed", "partial", "pending",
+    "not-applicable",
+}
+VALID_STATUS_PREFIXES = ("pass-vanilla",)
+VALID_PRIORITY_LABELS = {"Critical", "High", "Medium", "Low"}
+VALID_PR_STATES = {"open", "closed", "merged"}
+VALID_UPSTREAM_VERDICTS = {
+    "upstream-candidate", "upstream-pr-exists",
+    "ran-only", "pass-vanilla", "platform-config",
+    "site-specific", "not-applicable",
+}
+GROUP_ID_PATTERN = re.compile(r'^(H|M|L|MAN)\d+$')
+
+
+def _validate_tracking_groups(groups):
+    """Validate all groups in a tracking file."""
+    errors = []
+    group_ids = set(groups.keys())
+
+    required_group_fields = {
+        "title", "severity", "priority", "status", "platform"
+    }
+
+    for gid, group in groups.items():
+        prefix = f"groups.{gid}"
+
+        # Group ID format
+        if not GROUP_ID_PATTERN.match(gid):
+            errors.append(
+                f"{prefix}: invalid group ID format "
+                f"(expected H#, M#, L#, or MAN#)"
+            )
+
+        # Required fields
+        missing = required_group_fields - set(group.keys())
+        if missing:
+            errors.append(f"{prefix} missing fields: {missing}")
+
+        # Severity enum
+        if group.get("severity") not in VALID_SEVERITIES:
+            errors.append(
+                f"{prefix} invalid severity: "
+                f"'{group.get('severity')}'"
+            )
+
+        # Platform enum
+        if group.get("platform") not in VALID_PLATFORMS:
+            errors.append(
+                f"{prefix} invalid platform: "
+                f"'{group.get('platform')}'"
+            )
+
+        # Status: must be a known value or start with a known prefix
+        status = group.get("status")
+        if status is not None:
+            status_ok = (
+                status in VALID_STATUSES
+                or any(
+                    status.startswith(p) for p in VALID_STATUS_PREFIXES
+                )
+            )
+            if not status_ok:
+                errors.append(
+                    f"{prefix} invalid status: '{status}'"
+                )
+
+        # Priority must be int
+        priority = group.get("priority")
+        if priority is not None and not isinstance(priority, int):
+            errors.append(
+                f"{prefix} priority must be int, "
+                f"got {type(priority).__name__}"
+            )
+
+        # Priority label enum (optional field)
+        plabel = group.get("priority_label")
+        if plabel is not None and plabel not in VALID_PRIORITY_LABELS:
+            errors.append(
+                f"{prefix} invalid priority_label: '{plabel}'"
+            )
+
+        # String-or-null fields
+        for field in ["title", "jira", "compare", "status_note",
+                      "jira_status", "last_sync"]:
+            val = group.get(field)
+            if val is not None and not isinstance(val, str):
+                errors.append(
+                    f"{prefix} {field} must be string or null, "
+                    f"got {type(val).__name__}"
+                )
+
+        # pr: string or int or null (some files use int PR numbers)
+        pr_val = group.get("pr")
+        if pr_val is not None and not isinstance(pr_val, (str, int)):
+            errors.append(
+                f"{prefix} pr must be string, int, or null, "
+                f"got {type(pr_val).__name__}"
+            )
+
+        # pr_state enum (nullable)
+        pr_state = group.get("pr_state")
+        if pr_state is not None and pr_state not in VALID_PR_STATES:
+            errors.append(
+                f"{prefix} invalid pr_state: '{pr_state}'"
+            )
+
+        # prev_group / next_group must reference valid group IDs or null
+        for nav in ["prev_group", "next_group"]:
+            nav_val = group.get(nav)
+            if nav_val is not None and nav_val not in group_ids:
+                errors.append(
+                    f"{prefix} {nav} references unknown "
+                    f"group '{nav_val}'"
+                )
+
+        # upstream_verdict enum (optional, nullable)
+        verdict = group.get("upstream_verdict")
+        if verdict is not None and verdict not in VALID_UPSTREAM_VERDICTS:
+            errors.append(
+                f"{prefix} invalid upstream_verdict: '{verdict}'"
+            )
+
+        # upstream must be a list if present
+        upstream = group.get("upstream")
+        if upstream is not None:
+            if not isinstance(upstream, list):
+                errors.append(f"{prefix} upstream must be a list")
+            else:
+                for i, entry in enumerate(upstream):
+                    if not isinstance(entry, dict):
+                        errors.append(
+                            f"{prefix} upstream[{i}] must be "
+                            f"an object"
+                        )
+
+    return errors
+
+
+def _validate_tracking_remediations(remediations, group_ids):
+    """Validate all remediations in a tracking file."""
+    errors = []
+
+    for rem_name, rem in remediations.items():
+        prefix = f"remediations.{rem_name}"
+
+        if not isinstance(rem, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+
+        if "group" not in rem:
+            errors.append(f"{prefix} missing 'group'")
+        elif rem["group"] not in group_ids:
+            errors.append(
+                f"{prefix} references unknown group '{rem['group']}'"
+            )
+
+        # Optional string fields
+        for field in ["description", "file"]:
+            val = rem.get(field)
+            if val is not None and not isinstance(val, str):
+                errors.append(
+                    f"{prefix} {field} must be string or null, "
+                    f"got {type(val).__name__}"
+                )
+
+        # certsuite can be a string or a list of objects
+        certsuite = rem.get("certsuite")
+        if certsuite is not None:
+            if isinstance(certsuite, list):
+                for i, entry in enumerate(certsuite):
+                    if not isinstance(entry, dict):
+                        errors.append(
+                            f"{prefix} certsuite[{i}] must be "
+                            f"an object"
+                        )
+            elif not isinstance(certsuite, str):
+                errors.append(
+                    f"{prefix} certsuite must be string, list, "
+                    f"or null, got {type(certsuite).__name__}"
+                )
 
     return errors
 

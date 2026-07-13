@@ -63,15 +63,37 @@ def make_valid_tracking():
                 "title": "Crypto Policy",
                 "severity": "HIGH",
                 "priority": 1,
-                "status": "pass",
+                "priority_label": "Critical",
+                "status": "verified",
                 "platform": "rhcos",
+                "jira": "CNF-21212",
+                "pr": "735",
+                "compare": "compliance/4.22/h1-crypto-policy",
+                "jira_status": "In Progress",
+                "pr_state": "open",
+                "prev_group": None,
+                "next_group": "M1",
+                "last_sync": "2026-05-05",
+                "status_note": "Verified on cnfdt16.",
+                "upstream_verdict": "ran-only",
             },
             "M1": {
                 "title": "SSHD Config",
                 "severity": "MEDIUM",
                 "priority": 2,
+                "priority_label": "High",
                 "status": "pass-vanilla",
                 "platform": "rhcos",
+                "jira": "CNF-22620",
+                "pr": None,
+                "compare": None,
+                "jira_status": "In Progress",
+                "pr_state": None,
+                "prev_group": "H1",
+                "next_group": None,
+                "last_sync": None,
+                "status_note": "PASS on vanilla RHCOS 9.8.",
+                "upstream_verdict": "pass-vanilla",
             },
         },
         "remediations": {
@@ -306,6 +328,251 @@ class TestValidateTracking:
         data = make_valid_tracking()
         data["groups"]["H1"]["severity"] = "LOW"
         data["groups"]["M1"]["severity"] = "MANUAL"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert errors == []
+
+    def test_invalid_group_id_format(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["INVALID"] = data["groups"].pop("H1")
+        data["remediations"]["rhcos4-crypto-policy"]["group"] = "INVALID"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("invalid group ID format" in e for e in errors)
+
+    def test_valid_group_id_formats(self, tmpdir):
+        data = make_valid_tracking()
+        # Add groups with all valid prefixes
+        base = {
+            "title": "Test", "severity": "LOW", "priority": 4,
+            "status": "pending", "platform": "rhcos",
+            "prev_group": None, "next_group": None,
+        }
+        data["groups"]["L1"] = dict(base)
+        data["groups"]["MAN1"] = dict(base, severity="MANUAL")
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert errors == []
+
+    def test_invalid_status(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["status"] = "unknown-status"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("invalid status" in e for e in errors)
+
+    def test_valid_status_values(self, tmpdir):
+        """All known status values should pass."""
+        data = make_valid_tracking()
+        for status in ["verified", "verified-needed", "partial",
+                       "pending", "not-applicable", "pass-vanilla",
+                       "pass-vanilla-rhcos9.8"]:
+            data["groups"]["H1"]["status"] = status
+            fp = write_json(tmpdir, "tracking.json", data)
+            errors = validate_dashboard.validate_tracking(fp)
+            status_errors = [e for e in errors if "invalid status" in e]
+            assert status_errors == [], f"status '{status}' should be valid"
+
+    def test_priority_must_be_int(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["priority"] = "high"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("priority must be int" in e for e in errors)
+
+    def test_invalid_priority_label(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["priority_label"] = "Urgent"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("invalid priority_label" in e for e in errors)
+
+    def test_all_valid_priority_labels(self, tmpdir):
+        data = make_valid_tracking()
+        for label in ["Critical", "High", "Medium", "Low"]:
+            data["groups"]["H1"]["priority_label"] = label
+            fp = write_json(tmpdir, "tracking.json", data)
+            errors = validate_dashboard.validate_tracking(fp)
+            label_errors = [
+                e for e in errors if "invalid priority_label" in e
+            ]
+            assert label_errors == [], f"priority_label '{label}' valid"
+
+    def test_invalid_pr_state(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["pr_state"] = "draft"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("invalid pr_state" in e for e in errors)
+
+    def test_valid_pr_states(self, tmpdir):
+        data = make_valid_tracking()
+        for state in ["open", "closed", "merged", None]:
+            data["groups"]["H1"]["pr_state"] = state
+            fp = write_json(tmpdir, "tracking.json", data)
+            errors = validate_dashboard.validate_tracking(fp)
+            state_errors = [
+                e for e in errors if "invalid pr_state" in e
+            ]
+            assert state_errors == [], f"pr_state '{state}' should be valid"
+
+    def test_prev_group_references_unknown(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["prev_group"] = "NONEXISTENT"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("prev_group references unknown" in e for e in errors)
+
+    def test_next_group_references_unknown(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["next_group"] = "NONEXISTENT"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("next_group references unknown" in e for e in errors)
+
+    def test_invalid_upstream_verdict(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["upstream_verdict"] = "maybe"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("invalid upstream_verdict" in e for e in errors)
+
+    def test_valid_upstream_verdicts(self, tmpdir):
+        data = make_valid_tracking()
+        for verdict in ["upstream-candidate", "upstream-pr-exists",
+                        "ran-only", "pass-vanilla", "platform-config",
+                        "site-specific", "not-applicable", None]:
+            data["groups"]["H1"]["upstream_verdict"] = verdict
+            fp = write_json(tmpdir, "tracking.json", data)
+            errors = validate_dashboard.validate_tracking(fp)
+            verdict_errors = [
+                e for e in errors if "invalid upstream_verdict" in e
+            ]
+            assert verdict_errors == [], \
+                f"upstream_verdict '{verdict}' should be valid"
+
+    def test_upstream_must_be_list(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["upstream"] = "not-a-list"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("upstream must be a list" in e for e in errors)
+
+    def test_upstream_entries_must_be_objects(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["upstream"] = ["not-an-object"]
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("upstream[0] must be an object" in e for e in errors)
+
+    def test_upstream_valid_list(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["upstream"] = [
+            {"setting": "test", "repo": "test/repo"}
+        ]
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert not any("upstream" in e for e in errors)
+
+    def test_pr_can_be_string_or_int(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["pr"] = 735
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        pr_errors = [e for e in errors if "pr must be" in e]
+        assert pr_errors == []
+
+    def test_pr_wrong_type(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["pr"] = ["not", "valid"]
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("pr must be string, int, or null" in e for e in errors)
+
+    def test_string_field_wrong_type(self, tmpdir):
+        data = make_valid_tracking()
+        data["groups"]["H1"]["jira"] = 12345
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("jira must be string or null" in e for e in errors)
+
+    def test_remediation_not_an_object(self, tmpdir):
+        data = make_valid_tracking()
+        data["remediations"]["bad-rem"] = "not-an-object"
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("must be an object" in e for e in errors)
+
+    def test_remediation_optional_string_fields(self, tmpdir):
+        data = make_valid_tracking()
+        data["remediations"]["rhcos4-crypto-policy"] = {
+            "group": "H1",
+            "description": "A check",
+            "file": "/etc/crypto-policy",
+            "certsuite": "some-test",
+        }
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert errors == []
+
+    def test_remediation_field_wrong_type(self, tmpdir):
+        data = make_valid_tracking()
+        data["remediations"]["rhcos4-crypto-policy"] = {
+            "group": "H1",
+            "description": 42,
+        }
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("description must be string or null" in e for e in errors)
+
+    def test_remediation_certsuite_as_list(self, tmpdir):
+        data = make_valid_tracking()
+        data["remediations"]["rhcos4-crypto-policy"] = {
+            "group": "H1",
+            "certsuite": [
+                {"id": "test-1", "suite": "networking"},
+            ],
+        }
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert errors == []
+
+    def test_remediation_certsuite_list_bad_entry(self, tmpdir):
+        data = make_valid_tracking()
+        data["remediations"]["rhcos4-crypto-policy"] = {
+            "group": "H1",
+            "certsuite": ["not-an-object"],
+        }
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("certsuite[0] must be an object" in e for e in errors)
+
+    def test_remediation_certsuite_wrong_type(self, tmpdir):
+        data = make_valid_tracking()
+        data["remediations"]["rhcos4-crypto-policy"] = {
+            "group": "H1",
+            "certsuite": 42,
+        }
+        fp = write_json(tmpdir, "tracking.json", data)
+        errors = validate_dashboard.validate_tracking(fp)
+        assert any("certsuite must be string, list, or null" in e
+                   for e in errors)
+
+    def test_minimal_group_still_valid(self, tmpdir):
+        """Groups with only required fields should pass."""
+        data = {
+            "meta": {},
+            "groups": {
+                "H1": {
+                    "title": "Test",
+                    "severity": "HIGH",
+                    "priority": 1,
+                    "status": "pending",
+                    "platform": "rhcos",
+                },
+            },
+            "remediations": {},
+        }
         fp = write_json(tmpdir, "tracking.json", data)
         errors = validate_dashboard.validate_tracking(fp)
         assert errors == []

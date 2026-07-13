@@ -28,7 +28,7 @@ BG_BLUE := \033[44m
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
         export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
-        mirror-images rhcos-static-scan shell-smoke-test
+        mirror-images rhcos-static-scan shell-smoke-test dashboard-validate
 
 # Default target
 all: help
@@ -433,6 +433,8 @@ diff-scans: ## 📊 Compare two scan exports and report differences
 validate-dashboard-data: ## 🔍 Validate dashboard JSON data files
 	@echo "$(BOLD)$(BLUE)🔍 Validating dashboard data...$(RESET)"
 	@python3 scripts/validate-dashboard-data.py docs/_data/ || (echo "$(RED)❌ Dashboard data validation failed!$(RESET)" && exit 1)
+
+dashboard-validate: validate-dashboard-data ## 🔍 Validate tracking.json and dashboard data (pre-push check)
 
 shell-smoke-test: ## 🧪 Run shell script syntax checks (bash -n)
 	@echo "$(BOLD)$(BLUE)🧪 Running shell smoke tests...$(RESET)"

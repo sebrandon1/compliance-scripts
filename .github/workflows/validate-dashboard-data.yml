@@ -5,11 +5,13 @@ on:
     paths:
       - "docs/_data/**"
       - "scripts/validate-dashboard-data.py"
+      - "tests/test_validate_dashboard_data.py"
       - ".github/workflows/validate-dashboard-data.yml"
   push:
     branches: ["main"]
     paths:
       - "docs/_data/**"
+      - "scripts/validate-dashboard-data.py"
 
 permissions: read-all
 
