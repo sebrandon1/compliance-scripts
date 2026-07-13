@@ -78,7 +78,7 @@ class TestParseMachineConfigFiles:
         key = list(result.keys())[0]
         assert key[0] == "/etc/sysctl.d/99-test.conf"
         assert len(result[key]) == 1
-        assert result[key][0][1] == ["net.ipv4.ip_forward=1"]
+        assert result[key][0]['lines'] == ["net.ipv4.ip_forward=1"]
 
     def test_severity_from_directory(self, tmpdir):
         high_dir = os.path.join(tmpdir, "high")
@@ -160,7 +160,10 @@ class TestParseMachineConfigFiles:
 
 class TestWriteComboYaml:
     def test_basic_output(self, tmpdir):
-        sources = [("file1.yaml", ["line1", "line2"]), ("file2.yaml", ["line2", "line3"])]
+        sources = [
+            {"source_file": "file1.yaml", "lines": ["line1", "line2"], "role": "worker", "basename": "file1.yaml"},
+            {"source_file": "file2.yaml", "lines": ["line2", "line3"], "role": "worker", "basename": "file2.yaml"},
+        ]
         combine.write_combo_yaml("/etc/test.conf", "high", sources, tmpdir, "none")
 
         outfile = os.path.join(tmpdir, "test-high-combo.yaml")
@@ -172,7 +175,10 @@ class TestWriteComboYaml:
         assert doc["spec"]["config"]["ignition"]["version"] == "3.5.0"
 
     def test_deduplication(self, tmpdir):
-        sources = [("f1.yaml", ["aaa", "bbb"]), ("f2.yaml", ["bbb", "ccc"])]
+        sources = [
+            {"source_file": "f1.yaml", "lines": ["aaa", "bbb"], "role": "worker", "basename": "f1.yaml"},
+            {"source_file": "f2.yaml", "lines": ["bbb", "ccc"], "role": "worker", "basename": "f2.yaml"},
+        ]
         combine.write_combo_yaml("/etc/test.conf", None, sources, tmpdir, "none")
 
         outfile = os.path.join(tmpdir, "test-combo.yaml")
@@ -186,12 +192,12 @@ class TestWriteComboYaml:
         assert sorted(lines) == ["aaa", "bbb", "ccc"]
 
     def test_no_severity_in_filename(self, tmpdir):
-        sources = [("f1.yaml", ["test"])]
+        sources = [{"source_file": "f1.yaml", "lines": ["test"], "role": "worker", "basename": "f1.yaml"}]
         combine.write_combo_yaml("/etc/test.conf", None, sources, tmpdir, "none")
         assert os.path.exists(os.path.join(tmpdir, "test-combo.yaml"))
 
     def test_provenance_header(self, tmpdir):
-        sources = [("f1.yaml", ["test"])]
+        sources = [{"source_file": "f1.yaml", "lines": ["test"], "role": "worker", "basename": "f1.yaml"}]
         combine.write_combo_yaml("/etc/test.conf", "high", sources, tmpdir, "provenance")
         with open(os.path.join(tmpdir, "test-high-combo.yaml")) as f:
             first_line = f.readline()
@@ -207,7 +213,10 @@ class TestMoveOriginals:
         with open(os.path.join(tmpdir, "f2.yaml"), 'w') as f:
             f.write("test")
 
-        combo_map = {("/etc/test.conf", None): [("f1.yaml", ["a"]), ("f2.yaml", ["b"])]}
+        combo_map = {("/etc/test.conf", None): [
+            {"source_file": "f1.yaml", "lines": ["a"], "role": "worker", "basename": "f1.yaml"},
+            {"source_file": "f2.yaml", "lines": ["b"], "role": "worker", "basename": "f2.yaml"},
+        ]}
         combine.move_originals_to_combo(combo_map, tmpdir, combo_dir)
 
         assert not os.path.exists(os.path.join(tmpdir, "f1.yaml"))
@@ -219,7 +228,9 @@ class TestMoveOriginals:
         with open(os.path.join(tmpdir, "f1.yaml"), 'w') as f:
             f.write("test")
 
-        combo_map = {("/etc/test.conf", None): [("f1.yaml", ["a"])]}
+        combo_map = {("/etc/test.conf", None): [
+            {"source_file": "f1.yaml", "lines": ["a"], "role": "worker", "basename": "f1.yaml"},
+        ]}
         combine.move_originals_to_combo(combo_map, tmpdir, combo_dir)
 
         assert os.path.exists(os.path.join(tmpdir, "f1.yaml"))

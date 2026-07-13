@@ -9,7 +9,12 @@ import sys
 import urllib.parse
 import yaml
 import argparse
-from collections import defaultdict
+
+# Add project root to path for shared module imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from lib.compliance_utils import (  # noqa: E402
+    safe_shortname, parse_machineconfig_files, parse_severity_filter,
+)
 
 
 IGNITION_VERSION = '3.5.0'
@@ -35,103 +40,6 @@ MODULAR_PATHS = {
         'file_extension': '',
     },
 }
-
-
-def safe_shortname(path):
-    """Convert a file path to a safe shortname for filenames."""
-    import re
-    basename = os.path.basename(path)
-
-    # For files starting with numbering, extract the meaningful part
-    match = re.match(r'(\d+-)?(.+?)(?:\.[^.]+)?$', basename)
-    if match:
-        prefix = match.group(1) or ''
-        name = match.group(2)
-        return f"{prefix}{name}"
-
-    # Clean up the basename
-    name = re.sub(r'\.[^.]+$', '', basename)  # Remove extension
-    name = re.sub(r'[^a-zA-Z0-9\-_]', '-', name)  # Replace special chars
-    name = re.sub(r'-+', '-', name)  # Collapse multiple hyphens
-    return name.strip('-')
-
-
-def parse_machineconfig_files(src_dir):
-    """Parse all MachineConfig YAMLs and group by (file path, severity).
-
-    Returns (files_map, skipped) where skipped is a list of (filepath, error)
-    tuples for files that could not be parsed.
-    """
-    files_map = defaultdict(
-        list)  # (path, severity) -> list of (source_file, role, decoded_lines)
-    skipped = []
-
-    severity_names = {"high", "medium", "low"}
-
-    for root, dirs, files in os.walk(src_dir):
-        # Determine severity from the relative root path segments
-        rel_root = os.path.relpath(root, src_dir)
-        parts = [
-            p.lower() for p in rel_root.split(
-                os.sep) if p not in (
-                ".", "")]
-        severity = None
-        for p in parts:
-            if p in severity_names:
-                severity = p
-                break
-
-        for fname in files:
-            if not fname.endswith('.yaml'):
-                continue
-            fpath = os.path.join(root, fname)
-            if not os.path.isfile(fpath):
-                continue
-
-            try:
-                with open(fpath) as f:
-                    docs = list(yaml.safe_load_all(f))
-            except yaml.YAMLError as e:
-                print(f"WARNING: Skipping {fpath}: YAML parse error: {e}",
-                      file=sys.stderr)
-                skipped.append((fpath, str(e)))
-                continue
-
-            for doc in docs:
-                if not doc or doc.get('kind') != 'MachineConfig':
-                    continue
-
-                # Extract role from labels or metadata name
-                role = doc.get('metadata', {}).get('labels', {}).get(
-                    'machineconfiguration.openshift.io/role', 'worker'
-                )
-
-                files_entries = doc.get(
-                    'spec',
-                    {}).get(
-                    'config',
-                    {}).get(
-                    'storage',
-                    {}).get(
-                    'files',
-                    [])
-                for file_entry in files_entries:
-                    path = file_entry.get('path')
-                    source = file_entry.get('contents', {}).get('source')
-                    if path and source and source.startswith('data:,'):
-                        decoded = urllib.parse.unquote(source[6:])
-                        lines = [
-                            line for line in decoded.splitlines()
-                            if line.strip()
-                        ]
-                        files_map[(path, severity)].append({
-                            'source_file': os.path.relpath(fpath, src_dir),
-                            'role': role,
-                            'lines': lines,
-                            'basename': os.path.basename(fpath)
-                        })
-
-    return files_map, skipped
 
 
 def extract_meaningful_settings(lines):
@@ -373,18 +281,7 @@ def main():
     src_dir = args.src_dir
     out_dir = args.out_dir
 
-    # Parse and validate severity filter
-    severity_filter = None
-    if args.severity:
-        raw = args.severity.strip().lower().replace(' ', '')
-        requested = [s for s in raw.split(',') if s]
-        valid = {"high", "medium", "low"}
-        invalid = [s for s in requested if s not in valid]
-        if invalid:
-            raise SystemExit(
-                f"Invalid severity: {
-                    ','.join(invalid)}. Allowed: high, medium, low")
-        severity_filter = set(requested)
+    severity_filter = parse_severity_filter(args.severity)
 
     os.makedirs(out_dir, exist_ok=True)
 

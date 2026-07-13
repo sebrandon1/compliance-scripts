@@ -21,28 +21,11 @@ Setup:
 """
 
 import sys
+import os
 
-
-# Check for virtual environment FIRST, before other imports
-def check_virtualenv():
-    """
-    Check if running in a virtual environment and warn if not.
-    """
-    in_venv = (
-        hasattr(sys, 'real_prefix')
-        or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-    )
-
-    if not in_venv:
-        print("Warning: Not running in a virtual environment!", file=sys.stderr)
-        print("It's recommended to use a virtual environment to avoid dependency conflicts.", file=sys.stderr)
-        print("\nTo set up a virtual environment:", file=sys.stderr)
-        print("  python3 -m venv venv", file=sys.stderr)
-        print("  source venv/bin/activate", file=sys.stderr)
-        print("  pip install -r requirements.txt", file=sys.stderr)
-        print("  playwright install chromium", file=sys.stderr)
-        print("\nContinuing anyway...\n", file=sys.stderr)
-
+# Add project root to path for shared module imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from lib.compliance_utils import check_virtualenv  # noqa: E402
 
 # Check for virtual environment before any other imports
 check_virtualenv()

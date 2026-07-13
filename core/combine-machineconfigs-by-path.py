@@ -21,100 +21,27 @@ import os
 import sys
 import urllib.parse
 import argparse
-from collections import defaultdict
 
-# Check for required dependencies
-try:
-    import yaml
-except ImportError:
-    print("ERROR: PyYAML not installed.", file=sys.stderr)
-    print("Install with: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
-
-
-def safe_shortname(path):
-    """Convert a file path to a safe shortname for filenames."""
-    import re
-    # Get the basename (final component) of the path
-    basename = os.path.basename(path)
-
-    # For audit rules files, extract the meaningful part
-    if 'audit' in path and basename.startswith('75-'):
-        # Extract the meaningful part after '75-' and before any file extension
-        match = re.match(r'75-(.+?)(?:\.rules)?$', basename)
-        if match:
-            return f"75-{match.group(1)}"
-
-    # For other files, clean up the basename
-    # Remove file extensions and sanitize
-    name = re.sub(r'\.[^.]+$', '', basename)  # Remove extension
-    name = re.sub(r'[^a-zA-Z0-9\-_]', '-', name)  # Replace special chars with hyphens
-    name = re.sub(r'-+', '-', name)  # Collapse multiple hyphens
-    return name.strip('-')
+# Add project root to path for shared module imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from lib.compliance_utils import (  # noqa: E402
+    safe_shortname, parse_machineconfig_files as _parse_mc_files,
+    parse_severity_filter,
+)
 
 
 def parse_machineconfig_files(src_dir):
-    """Parse all MachineConfig YAMLs under src_dir (recursively) and group by
-    (file path, severity), where severity is inferred from directory names
-    containing one of: high, medium, low. If none found, severity is None.
-
-    Returns (combo_map, skipped) where skipped is a list of (filepath, error)
-    tuples for files that could not be parsed.
-    """
-    combo_map = defaultdict(list)  # (path, severity) -> list of (source_file, decoded_lines)
-    skipped = []
-
-    severity_names = {"high", "medium", "low"}
-
-    for root, dirs, files in os.walk(src_dir):
-        # Skip the combo subdir if present
-        dirs[:] = [d for d in dirs if d != 'combo']
-
-        # Determine severity from the relative root path segments
-        rel_root = os.path.relpath(root, src_dir)
-        parts = [p.lower() for p in rel_root.split(os.sep) if p not in (".", "")]
-        severity = None
-        for p in parts:
-            if p in severity_names:
-                severity = p
-                break
-
-        for fname in files:
-            if not fname.endswith('.yaml'):
-                continue
-            fpath = os.path.join(root, fname)
-            if not os.path.isfile(fpath):
-                continue
-            try:
-                with open(fpath) as f:
-                    docs = list(yaml.safe_load_all(f))
-            except yaml.YAMLError as e:
-                print(f"WARNING: Skipping {fpath}: YAML parse error: {e}",
-                      file=sys.stderr)
-                skipped.append((fpath, str(e)))
-                continue
-            for doc in docs:
-                if not doc or doc.get('kind') != 'MachineConfig':
-                    continue
-                files = doc.get('spec', {}).get('config', {}).get('storage', {}) \
-                    .get('files', [])
-                for file_entry in files:
-                    path = file_entry.get('path')
-                    source = file_entry.get('contents', {}).get('source')
-                    if path and source and source.startswith('data:,'):
-                        decoded = urllib.parse.unquote(source[6:])
-                        lines = [line for line in decoded.splitlines() if line.strip()]
-                        combo_map[(path, severity)].append((os.path.relpath(fpath, src_dir), lines))
-    return combo_map, skipped
+    """Parse MachineConfig YAMLs, skipping the combo/ subdirectory."""
+    return _parse_mc_files(src_dir, exclude_dirs={'combo'})
 
 
 def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
     """Write a combined MachineConfig YAML for a given file path and severity.
-    Sources is a list of (source_file, decoded_lines).
+    Sources is a list of dicts with 'source_file' and 'lines' keys.
     """
     all_lines = set()
-    for _, lines in sources:
-        all_lines.update(lines)
+    for source in sources:
+        all_lines.update(source['lines'])
     deduped_lines = sorted(all_lines)
     shortname = safe_shortname(path)
     if severity:
@@ -135,8 +62,8 @@ def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
                     "# Combined from the following remediations "
                     f"for {path} (all roles){' | severity: ' + severity if severity else ''}:\n"
                 )
-                for src, _ in sources:
-                    out.write(f"#   - {src}\n")
+                for source in sources:
+                    out.write(f"#   - {source['source_file']}\n")
         out.write(
             "apiVersion: machineconfiguration.openshift.io/v1\n"
             "kind: MachineConfig\n"
@@ -173,7 +100,8 @@ def move_originals_to_combo(combo_map, src_dir, combo_dir):
     for (_path, _severity), sources in combo_map.items():
         if len(sources) < 2:
             continue
-        for src, _ in sources:
+        for source in sources:
+            src = source['source_file']
             if src in moved:
                 continue
             src_path = os.path.join(src_dir, src)
@@ -239,18 +167,7 @@ Examples:
 
     src_dir = args.src_dir
     out_dir = args.out_dir
-    # Parse and validate optional severity filter
-    severity_filter = None
-    if args.severity:
-        raw = args.severity.strip().lower().replace(' ', '')
-        requested = [s for s in raw.split(',') if s]
-        valid = {"high", "medium", "low"}
-        invalid = [s for s in requested if s not in valid]
-        if invalid:
-            raise SystemExit(
-                f"Invalid severity value(s): {','.join(invalid)}. Allowed: high, medium, low"
-            )
-        severity_filter = set(requested)
+    severity_filter = parse_severity_filter(args.severity)
     combo_dir = os.path.join(src_dir, "combo")
 
     if args.dry_run:
@@ -280,8 +197,8 @@ Examples:
             shortname = safe_shortname(path)
             outname = f"{shortname}-{severity}-combo.yaml" if severity else f"{shortname}-combo.yaml"
             print(f"[DRY-RUN] Would combine {len(sources)} files for {path} -> {outname}")
-            for src, _ in sources:
-                print(f"          - {src}")
+            for source in sources:
+                print(f"          - {source['source_file']}")
         else:
             write_combo_yaml(path, severity, sources, out_dir, header_mode=args.header)
 
@@ -289,7 +206,7 @@ Examples:
         print(f"\n[DRY-RUN] Would create {combo_count} combined file(s)")
         if not args.no_move:
             move_count = sum(1 for (_, _), sources in combo_map.items()
-                             if len(sources) >= 2 for _ in sources)
+                             if len(sources) >= 2 for _s in sources)
             print(f"[DRY-RUN] Would move {move_count} original file(s) to combo/")
         print("[DRY-RUN] Run without --dry-run to apply changes")
     else:
