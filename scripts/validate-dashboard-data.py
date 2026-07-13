@@ -7,14 +7,17 @@ to prevent malformed data from breaking the live dashboard.
 
 Usage: python3 scripts/validate-dashboard-data.py [docs/_data/]
 """
+from __future__ import annotations
+
 import json
 import os
 import re
 import sys
 import glob
+from typing import Any
 
 
-def validate_scan_export(filepath):
+def validate_scan_export(filepath: str) -> list[str]:
     """Validate an ocp-X_XX.json scan export file."""
     errors = []
     with open(filepath) as f:
@@ -98,7 +101,7 @@ def validate_scan_export(filepath):
     return errors
 
 
-def validate_tracking(filepath):
+def validate_tracking(filepath: str) -> list[str]:
     """Validate tracking.json structure and field consistency."""
     errors = []
     with open(filepath) as f:
@@ -145,7 +148,7 @@ VALID_UPSTREAM_VERDICTS = {
 GROUP_ID_PATTERN = re.compile(r'^(H|M|L|MAN)\d+$')
 
 
-def _validate_tracking_groups(groups):
+def _validate_tracking_groups(groups: dict[str, Any]) -> list[str]:
     """Validate all groups in a tracking file."""
     errors = []
     group_ids = set(groups.keys())
@@ -269,7 +272,10 @@ def _validate_tracking_groups(groups):
     return errors
 
 
-def _validate_tracking_remediations(remediations, group_ids):
+def _validate_tracking_remediations(
+    remediations: dict[str, Any],
+    group_ids: set[str],
+) -> list[str]:
     """Validate all remediations in a tracking file."""
     errors = []
 
@@ -315,7 +321,7 @@ def _validate_tracking_remediations(remediations, group_ids):
     return errors
 
 
-def validate_scan_history(filepath):
+def validate_scan_history(filepath: str) -> list[str]:
     """Validate scan-history.json structure."""
     errors = []
     with open(filepath) as f:
@@ -348,7 +354,7 @@ def validate_scan_history(filepath):
     return errors
 
 
-def main():
+def main() -> None:
     data_dir = sys.argv[1] if len(sys.argv) > 1 else "docs/_data"
 
     if not os.path.isdir(data_dir):

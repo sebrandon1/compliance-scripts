@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Parse OSCAP XCCDF results XML and compare against tracking.json groups."""
+from __future__ import annotations
 
 import argparse
 import json
 import sys
 import xml.etree.ElementTree as ET
+from typing import Any
 
 XCCDF_NS = "http://checklists.nist.gov/xccdf/1.2"
 
 
-def parse_results(results_file):
+def parse_results(results_file: str) -> list[dict[str, str]]:
     """Parse XCCDF results XML and return check results."""
     tree = ET.parse(results_file)
     root = tree.getroot()
@@ -33,7 +35,7 @@ def parse_results(results_file):
     return checks
 
 
-def load_tracking(tracking_file):
+def load_tracking(tracking_file: str) -> tuple[dict[str, str], dict[str, Any]]:
     """Load tracking.json and build check-to-group mapping."""
     with open(tracking_file) as f:
         data = json.load(f)
@@ -46,7 +48,10 @@ def load_tracking(tracking_file):
     return check_to_group, groups
 
 
-def build_group_results(checks, check_to_group):
+def build_group_results(
+    checks: list[dict[str, str]],
+    check_to_group: dict[str, str],
+) -> dict[str, dict[str, Any]]:
     """Aggregate check results by group."""
     group_results = {}
     for check in checks:
@@ -67,7 +72,7 @@ def build_group_results(checks, check_to_group):
     return group_results
 
 
-def count_results(checks):
+def count_results(checks: list[dict[str, str]]) -> dict[str, int]:
     """Count results by status."""
     counts = {}
     for check in checks:
@@ -75,7 +80,7 @@ def count_results(checks):
     return counts
 
 
-def sort_group_key(x):
+def sort_group_key(x: str) -> tuple[int, int]:
     """Sort groups: H < L < M < MAN, then by number."""
     prefix = ''.join(c for c in x if c.isalpha())
     num = int(''.join(c for c in x if c.isdigit()) or '0')
@@ -83,7 +88,10 @@ def sort_group_key(x):
     return (order.get(prefix, 99), num)
 
 
-def print_summary(checks, output_format="text"):
+def print_summary(
+    checks: list[dict[str, str]],
+    output_format: str = "text",
+) -> list[dict[str, str]]:
     """Print scan result summary."""
     counts = count_results(checks)
     failing = [c for c in checks if c["result"] == "fail"]
@@ -112,7 +120,11 @@ def print_summary(checks, output_format="text"):
     return failing
 
 
-def print_group_comparison(group_results, groups, output_format="text"):
+def print_group_comparison(
+    group_results: dict[str, dict[str, Any]],
+    groups: dict[str, Any],
+    output_format: str = "text",
+) -> None:
     """Print group-level comparison."""
     if output_format == "markdown":
         print("## Group Status on This RHCOS Version\n")
@@ -147,14 +159,18 @@ def print_group_comparison(group_results, groups, output_format="text"):
             )
 
 
-def write_failing_list(failing, check_to_group, filepath):
+def write_failing_list(
+    failing: list[dict[str, str]],
+    check_to_group: dict[str, str],
+    filepath: str,
+) -> None:
     """Write sorted failing check names to a file for baseline comparison."""
     with open(filepath, "w") as f:
         for check in sorted(failing, key=lambda c: c["name"]):
             f.write(check["name"] + "\n")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Parse OSCAP XCCDF results")
     parser.add_argument("results", help="XCCDF results XML file")
     parser.add_argument(

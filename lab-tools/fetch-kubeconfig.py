@@ -21,13 +21,13 @@ Examples:
   ./fetch-kubeconfig.py --env cnfdc4 --wait --poll-interval 60  # check every 60 seconds
   ./fetch-kubeconfig.py 10.6.105.126                            # use specific IP
 """
+from __future__ import annotations
 
 import sys
 import os
 import subprocess
 import argparse
 from pathlib import Path
-from typing import Optional
 
 # Add project root to path for shared module imports
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -154,7 +154,7 @@ def check_node_status(url: str, verify_ssl: bool = False) -> dict:
 
 def wait_for_cluster_ready(url: str, verify_ssl: bool = False,
                            max_wait_minutes: int = 60,
-                           poll_interval: int = 30) -> Optional[str]:
+                           poll_interval: int = 30) -> str | None:
     """
     Wait for all cluster nodes to be up with IPs assigned.
 
@@ -238,7 +238,7 @@ def wait_for_cluster_ready(url: str, verify_ssl: bool = False,
 def scrape_installer_ip(url: str, verify_ssl: bool = False,
                         wait_for_ready: bool = False,
                         max_wait_minutes: int = 60,
-                        poll_interval: int = 30) -> Optional[str]:
+                        poll_interval: int = 30) -> str | None:
     """
     Scrape the installer machine's IP from the succulent webpage.
 
@@ -304,7 +304,7 @@ def remove_ssh_host_key(ip: str) -> bool:
 
 def fetch_kubeconfig(remote_ip: str, remote_user: str = "root",
                      remote_path: str = "/root/ocp/auth/kubeconfig",
-                     destination: Optional[str] = None) -> bool:
+                     destination: str | None = None) -> bool:
     """
     Fetch kubeconfig from remote host via scp.
 
@@ -365,7 +365,7 @@ def fetch_kubeconfig(remote_ip: str, remote_user: str = "root",
         return False
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
         description="Fetch kubeconfig from remote host via scp",

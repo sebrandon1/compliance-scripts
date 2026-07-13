@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Tests for core/filter-machineconfig-flags.py"""
+from __future__ import annotations
 
 import os
 import sys
 import tempfile
 import shutil
 import urllib.parse
-
 import pytest
 import yaml
 

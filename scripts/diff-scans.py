@@ -11,14 +11,17 @@ Usage:
     python3 scripts/diff-scans.py docs/_data/ocp-4_22-baseline-2026-05-05.json docs/_data/ocp-4_22.json
     python3 scripts/diff-scans.py --json <old.json> <new.json>
 """
+from __future__ import annotations
+
 import json
 import sys
 import argparse
+from typing import Any
 
 SEVERITIES = ["high", "medium", "low"]
 
 
-def build_check_map(data):
+def build_check_map(data: dict[str, Any]) -> dict[str, dict[str, str]]:
     """Build a name -> {status, severity, platform, profile} map from export data."""
     checks = {}
     for section, status in [("remediations", "FAIL"), ("passing_checks", "PASS")]:
@@ -40,7 +43,7 @@ def build_check_map(data):
     return checks
 
 
-def diff_scans(old_data, new_data):
+def diff_scans(old_data: dict[str, Any], new_data: dict[str, Any]) -> dict[str, Any]:
     """Compare two scan exports and return structured diff."""
     old_checks = build_check_map(old_data)
     new_checks = build_check_map(new_data)
@@ -95,7 +98,7 @@ def diff_scans(old_data, new_data):
     }
 
 
-def print_diff(result):
+def print_diff(result: dict[str, Any]) -> None:
     """Print a human-readable diff report."""
     old = result["old"]
     new = result["new"]
@@ -193,7 +196,7 @@ def print_diff(result):
             )
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Compare two compliance scan exports and report differences",
         formatter_class=argparse.RawDescriptionHelpFormatter,

@@ -4,11 +4,14 @@ Split MachineConfig remediations into modular .d directory files.
 Creates base files that enable include directories and individual
 files for each setting.
 """
+from __future__ import annotations
+
 import os
 import sys
 import urllib.parse
 import yaml
 import argparse
+from typing import Any
 
 # Add project root to path for shared module imports
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -42,7 +45,7 @@ MODULAR_PATHS = {
 }
 
 
-def extract_meaningful_settings(lines):
+def extract_meaningful_settings(lines: list[str]) -> list[str]:
     """Extract meaningful (non-comment, non-empty) settings from lines."""
     settings = []
     for line in lines:
@@ -60,7 +63,13 @@ def extract_meaningful_settings(lines):
     return settings
 
 
-def generate_base_yaml(path, severity, config, out_dir, counter):
+def generate_base_yaml(
+    path: str,
+    severity: str | None,
+    config: dict[str, str],
+    out_dir: str,
+    counter: int,
+) -> str:
     """Generate a base MachineConfig that enables the .d include directory."""
     shortname = safe_shortname(path)
     if severity:
@@ -116,12 +125,12 @@ def generate_base_yaml(path, severity, config, out_dir, counter):
 
 
 def generate_modular_yaml(
-        path,
-        severity,
-        remediation_info,
-        config,
-        out_dir,
-        counter):
+        path: str,
+        severity: str | None,
+        remediation_info: dict[str, Any],
+        config: dict[str, str],
+        out_dir: str,
+        counter: int) -> str | None:
     """Generate a modular MachineConfig for a specific remediation."""
     source_file = remediation_info['source_file']
     role = remediation_info['role']
@@ -201,7 +210,12 @@ def generate_modular_yaml(
     return outpath
 
 
-def write_combo_yaml(path, severity, sources, out_dir):
+def write_combo_yaml(
+    path: str,
+    severity: str | None,
+    sources: list[dict[str, Any]],
+    out_dir: str,
+) -> str:
     """Write a combined MachineConfig YAML (fallback for non-modular paths)."""
     all_lines = set()
     for source in sources:
@@ -260,7 +274,7 @@ def write_combo_yaml(path, severity, sources, out_dir):
     return outpath
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Split MachineConfig remediations into modular "
                     ".d directory files.")

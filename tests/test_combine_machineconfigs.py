@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Tests for core/combine-machineconfigs-by-path.py"""
+from __future__ import annotations
 
 import os
 import sys
 import tempfile
 import shutil
 import urllib.parse
+from typing import Any
 
 import pytest
 import yaml
@@ -20,7 +22,7 @@ combine = module_from_spec(spec)
 spec.loader.exec_module(combine)
 
 
-def make_mc_yaml(path, lines, name="test-mc"):
+def make_mc_yaml(path: str, lines: list[str], name: str = "test-mc") -> dict[str, Any]:
     encoded = urllib.parse.quote("\n".join(lines) + "\n", safe='')
     return {
         "apiVersion": "machineconfiguration.openshift.io/v1",

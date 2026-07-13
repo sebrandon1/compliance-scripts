@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import os
 import urllib.parse
 
 
-def process_file(filepath):
+def process_file(filepath: str) -> bool:
     with open(filepath, 'r') as f:
         lines = f.readlines()
     # Quick check for kind: MachineConfig
@@ -40,7 +42,7 @@ def process_file(filepath):
     return True
 
 
-def main():
+def main() -> None:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     cr_dir = os.path.join(base_dir, 'complianceremediations')
     for fname in os.listdir(cr_dir):
