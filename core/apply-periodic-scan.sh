@@ -30,7 +30,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 load_env
 
 # Defaults (can be overridden by .env or CLI flags)
-NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
+NAMESPACE=$(get_compliance_namespace)
 NO_PVC="${NO_PVC:-false}"
 PLATFORM="${PLATFORM:-all}"
 DRY_RUN="${DRY_RUN:-false}"

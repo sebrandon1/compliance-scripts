@@ -19,7 +19,7 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 # shellcheck source=../lib/common.sh
 source "$REPO_ROOT/lib/common.sh"
 
-NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
+NAMESPACE=$(get_compliance_namespace)
 OUTPUT_DIR="${REPO_ROOT}/docs/_data"
 TRACKING_FILE="${OUTPUT_DIR}/tracking.json"
 

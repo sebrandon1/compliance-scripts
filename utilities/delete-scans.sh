@@ -13,7 +13,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 #   - PVCs created by the periodic bindings (best-effort)
 # Optionally, pass --include-cis to also remove the cis-scan binding/suite and its PVC.
 
-NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
+NAMESPACE=$(get_compliance_namespace)
 INCLUDE_CIS=false
 
 usage() {

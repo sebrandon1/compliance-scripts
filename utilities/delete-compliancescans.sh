@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
-NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
+NAMESPACE=$(get_compliance_namespace)
 FILTER=""
 DELETE_SUITE=false
 DELETE_SSB=false
