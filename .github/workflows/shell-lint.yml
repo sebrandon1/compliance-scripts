@@ -39,4 +39,4 @@ jobs:
           chmod +x /tmp/shfmt
           sudo mv /tmp/shfmt /usr/local/bin/shfmt
       - name: Run shfmt
-        run: shfmt -d core utilities modular lab-tools misc
+        run: shfmt -d core utilities modular lab-tools misc scripts

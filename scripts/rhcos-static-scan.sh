@@ -142,8 +142,8 @@ for PROFILE in "${PROFILE_LIST[@]}"; do
 		oscap xccdf eval \
 		--profile "$PROFILE" \
 		--results "/results/results-${PROFILE_SHORT}.xml" \
-		/content/ssg-rhcos4-ds.xml \
-		|| true
+		/content/ssg-rhcos4-ds.xml ||
+		true
 
 	RESULTS_FILE="$RESULTS_DIR/results-${PROFILE_SHORT}.xml"
 	ACTUAL_FAILS="$RESULTS_DIR/actual-${PROFILE_SHORT}-fails.txt"
@@ -245,7 +245,7 @@ json.dump({
 					echo ""
 					mkdir -p "$BASELINE_DIR"
 					cp "$ACTUAL_FAILS" "$BASELINE"
-					FAIL_COUNT=$(wc -l < "$ACTUAL_FAILS" | xargs)
+					FAIL_COUNT=$(wc -l <"$ACTUAL_FAILS" | xargs)
 					echo "Saved ${FAIL_COUNT} expected FAILs to \`tests/rhcos-baselines/rhcos-${OCP_MINOR}-${PROFILE_SHORT}-expected-fails.txt\`"
 					echo ""
 
