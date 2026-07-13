@@ -67,7 +67,7 @@ layout: default
 
   <!-- Projected Coverage -->
   <div class="summary-cards" style="margin-top: 1rem;">
-    <div class="card" style="border-left: 4px solid #2196F3;">
+    <div class="card stat-card info">
       <h3>In Progress</h3>
       <span class="number" id="in-progress-groups">
         {% assign ip_count = 0 %}
@@ -79,7 +79,7 @@ layout: default
         {{ ip_count }} groups
       </span>
     </div>
-    <div class="card" style="border-left: 4px solid #4CAF50;">
+    <div class="card stat-card success">
       <h3>Projected Coverage</h3>
       <span class="number" id="projected-coverage">
         {% assign fixable = 0 %}
@@ -96,7 +96,7 @@ layout: default
         {% assign projected_frac = projected_x10 | modulo: 10 %}
         {{ projected_int }}.{{ projected_frac }}%
       </span>
-      <div style="font-size: 0.8em; color: #666; margin-top: 0.25rem;">+{{ fixable }} checks if active PRs merge</div>
+      <div class="stat-note">+{{ fixable }} checks if active PRs merge</div>
     </div>
   </div>
 
