@@ -4,10 +4,10 @@ Add remediation summaries to compliance JSON data.
 Uses pattern matching to generate concise summaries.
 """
 
+import argparse
 import json
 import os
 import re
-import sys
 import tempfile
 
 
@@ -278,11 +278,16 @@ def process_checks(checks: list) -> int:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: ./add-summaries.py <json-file>", file=sys.stderr)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(
+        description="Add human-readable summaries to compliance check data"
+    )
+    parser.add_argument(
+        "json_file",
+        help="Path to the compliance JSON file to enrich with summaries"
+    )
+    args = parser.parse_args()
 
-    json_file = sys.argv[1]
+    json_file = args.json_file
 
     print(f"Loading {json_file}...")
     with open(json_file, 'r') as f:
