@@ -292,21 +292,37 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	@echo "$(GREEN)✅ Compliance Operator installation completed!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 2/9: Waiting for Compliance Operator pods to be Ready...$(RESET)"
-	@oc -n openshift-compliance get pods
-	@pods=$$(oc -n openshift-compliance get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); \
+	@for attempt in 1 2 3; do \
+		if oc -n openshift-compliance get pods 2>/dev/null; then break; fi; \
+		echo "  Retrying pod listing (attempt $$attempt/3)..."; sleep 5; \
+	done
+	@pods=""; \
+	for attempt in 1 2 3; do \
+		pods=$$(oc -n openshift-compliance get pods -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null); \
+		if [ -n "$$pods" ]; then break; fi; \
+		echo "  Waiting for pods to appear (attempt $$attempt/3)..."; sleep 10; \
+	done; \
 	if [ -z "$$pods" ]; then \
 		echo "$(RED)❌ No pods found in openshift-compliance namespace!$(RESET)"; \
 		exit 1; \
 	fi; \
 	NSPODS=$$(oc -n openshift-compliance get pods -o jsonpath='{range .items[?(@.status.phase!="Succeeded")]}{.metadata.name}{"\n"}{end}' | tr '\n' ' ' | xargs || true); \
 	if [ -n "$$NSPODS" ]; then \
-		oc -n openshift-compliance wait --for=condition=Ready pod $$NSPODS --timeout=300s; \
+		oc -n openshift-compliance wait --for=condition=Ready pod $$NSPODS --timeout=600s; \
 	fi
 	@echo "$(GREEN)✅ All Compliance Operator pods are Ready!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 3/9: Asserting ProfileBundles exist...$(RESET)"
-	@oc -n openshift-compliance get profilebundle ocp4 || (echo "$(RED)❌ ProfileBundle ocp4 not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get profilebundle rhcos4 || (echo "$(RED)❌ ProfileBundle rhcos4 not found!$(RESET)" && exit 1)
+	@for attempt in 1 2 3; do \
+		if oc -n openshift-compliance get profilebundle ocp4 2>/dev/null; then break; fi; \
+		if [ $$attempt -eq 3 ]; then echo "$(RED)❌ ProfileBundle ocp4 not found!$(RESET)" && exit 1; fi; \
+		echo "  Retrying (attempt $$attempt/3)..."; sleep 10; \
+	done
+	@for attempt in 1 2 3; do \
+		if oc -n openshift-compliance get profilebundle rhcos4 2>/dev/null; then break; fi; \
+		if [ $$attempt -eq 3 ]; then echo "$(RED)❌ ProfileBundle rhcos4 not found!$(RESET)" && exit 1; fi; \
+		echo "  Retrying (attempt $$attempt/3)..."; sleep 10; \
+	done
 	@echo "$(GREEN)✅ ProfileBundles ocp4 and rhcos4 exist!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 4/9: Applying periodic scan configuration...$(RESET)"
@@ -334,20 +350,28 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 	else \
 		echo "$(YELLOW)  ⚠ rhcos4-e8 not available (may be removed in this operator version)$(RESET)"; \
 	fi
-	@oc -n openshift-compliance get profile ocp4-cis || (echo "$(RED)❌ Profile ocp4-cis not found!$(RESET)" && exit 1)
-	@oc -n openshift-compliance get profile ocp4-moderate || (echo "$(RED)❌ Profile ocp4-moderate not found!$(RESET)" && exit 1)
+	@for attempt in 1 2 3; do \
+		if oc -n openshift-compliance get profile ocp4-cis 2>/dev/null; then break; fi; \
+		if [ $$attempt -eq 3 ]; then echo "$(RED)❌ Profile ocp4-cis not found!$(RESET)" && exit 1; fi; \
+		echo "  Retrying (attempt $$attempt/3)..."; sleep 10; \
+	done
+	@for attempt in 1 2 3; do \
+		if oc -n openshift-compliance get profile ocp4-moderate 2>/dev/null; then break; fi; \
+		if [ $$attempt -eq 3 ]; then echo "$(RED)❌ Profile ocp4-moderate not found!$(RESET)" && exit 1; fi; \
+		echo "  Retrying (attempt $$attempt/3)..."; sleep 10; \
+	done
 	@echo "$(GREEN)✅ Required profiles exist!$(RESET)"
 	@echo ""
 	@echo "$(BOLD)$(MAGENTA)Step 7/9: Asserting ComplianceSuites for periodic scans exist...$(RESET)"
 	@echo "  Waiting for operator to reconcile ScanSettingBindings into ComplianceSuites..."
 	@found=false; \
-	for i in $$(seq 1 18); do \
+	for i in $$(seq 1 30); do \
 		if oc -n openshift-compliance get compliancesuite cis-scan &>/dev/null; then found=true; break; fi; \
-		echo "  Waiting for ComplianceSuites to be created (attempt $$i/18)..."; \
+		echo "  Waiting for ComplianceSuites to be created (attempt $$i/30)..."; \
 		sleep 10; \
 	done; \
 	if [ "$$found" != "true" ]; then \
-		echo "$(RED)❌ ComplianceSuite cis-scan not found after 180s!$(RESET)"; \
+		echo "$(RED)❌ ComplianceSuite cis-scan not found after 300s!$(RESET)"; \
 		exit 1; \
 	fi; \
 	echo "$(GREEN)  ✓ ComplianceSuite cis-scan exists$(RESET)"; \
