@@ -15,7 +15,7 @@ usage() {
 
 [[ "${1:-}" =~ ^(-h|--help)$ ]] && usage
 
-NAMESPACE="${1:-$DEFAULT_COMPLIANCE_NAMESPACE}"
+NAMESPACE="${1:-$(get_compliance_namespace)}"
 
 log_info "Checking if namespace '$NAMESPACE' is stuck in Terminating..."
 STATUS=$(oc get ns "$NAMESPACE" -o jsonpath='{.status.phase}' || echo "NotFound")

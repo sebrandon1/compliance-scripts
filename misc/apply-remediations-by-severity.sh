@@ -28,7 +28,7 @@ esac
 require_cmd oc yq
 require_cluster
 
-NAMESPACE="$DEFAULT_COMPLIANCE_NAMESPACE"
+NAMESPACE=$(get_compliance_namespace)
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 SRC_DIR="$REPO_DIR/complianceremediations"
 

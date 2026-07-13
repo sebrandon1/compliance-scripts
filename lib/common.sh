@@ -13,6 +13,12 @@ set -euo pipefail
 # ============================================================================
 DEFAULT_COMPLIANCE_NAMESPACE="openshift-compliance"
 
+# Return the compliance namespace, respecting COMPLIANCE_NAMESPACE override.
+# Usage: NAMESPACE=$(get_compliance_namespace)
+get_compliance_namespace() {
+	echo "${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
+}
+
 # ============================================================================
 # TEMP DIRECTORY MANAGEMENT
 # ============================================================================
@@ -314,7 +320,7 @@ print_summary() {
 # Usage: profile_exists "ocp4-e8" [namespace]
 profile_exists() {
     local profile="$1"
-    local ns="${2:-openshift-compliance}"
+    local ns="${2:-$DEFAULT_COMPLIANCE_NAMESPACE}"
     oc get profile.compliance "$profile" -n "$ns" &>/dev/null
 }
 

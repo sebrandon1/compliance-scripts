@@ -25,7 +25,7 @@ require_cmd oc yq jq
 require_cluster
 
 # Defaults (can be overridden by .env or CLI flags)
-NAMESPACE="${COMPLIANCE_NAMESPACE:-$DEFAULT_COMPLIANCE_NAMESPACE}"
+NAMESPACE=$(get_compliance_namespace)
 DESTINATION_DIR="${REMEDIATION_DIR:-complianceremediations}"
 SEVERITY_FILTER="${SEVERITY_FILTER:-}"
 CLEAN_OUTPUT=0
@@ -79,7 +79,7 @@ while [[ $# -gt 0 ]]; do
 		;;
 	*)
 		# Backward compatibility: treat first non-flag arg as namespace if not set explicitly
-		if [[ "$NAMESPACE" == "openshift-compliance" ]]; then
+		if [[ "$NAMESPACE" == "$DEFAULT_COMPLIANCE_NAMESPACE" ]]; then
 			NAMESPACE="$1"
 			shift
 			continue
