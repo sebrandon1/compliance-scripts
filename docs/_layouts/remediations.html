@@ -1,0 +1,256 @@
+---
+layout: default
+---
+
+<nav class="breadcrumb">
+  <a href="{{ site.baseurl }}/">Home</a> &raquo;
+  <a href="{{ site.baseurl }}/versions/{{ page.version }}.html">OCP {{ page.version }}</a> &raquo;
+  <span>Remediations</span>
+</nav>
+
+<h1>OCP {{ page.version }} Remediation Groupings</h1>
+
+<p>
+  <a href="{{ site.baseurl }}/versions/{{ page.version }}.html">&larr; Back to OCP {{ page.version }} Compliance Status</a> |
+  <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/">View Detailed Group Pages</a>
+</p>
+
+<p>This page catalogs all compliance remediation groups for <strong>OCP {{ page.version }}</strong>, dynamically generated from tracking data.</p>
+
+{% if page.baseline_note %}
+<blockquote>
+  <p><strong>Target baseline</strong>: {{ page.baseline_note }}</p>
+</blockquote>
+{% endif %}
+
+<div class="filter-bar">
+  <div class="filter-search">
+    <input type="text" id="table-search" placeholder="Search remediations..." onkeyup="filterTables()">
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-filter="all" onclick="setStatusFilter('all')">All</button>
+    <button class="filter-btn" data-filter="pass-vanilla" onclick="setStatusFilter('pass-vanilla')">&#x2705; PASS (vanilla)</button>
+    <button class="filter-btn" data-filter="verified" onclick="setStatusFilter('verified')">&#x1F7E2; Verified</button>
+    <button class="filter-btn" data-filter="in_progress" onclick="setStatusFilter('in_progress')">&#x1F535; In Progress</button>
+    <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">&#x1F7E1; Pending</button>
+    <button class="filter-btn" data-filter="partial" onclick="setStatusFilter('partial')">&#x1F7E0; Partial</button>
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn platform-filter active" data-platform="all" onclick="setPlatformFilter('all')">All Platforms</button>
+    <button class="filter-btn platform-filter" data-platform="rhcos" onclick="setPlatformFilter('rhcos')">RHCOS</button>
+    <button class="filter-btn platform-filter" data-platform="ocp" onclick="setPlatformFilter('ocp')">OCP</button>
+    <button class="filter-btn platform-filter" data-platform="mixed" onclick="setPlatformFilter('mixed')">Mixed</button>
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn upstream-filter active" data-upstream="all" onclick="setUpstreamFilter('all')">All Upstream</button>
+    <button class="filter-btn upstream-filter" data-upstream="upstream-candidate" onclick="setUpstreamFilter('upstream-candidate')">&#x1F53C; Candidate</button>
+    <button class="filter-btn upstream-filter" data-upstream="ran-only" onclick="setUpstreamFilter('ran-only')">&#x1F3AF; RAN Only</button>
+    <button class="filter-btn upstream-filter" data-upstream="platform-config" onclick="setUpstreamFilter('platform-config')">&#x2699;&#xFE0F; Platform</button>
+    <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">&mdash; N/A</button>
+    <button class="filter-btn upstream-filter" data-upstream="has-branch" onclick="setUpstreamFilter('has-branch')">&#x1F527; Branch Prepared</button>
+  </div>
+  <div class="filter-counts" id="filter-counts"></div>
+</div>
+
+<h2>Quick Summary</h2>
+
+{% include resolve-tracking.html %}
+{% assign groups = tracking.groups %}
+{% assign remediations = tracking.remediations %}
+{% assign meta = tracking.meta %}
+
+{% assign pass_vanilla_count = 0 %}
+{% assign verified_count = 0 %}
+{% assign in_progress_count = 0 %}
+{% assign pending_count = 0 %}
+{% assign partial_count = 0 %}
+{% assign manual_count = 0 %}
+
+{% for group in groups %}
+  {% if group[1].status contains "pass-vanilla" %}
+    {% assign pass_vanilla_count = pass_vanilla_count | plus: 1 %}
+  {% elsif group[1].status == "verified" %}
+    {% assign verified_count = verified_count | plus: 1 %}
+  {% elsif group[1].status == "in_progress" %}
+    {% assign in_progress_count = in_progress_count | plus: 1 %}
+  {% elsif group[1].status == "pending" %}
+    {% assign pending_count = pending_count | plus: 1 %}
+  {% elsif group[1].status == "partial" %}
+    {% assign partial_count = partial_count | plus: 1 %}
+  {% endif %}
+  {% if group[0] contains "MAN" %}
+    {% assign manual_count = manual_count | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>Count</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>&#x2705; PASS on vanilla RHCOS {{ page.rhcos_version }}+</td><td>{{ pass_vanilla_count }} groups</td></tr>
+    <tr><td>&#x1F7E2; Verified (remediation works)</td><td>{{ verified_count }} groups</td></tr>
+    <tr><td>&#x1F535; In Progress</td><td>{{ in_progress_count }} groups</td></tr>
+    <tr><td>&#x1F7E1; Pending</td><td>{{ pending_count }} groups</td></tr>
+    <tr><td>&#x1F7E0; Partial</td><td>{{ partial_count }} groups</td></tr>
+    <tr><td>&#x1F4CB; Manual</td><td>{{ manual_count }} groups</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>Remediation Status</h2>
+
+<table class="status-table" id="remediation-table">
+  <thead>
+    <tr>
+      <th style="width: 60px;">Group</th>
+      <th>Category</th>
+      <th style="width: 90px;">Platform</th>
+      <th style="width: 80px;">Severity</th>
+      <th style="width: 50px; text-align: center;">Checks</th>
+      <th style="width: 160px;">Status</th>
+      <th style="width: 120px;">Upstream</th>
+      <th style="width: 50px; text-align: center;">Compare</th>
+      <th style="width: 100px;">Jira</th>
+      <th style="width: 70px;">PR</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for group in groups %}
+    {% assign gid = group[0] %}
+    {% assign g = group[1] %}
+    {% assign check_count = 0 %}
+    {% for rem in remediations %}
+      {% if rem[1].group == gid %}
+        {% assign check_count = check_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    {% assign has_branch = false %}{% if g.upstream %}{% for u in g.upstream %}{% if u.compare_url %}{% assign has_branch = true %}{% endif %}{% endfor %}{% endif %}
+    <tr data-status="{{ g.status }}" data-platform="{{ g.platform }}" data-upstream="{{ g.upstream_verdict }}" data-has-branch="{{ has_branch }}">
+      <td><a href="groups/{{ gid }}.html" class="group-id">{{ gid }}</a></td>
+      <td>{{ g.title }}</td>
+      <td>
+        {% if g.platform %}
+        <span class="platform-badge {{ g.platform }}">
+          {% if g.platform == "rhcos" %}RHCOS
+          {% elsif g.platform == "ocp" %}OCP
+          {% elsif g.platform == "mixed" %}Mixed
+          {% endif %}
+        </span>
+        {% else %}-{% endif %}
+      </td>
+      <td><span class="severity-pill {{ g.severity | downcase }}">{{ g.severity }}</span></td>
+      <td style="text-align: center;">{{ check_count }}</td>
+      <td>
+        {% if g.status contains "pass-vanilla" %}
+          <span class="status-pill pass-vanilla">&#x2705; PASS (vanilla)</span>
+        {% elsif g.status == "verified" %}
+          <span class="status-pill verified">&#x1F7E2; Verified</span>
+        {% elsif g.status == "in_progress" %}
+          <span class="status-pill in-progress">&#x1F535; In Progress</span>
+        {% elsif g.status == "pending" %}
+          <span class="status-pill pending">&#x1F7E1; Pending</span>
+        {% elsif g.status == "partial" %}
+          <span class="status-pill partial">&#x1F7E0; Partial</span>
+        {% elsif g.status == "on_hold" %}
+          <span class="status-pill on-hold">&#x26AA; On Hold</span>
+        {% else %}
+          <span class="status-pill">{{ g.status }}</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if g.upstream_verdict == "upstream-candidate" %}
+          <span class="upstream-badge candidate">&#x1F53C; Candidate</span>
+        {% elsif g.upstream_verdict contains "upstream-pr" %}
+          <span class="upstream-badge pr-exists">&#x1F7E3; PR Open</span>
+        {% elsif g.upstream_verdict == "ran-only" %}
+          <span class="upstream-badge ran-only">&#x1F3AF; RAN Only</span>
+        {% elsif g.upstream_verdict == "platform-config" %}
+          <span class="upstream-badge platform">&#x2699;&#xFE0F; Platform</span>
+        {% elsif g.upstream_verdict == "pass-vanilla" %}
+          <span class="upstream-badge pass">&#x2705; Pass</span>
+        {% elsif g.upstream_verdict == "site-specific" %}
+          <span class="upstream-badge site">&#x1F4CD; Site</span>
+        {% elsif g.upstream_verdict == "not-applicable" %}
+          <span class="upstream-badge na">&mdash; N/A</span>
+        {% else %}
+          <span class="upstream-badge">&mdash;</span>
+        {% endif %}
+      </td>
+      <td style="text-align: center;">
+        {% if g.compare %}
+          <a href="{{ meta.compare_base_url }}{{ g.compare }}" class="compare-btn">&#x1F4E6;</a>
+        {% else %}-{% endif %}
+      </td>
+      <td>
+        {% if g.jira %}
+          <a href="{{ meta.jira_base_url }}{{ g.jira }}" class="jira-badge">{{ g.jira }}</a>
+        {% else %}-{% endif %}
+      </td>
+      <td>
+        {% if g.pr %}
+          <a href="{{ meta.pr_base_url }}{{ g.pr }}" class="pr-badge{% if g.pr_state == 'merged' %} merged{% endif %}">#{{ g.pr }}{% if g.pr_state == "merged" %} &#x2713;{% endif %}</a>
+        {% else %}-{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<hr>
+
+<h2>Remediation Details</h2>
+
+{% for group in groups %}
+{% assign gid = group[0] %}
+{% assign g = group[1] %}
+
+<details{% unless g.status contains "pass-vanilla" %} open{% endunless %}>
+<summary><strong>{{ gid }}: {{ g.title }}</strong> &mdash;
+{% if g.status contains "pass-vanilla" %}&#x2705; PASS (vanilla RHCOS {{ page.rhcos_version }}+)
+{% elsif g.status == "verified" %}&#x1F7E2; Verified
+{% elsif g.status == "in_progress" %}&#x1F535; In Progress
+{% elsif g.status == "pending" %}&#x1F7E1; Pending
+{% elsif g.status == "partial" %}&#x1F7E0; Partial
+{% else %}{{ g.status }}{% endif %}
+{% if g.pr %} &mdash; <a href="{{ meta.pr_base_url }}{{ g.pr }}">PR #{{ g.pr }}{% if g.pr_state == "merged" %} (merged){% endif %}</a>{% endif %}
+</summary>
+
+{% if g.status contains "pass-vanilla" %}
+<blockquote><p>These checks PASS on vanilla RHCOS {{ page.rhcos_version }}+ (OCP {{ page.version }}+) without MachineConfig remediation.</p></blockquote>
+{% endif %}
+
+{% if g.jira %}<p><strong>Jira</strong>: <a href="{{ meta.jira_base_url }}{{ g.jira }}">{{ g.jira }}</a></p>{% endif %}
+
+<table>
+  <thead><tr><th>Check</th><th>Description</th></tr></thead>
+  <tbody>
+  {% for rem in remediations %}{% if rem[1].group == gid %}
+    <tr><td><code>{{ rem[0] }}</code></td><td>{{ rem[1].description }}</td></tr>
+  {% endif %}{% endfor %}
+  </tbody>
+</table>
+
+{% if g.status_note %}
+<p><em>{{ g.status_note }}</em></p>
+{% endif %}
+
+</details>
+
+{% endfor %}
+
+<hr>
+
+<h2>Legend</h2>
+
+<ul>
+  <li><strong>H</strong> = HIGH severity (H1-H3)</li>
+  <li><strong>M</strong> = MEDIUM severity (M1-M30)</li>
+  <li><strong>L</strong> = LOW severity (L1, L2)</li>
+  <li><strong>MAN</strong> = Manual checks (MAN1-MAN5)</li>
+</ul>
+
+{{ content }}
+
+<script src="{{ '/assets/js/filters.js' | relative_url }}"></script>
