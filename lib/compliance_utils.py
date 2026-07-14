@@ -8,12 +8,14 @@ code duplication:
 - parse_severity_filter: Validate and parse severity filter strings
 - check_virtualenv: Check for virtual environment and warn if missing
 """
+from __future__ import annotations
 
 import os
 import re
 import sys
 import urllib.parse
 from collections import defaultdict
+from typing import Any
 
 try:
     import yaml
@@ -27,7 +29,7 @@ except ImportError:
 VALID_SEVERITIES = {"high", "medium", "low"}
 
 
-def safe_shortname(path):
+def safe_shortname(path: str) -> str:
     """Convert a file path to a safe shortname for filenames.
 
     Handles numbered prefixes (e.g., 75-dac-modification.rules -> 75-dac-modification),
@@ -49,7 +51,13 @@ def safe_shortname(path):
     return name.strip('-')
 
 
-def parse_machineconfig_files(src_dir, exclude_dirs=None):
+def parse_machineconfig_files(
+    src_dir: str,
+    exclude_dirs: set[str] | None = None,
+) -> tuple[
+    dict[tuple[str, str | None], list[dict[str, Any]]],
+    list[tuple[str, str]],
+]:
     """Parse all MachineConfig YAMLs under src_dir (recursively) and group by
     (file path, severity), where severity is inferred from directory names
     containing one of: high, medium, low. If none found, severity is None.
@@ -126,7 +134,7 @@ def parse_machineconfig_files(src_dir, exclude_dirs=None):
     return files_map, skipped
 
 
-def parse_severity_filter(severity_str):
+def parse_severity_filter(severity_str: str | None) -> set[str] | None:
     """Parse and validate a comma-separated severity filter string.
 
     Args:
@@ -153,7 +161,7 @@ def parse_severity_filter(severity_str):
     return set(requested)
 
 
-def check_virtualenv():
+def check_virtualenv() -> None:
     """Check if running in a virtual environment and warn if not."""
     in_venv = (
         hasattr(sys, 'real_prefix')

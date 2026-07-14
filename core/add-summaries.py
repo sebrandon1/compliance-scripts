@@ -3,12 +3,14 @@
 Add remediation summaries to compliance JSON data.
 Uses pattern matching to generate concise summaries.
 """
+from __future__ import annotations
 
 import argparse
 import json
 import os
 import re
 import tempfile
+from typing import Any
 
 # Data-driven lookup table: (pattern, summary) tuples checked against
 # the lowercased check name using substring matching. Order matters --
@@ -273,7 +275,7 @@ def generate_summary(name: str, description: str) -> str:
     return "Review and apply recommended configuration"
 
 
-def process_checks(checks: list) -> int:
+def process_checks(checks: list[dict[str, Any]]) -> int:
     """Add summaries to checks, return count of summaries added."""
     count = 0
     for check in checks:
@@ -286,7 +288,7 @@ def process_checks(checks: list) -> int:
     return count
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Add human-readable summaries to compliance check data"
     )

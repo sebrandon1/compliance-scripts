@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Tests for scripts/validate-dashboard-data.py"""
+from __future__ import annotations
 
 import json
 import os
 import sys
 import tempfile
 import shutil
+from typing import Any
 
 import pytest
 
@@ -27,7 +29,7 @@ def tmpdir():
     shutil.rmtree(d)
 
 
-def write_json(directory, filename, data):
+def write_json(directory: str, filename: str, data: Any) -> str:
     """Write a JSON file into a directory and return the path."""
     filepath = os.path.join(directory, filename)
     with open(filepath, 'w') as f:
@@ -35,7 +37,7 @@ def write_json(directory, filename, data):
     return filepath
 
 
-def make_valid_scan_export():
+def make_valid_scan_export() -> dict[str, Any]:
     """Build a minimal valid scan export."""
     return {
         "version": "4.22",
@@ -54,7 +56,7 @@ def make_valid_scan_export():
     }
 
 
-def make_valid_tracking():
+def make_valid_tracking() -> dict[str, Any]:
     """Build a minimal valid tracking.json."""
     return {
         "meta": {"version": "4.22"},
@@ -103,7 +105,7 @@ def make_valid_tracking():
     }
 
 
-def make_valid_scan_history():
+def make_valid_scan_history() -> list[dict[str, Any]]:
     """Build a minimal valid scan-history.json."""
     return [
         {

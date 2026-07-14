@@ -17,10 +17,13 @@ Usage:
         [--severity high,medium,low] [--header none|provenance|full] \\
         [--no-move] [--dry-run]
 """
+from __future__ import annotations
+
 import os
 import sys
 import urllib.parse
 import argparse
+from typing import Any
 
 # Add project root to path for shared module imports
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -30,12 +33,23 @@ from lib.compliance_utils import (  # noqa: E402
 )
 
 
-def parse_machineconfig_files(src_dir):
+def parse_machineconfig_files(
+    src_dir: str,
+) -> tuple[
+    dict[tuple[str, str | None], list[dict[str, Any]]],
+    list[tuple[str, str]],
+]:
     """Parse MachineConfig YAMLs, skipping the combo/ subdirectory."""
     return _parse_mc_files(src_dir, exclude_dirs={'combo'})
 
 
-def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
+def write_combo_yaml(
+    path: str,
+    severity: str | None,
+    sources: list[dict[str, Any]],
+    out_dir: str,
+    header_mode: str = "none",
+) -> None:
     """Write a combined MachineConfig YAML for a given file path and severity.
     Sources is a list of dicts with 'source_file' and 'lines' keys.
     """
@@ -93,7 +107,11 @@ def write_combo_yaml(path, severity, sources, out_dir, header_mode="none"):
     print(f"Wrote {outpath}")
 
 
-def move_originals_to_combo(combo_map, src_dir, combo_dir):
+def move_originals_to_combo(
+    combo_map: dict[tuple[str, str | None], list[dict[str, Any]]],
+    src_dir: str,
+    combo_dir: str,
+) -> None:
     """Move original YAMLs that were combined to the
         combo subfolder."""
     moved = set()
@@ -118,7 +136,7 @@ def move_originals_to_combo(combo_map, src_dir, combo_dir):
         print("No originals needed to be moved.")
 
 
-def main():
+def main() -> None:
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
         description="Combine OpenShift MachineConfig remediations by file path, "

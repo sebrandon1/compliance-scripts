@@ -5,16 +5,19 @@ Adds a concise "summary" field to each check in the JSON data file.
 
 Requires: ANTHROPIC_API_KEY environment variable
 """
+from __future__ import annotations
 
 import argparse
 import json
 import os
 import sys
 import tempfile
+from typing import Any
+
 import anthropic
 
 
-def summarize_remediation(client, description: str) -> str:
+def summarize_remediation(client: Any, description: str) -> str:
     """Use Claude to generate a one-line remediation summary."""
     if not description or len(description.strip()) < 10:
         return ""
@@ -50,7 +53,7 @@ One-line summary:"""
         return ""
 
 
-def process_checks(client, checks: list) -> list:
+def process_checks(client: Any, checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Add summaries to a list of checks."""
     for i, check in enumerate(checks):
         name = check.get("name", "unknown")
@@ -67,7 +70,7 @@ def process_checks(client, checks: list) -> list:
     return checks
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate AI summaries for compliance remediations"
     )

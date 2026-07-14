@@ -5,12 +5,12 @@ Filter specific configuration flags from a combined MachineConfig YAML.
 This script allows you to create focused MachineConfig files by selecting
 only specific flags/directives from a combined configuration file.
 """
+from __future__ import annotations
 
 import os
 import sys
 import urllib.parse
 import argparse
-from typing import List, Set
 
 # Check for required dependencies
 try:
@@ -21,7 +21,7 @@ except ImportError:
     sys.exit(1)
 
 
-def parse_config_content(encoded_source: str) -> List[str]:
+def parse_config_content(encoded_source: str) -> list[str]:
     """Parse the data:, encoded source and return list of config lines."""
     if not encoded_source.startswith('data:,'):
         raise ValueError("Source must start with 'data:,'")
@@ -30,7 +30,7 @@ def parse_config_content(encoded_source: str) -> List[str]:
     return [line.strip() for line in decoded.splitlines() if line.strip()]
 
 
-def filter_config_lines(lines: List[str], flags: Set[str], case_sensitive: bool = False) -> List[str]:
+def filter_config_lines(lines: list[str], flags: set[str], case_sensitive: bool = False) -> list[str]:
     """
     Filter configuration lines to only include those matching the specified flags.
 
@@ -70,10 +70,10 @@ def filter_config_lines(lines: List[str], flags: Set[str], case_sensitive: bool 
 def create_filtered_machineconfig(
     input_file: str,
     output_file: str,
-    flags: List[str],
-    description: str = None,
-    case_sensitive: bool = False
-):
+    flags: list[str],
+    description: str | None = None,
+    case_sensitive: bool = False,
+) -> None:
     """
     Create a filtered MachineConfig YAML with only specified flags.
 
@@ -163,7 +163,7 @@ def create_filtered_machineconfig(
     print(f"  Included {sum(len(f['lines']) for f in filtered_files)} configuration lines")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Filter specific flags from a combined MachineConfig YAML",
         formatter_class=argparse.RawDescriptionHelpFormatter,

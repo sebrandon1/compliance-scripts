@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Tests for scripts/diff-scans.py"""
+from __future__ import annotations
 
 import os
 import sys
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
 from importlib.util import spec_from_file_location, module_from_spec
@@ -14,7 +16,11 @@ diff_scans = module_from_spec(spec)
 spec.loader.exec_module(diff_scans)
 
 
-def make_export(checks, version="4.22", scan_date="2026-01-01T00:00:00Z"):
+def make_export(
+    checks: list[tuple[str, str, str, str]],
+    version: str = "4.22",
+    scan_date: str = "2026-01-01T00:00:00Z",
+) -> dict[str, Any]:
     """Build a minimal scan export from a list of (name, status, severity, platform) tuples."""
     data = {
         "version": version,

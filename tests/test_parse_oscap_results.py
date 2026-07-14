@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Tests for scripts/parse-oscap-results.py"""
+from __future__ import annotations
 
 import json
 import os
 import sys
 import tempfile
 import shutil
+from typing import Any
 
 import pytest
 
@@ -30,7 +32,7 @@ def tmpdir():
     shutil.rmtree(d)
 
 
-def write_xml(directory, filename, content):
+def write_xml(directory: str, filename: str, content: str) -> str:
     """Write an XML file into a directory and return the path."""
     filepath = os.path.join(directory, filename)
     with open(filepath, 'w') as f:
@@ -38,7 +40,7 @@ def write_xml(directory, filename, content):
     return filepath
 
 
-def write_json_file(directory, filename, data):
+def write_json_file(directory: str, filename: str, data: Any) -> str:
     """Write a JSON file and return the path."""
     filepath = os.path.join(directory, filename)
     with open(filepath, 'w') as f:

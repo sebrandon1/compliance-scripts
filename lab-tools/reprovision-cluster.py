@@ -20,6 +20,8 @@ Setup:
   playwright install chromium
 """
 
+from __future__ import annotations
+
 import sys
 import os
 
@@ -46,7 +48,7 @@ except ImportError:
 
 def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
                         headless: bool = True, timeout: int = 30000,
-                        dry_run: bool = False, url: str = None) -> bool:
+                        dry_run: bool = False, url: str | None = None) -> bool:
     """
     Automate cluster reprovisioning via the succulent web form.
 
@@ -215,7 +217,7 @@ def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
             pass
 
 
-def main():
+def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
         description="""

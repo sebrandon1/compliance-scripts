@@ -6,11 +6,14 @@ Analyzes check names against existing group mappings in tracking.json
 to suggest which group new or ungrouped checks belong to. Uses prefix
 matching, semantic rules, and substring matching.
 """
+from __future__ import annotations
+
 import json
 import sys
 import argparse
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TRACKING = REPO_ROOT / "docs" / "_data" / "tracking.json"
@@ -26,12 +29,18 @@ SYSCTL_RULES = [
 ]
 
 
-def load_tracking(path):
+def load_tracking(path: str | Path) -> dict[str, Any]:
     with open(path) as f:
         return json.load(f)
 
 
-def build_prefix_map(tracking):
+def build_prefix_map(
+    tracking: dict[str, Any],
+) -> tuple[
+    dict[str, dict[str, int]],
+    dict[str, list[str]],
+    dict[str, str],
+]:
     """Build prefix→{group_id: count} and keyword→group_id maps."""
     groups = tracking.get("groups", {})
     group_checks = defaultdict(list)
@@ -60,7 +69,11 @@ def build_prefix_map(tracking):
     return prefix_map, group_checks, kw_map
 
 
-def suggest_group(check_name, prefix_map, kw_map):
+def suggest_group(
+    check_name: str,
+    prefix_map: dict[str, dict[str, int]],
+    kw_map: dict[str, str],
+) -> tuple[str | None, float, str]:
     """Suggest the best group for a check name. Returns (group_id, confidence, reason)."""
     parts = check_name.split("-")
 
@@ -111,7 +124,7 @@ def suggest_group(check_name, prefix_map, kw_map):
     return None, 0.0, "no match"
 
 
-def extract_check_names_from_scan(scan_data):
+def extract_check_names_from_scan(scan_data: dict[str, Any]) -> set[str]:
     """Extract all unique check names from a scan export JSON."""
     names = set()
     for section in ["remediations", "passing_checks"]:
@@ -123,7 +136,7 @@ def extract_check_names_from_scan(scan_data):
     return names
 
 
-def strip_profile_prefix(name):
+def strip_profile_prefix(name: str) -> str:
     """Strip profile/role prefix from a check name.
     rhcos4-e8-master-sshd-disable-root-login → sshd-disable-root-login
     ocp4-cis-api-server-encryption → api-server-encryption
@@ -138,7 +151,12 @@ def strip_profile_prefix(name):
     return name
 
 
-def print_section(label, checks, groups, show_confidence=True):
+def print_section(
+    label: str,
+    checks: list[dict[str, Any]],
+    groups: dict[str, Any],
+    show_confidence: bool = True,
+) -> None:
     if not checks:
         return
     print(f"{label} — {len(checks)} checks:")
@@ -152,7 +170,7 @@ def print_section(label, checks, groups, show_confidence=True):
     print()
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Suggest remediation groups for ungrouped compliance checks",
         formatter_class=argparse.RawDescriptionHelpFormatter,

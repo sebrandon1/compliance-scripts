@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Tests for modular/split-machineconfigs-modular.py"""
+from __future__ import annotations
 
 import os
 import sys
 import tempfile
 import shutil
 import urllib.parse
+from typing import Any
 
 import pytest
 import yaml
@@ -22,7 +24,12 @@ split_mod = module_from_spec(spec)
 spec.loader.exec_module(split_mod)
 
 
-def make_mc_yaml(path, lines, name="test-mc", role="worker"):
+def make_mc_yaml(
+    path: str,
+    lines: list[str],
+    name: str = "test-mc",
+    role: str = "worker",
+) -> dict[str, Any]:
     """Build a MachineConfig dict with a single file entry."""
     encoded = urllib.parse.quote("\n".join(lines) + "\n", safe='')
     return {
@@ -50,7 +57,11 @@ def make_mc_yaml(path, lines, name="test-mc", role="worker"):
     }
 
 
-def make_mc_yaml_systemd(units, name="test-mc", role="worker"):
+def make_mc_yaml_systemd(
+    units: list[dict[str, Any]],
+    name: str = "test-mc",
+    role: str = "worker",
+) -> dict[str, Any]:
     """Build a MachineConfig dict with systemd units (no storage files)."""
     return {
         "apiVersion": "machineconfiguration.openshift.io/v1",
@@ -72,7 +83,11 @@ def make_mc_yaml_systemd(units, name="test-mc", role="worker"):
     }
 
 
-def make_mc_yaml_kernelargs(kargs, name="test-mc", role="worker"):
+def make_mc_yaml_kernelargs(
+    kargs: list[str],
+    name: str = "test-mc",
+    role: str = "worker",
+) -> dict[str, Any]:
     """Build a MachineConfig with kernel arguments only."""
     return {
         "apiVersion": "machineconfiguration.openshift.io/v1",
