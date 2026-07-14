@@ -17,7 +17,7 @@
       <td>
         <code>{{ check.name }}</code>
         {% if check.summary %}
-        <br><small class="description">{{ check.summary }}</small>
+        <br><small class="description">{{ check.summary | escape }}</small>
         {% endif %}
       </td>
       <td>

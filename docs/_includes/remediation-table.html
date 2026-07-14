@@ -31,7 +31,7 @@
           <summary>
             <code>{{ check.name }}</code>
             {% if check.summary %}
-            <span class="remediation-summary">{{ check.summary }}</span>
+            <span class="remediation-summary">{{ check.summary | escape }}</span>
             {% else %}
             <span class="expand-hint">click to see remediation</span>
             {% endif %}
@@ -39,7 +39,7 @@
           <div class="remediation-content">
             {% if check.description %}
             <div class="remediation-description">
-              {{ check.description | newline_to_br }}
+              {{ check.description | escape | newline_to_br }}
             </div>
             {% else %}
             <p><em>No remediation details available.</em></p>
@@ -77,7 +77,7 @@
       <td>
         {% if rem %}
         <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group_id }}.html" class="tracking-status {{ group_tracking.status }}">
-          {{ group_id }}: {{ group_tracking.title }}
+          {{ group_id }}: {{ group_tracking.title | escape }}
         </a>
         {% else %}
         <span class="tracking-status pending">Not Tracked</span>
