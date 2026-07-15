@@ -4,7 +4,7 @@ playwright>=1.61.0
 flake8>=7.3.0
 pytest>=8.0.0
 pyyaml>=6.0.3
-mypy>=1.10.0
+mypy>=2.3.0
 
 # Optional: For Red Hat internal sites with Kerberos authentication
 # Uncomment if needed:
