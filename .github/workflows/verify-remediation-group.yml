@@ -78,7 +78,7 @@ jobs:
           fi
 
       - name: Setup quick-ocp cluster
-        uses: palmsoftware/quick-ocp@v0.0.37
+        uses: palmsoftware/quick-ocp@v1.0.0
         with:
           ocpPullSecret: $OCP_PULL_SECRET
           desiredOCPVersion: ${{ github.event.inputs.ocp_version }}
