@@ -1045,15 +1045,17 @@
             },
             {
               "repo": "coreos/rhel-coreos-config",
-              "pr": null,
-              "url": null,
-              "state": "pending",
+              "pr": 288,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/288",
+              "state": "open",
               "outcome": null,
               "reason": "Narrowed from 18 to 6 modules (cramfs, freevxfs, hfs, hfsplus, jffs2, udf). Excluded squashfs (used for live PXE rootfs), usb-storage (BMC virtual media), and 10 others too broad for base image. Precedent: nouveau blacklist already exists in overlay.d/08nouveau/. CIS Level 1 Section 1.1.1.",
               "references": [
                 "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6",
                 "https://github.com/coreos/rhel-coreos-config/tree/main/overlay.d/08nouveau"
-              ]
+              ],
+              "opened": "2026-07-21",
+              "jira": "CNF-25994"
             }
           ]
         }
