@@ -6,7 +6,7 @@
     "epic": "CNF-19031",
     "last_sync": null,
     "last_upstream_audit": "2026-07-21",
-    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 2 upstream-candidate (H2, M21), 23 ran-only, 5 pass-vanilla, 4 platform-config, 1 site-specific, 5 not-applicable",
+    "upstream_audit_note": "Full 40-group audit: 1 upstream-pr-exists (M21), 1 upstream-candidate (H2), 23 ran-only, 5 pass-vanilla, 4 platform-config, 1 site-specific, 5 not-applicable",
     "upstream_research_url": "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6"
   },
   "groups": {
@@ -1067,14 +1067,14 @@
       "platform": "rhcos",
       "upstream": [
         {
-          "setting": "6 unused filesystem module blacklist (conservative subset of 18)",
+          "setting": "5 unused filesystem module blacklist (conservative subset of 18)",
           "repo": "openshift/os",
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/modprobe.d/50-security-blacklist.conf",
           "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
           "risk": "low",
           "scope": "upstream",
-          "scope_reason": "cramfs, freevxfs, hfs, hfsplus, jffs2, udf have zero use on any container host. squashfs excluded (live images), usb-storage excluded (BMC virtual media).",
+          "scope_reason": "cramfs, freevxfs, hfs, hfsplus, jffs2 have zero use on any container host. squashfs excluded (live images), usb-storage excluded (BMC virtual media), udf excluded (Azure/Hyper-V Ignition provisioning).",
           "pr_history": [
             {
               "repo": "coreos/rhel-coreos-config",
@@ -1090,11 +1090,11 @@
             },
             {
               "repo": "coreos/rhel-coreos-config",
-              "pr": 288,
-              "url": "https://github.com/coreos/rhel-coreos-config/pull/288",
+              "pr": 289,
+              "url": "https://github.com/coreos/rhel-coreos-config/pull/289",
               "state": "open",
               "outcome": null,
-              "reason": "Narrowed from 18 to 6 modules (cramfs, freevxfs, hfs, hfsplus, jffs2, udf). Excluded squashfs (used for live PXE rootfs), usb-storage (BMC virtual media), and 10 others too broad for base image. Precedent: nouveau blacklist already exists in overlay.d/08nouveau/. CIS Level 1 Section 1.1.1.",
+              "reason": "Narrowed from 18 to 5 modules (cramfs, freevxfs, hfs, hfsplus, jffs2). UDF removed per reviewer feedback (Azure/Hyper-V uses UDF for Ignition provisioning). Excluded squashfs (live PXE rootfs), usb-storage (BMC virtual media), and 10 others too broad for base image. Precedent: nouveau blacklist already exists in overlay.d/08nouveau/. CIS Level 1 Section 1.1.1.",
               "references": [
                 "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6",
                 "https://github.com/coreos/rhel-coreos-config/tree/main/overlay.d/08nouveau"
@@ -1105,7 +1105,7 @@
           ]
         }
       ],
-      "upstream_verdict": "upstream-candidate"
+      "upstream_verdict": "upstream-pr-exists"
     },
     "M22": {
       "title": "Network Sysctl Hardening",
