@@ -5,8 +5,9 @@
     "compare_base_url": "https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:",
     "epic": null,
     "last_sync": "2026-06-22",
-    "last_upstream_audit": "2026-06-22",
-    "upstream_audit_note": "Verified 5 groups on OCP 5.0.0-0.nightly-2026-06-18-000016 (cnfdt16, RHCOS 10.2). All hardening opportunities confirmed still present."
+    "last_upstream_audit": "2026-07-21",
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 2 upstream-candidate (H2, M21), 23 ran-only, 5 pass-vanilla, 4 platform-config, 1 site-specific, 5 not-applicable",
+    "upstream_research_url": "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6"
   },
   "groups": {
     "H1": {
@@ -619,11 +620,22 @@
                 "https://github.com/coreos/rhel-coreos-config/pull/264",
                 "https://www.mail-archive.com/devel@lists.fedoraproject.org/msg209291.html"
               ]
+            },
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "not-filed",
+              "outcome": "resolved-upstream",
+              "reason": "RHEL 10 kernel-ark os-build branch has CONFIG_SECURITY_DMESG_RESTRICT=y as compile-time default. RHCOS 10 (OCP 5.x) inherits dmesg_restrict=1 without any MachineConfig. Verified 2026-07-21.",
+              "references": [
+                "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6"
+              ]
             }
           ]
         }
       ],
-      "upstream_verdict": "ran-only"
+      "upstream_verdict": "pass-vanilla"
     },
     "M13": {
       "title": "Extended DAC Audit",
@@ -1010,14 +1022,14 @@
       "platform": "rhcos",
       "upstream": [
         {
-          "setting": "18 kernel module blacklist entries",
+          "setting": "6 unused filesystem module blacklist (conservative subset of 18)",
           "repo": "openshift/os",
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/modprobe.d/50-security-blacklist.conf",
           "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
-          "risk": "medium",
-          "scope": "ran",
-          "scope_reason": "Some modules (SCTP) are used by telco workloads. Bluetooth/WiFi blacklist is safe but module selection is deployment-specific.",
+          "risk": "low",
+          "scope": "upstream",
+          "scope_reason": "cramfs, freevxfs, hfs, hfsplus, jffs2, udf have zero use on any container host. squashfs excluded (live images), usb-storage excluded (BMC virtual media).",
           "pr_history": [
             {
               "repo": "coreos/rhel-coreos-config",
@@ -1030,11 +1042,23 @@
                 "https://github.com/coreos/fedora-coreos-tracker/issues/249",
                 "https://bugzilla.redhat.com/show_bug.cgi?id=1700056"
               ]
+            },
+            {
+              "repo": "coreos/rhel-coreos-config",
+              "pr": null,
+              "url": null,
+              "state": "pending",
+              "outcome": null,
+              "reason": "Narrowed from 18 to 6 modules (cramfs, freevxfs, hfs, hfsplus, jffs2, udf). Excluded squashfs (used for live PXE rootfs), usb-storage (BMC virtual media), and 10 others too broad for base image. Precedent: nouveau blacklist already exists in overlay.d/08nouveau/. CIS Level 1 Section 1.1.1.",
+              "references": [
+                "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6",
+                "https://github.com/coreos/rhel-coreos-config/tree/main/overlay.d/08nouveau"
+              ]
             }
           ]
         }
       ],
-      "upstream_verdict": "ran-only"
+      "upstream_verdict": "upstream-candidate"
     },
     "M22": {
       "title": "Network Sysctl Hardening",
