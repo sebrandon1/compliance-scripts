@@ -116,7 +116,7 @@ jobs:
       contents: read
     steps:
       - name: Login to quay.io
-        uses: docker/login-action@v4.5.2
+        uses: docker/login-action@v4.6.0
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
@@ -155,7 +155,7 @@ jobs:
       contents: read
     steps:
       - name: Login to quay.io
-        uses: docker/login-action@v4.5.2
+        uses: docker/login-action@v4.6.0
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
@@ -223,7 +223,7 @@ jobs:
 
       - name: Login to quay.io (Docker)
         if: needs.detect-release.outputs.build_bundle == 'true' || needs.detect-release.outputs.build_catalog == 'true'
-        uses: docker/login-action@v4.5.2
+        uses: docker/login-action@v4.6.0
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
