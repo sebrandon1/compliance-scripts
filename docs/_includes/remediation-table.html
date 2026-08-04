@@ -26,7 +26,7 @@
       {% assign check_platform = "ocp" %}
     {% endif %}
     <tr data-platform="{{ check_platform }}">
-      <td>
+      <td data-label="Check Name">
         <details class="check-details">
           <summary>
             <code>{{ check.name }}</code><button class="copy-btn" onclick="copyText(this, '{{ check.name }}')" title="Copy check name">&#x1F4CB;</button>
@@ -47,16 +47,16 @@
           </div>
         </details>
       </td>
-      <td>
+      <td data-label="Platform">
         <span class="platform-badge {{ check_platform }}">{{ check_platform | upcase }}</span>
       </td>
-      <td>
+      <td data-label="Status">
         <span class="status-badge {{ check.status | downcase }}">
           {% if check.status == "FAIL" %}&#10060;{% elsif check.status == "PASS" %}&#9989;{% else %}&#8505;{% endif %}
           {{ check.status }}
         </span>
       </td>
-      <td>
+      <td data-label="Jira">
         {% if group_tracking.jira and group_tracking.jira != "" %}
         <a href="{{ tracking.meta.jira_base_url }}{{ group_tracking.jira }}" target="_blank" class="jira-link">
           {{ group_tracking.jira }}
@@ -65,7 +65,7 @@
         <span class="no-tracking">-</span>
         {% endif %}
       </td>
-      <td>
+      <td data-label="PR">
         {% if group_tracking.pr and group_tracking.pr != "" %}
         <a href="{{ tracking.meta.pr_base_url }}{{ group_tracking.pr }}" target="_blank" class="pr-link{% if group_tracking.pr_state == 'merged' %} merged{% endif %}">
           #{{ group_tracking.pr }}{% if group_tracking.pr_state == "merged" %} ✓{% endif %}
@@ -74,7 +74,7 @@
         <span class="no-tracking">-</span>
         {% endif %}
       </td>
-      <td>
+      <td data-label="Tracking">
         {% if rem %}
         <a href="{{ site.baseurl }}/versions/{{ page.version }}/groups/{{ group_id }}.html" class="tracking-status {{ group_tracking.status }}">
           {{ group_id }}: {{ group_tracking.title | escape }}

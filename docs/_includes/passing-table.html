@@ -14,16 +14,16 @@
       {% assign check_platform = "ocp" %}
     {% endif %}
     <tr data-platform="{{ check_platform }}">
-      <td>
+      <td data-label="Check Name">
         <code>{{ check.name }}</code><button class="copy-btn" onclick="copyText(this, '{{ check.name }}')" title="Copy check name">&#x1F4CB;</button>
         {% if check.summary %}
         <br><small class="description">{{ check.summary | escape }}</small>
         {% endif %}
       </td>
-      <td>
+      <td data-label="Platform">
         <span class="platform-badge {{ check_platform }}">{{ check_platform | upcase }}</span>
       </td>
-      <td>
+      <td data-label="Status">
         <span class="status-badge pass">
           &#9989; PASS
         </span>

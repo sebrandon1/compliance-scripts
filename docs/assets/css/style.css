@@ -1215,6 +1215,7 @@ button.quick-link {
   flex-wrap: wrap;
 }
 
+<<<<<<< HEAD
 /* Sortable columns */
 .sortable {
   cursor: pointer;
@@ -1269,7 +1270,25 @@ summary:hover .copy-btn,
   color: var(--color-pass);
 }
 
-/* Responsive */
+/* Responsive - tablet */
+@media (max-width: 1024px) {
+  .remediation-table,
+  table.status-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-buttons {
+    flex-wrap: wrap;
+  }
+
+  .compare-controls {
+    flex-wrap: wrap;
+  }
+}
+
+/* Responsive - small tablet */
 @media (max-width: 768px) {
   .nav-container {
     flex-direction: column;
@@ -1302,6 +1321,78 @@ summary:hover .copy-btn,
   .floating-legend {
     bottom: 10px;
     right: 10px;
+  }
+}
+
+/* Responsive - mobile */
+@media (max-width: 480px) {
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-links a {
+    margin: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-buttons {
+    flex-direction: column;
+  }
+
+  .filter-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .quick-links {
+    flex-direction: column;
+  }
+
+  .remediation-table thead,
+  table.status-table thead {
+    display: none;
+  }
+
+  .remediation-table tbody tr,
+  table.status-table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.75rem;
+  }
+
+  .remediation-table td,
+  table.status-table td {
+    display: block;
+    text-align: right;
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .remediation-table td::before,
+  table.status-table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .remediation-table td:last-child,
+  table.status-table td:last-child {
+    border-bottom: none;
+  }
+
+  .error-links {
+    flex-direction: column;
   }
 }
 
