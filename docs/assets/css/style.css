@@ -1215,6 +1215,30 @@ button.quick-link {
   flex-wrap: wrap;
 }
 
+/* Sortable columns */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.sortable::after {
+  content: '\21C5';
+  opacity: 0.3;
+  margin-left: 0.3rem;
+  font-size: 0.7em;
+}
+
+.sortable.sort-asc::after {
+  content: '\2191';
+  opacity: 1;
+}
+
+.sortable.sort-desc::after {
+  content: '\2193';
+  opacity: 1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav-container {
