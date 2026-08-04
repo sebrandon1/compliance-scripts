@@ -27,7 +27,7 @@ layout: default
   <div class="filter-search">
     <input type="text" id="table-search" placeholder="Search remediations..." onkeyup="filterTables()">
   </div>
-  <div class="filter-buttons">
+  <div class="filter-buttons" role="group" aria-label="Status filter">
     <button class="filter-btn active" data-filter="all" onclick="setStatusFilter('all')">All</button>
     <button class="filter-btn" data-filter="pass-vanilla" onclick="setStatusFilter('pass-vanilla')">&#x2705; PASS (vanilla)</button>
     <button class="filter-btn" data-filter="verified" onclick="setStatusFilter('verified')">&#x1F7E2; Verified</button>
@@ -35,13 +35,13 @@ layout: default
     <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">&#x1F7E1; Pending</button>
     <button class="filter-btn" data-filter="partial" onclick="setStatusFilter('partial')">&#x1F7E0; Partial</button>
   </div>
-  <div class="filter-buttons">
+  <div class="filter-buttons" role="group" aria-label="Platform filter">
     <button class="filter-btn platform-filter active" data-platform="all" onclick="setPlatformFilter('all')">All Platforms</button>
     <button class="filter-btn platform-filter" data-platform="rhcos" onclick="setPlatformFilter('rhcos')">RHCOS</button>
     <button class="filter-btn platform-filter" data-platform="ocp" onclick="setPlatformFilter('ocp')">OCP</button>
     <button class="filter-btn platform-filter" data-platform="mixed" onclick="setPlatformFilter('mixed')">Mixed</button>
   </div>
-  <div class="filter-buttons">
+  <div class="filter-buttons" role="group" aria-label="Upstream filter">
     <button class="filter-btn upstream-filter active" data-upstream="all" onclick="setUpstreamFilter('all')">All Upstream</button>
     <button class="filter-btn upstream-filter" data-upstream="upstream-candidate" onclick="setUpstreamFilter('upstream-candidate')">&#x1F53C; Candidate</button>
     <button class="filter-btn upstream-filter" data-upstream="ran-only" onclick="setUpstreamFilter('ran-only')">&#x1F3AF; RAN Only</button>
@@ -49,7 +49,7 @@ layout: default
     <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">&mdash; N/A</button>
     <button class="filter-btn upstream-filter" data-upstream="has-branch" onclick="setUpstreamFilter('has-branch')">&#x1F527; Branch Prepared</button>
   </div>
-  <div class="filter-counts" id="filter-counts"></div>
+  <div class="filter-counts" id="filter-counts" aria-live="polite"></div>
 </div>
 
 <h2>Quick Summary</h2>
@@ -104,16 +104,16 @@ layout: default
 <table class="status-table" id="remediation-table">
   <thead>
     <tr>
-      <th style="width: 60px;">Group</th>
-      <th>Category</th>
-      <th style="width: 90px;">Platform</th>
-      <th style="width: 80px;">Severity</th>
-      <th style="width: 50px; text-align: center;">Checks</th>
-      <th style="width: 160px;">Status</th>
-      <th style="width: 120px;">Upstream</th>
-      <th style="width: 50px; text-align: center;">Compare</th>
-      <th style="width: 100px;">Jira</th>
-      <th style="width: 70px;">PR</th>
+      <th scope="col" style="width: 60px;">Group</th>
+      <th scope="col">Category</th>
+      <th scope="col" style="width: 90px;">Platform</th>
+      <th scope="col" style="width: 80px;">Severity</th>
+      <th scope="col" style="width: 50px; text-align: center;">Checks</th>
+      <th scope="col" style="width: 160px;">Status</th>
+      <th scope="col" style="width: 120px;">Upstream</th>
+      <th scope="col" style="width: 50px; text-align: center;">Compare</th>
+      <th scope="col" style="width: 100px;">Jira</th>
+      <th scope="col" style="width: 70px;">PR</th>
     </tr>
   </thead>
   <tbody>
