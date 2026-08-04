@@ -1239,6 +1239,36 @@ button.quick-link {
   opacity: 1;
 }
 
+/* Copy-to-clipboard buttons */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 1px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  vertical-align: middle;
+}
+
+td:hover .copy-btn,
+summary:hover .copy-btn,
+.copy-btn:focus {
+  opacity: 0.6;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+}
+
+.copy-btn.copied {
+  opacity: 1;
+  color: var(--color-pass);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .nav-container {
