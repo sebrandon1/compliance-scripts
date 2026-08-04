@@ -18,6 +18,9 @@ layout: default
   {% if version_data %}
   <div class="scan-info">
     <p><strong>Last Scan:</strong> {{ version_data.scan_date | date: "%Y-%m-%d %H:%M UTC" }}</p>
+    {% if version_data.exported_at %}
+    <p><strong>Last Synced:</strong> <time datetime="{{ version_data.exported_at }}">{{ version_data.exported_at | date: "%Y-%m-%d %H:%M UTC" }}</time></p>
+    {% endif %}
     {% if version_data.content_image %}
     <p><strong>Content Image:</strong> <code>{{ version_data.content_image }}</code></p>
     {% endif %}
@@ -119,7 +122,7 @@ layout: default
   <script id="group-data" type="application/json">
   {
     "version": {{ page.version | jsonify }},
-    "exported_at": {{ 'now' | date: '%Y-%m-%dT%H:%M:%SZ' | jsonify }},
+    "downloaded_at": {{ 'now' | date: '%Y-%m-%dT%H:%M:%SZ' | jsonify }},
     "summary": {
       "total_checks": {{ version_data.summary.total_checks }},
       "passing": {{ version_data.summary.passing }},

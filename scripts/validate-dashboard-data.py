@@ -16,6 +16,10 @@ import sys
 import glob
 from typing import Any
 
+ISO8601_PATTERN = re.compile(
+    r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
+)
+
 
 def validate_scan_export(filepath: str) -> list[str]:
     """Validate an ocp-X_XX.json scan export file."""
@@ -27,6 +31,18 @@ def validate_scan_export(filepath: str) -> list[str]:
     missing_top = required_top - set(data.keys())
     if missing_top:
         errors.append(f"Missing top-level keys: {missing_top}")
+
+    if "scan_date" in data:
+        val = data["scan_date"]
+        if not isinstance(val, str):
+            errors.append(
+                f"scan_date must be a string, got {type(val).__name__}"
+            )
+        elif not ISO8601_PATTERN.match(val):
+            errors.append(
+                f"scan_date must be ISO 8601 format "
+                f"(YYYY-MM-DDTHH:MM:SSZ), got '{val}'"
+            )
 
     if "summary" in data:
         required_summary = {
@@ -87,6 +103,18 @@ def validate_scan_export(filepath: str) -> list[str]:
                         errors.append(
                             f"passing_checks.{severity}[{i}] missing 'name'"
                         )
+
+    if "exported_at" in data:
+        val = data["exported_at"]
+        if not isinstance(val, str):
+            errors.append(
+                f"exported_at must be a string, got {type(val).__name__}"
+            )
+        elif not ISO8601_PATTERN.match(val):
+            errors.append(
+                f"exported_at must be ISO 8601 format "
+                f"(YYYY-MM-DDTHH:MM:SSZ), got '{val}'"
+            )
 
     if "manual_checks" in data:
         if not isinstance(data["manual_checks"], list):
@@ -340,6 +368,19 @@ def validate_scan_history(filepath: str) -> list[str]:
         missing = required_fields - set(entry.keys())
         if missing:
             errors.append(f"Entry [{i}] missing fields: {missing}")
+
+        sd = entry.get("scan_date")
+        if sd is not None:
+            if not isinstance(sd, str):
+                errors.append(
+                    f"Entry [{i}] scan_date must be a string, "
+                    f"got {type(sd).__name__}"
+                )
+            elif not ISO8601_PATTERN.match(sd):
+                errors.append(
+                    f"Entry [{i}] scan_date must be ISO 8601 format "
+                    f"(YYYY-MM-DDTHH:MM:SSZ), got '{sd}'"
+                )
 
         if "summary" in entry:
             summary = entry["summary"]

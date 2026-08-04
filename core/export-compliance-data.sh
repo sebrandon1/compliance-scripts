@@ -176,6 +176,7 @@ log_info "Generating JSON output..."
 OUTPUT_JSON=$(jq -n \
 	--arg version "$OCP_VERSION" \
 	--arg scan_date "$SCAN_DATE" \
+	--arg exported_at "$SCAN_DATE" \
 	--arg content_image "$CONTENT_IMAGE" \
 	--arg content_image_digest "$CONTENT_IMAGE_DIGEST" \
 	--argjson total "$TOTAL_CHECKS" \
@@ -195,6 +196,7 @@ OUTPUT_JSON=$(jq -n \
 	'{
         version: $version,
         scan_date: $scan_date,
+        exported_at: $exported_at,
         content_image: $content_image,
         content_image_digest: (if $content_image_digest == "" then null else $content_image_digest end),
         summary: {

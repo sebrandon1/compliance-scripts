@@ -224,6 +224,47 @@ class TestValidateScanExport:
         errors = validate_dashboard.validate_scan_export(fp)
         assert any("missing 'name'" in e for e in errors)
 
+    def test_scan_date_valid_format(self, tmpdir):
+        data = make_valid_scan_export()
+        fp = write_json(tmpdir, "ocp-4_22.json", data)
+        errors = validate_dashboard.validate_scan_export(fp)
+        assert not any("scan_date" in e for e in errors)
+
+    def test_scan_date_invalid_format(self, tmpdir):
+        data = make_valid_scan_export()
+        data["scan_date"] = "Jan 1 2026"
+        fp = write_json(tmpdir, "ocp-4_22.json", data)
+        errors = validate_dashboard.validate_scan_export(fp)
+        assert any("scan_date must be ISO 8601 format" in e for e in errors)
+
+    def test_exported_at_valid(self, tmpdir):
+        data = make_valid_scan_export()
+        data["exported_at"] = "2026-01-01T00:00:00Z"
+        fp = write_json(tmpdir, "ocp-4_22.json", data)
+        errors = validate_dashboard.validate_scan_export(fp)
+        assert errors == []
+
+    def test_exported_at_wrong_type(self, tmpdir):
+        data = make_valid_scan_export()
+        data["exported_at"] = 12345
+        fp = write_json(tmpdir, "ocp-4_22.json", data)
+        errors = validate_dashboard.validate_scan_export(fp)
+        assert any("exported_at must be a string" in e for e in errors)
+
+    def test_exported_at_invalid_format(self, tmpdir):
+        data = make_valid_scan_export()
+        data["exported_at"] = "2026-01-01"
+        fp = write_json(tmpdir, "ocp-4_22.json", data)
+        errors = validate_dashboard.validate_scan_export(fp)
+        assert any("ISO 8601 format" in e for e in errors)
+
+    def test_exported_at_absent_is_valid(self, tmpdir):
+        data = make_valid_scan_export()
+        assert "exported_at" not in data
+        fp = write_json(tmpdir, "ocp-4_22.json", data)
+        errors = validate_dashboard.validate_scan_export(fp)
+        assert errors == []
+
     def test_manual_checks_valid(self, tmpdir):
         data = make_valid_scan_export()
         data["manual_checks"] = [{"name": "manual-check-1"}]
@@ -615,6 +656,13 @@ class TestValidateScanHistory:
         fp = write_json(tmpdir, "scan-history.json", [entry])
         errors = validate_dashboard.validate_scan_history(fp)
         assert any("must be int" in e for e in errors)
+
+    def test_scan_date_invalid_format(self, tmpdir):
+        entry = make_valid_scan_history()[0]
+        entry["scan_date"] = "not-a-date"
+        fp = write_json(tmpdir, "scan-history.json", [entry])
+        errors = validate_dashboard.validate_scan_history(fp)
+        assert any("scan_date must be ISO 8601 format" in e for e in errors)
 
     def test_multiple_entries(self, tmpdir):
         entries = make_valid_scan_history()
