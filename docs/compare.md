@@ -137,6 +137,7 @@ function runCompare() {
   }
 
   el.innerHTML = html;
+  history.replaceState(null, '', '#left=' + encodeURIComponent(oldV) + '&right=' + encodeURIComponent(newV));
 }
 
 function summaryCard(label, oldVal, newVal, deltaLabel) {
@@ -180,6 +181,12 @@ function changeSection(title, items, cls, showTransition) {
   html += '</tbody></table>';
   return html;
 }
+
+(function restoreFromHash() {
+  var params = parseHash();
+  if (params.left) document.getElementById('old-version').value = params.left;
+  if (params.right) document.getElementById('new-version').value = params.right;
+})();
 
 runCompare();
 </script>
