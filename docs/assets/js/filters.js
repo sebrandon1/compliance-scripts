@@ -31,9 +31,10 @@ function setStatusFilter(filter) {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn:not(.platform-filter):not(.upstream-filter)').forEach(function(b) {
     b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
   });
   var btn = document.querySelector('[data-filter="' + filter + '"]');
-  if (btn) btn.classList.add('active');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true'); }
   filterTables();
 }
 
@@ -41,9 +42,10 @@ function setPlatformFilter(platform) {
   currentPlatform = platform;
   document.querySelectorAll('.platform-filter').forEach(function(b) {
     b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
   });
   var btn = document.querySelector('[data-platform="' + platform + '"]');
-  if (btn) btn.classList.add('active');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true'); }
   filterTables();
 }
 
@@ -51,9 +53,10 @@ function setUpstreamFilter(upstream) {
   currentUpstream = upstream;
   document.querySelectorAll('.upstream-filter').forEach(function(b) {
     b.classList.remove('active');
+    b.setAttribute('aria-pressed', 'false');
   });
   var btn = document.querySelector('[data-upstream="' + upstream + '"]');
-  if (btn) btn.classList.add('active');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true'); }
   filterTables();
 }
 

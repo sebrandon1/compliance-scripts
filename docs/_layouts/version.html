@@ -162,7 +162,7 @@ layout: default
       <div class="filter-search">
         <input type="text" id="check-search" placeholder="Search checks..." onkeyup="filterChecks()">
       </div>
-      <div class="filter-buttons">
+      <div class="filter-buttons" role="group" aria-label="Check filter">
         <button class="filter-btn active" data-filter="all" onclick="setCheckFilter('all')">All</button>
         <button class="filter-btn" data-filter="rhcos" onclick="setCheckFilter('rhcos')">RHCOS</button>
         <button class="filter-btn" data-filter="ocp" onclick="setCheckFilter('ocp')">OCP</button>
@@ -172,7 +172,7 @@ layout: default
         <button class="filter-btn" data-filter="tracked" onclick="setCheckFilter('tracked')">Tracked</button>
         <button class="filter-btn" data-filter="untracked" onclick="setCheckFilter('untracked')">Untracked</button>
       </div>
-      <div class="filter-counts" id="check-filter-counts"></div>
+      <div class="filter-counts" id="check-filter-counts" aria-live="polite"></div>
     </div>
 
     <!-- Failing Tab Content -->
