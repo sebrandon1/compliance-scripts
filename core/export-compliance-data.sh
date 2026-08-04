@@ -278,6 +278,25 @@ fi
 echo "$EXISTING_HISTORY" | jq --argjson entry "$HISTORY_ENTRY" '. + [$entry]' >"$HISTORY_FILE"
 log_info "Appended scan snapshot to ${HISTORY_FILE}"
 
+# Generate shields.io endpoint badge JSON
+BADGE_DIR="${REPO_ROOT}/docs/badges"
+mkdir -p "$BADGE_DIR"
+BADGE_FILE="${BADGE_DIR}/ocp-${VERSION_SLUG}.json"
+COVERAGE_PCT=$(echo "scale=0; ${PASSING} * 100 / ${TOTAL_CHECKS}" | bc)
+if [[ "$COVERAGE_PCT" -ge 70 ]]; then
+	BADGE_COLOR="green"
+elif [[ "$COVERAGE_PCT" -ge 40 ]]; then
+	BADGE_COLOR="yellow"
+else
+	BADGE_COLOR="red"
+fi
+jq -n \
+	--arg label "OCP ${OCP_VERSION}" \
+	--arg message "${COVERAGE_PCT}% passing" \
+	--arg color "$BADGE_COLOR" \
+	'{schemaVersion: 1, label: $label, message: $message, color: $color}' >"$BADGE_FILE"
+log_info "Generated badge endpoint: ${BADGE_FILE}"
+
 print_summary \
 	"OCP Version" "${OCP_VERSION}" \
 	"Scan Date" "${SCAN_DATE}" \
