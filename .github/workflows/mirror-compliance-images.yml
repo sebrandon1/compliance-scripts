@@ -14,7 +14,9 @@ on:
         required: false
         default: 'false'
 
-permissions: read-all
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   detect-release:
@@ -387,3 +389,43 @@ jobs:
           echo "  RELATED_IMAGE_OPENSCAP=quay.io/bapalm/openscap-ocp:${CO_REF} \\" >> "$GITHUB_STEP_SUMMARY"
           echo "  RELATED_IMAGE_PROFILE=quay.io/bapalm/k8scontent:latest" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  notify-failure:
+    needs: [detect-release, build-amd64, build-arm64, assemble]
+    if: >-
+      always() &&
+      (needs.detect-release.result == 'failure' ||
+       needs.build-amd64.result == 'failure' ||
+       needs.build-arm64.result == 'failure' ||
+       needs.assemble.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="CI: Mirror Compliance Images workflow failed"
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --label ci-failure --state open --search "$TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [[ -n "$EXISTING" ]]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" \
+              --body "Workflow failed again on $(date -u +%Y-%m-%dT%H:%M:%SZ). [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --label ci-failure \
+              --body "The scheduled **Mirror Compliance Operator Images** workflow failed.
+
+          **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          **Date:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          | Job | Result |
+          |-----|--------|
+          | detect-release | ${{ needs.detect-release.result }} |
+          | build-amd64 | ${{ needs.build-amd64.result }} |
+          | build-arm64 | ${{ needs.build-arm64.result }} |
+          | assemble | ${{ needs.assemble.result }} |
+
+          Check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
+          fi

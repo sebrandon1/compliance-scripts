@@ -5,7 +5,9 @@ on:
     - cron: '0 6 * * 1' # Weekly on Monday at 6 AM UTC
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   update-marketplace-versions:
@@ -14,6 +16,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -59,3 +62,31 @@ jobs:
             --body "Automated PR to update the marketplace image verification list with the latest available OCP versions." \
             --base main \
             --head "$BRANCH"
+
+  notify-failure:
+    needs: [update-marketplace-versions]
+    if: always() && needs.update-marketplace-versions.result == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="CI: Update Marketplace Versions workflow failed"
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --label ci-failure --state open --search "$TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [[ -n "$EXISTING" ]]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" \
+              --body "Workflow failed again on $(date -u +%Y-%m-%dT%H:%M:%SZ). [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --label ci-failure \
+              --body "The scheduled **Update Marketplace Versions** workflow failed.
+
+          **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          **Date:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          Check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
+          fi

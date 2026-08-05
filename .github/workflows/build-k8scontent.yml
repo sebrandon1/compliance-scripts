@@ -19,7 +19,9 @@ on:
         required: false
         default: 'false'
 
-permissions: read-all
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   detect:
@@ -252,3 +254,41 @@ jobs:
           echo "  RELATED_IMAGE_OPENSCAP=quay.io/bapalm/openscap-ocp:${SHORT} \\" >> "$GITHUB_STEP_SUMMARY"
           echo "  RELATED_IMAGE_PROFILE=quay.io/bapalm/k8scontent:latest" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+  notify-failure:
+    needs: [detect, build-content, mirror-operator]
+    if: >-
+      always() &&
+      (needs.detect.result == 'failure' ||
+       needs.build-content.result == 'failure' ||
+       needs.mirror-operator.result == 'failure')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="CI: Build k8scontent workflow failed"
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --label ci-failure --state open --search "$TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [[ -n "$EXISTING" ]]; then
+            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" \
+              --body "Workflow failed again on $(date -u +%Y-%m-%dT%H:%M:%SZ). [Run #${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --label ci-failure \
+              --body "The scheduled **Build and Mirror Compliance Content Images** workflow failed.
+
+          **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          **Date:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          | Job | Result |
+          |-----|--------|
+          | detect | ${{ needs.detect.result }} |
+          | build-content | ${{ needs.build-content.result }} |
+          | mirror-operator | ${{ needs.mirror-operator.result }} |
+
+          Check the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."
+          fi
