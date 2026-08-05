@@ -48,7 +48,8 @@ except ImportError:
 
 def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
                         headless: bool = True, timeout: int = 30000,
-                        dry_run: bool = False, url: str | None = None) -> bool:
+                        dry_run: bool = False, url: str | None = None,
+                        retries: int = 3) -> bool:
     """
     Automate cluster reprovisioning via the succulent web form.
 
@@ -60,6 +61,7 @@ def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
         timeout: Timeout for page operations in milliseconds (default: 30000)
         dry_run: Run in dry-run mode (visible browser, no submission)
         url: URL to the provisioning form
+        retries: Number of retry attempts on timeout (default: 3)
 
     Returns:
         True if successful, False otherwise
@@ -74,147 +76,148 @@ def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
     print(f"Kerberos ID: {kerberos_id}")
     print(f"URL: {url}\n")
 
-    try:
-        with sync_playwright() as p:
-            # Launch browser
-            print("Launching browser...")
-            browser = p.chromium.launch(
-                headless=headless,
-                args=[
-                    '--ignore-certificate-errors',  # For Red Hat internal SSL certs
-                    '--disable-web-security',
-                ]
-            )
+    for attempt in range(1, retries + 1):
+        if attempt > 1:
+            delay = 2 ** attempt
+            print(f"\nRetry {attempt}/{retries} after {delay}s backoff...")
+            time.sleep(delay)
 
-            # Create context with certificate error bypassing
-            context = browser.new_context(
-                ignore_https_errors=True,  # Ignore SSL certificate errors
-                viewport={'width': 1920, 'height': 1080}
-            )
-
-            page = context.new_page()
-
-            # Navigate to the form
-            print(f"Navigating to {url}...")
-            page.goto(url, wait_until='networkidle', timeout=timeout)
-
-            # Give the page a moment to fully load
-            time.sleep(2)
-
-            print("Filling in the form...")
-
-            # Fill in email
-            try:
-                email_field = page.locator('input[name*="email" i], input[id*="email" i], input[placeholder*="email" i]').first
-                if email_field.is_visible(timeout=5000):
-                    email_field.fill(email)
-                    print(f"  ✓ Email: {email}")
-            except Exception as e:
-                print(f"  ⚠ Could not find email field: {e}")
-
-            # Fill in Kerberos ID
-            try:
-                kerberos_field = page.locator('input[name*="kerberos" i], input[id*="kerberos" i], input[placeholder*="kerberos" i]').first
-                if kerberos_field.is_visible(timeout=5000):
-                    kerberos_field.fill(kerberos_id)
-                    print(f"  ✓ Kerberos ID: {kerberos_id}")
-            except Exception as e:
-                print(f"  ⚠ Could not find kerberos field: {e}")
-
-            # Fill in OCP Tag Version (input field: name="parameter_tag", id="tag")
-            try:
-                # The OCP Tag field is a text input, not a dropdown
-                ocp_input = page.locator('input[name="parameter_tag"], input#tag').first
-                if ocp_input.is_visible(timeout=5000):
-                    # Clear the field first, then fill with the new version
-                    ocp_input.clear()
-                    ocp_input.fill(ocp_version)
-                    print(f"  ✓ OCP Tag Version: {ocp_version}")
-                else:
-                    print("  ⚠ Could not find OCP Tag input field")
-            except Exception as e:
-                print(f"  ⚠ Could not set OCP version: {e}")
-
-            # Ensure release version is set to "nightly" (usually default)
-            try:
-                release_select = page.locator('select[name*="release" i], select[id*="release" i]').first
-                if release_select.is_visible(timeout=5000):
-                    release_select.select_option(label="nightly")
-                    print("  ✓ Release Version: nightly")
-            except Exception as e:
-                print(f"  ℹ Release version field not found or already set: {e}")
-
-            # Take a screenshot before submission (helpful for debugging)
-            screenshot_path = Path.home() / "Downloads" / "reprovision-form-before-submit.png"
-            page.screenshot(path=str(screenshot_path))
-            print(f"\n  Screenshot saved: {screenshot_path}")
-
-            # Find and click the "Create Cluster" button
-            if dry_run:
-                print("\n" + "=" * 70)
-                print("DRY RUN MODE: Skipping form submission")
-                print("=" * 70)
-                print("\nBrowser will remain open for 30 seconds for you to inspect...")
-                print("Press Ctrl+C to close earlier, or wait for auto-close.")
-                try:
-                    time.sleep(30)
-                except KeyboardInterrupt:
-                    print("\nClosing browser...")
-                return True
-
-            print("\nLooking for 'Create Cluster' button...")
-            try:
-                # Try different selectors for the submit button
-                create_button = page.locator('button:has-text("Create Cluster"), input[type="submit"][value*="Create" i], button[type="submit"]').first
-
-                if create_button.is_visible(timeout=5000):
-                    print("  Found 'Create Cluster' button")
-
-                    # Click the button (no_wait_after since form might use AJAX)
-                    create_button.click(no_wait_after=True)
-                    print("  ✓ Clicked 'Create Cluster' button!")
-
-                    # Wait a moment for the submission to process
-                    time.sleep(3)
-
-                    # Take a screenshot after submission
-                    screenshot_path_after = Path.home() / "Downloads" / "reprovision-form-after-submit.png"
-                    page.screenshot(path=str(screenshot_path_after))
-                    print(f"  Screenshot saved: {screenshot_path_after}")
-
-                    # Check for success message or confirmation
-                    try:
-                        # Look for common success indicators
-                        if page.locator('text=/success|created|submitted/i').first.is_visible(timeout=5000):
-                            print("\n✓ Cluster creation request submitted successfully!")
-                        else:
-                            print("\n✓ Form submitted (check screenshots for confirmation)")
-                    except Exception:
-                        print("\n✓ Form submitted (check screenshots for confirmation)")
-
-                    return True
-                else:
-                    print("  ✗ Create Cluster button not visible")
-                    return False
-
-            except Exception as e:
-                print(f"  ✗ Error clicking Create Cluster button: {e}")
-                return False
-
-    except PlaywrightTimeoutError as e:
-        print(f"\n✗ Timeout error: {e}", file=sys.stderr)
-        print("The page may require authentication or be unreachable.", file=sys.stderr)
-        return False
-    except Exception as e:
-        print(f"\n✗ Error during cluster reprovisioning: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        return False
-    finally:
         try:
-            browser.close()
-        except Exception:
-            pass
+            with sync_playwright() as p:
+                # Launch browser
+                print("Launching browser...")
+                browser = p.chromium.launch(
+                    headless=headless,
+                    args=[
+                        '--ignore-certificate-errors',
+                        '--disable-web-security',
+                    ]
+                )
+
+                try:
+                    context = browser.new_context(
+                        ignore_https_errors=True,
+                        viewport={'width': 1920, 'height': 1080}
+                    )
+
+                    page = context.new_page()
+
+                    # Navigate to the form
+                    print(f"Navigating to {url}...")
+                    page.goto(url, wait_until='networkidle', timeout=timeout)
+
+                    # Give the page a moment to fully load
+                    time.sleep(2)
+
+                    print("Filling in the form...")
+
+                    # Fill in email
+                    try:
+                        email_field = page.locator('input[name*="email" i], input[id*="email" i], input[placeholder*="email" i]').first
+                        if email_field.is_visible(timeout=5000):
+                            email_field.fill(email)
+                            print(f"  ✓ Email: {email}")
+                    except Exception as e:
+                        print(f"  ⚠ Could not find email field: {e}")
+
+                    # Fill in Kerberos ID
+                    try:
+                        kerberos_field = page.locator('input[name*="kerberos" i], input[id*="kerberos" i], input[placeholder*="kerberos" i]').first
+                        if kerberos_field.is_visible(timeout=5000):
+                            kerberos_field.fill(kerberos_id)
+                            print(f"  ✓ Kerberos ID: {kerberos_id}")
+                    except Exception as e:
+                        print(f"  ⚠ Could not find kerberos field: {e}")
+
+                    # Fill in OCP Tag Version
+                    try:
+                        ocp_input = page.locator('input[name="parameter_tag"], input#tag').first
+                        if ocp_input.is_visible(timeout=5000):
+                            ocp_input.clear()
+                            ocp_input.fill(ocp_version)
+                            print(f"  ✓ OCP Tag Version: {ocp_version}")
+                        else:
+                            print("  ⚠ Could not find OCP Tag input field")
+                    except Exception as e:
+                        print(f"  ⚠ Could not set OCP version: {e}")
+
+                    # Ensure release version is set to "nightly"
+                    try:
+                        release_select = page.locator('select[name*="release" i], select[id*="release" i]').first
+                        if release_select.is_visible(timeout=5000):
+                            release_select.select_option(label="nightly")
+                            print("  ✓ Release Version: nightly")
+                    except Exception as e:
+                        print(f"  ℹ Release version field not found or already set: {e}")
+
+                    # Take a screenshot before submission
+                    screenshot_path = Path.home() / "Downloads" / "reprovision-form-before-submit.png"
+                    page.screenshot(path=str(screenshot_path))
+                    print(f"\n  Screenshot saved: {screenshot_path}")
+
+                    # Find and click the "Create Cluster" button
+                    if dry_run:
+                        print("\n" + "=" * 70)
+                        print("DRY RUN MODE: Skipping form submission")
+                        print("=" * 70)
+                        print("\nBrowser will remain open for 30 seconds for you to inspect...")
+                        print("Press Ctrl+C to close earlier, or wait for auto-close.")
+                        try:
+                            time.sleep(30)
+                        except KeyboardInterrupt:
+                            print("\nClosing browser...")
+                        return True
+
+                    print("\nLooking for 'Create Cluster' button...")
+                    try:
+                        create_button = page.locator('button:has-text("Create Cluster"), input[type="submit"][value*="Create" i], button[type="submit"]').first
+
+                        if create_button.is_visible(timeout=5000):
+                            print("  Found 'Create Cluster' button")
+                            create_button.click(no_wait_after=True)
+                            print("  ✓ Clicked 'Create Cluster' button!")
+
+                            time.sleep(3)
+
+                            screenshot_path_after = Path.home() / "Downloads" / "reprovision-form-after-submit.png"
+                            page.screenshot(path=str(screenshot_path_after))
+                            print(f"  Screenshot saved: {screenshot_path_after}")
+
+                            try:
+                                if page.locator('text=/success|created|submitted/i').first.is_visible(timeout=5000):
+                                    print("\n✓ Cluster creation request submitted successfully!")
+                                else:
+                                    print("\n✓ Form submitted (check screenshots for confirmation)")
+                            except Exception:
+                                print("\n✓ Form submitted (check screenshots for confirmation)")
+
+                            return True
+                        else:
+                            print("  ✗ Create Cluster button not visible")
+                            return False
+
+                    except Exception as e:
+                        print(f"  ✗ Error clicking Create Cluster button: {e}")
+                        return False
+
+                finally:
+                    try:
+                        browser.close()
+                    except Exception:
+                        pass
+
+        except PlaywrightTimeoutError as e:
+            print(f"\n✗ Timeout error (attempt {attempt}/{retries}): {e}", file=sys.stderr)
+            if attempt == retries:
+                print("The page may require authentication or be unreachable.", file=sys.stderr)
+                return False
+        except Exception as e:
+            print(f"\n✗ Error during cluster reprovisioning: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc()
+            return False
+
+    return False
 
 
 def main() -> None:
@@ -313,6 +316,13 @@ For more information, see the README.md file.
         metavar='MS',
         help='Timeout for page operations in milliseconds (default: %(default)s)'
     )
+    parser.add_argument(
+        '--retries',
+        type=int,
+        default=3,
+        metavar='N',
+        help='Number of retry attempts on timeout (default: %(default)s)'
+    )
 
     args = parser.parse_args()
 
@@ -347,7 +357,8 @@ For more information, see the README.md file.
         headless=headless,
         timeout=args.timeout,
         dry_run=args.dry_run,
-        url=url
+        url=url,
+        retries=args.retries
     )
 
     sys.exit(0 if success else 1)
