@@ -26,6 +26,7 @@ venv/
 # Tool artifacts
 .playwright-mcp/
 .pytest_cache/
+.summary-cache.json
 docs/_site/
 *.png
 
