@@ -729,3 +729,130 @@ class TestMainIntegration:
             validate_dashboard.main()
         finally:
             sys.argv = old_argv
+
+
+class TestStripProfilePrefix:
+    def test_rhcos4_e8_master(self):
+        assert validate_dashboard.strip_profile_prefix(
+            "rhcos4-e8-master-sshd-disable-root-login"
+        ) == "sshd-disable-root-login"
+
+    def test_ocp4_cis(self):
+        assert validate_dashboard.strip_profile_prefix(
+            "ocp4-cis-api-server-encryption"
+        ) == "api-server-encryption"
+
+    def test_no_prefix(self):
+        assert validate_dashboard.strip_profile_prefix(
+            "configure-crypto-policy"
+        ) == "configure-crypto-policy"
+
+
+class TestValidateCrossReferences:
+    def _make_scan_with_checks(
+        self, check_names: list[str]
+    ) -> dict[str, Any]:
+        return {
+            "version": "4.22",
+            "scan_date": "2026-01-01T00:00:00Z",
+            "summary": {
+                "total_checks": len(check_names),
+                "passing": 0,
+                "failing": len(check_names),
+                "manual": 0,
+            },
+            "remediations": {
+                "high": [
+                    {"name": n, "status": "FAIL", "severity": "high"}
+                    for n in check_names
+                ],
+                "medium": [],
+                "low": [],
+            },
+        }
+
+    def _make_tracking_with_rems(
+        self, rem_names: list[str]
+    ) -> dict[str, Any]:
+        return {
+            "meta": {"version": "4.22"},
+            "groups": {
+                "H1": {
+                    "title": "Test",
+                    "severity": "HIGH",
+                    "priority": 1,
+                    "status": "verified",
+                    "platform": "rhcos",
+                },
+            },
+            "remediations": {n: {"group": "H1"} for n in rem_names},
+        }
+
+    def test_matching_data_passes(self, tmpdir):
+        scan_path = write_json(
+            tmpdir, "scan.json",
+            self._make_scan_with_checks(["ocp4-cis-configure-crypto-policy"])
+        )
+        tracking_path = write_json(
+            tmpdir, "tracking.json",
+            self._make_tracking_with_rems(["configure-crypto-policy"])
+        )
+        errors = validate_dashboard.validate_cross_references(
+            scan_path, tracking_path
+        )
+        assert errors == []
+
+    def test_missing_remediation_reports_error(self, tmpdir):
+        scan_path = write_json(
+            tmpdir, "scan.json",
+            self._make_scan_with_checks(["ocp4-cis-configure-crypto-policy"])
+        )
+        tracking_path = write_json(
+            tmpdir, "tracking.json",
+            self._make_tracking_with_rems([
+                "configure-crypto-policy",
+                "nonexistent-check",
+            ])
+        )
+        errors = validate_dashboard.validate_cross_references(
+            scan_path, tracking_path
+        )
+        assert len(errors) == 1
+        assert "nonexistent-check" in errors[0]
+
+    def test_multiple_prefixes_stripped(self, tmpdir):
+        scan_path = write_json(
+            tmpdir, "scan.json",
+            self._make_scan_with_checks([
+                "rhcos4-e8-master-sshd-disable-root-login",
+                "rhcos4-e8-worker-sshd-disable-root-login",
+            ])
+        )
+        tracking_path = write_json(
+            tmpdir, "tracking.json",
+            self._make_tracking_with_rems(["sshd-disable-root-login"])
+        )
+        errors = validate_dashboard.validate_cross_references(
+            scan_path, tracking_path
+        )
+        assert errors == []
+
+    def test_passing_checks_included(self, tmpdir):
+        scan = self._make_scan_with_checks([])
+        scan["passing_checks"] = {
+            "high": [
+                {"name": "ocp4-e8-crypto-policy", "status": "PASS",
+                 "severity": "high"}
+            ],
+            "medium": [],
+            "low": [],
+        }
+        scan_path = write_json(tmpdir, "scan.json", scan)
+        tracking_path = write_json(
+            tmpdir, "tracking.json",
+            self._make_tracking_with_rems(["crypto-policy"])
+        )
+        errors = validate_dashboard.validate_cross_references(
+            scan_path, tracking_path
+        )
+        assert errors == []
