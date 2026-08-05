@@ -165,14 +165,14 @@ class TestProcessChecks:
     def test_adds_summary_to_check(self):
         client = _mock_client("Enable crypto policy")
         checks = [{"name": "configure-crypto-policy",
-                    "description": "Long description text here for test."}]
+                   "description": "Long description text here for test."}]
         result = summarize_remediations.process_checks(client, checks)
         assert result[0]["summary"] == "Enable crypto policy"
 
     def test_skips_check_with_existing_summary(self):
         client = _mock_client("unused")
         checks = [{"name": "test", "description": "Long description text.",
-                    "summary": "existing"}]
+                   "summary": "existing"}]
         result = summarize_remediations.process_checks(client, checks)
         assert result[0]["summary"] == "existing"
         client.messages.create.assert_not_called()
@@ -180,7 +180,7 @@ class TestProcessChecks:
     def test_model_threaded_to_api(self):
         client = _mock_client("summary")
         checks = [{"name": "test",
-                    "description": "Long description text here for test."}]
+                   "description": "Long description text here for test."}]
         summarize_remediations.process_checks(
             client, checks, model="custom-model"
         )
