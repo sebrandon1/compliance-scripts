@@ -248,23 +248,38 @@ clean-complianceremediations: ## 🧹 Remove and recreate the complianceremediat
 # 🚀 Workflow Orchestration
 # ────────────────────────────────────────────────────────────────────────────────
 
-full-workflow: banner install-compliance-operator apply-periodic-scan create-scan wait-for-scans collect-complianceremediations combine-machineconfigs organize-machine-configs generate-compliance-markdown ## 🚀 Execute complete compliance workflow
-	@echo ""
-	@echo "$(BOLD)$(BG_GREEN)$(WHITE)"
-	@echo "  ╔═════════════════════════════════════════════════════════════╗"
-	@echo "  ║         🎉 FULL COMPLIANCE WORKFLOW COMPLETED! 🎉         ║"
-	@echo "  ║              All operations finished successfully            ║"
-	@echo "  ╚═════════════════════════════════════════════════════════════╝"
-	@echo "$(RESET)"
-	@echo "$(GREEN)📋 Summary of completed operations:$(RESET)"
-	@echo "$(DIM)  ✓ Compliance Operator installed$(RESET)"
-	@echo "$(DIM)  ✓ Periodic scan configuration applied$(RESET)"
-	@echo "$(DIM)  ✓ Compliance scan created$(RESET)"
-	@echo "$(DIM)  ✓ Scans completed$(RESET)"
-	@echo "$(DIM)  ✓ Compliance remediations collected$(RESET)"
-	@echo "$(DIM)  ✓ Machine configurations organized$(RESET)"
-	@echo "$(DIM)  ✓ Compliance markdown report generated$(RESET)"
-	@echo ""
+WORKFLOW_STEPS := install-compliance-operator apply-periodic-scan create-scan wait-for-scans collect-complianceremediations combine-machineconfigs organize-machine-configs generate-compliance-markdown
+
+full-workflow: banner ## 🚀 Execute complete compliance workflow with per-step timing
+	@TOTAL_START=$$(date +%s); \
+	TIMINGS=""; \
+	for step in $(WORKFLOW_STEPS); do \
+		STEP_START=$$(date +%s); \
+		printf "$(BOLD)$(MAGENTA)==> %-45s$(RESET)\n" "$$step"; \
+		$(MAKE) --no-print-directory $$step || exit 1; \
+		STEP_END=$$(date +%s); \
+		ELAPSED=$$((STEP_END - STEP_START)); \
+		MINS=$$((ELAPSED / 60)); SECS=$$((ELAPSED % 60)); \
+		printf "$(DIM)    ✓ $$step completed in %dm%02ds$(RESET)\n\n" $$MINS $$SECS; \
+		TIMINGS="$$TIMINGS$$step:$$ELAPSED "; \
+	done; \
+	TOTAL_END=$$(date +%s); \
+	TOTAL=$$((TOTAL_END - TOTAL_START)); \
+	T_MINS=$$((TOTAL / 60)); T_SECS=$$((TOTAL % 60)); \
+	echo ""; \
+	echo "$(BOLD)$(BG_GREEN)$(WHITE)"; \
+	echo "  ╔═════════════════════════════════════════════════════════════╗"; \
+	echo "  ║         🎉 FULL COMPLIANCE WORKFLOW COMPLETED! 🎉         ║"; \
+	echo "  ╚═════════════════════════════════════════════════════════════╝"; \
+	echo "$(RESET)"; \
+	echo "$(GREEN)📋 Step timings:$(RESET)"; \
+	for entry in $$TIMINGS; do \
+		SNAME=$${entry%%:*}; DUR=$${entry##*:}; \
+		S_MINS=$$((DUR / 60)); S_SECS=$$((DUR % 60)); \
+		printf "$(DIM)  ✓ %-45s %dm%02ds$(RESET)\n" "$$SNAME" $$S_MINS $$S_SECS; \
+	done; \
+	echo ""; \
+	printf "$(BOLD)$(GREEN)  Total workflow duration: %dm%02ds$(RESET)\n\n" $$T_MINS $$T_SECS
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 🧪 Testing & Validation
