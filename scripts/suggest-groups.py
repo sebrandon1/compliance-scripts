@@ -73,6 +73,7 @@ def suggest_group(
     check_name: str,
     prefix_map: dict[str, dict[str, int]],
     kw_map: dict[str, str],
+    medium_threshold: float = MEDIUM_THRESHOLD,
 ) -> tuple[str | None, float, str]:
     """Suggest the best group for a check name. Returns (group_id, confidence, reason)."""
     parts = check_name.split("-")
@@ -113,13 +114,13 @@ def suggest_group(
                     f"({top[1]}/{total} checks)"
                 )
 
-    if best_group and best_confidence >= MEDIUM_THRESHOLD:
+    if best_group and best_confidence >= medium_threshold:
         return best_group, best_confidence, best_reason
 
     for token in parts:
         if token in kw_map:
             gid = kw_map[token]
-            return gid, MEDIUM_THRESHOLD, f"keyword '{token}' found in {gid}"
+            return gid, medium_threshold, f"keyword '{token}' found in {gid}"
 
     return None, 0.0, "no match"
 
@@ -192,6 +193,10 @@ Examples:
                         help="Output as JSON")
     parser.add_argument("--all", action="store_true",
                         help="Show all checks including already-grouped ones")
+    parser.add_argument("--high-threshold", type=float, default=HIGH_THRESHOLD,
+                        help=f"Minimum confidence for HIGH bucket (default: {HIGH_THRESHOLD})")
+    parser.add_argument("--medium-threshold", type=float, default=MEDIUM_THRESHOLD,
+                        help=f"Minimum confidence for MEDIUM bucket (default: {MEDIUM_THRESHOLD})")
     args = parser.parse_args()
 
     tracking = load_tracking(args.tracking)
@@ -238,7 +243,7 @@ Examples:
             })
             continue
 
-        gid, conf, reason = suggest_group(check, prefix_map, kw_map)
+        gid, conf, reason = suggest_group(check, prefix_map, kw_map, args.medium_threshold)
         results.append({
             "check": check, "group": gid, "confidence": conf,
             "reason": reason,
@@ -260,21 +265,23 @@ Examples:
     print(f"  Ungrouped: {len(results)} check(s)")
     print()
 
+    ht = args.high_threshold
+    mt = args.medium_threshold
     high, medium, low, no_match = [], [], [], []
     for r in results:
         c = r["confidence"]
-        if c >= HIGH_THRESHOLD:
+        if c >= ht:
             high.append(r)
-        elif c >= MEDIUM_THRESHOLD:
+        elif c >= mt:
             medium.append(r)
         elif c > 0.0:
             low.append(r)
         else:
             no_match.append(r)
 
-    print_section(f"HIGH CONFIDENCE (>= {HIGH_THRESHOLD})", high, groups)
-    print_section(f"MEDIUM CONFIDENCE ({MEDIUM_THRESHOLD}-{HIGH_THRESHOLD})", medium, groups)
-    print_section(f"LOW CONFIDENCE (< {MEDIUM_THRESHOLD})", low, groups)
+    print_section(f"HIGH CONFIDENCE (>= {ht})", high, groups)
+    print_section(f"MEDIUM CONFIDENCE ({mt}-{ht})", medium, groups)
+    print_section(f"LOW CONFIDENCE (< {mt})", low, groups)
     print_section("NEW GROUP CANDIDATES", no_match, groups, show_confidence=False)
 
     matched = len(high) + len(medium)
