@@ -21,6 +21,21 @@ ISO8601_PATTERN = re.compile(
 )
 
 
+PROFILE_PREFIXES = [
+    "rhcos4-e8-master-", "rhcos4-e8-worker-", "rhcos4-e8-",
+    "rhcos4-moderate-master-", "rhcos4-moderate-worker-", "rhcos4-moderate-",
+    "ocp4-e8-", "ocp4-cis-", "ocp4-moderate-", "ocp4-pci-dss-",
+]
+
+
+def strip_profile_prefix(name: str) -> str:
+    """Strip profile/role prefix from a check name."""
+    for prefix in PROFILE_PREFIXES:
+        if name.startswith(prefix):
+            return name[len(prefix):]
+    return name
+
+
 def validate_scan_export(filepath: str) -> list[str]:
     """Validate an ocp-X_XX.json scan export file."""
     errors = []
@@ -395,6 +410,38 @@ def validate_scan_history(filepath: str) -> list[str]:
     return errors
 
 
+def validate_cross_references(
+    scan_filepath: str, tracking_filepath: str
+) -> list[str]:
+    """Cross-validate tracking remediation names against scan data."""
+    errors = []
+    with open(scan_filepath) as f:
+        scan_data = json.load(f)
+    with open(tracking_filepath) as f:
+        tracking_data = json.load(f)
+
+    scan_names: set[str] = set()
+    for section in ["remediations", "passing_checks"]:
+        for severity in ["high", "medium", "low"]:
+            for item in scan_data.get(section, {}).get(severity, []):
+                scan_names.add(strip_profile_prefix(item["name"]))
+    for item in scan_data.get("manual_checks", []):
+        scan_names.add(strip_profile_prefix(item["name"]))
+
+    tracking_rems = tracking_data.get("remediations", {})
+    missing = sorted(r for r in tracking_rems if r not in scan_names)
+
+    if missing:
+        sample = ", ".join(missing[:10])
+        suffix = f" (and {len(missing) - 10} more)" if len(missing) > 10 else ""
+        errors.append(
+            f"{len(missing)} tracking remediation(s) not found in scan data: "
+            f"{sample}{suffix}"
+        )
+
+    return errors
+
+
 def main() -> None:
     data_dir = sys.argv[1] if len(sys.argv) > 1 else "docs/_data"
 
@@ -444,6 +491,34 @@ def main() -> None:
             all_errors["scan-history.json"] = errors
         else:
             print("OK")
+
+    # Cross-reference: tracking remediations vs scan data (warnings only)
+    xref_warnings: dict[str, list[str]] = {}
+    for filepath in sorted(scan_files):
+        if "baseline" in filepath:
+            continue
+        basename = os.path.basename(filepath)
+        version_slug = basename.replace("ocp-", "").replace(".json", "")
+        tracking_path = os.path.join(data_dir, f"tracking-{version_slug}.json")
+        if not os.path.exists(tracking_path):
+            tracking_path = os.path.join(data_dir, "tracking.json")
+        if os.path.exists(tracking_path):
+            xref_label = f"{basename} <-> {os.path.basename(tracking_path)}"
+            print(f"Cross-referencing {xref_label}...", end=" ")
+            errors = validate_cross_references(filepath, tracking_path)
+            if errors:
+                print("WARN")
+                xref_warnings[xref_label] = errors
+            else:
+                print("OK")
+
+    if xref_warnings:
+        print()
+        print(f"WARNINGS: {len(xref_warnings)} cross-reference issue(s):")
+        for label, warnings in xref_warnings.items():
+            print(f"\n  {label}:")
+            for w in warnings:
+                print(f"    - {w}")
 
     print()
     if all_errors:
