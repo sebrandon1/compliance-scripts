@@ -28,7 +28,7 @@ BG_BLUE := \033[44m
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
         export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
-        mirror-images rhcos-static-scan shell-smoke-test dashboard-validate
+        mirror-images rhcos-static-scan shell-smoke-test dashboard-validate add-version
 
 # Default target
 all: help
@@ -546,6 +546,17 @@ install-jekyll: ## 💎 Install Jekyll dependencies for local dashboard developm
 	@echo "$(BOLD)$(BLUE)💎 Installing Jekyll dependencies...$(RESET)"
 	@cd docs && bundle install --path vendor/bundle
 	@echo "$(GREEN)✅ Jekyll dependencies installed!$(RESET)"
+	@echo ""
+
+add-version: ## 📦 Scaffold dashboard files for a new OCP version (requires OCP_VERSION and SOURCE_VERSION)
+	@if [ -z "$(OCP_VERSION)" ] || [ -z "$(SOURCE_VERSION)" ]; then \
+	  echo "$(RED)❌ Error: OCP_VERSION and SOURCE_VERSION are required!$(RESET)"; \
+	  echo "$(YELLOW)Usage: make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0$(RESET)"; \
+	  exit 1; \
+	fi
+	@echo "$(BOLD)$(BLUE)📦 Scaffolding OCP $(OCP_VERSION) from $(SOURCE_VERSION)...$(RESET)"
+	@python3 scripts/add-version.py --source $(SOURCE_VERSION) --target $(OCP_VERSION)
+	@echo "$(GREEN)✅ Version $(OCP_VERSION) scaffolded!$(RESET)"
 	@echo ""
 
 rhcos-static-scan: ## 🔬 Run offline OSCAP scan against RHCOS rootfs (requires OCP_VERSION)
