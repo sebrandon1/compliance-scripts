@@ -51,6 +51,7 @@ make filter-machineconfigs         # Filter specific flags from MachineConfigs
 make suggest-groups SCAN=docs/_data/ocp-5_0.json  # Suggest remediation groups for ungrouped checks
 make diff-scans OLD=old.json NEW=new.json          # Compare two scan exports and report differences
 make validate-dashboard-data       # Validate dashboard JSON data files
+make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0  # Scaffold dashboard files for a new OCP version
 make clean-complianceremediations  # Reset complianceremediations directory only
 ```
 
