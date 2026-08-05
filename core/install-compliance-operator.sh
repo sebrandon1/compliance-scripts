@@ -42,8 +42,15 @@ while [[ $# -gt 0 ]]; do
 		usage
 		exit 0
 		;;
+	-*)
+		log_error "Unknown option: $1"
+		usage
+		exit 1
+		;;
 	*)
-		shift
+		log_error "Unexpected argument: $1"
+		usage
+		exit 1
 		;;
 	esac
 done
