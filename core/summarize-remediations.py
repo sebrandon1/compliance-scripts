@@ -17,14 +17,17 @@ from typing import Any
 import anthropic
 
 
-def summarize_remediation(client: Any, description: str) -> str:
+DEFAULT_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+
+
+def summarize_remediation(client: Any, description: str, model: str = DEFAULT_MODEL) -> str:
     """Use Claude to generate a one-line remediation summary."""
     if not description or len(description.strip()) < 10:
         return ""
 
     try:
         response = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model=model,
             max_tokens=150,
             messages=[
                 {
@@ -53,7 +56,9 @@ One-line summary:"""
         return ""
 
 
-def process_checks(client: Any, checks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def process_checks(
+    client: Any, checks: list[dict[str, Any]], model: str = DEFAULT_MODEL
+) -> list[dict[str, Any]]:
     """Add summaries to a list of checks."""
     for i, check in enumerate(checks):
         name = check.get("name", "unknown")
@@ -61,7 +66,7 @@ def process_checks(client: Any, checks: list[dict[str, Any]]) -> list[dict[str, 
 
         if description and not check.get("summary"):
             print(f"  Summarizing: {name}")
-            summary = summarize_remediation(client, description)
+            summary = summarize_remediation(client, description, model)
             check["summary"] = summary
             print(f"    -> {summary}")
         elif check.get("summary"):
@@ -77,6 +82,11 @@ def main() -> None:
     parser.add_argument(
         "json_file",
         help="Path to the compliance JSON file"
+    )
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_MODEL,
+        help="Anthropic model name (env: ANTHROPIC_MODEL, default: %(default)s)"
     )
     args = parser.parse_args()
 
@@ -97,22 +107,24 @@ def main() -> None:
 
     client = anthropic.Anthropic(api_key=api_key)
 
+    print(f"Using model: {args.model}")
+
     # Process each severity level
     print("\nProcessing HIGH severity checks...")
     if data.get("remediations", {}).get("high"):
-        data["remediations"]["high"] = process_checks(client, data["remediations"]["high"])
+        data["remediations"]["high"] = process_checks(client, data["remediations"]["high"], args.model)
 
     print("\nProcessing MEDIUM severity checks...")
     if data.get("remediations", {}).get("medium"):
-        data["remediations"]["medium"] = process_checks(client, data["remediations"]["medium"])
+        data["remediations"]["medium"] = process_checks(client, data["remediations"]["medium"], args.model)
 
     print("\nProcessing LOW severity checks...")
     if data.get("remediations", {}).get("low"):
-        data["remediations"]["low"] = process_checks(client, data["remediations"]["low"])
+        data["remediations"]["low"] = process_checks(client, data["remediations"]["low"], args.model)
 
     print("\nProcessing MANUAL checks...")
     if data.get("manual_checks"):
-        data["manual_checks"] = process_checks(client, data["manual_checks"])
+        data["manual_checks"] = process_checks(client, data["manual_checks"], args.model)
 
     # Write back
     print(f"\nWriting updated data to {json_file}...")
