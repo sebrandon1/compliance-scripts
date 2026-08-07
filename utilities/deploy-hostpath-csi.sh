@@ -71,11 +71,12 @@ check_image_exists() {
 
 	if podman manifest inspect "$image" &>/dev/null; then
 		return 0
-	elif skopeo inspect $authfile_flag $os_flag "docker://$image" &>/dev/null; then
-		return 0
-	else
-		return 1
 	fi
+	# shellcheck disable=SC2086
+	if skopeo inspect $authfile_flag $os_flag "docker://$image" &>/dev/null; then
+		return 0
+	fi
+	return 1
 }
 
 # Detect OpenShift cluster version for image tags
