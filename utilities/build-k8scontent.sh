@@ -4,9 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=../versions.env
+source "$SCRIPT_DIR/versions.env"
 
 CONTENT_REPO="https://github.com/ComplianceAsCode/content.git"
-QUAY_IMAGE="quay.io/bapalm/k8scontent"
+QUAY_IMAGE="${IMAGE_REGISTRY}/k8scontent"
 DOCKERFILE="Dockerfiles/ocp4_content"
 CONTENT_REF="${1:-master}"
 FORCE="${FORCE:-false}"
@@ -15,7 +17,7 @@ usage() {
 	cat <<USAGE
 Usage: $(basename "$0") [ref]
 
-Build the ComplianceAsCode k8scontent image from source and push to quay.io/bapalm/k8scontent.
+Build the ComplianceAsCode k8scontent image from source and push to ${IMAGE_REGISTRY}/k8scontent.
 
 Arguments:
   ref    Git ref to build from (default: master)

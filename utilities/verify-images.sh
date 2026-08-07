@@ -68,7 +68,7 @@ Options:
   --all              Check all images (compliance operator + marketplace + mirrors)
   --compliance       Check only compliance operator images (default)
   --marketplace      Check only OpenShift marketplace images
-  --mirrors          Check only quay.io/bapalm mirror images
+  --mirrors          Check only mirror images (${IMAGE_REGISTRY})
   --registry <url>   Test connectivity to a specific registry
   --image <image>    Test a specific image
   --timeout <secs>   Timeout for each check (default: 30)
@@ -294,7 +294,7 @@ fi
 
 # Test mirror images
 if [[ "$CHECK_MIRRORS" == "true" && -z "$SPECIFIC_IMAGE" && -z "$SPECIFIC_REGISTRY" ]]; then
-	echo "Mirror Images (quay.io/bapalm):"
+	echo "Mirror Images (${IMAGE_REGISTRY}):"
 	for image in "${MIRROR_IMAGES[@]}"; do
 		if test_image_manifest "$image"; then
 			((PASSED++))

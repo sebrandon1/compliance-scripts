@@ -12,12 +12,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=../versions.env
+source "$SCRIPT_DIR/versions.env"
 
 usage() {
 	echo "Usage: $(basename "$0") [image:tag ...]"
 	echo ""
 	echo "Verify container images have required architectures (amd64, arm64)."
-	echo "With no arguments, checks all known mirror images on quay.io/bapalm."
+	echo "With no arguments, checks all known mirror images on ${IMAGE_REGISTRY}."
 	exit 0
 }
 
@@ -31,17 +33,17 @@ require_cmd skopeo jq
 if [[ $# -gt 0 ]]; then
 	IMAGES=("$@")
 else
-	echo "No images specified, checking all known mirror images on quay.io/bapalm..."
+	echo "No images specified, checking all known mirror images on ${IMAGE_REGISTRY}..."
 	echo ""
 	IMAGES=()
 	for repo in compliance-operator openscap-ocp compliance-operator-bundle compliance-operator-catalog k8scontent; do
-		tags=$(skopeo list-tags --no-creds "docker://quay.io/bapalm/${repo}" 2>/dev/null | jq -r '.Tags[]' 2>/dev/null | grep "^v" | grep -vE "-(amd64|arm64|ppc64le|s390x)$" || true)
+		tags=$(skopeo list-tags --no-creds "docker://${IMAGE_REGISTRY}/${repo}" 2>/dev/null | jq -r '.Tags[]' 2>/dev/null | grep "^v" | grep -vE "-(amd64|arm64|ppc64le|s390x)$" || true)
 		for tag in $tags; do
-			IMAGES+=("quay.io/bapalm/${repo}:${tag}")
+			IMAGES+=("${IMAGE_REGISTRY}/${repo}:${tag}")
 		done
 	done
 	if [[ ${#IMAGES[@]} -eq 0 ]]; then
-		log_error "No versioned images found on quay.io/bapalm"
+		log_error "No versioned images found on ${IMAGE_REGISTRY}"
 		exit 1
 	fi
 fi

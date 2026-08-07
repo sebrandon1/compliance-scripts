@@ -31,7 +31,7 @@ Arguments:
                  Minor versions (4.21) auto-resolve to latest z-stream.
 
 Environment:
-  CONTENT_IMAGE     Content image repo (default: quay.io/bapalm/k8scontent)
+  CONTENT_IMAGE     Content image repo (default: ${IMAGE_REGISTRY}/k8scontent)
   CONTENT_TAG       Content image tag (default: from versions.env)
   OPENSCAP_IMAGE    Scanner image repo (default: ${IMAGE_REGISTRY}/openscap-ocp)
   OPENSCAP_TAG      Scanner image tag (default: from versions.env)
