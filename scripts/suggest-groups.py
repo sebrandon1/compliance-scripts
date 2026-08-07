@@ -43,11 +43,11 @@ def build_prefix_map(
 ]:
     """Build prefix→{group_id: count} and keyword→group_id maps."""
     groups = tracking.get("groups", {})
-    group_checks = defaultdict(list)
+    group_checks: defaultdict[str, list[str]] = defaultdict(list)
     for check, info in tracking.get("remediations", {}).items():
         group_checks[info["group"]].append(check)
 
-    prefix_map = defaultdict(lambda: defaultdict(int))
+    prefix_map: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for gid, checks in group_checks.items():
         for check in checks:
             parts = check.split("-")

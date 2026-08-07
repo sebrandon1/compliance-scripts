@@ -11,7 +11,7 @@ def process_file(filepath: str) -> bool:
     # Quick check for kind: MachineConfig
     if not any('kind: MachineConfig' in line for line in lines):
         return False
-    new_lines = []
+    new_lines: list[str] = []
     i = 0
     while i < len(lines):
         line = lines[i]
