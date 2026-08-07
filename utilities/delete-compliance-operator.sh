@@ -124,6 +124,7 @@ for kind in "${RESOURCES_TO_DELETE[@]}"; do
 	if [[ -n "$NAMES" ]]; then
 		log_info "Deleting $kind objects:"
 		echo "$NAMES" | sed 's/^/\t- /'
+		# shellcheck disable=SC2086
 		oc delete $NAMES -n "$NAMESPACE" --ignore-not-found=true || true
 	else
 		log_info "No $kind objects found in $NAMESPACE."
@@ -147,6 +148,7 @@ CSV_NAMES=$(oc get csv -n "$NAMESPACE" -o name 2>/dev/null | grep "$OPERATOR_NAM
 if [[ -n "$CSV_NAMES" ]]; then
 	log_info "Deleting ClusterServiceVersions:"
 	echo "$CSV_NAMES" | sed 's/^/\t- /'
+	# shellcheck disable=SC2086
 	oc delete $CSV_NAMES -n "$NAMESPACE" --ignore-not-found=true
 else
 	log_info "No ClusterServiceVersions found for '$OPERATOR_NAME' in $NAMESPACE. Skipping."
@@ -166,6 +168,7 @@ if [[ "$PURGE_CRDS" == true ]]; then
 	CRDS=$(oc get crd -o name 2>/dev/null | grep -E "\\.compliance\\.openshift\\.io$" || true)
 	if [[ -n "$CRDS" ]]; then
 		echo "$CRDS" | sed 's/^/\t- /'
+		# shellcheck disable=SC2086
 		oc delete $CRDS || true
 	else
 		log_info "No Compliance CRDs found to purge."

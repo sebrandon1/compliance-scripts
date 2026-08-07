@@ -83,6 +83,7 @@ fi
 
 # Delete scans first
 log_info "Deleting ComplianceScan objects..."
+# shellcheck disable=SC2086
 oc delete $SCANS -n "$NAMESPACE" --ignore-not-found=true
 
 # Optionally delete related suites to prevent immediate recreation
