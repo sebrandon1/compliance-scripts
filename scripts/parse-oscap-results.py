@@ -16,11 +16,11 @@ def parse_results(results_file: str) -> list[dict[str, str]]:
     tree = ET.parse(results_file)
     root = tree.getroot()
 
-    checks = []
+    checks: list[dict[str, str]] = []
     for rule_result in root.iter(f"{{{XCCDF_NS}}}rule-result"):
         idref = rule_result.get("idref", "")
         result_elem = rule_result.find(f"{{{XCCDF_NS}}}result")
-        result = result_elem.text if result_elem is not None else "unknown"
+        result = (result_elem.text if result_elem is not None else None) or "unknown"
 
         short_name = idref.replace(
             "xccdf_org.ssgproject.content_rule_", ""
@@ -58,23 +58,25 @@ def build_group_results(
         group_id = check_to_group.get(check["name"], "")
         if group_id:
             if group_id not in group_results:
-                group_results[group_id] = {
-                    "pass": 0, "fail": 0, "other": 0, "checks": []
+                entry: dict[str, Any] = {
+                    "pass": 0, "fail": 0, "other": 0, "checks": [],
                 }
+                group_results[group_id] = entry
+            gr = group_results[group_id]
             if check["result"] == "pass":
-                group_results[group_id]["pass"] += 1
+                gr["pass"] += 1
             elif check["result"] == "fail":
-                group_results[group_id]["fail"] += 1
+                gr["fail"] += 1
             else:
-                group_results[group_id]["other"] += 1
-            group_results[group_id]["checks"].append(check)
+                gr["other"] += 1
+            gr["checks"].append(check)
 
     return group_results
 
 
 def count_results(checks: list[dict[str, str]]) -> dict[str, int]:
     """Count results by status."""
-    counts = {}
+    counts: dict[str, int] = {}
     for check in checks:
         counts[check["result"]] = counts.get(check["result"], 0) + 1
     return counts
@@ -195,13 +197,15 @@ def main() -> None:
 
     checks = parse_results(args.results)
 
-    check_to_group, groups, group_results = {}, {}, {}
+    check_to_group: dict[str, str] = {}
+    groups: dict[str, Any] = {}
+    group_results: dict[str, dict[str, Any]] = {}
     if args.tracking:
         check_to_group, groups = load_tracking(args.tracking)
         group_results = build_group_results(checks, check_to_group)
 
     if args.format == "json":
-        output = {
+        output: dict[str, Any] = {
             "checks": checks,
             "summary": count_results(checks),
         }

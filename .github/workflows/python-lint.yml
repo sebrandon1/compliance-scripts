@@ -49,5 +49,4 @@ jobs:
       - name: Install dependencies
         run: pip install mypy pyyaml types-PyYAML types-requests types-beautifulsoup4
       - name: Run mypy
-        continue-on-error: true
         run: mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py
