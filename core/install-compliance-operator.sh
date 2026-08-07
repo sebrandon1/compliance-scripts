@@ -370,9 +370,9 @@ else
 	log_info "Using catalog image tag: $CO_REF"
 	echo ""
 
-	# Determine catalog image: try upstream ghcr.io first, fall back to quay.io/bapalm mirror
+	# Determine catalog image: try upstream ghcr.io first, fall back to mirror
 	CATALOG_IMAGE="ghcr.io/complianceascode/compliance-operator-catalog:$CO_REF"
-	MIRROR_IMAGE="quay.io/bapalm/compliance-operator-catalog:$CO_REF"
+	MIRROR_IMAGE="${IMAGE_REGISTRY}/compliance-operator-catalog:$CO_REF"
 
 	log_info "Checking if upstream catalog image is available..."
 	if command -v skopeo &>/dev/null && skopeo inspect --raw --no-creds "docker://$CATALOG_IMAGE" &>/dev/null 2>&1; then
@@ -666,8 +666,8 @@ echo ""
 # ============================================================================
 # Content Image Tracking
 # ============================================================================
-# Resolve the content image digest and mirror it to quay.io/bapalm with a
-# traceable tag so we can reproduce scans with the exact same content later.
+# Resolve the content image digest and mirror it to the configured registry with
+# a traceable tag so we can reproduce scans with the exact same content later.
 log_info "Resolving content image details..."
 CONTENT_IMAGE=$(oc get profilebundle ocp4 -n "$NAMESPACE" -o jsonpath='{.spec.contentImage}' 2>/dev/null || echo "")
 
@@ -685,12 +685,12 @@ if [[ -n "$CONTENT_IMAGE" ]] && command -v skopeo &>/dev/null; then
 			log_info "Content revision (source commit): $CONTENT_REVISION"
 		fi
 
-		MIRROR_CONTENT_IMAGE="quay.io/bapalm/k8scontent:${DIGEST_TAG}"
+		MIRROR_CONTENT_IMAGE="${IMAGE_REGISTRY}/k8scontent:${DIGEST_TAG}"
 		log_info "Mirroring content image to $MIRROR_CONTENT_IMAGE for reproducibility..."
 		if skopeo copy --all "docker://$CONTENT_IMAGE" "docker://$MIRROR_CONTENT_IMAGE" 2>/dev/null; then
 			log_success "Content image mirrored to $MIRROR_CONTENT_IMAGE"
 		else
-			log_warn "Could not mirror content image (check quay.io/bapalm credentials)"
+			log_warn "Could not mirror content image (check ${IMAGE_REGISTRY} credentials)"
 		fi
 	else
 		log_warn "Could not resolve content image digest"
