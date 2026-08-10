@@ -479,11 +479,11 @@ python-lint: ## 🐍 Lint Python files with flake8
 	  python3 -m flake8 . --ignore=E501,E402,W503 --exclude=venv,.venv,docs/vendor || (echo "$(RED)❌ Python linting failed!$(RESET)" && exit 1); \
 	fi
 	@echo "$(GREEN)✅ Python linting passed!$(RESET)"
-	@echo "$(DIM)  • Running mypy type checks (informational)...$(RESET)"
+	@echo "$(DIM)  • Running mypy type checks...$(RESET)"
 	@if command -v mypy >/dev/null 2>&1; then \
-	  mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py 2>/dev/null || true; \
+	  mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py || (echo "$(RED)❌ mypy type checks failed!$(RESET)" && exit 1); \
 	elif python3 -m mypy --version >/dev/null 2>&1; then \
-	  python3 -m mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py 2>/dev/null || true; \
+	  python3 -m mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py || (echo "$(RED)❌ mypy type checks failed!$(RESET)" && exit 1); \
 	else \
 	  echo "$(DIM)  mypy not installed, skipping type checks$(RESET)"; \
 	fi
