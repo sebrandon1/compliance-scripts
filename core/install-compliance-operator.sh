@@ -483,7 +483,7 @@ else
 fi
 
 log_success "Compliance Operator installed successfully."
-oc get pods -n $NAMESPACE
+oc get pods -n "$NAMESPACE"
 
 # ============================================================================
 # RBAC Fix: Ensure compliance-operator can create Jobs

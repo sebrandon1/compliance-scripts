@@ -136,7 +136,7 @@ pip install -r requirements.txt
 
 ### Bash
 - Scripts use `shellcheck` and `shfmt` for linting
-- Excluded shellcheck codes: SC1091, SC2034, SC2086, SC2001, SC2028, SC2129, SC2155, SC2317, SC2329
+- Excluded shellcheck codes: SC1091, SC2034, SC2001, SC2028, SC2129, SC2155, SC2317, SC2329
 - Run `shfmt -w core utilities modular lab-tools misc` to auto-fix formatting
 
 ### Python
