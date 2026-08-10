@@ -13,7 +13,7 @@
 #
 # Environment:
 #   FORCE=true              Rebuild even if images already exist
-#   MIRROR_REGISTRY=...     Target registry (default: quay.io/bapalm)
+#   MIRROR_REGISTRY=...     Target registry (default: from versions.env)
 #   UPSTREAM_REGISTRY=...   Source registry (default: ghcr.io/complianceascode)
 #
 # Requires: skopeo, jq
@@ -24,8 +24,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=../versions.env
+source "$SCRIPT_DIR/versions.env"
 
-MIRROR_REGISTRY="${MIRROR_REGISTRY:-quay.io/bapalm}"
+MIRROR_REGISTRY="${MIRROR_REGISTRY:-${IMAGE_REGISTRY}}"
 UPSTREAM_REGISTRY="${UPSTREAM_REGISTRY:-ghcr.io/complianceascode}"
 FORCE="${FORCE:-false}"
 CO_REF="${1:-}"
