@@ -162,9 +162,10 @@ layout: default
   <!-- Scan History Timeline -->
   <h2>Scan History</h2>
 
-  <table class="status-table">
+  <table class="status-table" id="scan-history-table">
     <thead>
       <tr>
+        <th style="width: 2%;"></th>
         <th>Date</th>
         <th>Version</th>
         <th>Passing</th>
@@ -177,18 +178,64 @@ layout: default
     <tbody>
       {% assign history = site.data.scan-history | sort: "scan_date" | reverse %}
       {% for entry in history %}
-      <tr>
+      <tr class="scan-row{% if entry.profiles %} expandable{% endif %}" {% if entry.profiles %}onclick="toggleScanDetail(this)" style="cursor: pointer;"{% endif %}>
+        <td class="scan-expand">{% if entry.profiles %}<span class="expand-arrow">&#x25B6;</span>{% endif %}</td>
         <td>{{ entry.scan_date | date: "%Y-%m-%d" }}</td>
         <td><strong>{{ entry.version }}</strong></td>
-        <td><span class="status-badge pass" data-tip="Checks passing across all 4 profiles">{{ entry.summary.passing }}</span></td>
-        <td><span class="status-badge fail" data-tip="Checks failing across all 4 profiles">{{ entry.summary.failing }}</span></td>
-        <td data-tip="Checks requiring manual review">{{ entry.summary.manual }}</td>
-        <td>{% if entry.content_image %}<code data-tip="{{ entry.content_image }}">{{ entry.content_image | split: "/" | last }}</code>{% else %}&mdash;{% endif %}</td>
+        <td><span class="status-badge pass">{{ entry.summary.passing }}</span></td>
+        <td><span class="status-badge fail">{{ entry.summary.failing }}</span></td>
+        <td>{{ entry.summary.manual }}</td>
+        <td>{% if entry.content_image %}<code title="{{ entry.content_image }}">{{ entry.content_image | split: "/" | last }}</code>{% else %}&mdash;{% endif %}</td>
         <td>{{ entry.cluster | default: "&mdash;" }}</td>
       </tr>
+      {% if entry.profiles %}
+      <tr class="scan-detail" style="display: none;">
+        <td></td>
+        <td colspan="7">
+          <table class="profile-breakdown">
+            <thead>
+              <tr>
+                <th>Profile</th>
+                <th>Passing</th>
+                <th>Failing</th>
+                <th>Manual</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for profile in entry.profiles %}
+              <tr>
+                <td><strong>{{ profile[0] }}</strong></td>
+                <td><span class="status-badge pass">{{ profile[1].passing }}</span></td>
+                <td><span class="status-badge fail">{{ profile[1].failing }}</span></td>
+                <td>{{ profile[1].manual }}</td>
+                <td>{{ profile[1].passing | plus: profile[1].failing | plus: profile[1].manual }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </td>
+      </tr>
+      {% endif %}
       {% endfor %}
     </tbody>
   </table>
+
+  <script>
+  function toggleScanDetail(row) {
+    var detail = row.nextElementSibling;
+    if (detail && detail.classList.contains('scan-detail')) {
+      var arrow = row.querySelector('.expand-arrow');
+      if (detail.style.display === 'none') {
+        detail.style.display = '';
+        arrow.classList.add('expanded');
+      } else {
+        detail.style.display = 'none';
+        arrow.classList.remove('expanded');
+      }
+    }
+  }
+  </script>
 
   <hr>
 

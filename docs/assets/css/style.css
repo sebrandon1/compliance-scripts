@@ -2674,6 +2674,57 @@ kbd {
 [data-theme="dark"] .matrix-dot.pending { background: #495057; border-color: #6c757d; }
 [data-theme="dark"] .hv-seg.pending { background: #495057; }
 
+/* Expandable scan history rows */
+.scan-row.expandable:hover {
+  background: var(--color-hover) !important;
+}
+
+.scan-expand {
+  width: 24px;
+  text-align: center;
+}
+
+.expand-arrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  transition: transform 0.2s;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.scan-detail > td {
+  padding: 0 !important;
+  background: var(--color-bg);
+}
+
+table.profile-breakdown {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none;
+  width: 100%;
+}
+
+table.profile-breakdown th {
+  background: var(--color-code-bg) !important;
+  color: var(--color-text) !important;
+  font-size: 0.7rem !important;
+  padding: 0.5rem 1rem !important;
+  text-transform: uppercase;
+}
+
+table.profile-breakdown td {
+  padding: 0.4rem 1rem !important;
+  font-size: 0.85rem;
+}
+
+table.profile-breakdown tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
 /* CSS Tooltips */
 [data-tip] {
   position: relative;

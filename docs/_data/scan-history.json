@@ -5,7 +5,7 @@
     "content_image": null,
     "content_image_digest": null,
     "cluster": "cnfdt16",
-    "notes": "Partial scan — only 205 checks collected (pre-export-script improvements)",
+    "notes": "Partial scan \u2014 only 205 checks collected (pre-export-script improvements)",
     "summary": {
       "total_checks": 205,
       "passing": 100,
@@ -14,7 +14,8 @@
       "skipped": 0
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": null
   },
   {
     "version": "4.22",
@@ -33,7 +34,29 @@
       "ocp_failing": 44
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 63,
+        "failing": 7,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 103,
+        "failing": 3,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 524,
+        "failing": 33,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 75,
+        "failing": 15,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "4.22",
@@ -41,7 +64,7 @@
     "content_image": null,
     "content_image_digest": null,
     "cluster": "cnfdt16",
-    "notes": "Vanilla scan — no hardening MachineConfigs applied",
+    "notes": "Vanilla scan \u2014 no hardening MachineConfigs applied",
     "summary": {
       "total_checks": 918,
       "passing": 339,
@@ -52,7 +75,29 @@
       "ocp_failing": 48
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 37,
+        "failing": 69,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 402,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "5.0",
@@ -60,7 +105,7 @@
     "content_image": "quay.io/bapalm/k8scontent:95014682ef33",
     "content_image_digest": null,
     "cluster": "cnfdt16",
-    "notes": "Vanilla scan — no hardening MachineConfigs applied",
+    "notes": "Vanilla scan \u2014 no hardening MachineConfigs applied",
     "summary": {
       "total_checks": 914,
       "passing": 354,
@@ -71,7 +116,29 @@
       "ocp_failing": 45
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "5.0",
@@ -89,7 +156,29 @@
       "ocp_failing": 45
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "4.22",
@@ -107,7 +196,29 @@
       "ocp_failing": 49
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 37,
+        "failing": 69,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 402,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "5.0",
@@ -125,7 +236,29 @@
       "ocp_failing": 49
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "5.0",
@@ -143,7 +276,29 @@
       "ocp_failing": 51
     },
     "operator_image": null,
-    "scanner_image": null
+    "scanner_image": null,
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   },
   {
     "version": "5.0",
@@ -161,6 +316,28 @@
       "skipped": 0,
       "rhcos_failing": 450,
       "ocp_failing": 49
+    },
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
     }
   }
 ]
