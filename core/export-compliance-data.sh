@@ -68,10 +68,15 @@ CONTENT_IMAGE_DIGEST=$(oc get profilebundle -n "${NAMESPACE}" -o jsonpath='{.ite
 if [[ -z "$CONTENT_IMAGE_DIGEST" ]]; then
 	CONTENT_IMAGE_DIGEST=$(skopeo inspect "docker://${CONTENT_IMAGE}" 2>/dev/null | jq -r '.Digest // empty' || echo "")
 fi
+CO_DEPLOY_JSON=$(oc get deployment compliance-operator -n "${NAMESPACE}" -o json 2>/dev/null || echo "{}")
+OPERATOR_IMAGE=$(echo "$CO_DEPLOY_JSON" | jq -r '.spec.template.spec.containers[0].image // empty')
+SCANNER_IMAGE=$(echo "$CO_DEPLOY_JSON" | jq -r '[.spec.template.spec.containers[0].env[] | select(.name == "RELATED_IMAGE_OPENSCAP" or .name == "OPENSCAP_IMAGE") | .value] | first // empty')
 log_info "Content image: ${CONTENT_IMAGE}"
 if [[ -n "$CONTENT_IMAGE_DIGEST" ]]; then
 	log_info "Content digest: ${CONTENT_IMAGE_DIGEST}"
 fi
+log_info "Operator image: ${OPERATOR_IMAGE}"
+log_info "Scanner image: ${SCANNER_IMAGE}"
 
 log_info "Collecting ComplianceCheckResults..."
 
@@ -179,6 +184,8 @@ OUTPUT_JSON=$(jq -n \
 	--arg exported_at "$SCAN_DATE" \
 	--arg content_image "$CONTENT_IMAGE" \
 	--arg content_image_digest "$CONTENT_IMAGE_DIGEST" \
+	--arg operator_image "$OPERATOR_IMAGE" \
+	--arg scanner_image "$SCANNER_IMAGE" \
 	--argjson total "$TOTAL_CHECKS" \
 	--argjson passing "$PASSING" \
 	--argjson failing "$FAILING" \
@@ -199,6 +206,8 @@ OUTPUT_JSON=$(jq -n \
         exported_at: $exported_at,
         content_image: $content_image,
         content_image_digest: (if $content_image_digest == "" then null else $content_image_digest end),
+        operator_image: (if $operator_image == "" then null else $operator_image end),
+        scanner_image: (if $scanner_image == "" then null else $scanner_image end),
         summary: {
             total_checks: $total,
             passing: $passing,
@@ -245,6 +254,8 @@ HISTORY_ENTRY=$(jq -n \
 	--arg scan_date "$SCAN_DATE" \
 	--arg content_image "$CONTENT_IMAGE" \
 	--arg content_image_digest "$CONTENT_IMAGE_DIGEST" \
+	--arg operator_image "$OPERATOR_IMAGE" \
+	--arg scanner_image "$SCANNER_IMAGE" \
 	--arg cluster "$CLUSTER_NAME" \
 	--argjson total "$TOTAL_CHECKS" \
 	--argjson passing "$PASSING" \
@@ -258,6 +269,8 @@ HISTORY_ENTRY=$(jq -n \
 		scan_date: $scan_date,
 		content_image: (if $content_image == "unknown" then null else $content_image end),
 		content_image_digest: (if $content_image_digest == "" then null else $content_image_digest end),
+		operator_image: (if $operator_image == "unknown" then null else $operator_image end),
+		scanner_image: (if $scanner_image == "unknown" or $scanner_image == "" then null else $scanner_image end),
 		cluster: $cluster,
 		summary: {
 			total_checks: $total,
@@ -301,6 +314,8 @@ print_summary \
 	"OCP Version" "${OCP_VERSION}" \
 	"Scan Date" "${SCAN_DATE}" \
 	"Content Image" "${CONTENT_IMAGE}" \
+	"Operator Image" "${OPERATOR_IMAGE}" \
+	"Scanner Image" "${SCANNER_IMAGE}" \
 	"Total Checks" "${TOTAL_CHECKS}" \
 	"Coverage" "$(echo "scale=1; ${PASSING} * 100 / ${TOTAL_CHECKS}" | bc)%" \
 	"Failing HIGH" "${HIGH_COUNT}" \

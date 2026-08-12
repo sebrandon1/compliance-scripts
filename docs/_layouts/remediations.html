@@ -23,6 +23,32 @@ layout: default
 </blockquote>
 {% endif %}
 
+{% assign version_slug = page.version | replace: ".", "_" %}
+{% assign data_file = "ocp-" | append: version_slug %}
+{% assign version_data = site.data[data_file] %}
+
+{% if version_data.content_image or version_data.operator_image or version_data.scanner_image %}
+<div class="scan-environment">
+  <details>
+    <summary><strong>Scan Environment</strong> &mdash; {{ version_data.scan_date | date: "%Y-%m-%d" }}</summary>
+    <table class="env-table">
+      <tbody>
+        {% if version_data.content_image %}
+        <tr><td><strong>Content Image</strong></td><td><code>{{ version_data.content_image }}</code></td></tr>
+        {% endif %}
+        {% if version_data.operator_image %}
+        <tr><td><strong>Operator Image</strong></td><td><code>{{ version_data.operator_image }}</code></td></tr>
+        {% endif %}
+        {% if version_data.scanner_image %}
+        <tr><td><strong>Scanner Image</strong></td><td><code>{{ version_data.scanner_image }}</code></td></tr>
+        {% endif %}
+        <tr><td><strong>Scan Date</strong></td><td>{{ version_data.scan_date | date: "%Y-%m-%d %H:%M UTC" }}</td></tr>
+      </tbody>
+    </table>
+  </details>
+</div>
+{% endif %}
+
 <div class="filter-bar">
   <div class="filter-search">
     <input type="text" id="table-search" placeholder="Search remediations..." onkeyup="filterTables()">
@@ -132,7 +158,7 @@ layout: default
       <td>{{ g.title }}</td>
       <td>
         {% if g.platform %}
-        <span class="platform-badge {{ g.platform }}">
+        <span class="platform-badge {{ g.platform }}" title="{{ site.data.badge-descriptions.platform[g.platform] }}">
           {% if g.platform == "rhcos" %}RHCOS
           {% elsif g.platform == "ocp" %}OCP
           {% elsif g.platform == "mixed" %}Mixed
@@ -144,36 +170,36 @@ layout: default
       <td style="text-align: center;">{{ check_count }}</td>
       <td>
         {% if g.status contains "pass-vanilla" %}
-          <span class="status-pill pass-vanilla">&#x2705; PASS (vanilla)</span>
+          <span class="status-pill pass-vanilla" title="{{ site.data.badge-descriptions.status.pass-vanilla }}">&#x2705; PASS (vanilla)</span>
         {% elsif g.status == "verified" %}
-          <span class="status-pill verified">&#x1F7E2; Verified</span>
+          <span class="status-pill verified" title="{{ site.data.badge-descriptions.status.verified }}">&#x1F7E2; Verified</span>
         {% elsif g.status == "in_progress" %}
-          <span class="status-pill in-progress">&#x1F535; In Progress</span>
+          <span class="status-pill in-progress" title="{{ site.data.badge-descriptions.status.in_progress }}">&#x1F535; In Progress</span>
         {% elsif g.status == "pending" %}
-          <span class="status-pill pending">&#x1F7E1; Pending</span>
+          <span class="status-pill pending" title="{{ site.data.badge-descriptions.status.pending }}">&#x1F7E1; Pending</span>
         {% elsif g.status == "partial" %}
-          <span class="status-pill partial">&#x1F7E0; Partial</span>
+          <span class="status-pill partial" title="{{ site.data.badge-descriptions.status.partial }}">&#x1F7E0; Partial</span>
         {% elsif g.status == "on_hold" %}
-          <span class="status-pill on-hold">&#x26AA; On Hold</span>
+          <span class="status-pill on-hold" title="{{ site.data.badge-descriptions.status.on_hold }}">&#x26AA; On Hold</span>
         {% else %}
           <span class="status-pill">{{ g.status }}</span>
         {% endif %}
       </td>
       <td>
         {% if g.upstream_verdict == "upstream-candidate" %}
-          <span class="upstream-badge candidate">&#x1F53C; Candidate</span>
+          <span class="upstream-badge candidate" title="{{ site.data.badge-descriptions.upstream.upstream-candidate }}">&#x1F53C; Candidate</span>
         {% elsif g.upstream_verdict contains "upstream-pr" %}
-          <span class="upstream-badge pr-exists">&#x1F7E3; PR Open</span>
+          <span class="upstream-badge pr-exists" title="{{ site.data.badge-descriptions.upstream.upstream-pr }}">&#x1F7E3; PR Open</span>
         {% elsif g.upstream_verdict == "ran-only" %}
-          <span class="upstream-badge ran-only">&#x1F3AF; RAN Only</span>
+          <span class="upstream-badge ran-only" title="{{ site.data.badge-descriptions.upstream.ran-only }}">&#x1F3AF; RAN Only</span>
         {% elsif g.upstream_verdict == "platform-config" %}
-          <span class="upstream-badge platform">&#x2699;&#xFE0F; Platform</span>
+          <span class="upstream-badge platform" title="{{ site.data.badge-descriptions.upstream.platform-config }}">&#x2699;&#xFE0F; Platform</span>
         {% elsif g.upstream_verdict == "pass-vanilla" %}
-          <span class="upstream-badge pass">&#x2705; Pass</span>
+          <span class="upstream-badge pass" title="{{ site.data.badge-descriptions.upstream.pass-vanilla }}">&#x2705; Pass</span>
         {% elsif g.upstream_verdict == "site-specific" %}
-          <span class="upstream-badge site">&#x1F4CD; Site</span>
+          <span class="upstream-badge site" title="{{ site.data.badge-descriptions.upstream.site-specific }}">&#x1F4CD; Site</span>
         {% elsif g.upstream_verdict == "not-applicable" %}
-          <span class="upstream-badge na">&mdash; N/A</span>
+          <span class="upstream-badge na" title="{{ site.data.badge-descriptions.upstream.not-applicable }}">&mdash; N/A</span>
         {% else %}
           <span class="upstream-badge">&mdash;</span>
         {% endif %}
@@ -244,11 +270,40 @@ layout: default
 
 <h2>Legend</h2>
 
+<h3>Group Naming</h3>
 <ul>
   <li><strong>H</strong> = HIGH severity (H1-H3)</li>
   <li><strong>M</strong> = MEDIUM severity (M1-M30)</li>
   <li><strong>L</strong> = LOW severity (L1, L2)</li>
   <li><strong>MAN</strong> = Manual checks (MAN1-MAN5)</li>
+</ul>
+
+<h3>Remediation Status</h3>
+<ul>
+  <li><span class="status-pill pass-vanilla inline-legend-pill">&#x2705; PASS (vanilla)</span> &mdash; {{ site.data.badge-descriptions.status.pass-vanilla }}</li>
+  <li><span class="status-pill verified inline-legend-pill">&#x1F7E2; Verified</span> &mdash; {{ site.data.badge-descriptions.status.verified }}</li>
+  <li><span class="status-pill in-progress inline-legend-pill">&#x1F535; In Progress</span> &mdash; {{ site.data.badge-descriptions.status.in_progress }}</li>
+  <li><span class="status-pill pending inline-legend-pill">&#x1F7E1; Pending</span> &mdash; {{ site.data.badge-descriptions.status.pending }}</li>
+  <li><span class="status-pill partial inline-legend-pill">&#x1F7E0; Partial</span> &mdash; {{ site.data.badge-descriptions.status.partial }}</li>
+  <li><span class="status-pill on-hold inline-legend-pill">&#x26AA; On Hold</span> &mdash; {{ site.data.badge-descriptions.status.on_hold }}</li>
+</ul>
+
+<h3>Upstream Verdict</h3>
+<ul>
+  <li><span class="upstream-badge candidate inline-legend-badge">&#x1F53C; Candidate</span> &mdash; {{ site.data.badge-descriptions.upstream.upstream-candidate }}</li>
+  <li><span class="upstream-badge pr-exists inline-legend-badge">&#x1F7E3; PR Open</span> &mdash; {{ site.data.badge-descriptions.upstream.upstream-pr }}</li>
+  <li><span class="upstream-badge ran-only inline-legend-badge">&#x1F3AF; RAN Only</span> &mdash; {{ site.data.badge-descriptions.upstream.ran-only }}</li>
+  <li><span class="upstream-badge platform inline-legend-badge">&#x2699;&#xFE0F; Platform</span> &mdash; {{ site.data.badge-descriptions.upstream.platform-config }}</li>
+  <li><span class="upstream-badge pass inline-legend-badge">&#x2705; Pass</span> &mdash; {{ site.data.badge-descriptions.upstream.pass-vanilla }}</li>
+  <li><span class="upstream-badge site inline-legend-badge">&#x1F4CD; Site</span> &mdash; {{ site.data.badge-descriptions.upstream.site-specific }}</li>
+  <li><span class="upstream-badge na inline-legend-badge">&mdash; N/A</span> &mdash; {{ site.data.badge-descriptions.upstream.not-applicable }}</li>
+</ul>
+
+<h3>Platform</h3>
+<ul>
+  <li><span class="platform-badge rhcos inline-legend-badge">RHCOS</span> &mdash; {{ site.data.badge-descriptions.platform.rhcos }}</li>
+  <li><span class="platform-badge ocp inline-legend-badge">OCP</span> &mdash; {{ site.data.badge-descriptions.platform.ocp }}</li>
+  <li><span class="platform-badge mixed inline-legend-badge">Mixed</span> &mdash; {{ site.data.badge-descriptions.platform.mixed }}</li>
 </ul>
 
 {{ content }}

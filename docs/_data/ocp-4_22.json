@@ -1,6 +1,7 @@
 {
   "version": "4.22",
   "scan_date": "2026-07-01T04:38:30Z",
+  "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
   "summary": {
     "total_checks": 916,
     "passing": 334,

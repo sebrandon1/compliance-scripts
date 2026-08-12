@@ -52,11 +52,77 @@
     <div class="legend-content">
       <div class="legend-header">Legend</div>
       <div class="legend-section">
-        <div class="legend-title">Status</div>
-        <div class="legend-item"><span>🔵</span> In Progress</div>
-        <div class="legend-item"><span>🟡</span> Pending</div>
-        <div class="legend-item"><span>⚪</span> On Hold</div>
-        <div class="legend-item"><span>🟢</span> Complete</div>
+        <div class="legend-title">Remediation Status</div>
+        <div class="legend-item">
+          <span class="status-pill pass-vanilla legend-pill">&#x2705; PASS (vanilla)</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.status.pass-vanilla }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-pill verified legend-pill">&#x1F7E2; Verified</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.status.verified }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-pill in-progress legend-pill">&#x1F535; In Progress</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.status.in_progress }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-pill pending legend-pill">&#x1F7E1; Pending</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.status.pending }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-pill partial legend-pill">&#x1F7E0; Partial</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.status.partial }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="status-pill on-hold legend-pill">&#x26AA; On Hold</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.status.on_hold }}</span>
+        </div>
+      </div>
+      <div class="legend-section">
+        <div class="legend-title">Upstream Verdict</div>
+        <div class="legend-item">
+          <span class="upstream-badge candidate legend-badge">&#x1F53C; Candidate</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.upstream-candidate }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="upstream-badge pr-exists legend-badge">&#x1F7E3; PR Open</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.upstream-pr }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="upstream-badge ran-only legend-badge">&#x1F3AF; RAN Only</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.ran-only }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="upstream-badge platform legend-badge">&#x2699;&#xFE0F; Platform</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.platform-config }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="upstream-badge pass legend-badge">&#x2705; Pass</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.pass-vanilla }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="upstream-badge site legend-badge">&#x1F4CD; Site</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.site-specific }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="upstream-badge na legend-badge">&mdash; N/A</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.upstream.not-applicable }}</span>
+        </div>
+      </div>
+      <div class="legend-section">
+        <div class="legend-title">Platform</div>
+        <div class="legend-item">
+          <span class="platform-badge rhcos legend-badge">RHCOS</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.platform.rhcos }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="platform-badge ocp legend-badge">OCP</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.platform.ocp }}</span>
+        </div>
+        <div class="legend-item">
+          <span class="platform-badge mixed legend-badge">Mixed</span>
+          <span class="legend-desc">{{ site.data.badge-descriptions.platform.mixed }}</span>
+        </div>
       </div>
       <div class="legend-section">
         <div class="legend-title">Severity</div>
