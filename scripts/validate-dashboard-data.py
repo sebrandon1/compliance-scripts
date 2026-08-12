@@ -184,7 +184,7 @@ VALID_STATUS_PREFIXES = ("pass-vanilla",)
 VALID_PRIORITY_LABELS = {"Critical", "High", "Medium", "Low"}
 VALID_PR_STATES = {"open", "closed", "merged"}
 VALID_UPSTREAM_VERDICTS = {
-    "upstream-candidate", "upstream-pr-exists",
+    "upstream-candidate", "upstream-pr-exists", "upstream-pr",
     "ran-only", "pass-vanilla", "platform-config",
     "site-specific", "not-applicable",
 }
