@@ -234,10 +234,30 @@ OUTPUT_JSON=$(jq -n \
 mkdir -p "$OUTPUT_DIR"
 if [[ -f "$OUTPUT_FILE" ]]; then
 	EXISTING=$(cat "$OUTPUT_FILE")
-	echo "$OUTPUT_JSON" | jq --argjson existing "$EXISTING" \
-		'$existing * .' >"$OUTPUT_FILE"
+	# Archive the current scan as a timestamped baseline before overwriting
+	EXISTING_DATE=$(echo "$EXISTING" | jq -r '.scan_date // empty' | cut -dT -f1)
+	if [[ -n "$EXISTING_DATE" ]]; then
+		BASELINE_FILE="${OUTPUT_DIR}/ocp-${VERSION_SLUG}-${EXISTING_DATE}.json"
+		if [[ ! -f "$BASELINE_FILE" ]]; then
+			echo "$EXISTING" | jq 'del(.previous_scans)' >"$BASELINE_FILE"
+			log_info "Archived previous scan to ${BASELINE_FILE}"
+		fi
+	fi
+	# Build previous_scans summary array from the existing file
+	PREV_SNAPSHOT=$(echo "$EXISTING" | jq '{
+		scan_date: .scan_date,
+		content_image: .content_image,
+		operator_image: .operator_image,
+		scanner_image: .scanner_image,
+		summary: .summary
+	}')
+	PREV_SCANS=$(echo "$EXISTING" | jq '.previous_scans // []')
+	UPDATED_PREV=$(echo "$PREV_SCANS" | jq --argjson snap "$PREV_SNAPSHOT" \
+		'if any(.[]; .scan_date == $snap.scan_date) then . else [$snap] + . end')
+	echo "$OUTPUT_JSON" | jq --argjson existing "$EXISTING" --argjson prev "$UPDATED_PREV" \
+		'($existing * .) + {previous_scans: $prev}' >"$OUTPUT_FILE"
 else
-	echo "$OUTPUT_JSON" | jq '.' >"$OUTPUT_FILE"
+	echo "$OUTPUT_JSON" | jq '. + {previous_scans: []}' >"$OUTPUT_FILE"
 fi
 
 log_success "Successfully exported to ${OUTPUT_FILE}"

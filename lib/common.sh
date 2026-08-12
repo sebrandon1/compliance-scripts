@@ -85,23 +85,23 @@ case "$(echo "${LOG_LEVEL}" | tr '[:upper:]' '[:lower:]')" in
 esac
 
 log_error() {
-    [[ $LOG_LEVEL -ge 1 ]] && echo -e "${RED}[ERROR]${NC} $*" >&2
+    if [[ $LOG_LEVEL -ge 1 ]]; then echo -e "${RED}[ERROR]${NC} $*" >&2; fi
 }
 
 log_warn() {
-    [[ $LOG_LEVEL -ge 2 ]] && echo -e "${YELLOW}[WARN]${NC} $*"
+    if [[ $LOG_LEVEL -ge 2 ]]; then echo -e "${YELLOW}[WARN]${NC} $*"; fi
 }
 
 log_info() {
-    [[ $LOG_LEVEL -ge 3 ]] && echo -e "${BLUE}[INFO]${NC} $*"
+    if [[ $LOG_LEVEL -ge 3 ]]; then echo -e "${BLUE}[INFO]${NC} $*"; fi
 }
 
 log_success() {
-    [[ $LOG_LEVEL -ge 3 ]] && echo -e "${GREEN}[SUCCESS]${NC} $*"
+    if [[ $LOG_LEVEL -ge 3 ]]; then echo -e "${GREEN}[SUCCESS]${NC} $*"; fi
 }
 
 log_debug() {
-    [[ $LOG_LEVEL -ge 4 ]] && echo -e "${CYAN}[DEBUG]${NC} $*"
+    if [[ $LOG_LEVEL -ge 4 ]]; then echo -e "${CYAN}[DEBUG]${NC} $*"; fi
 }
 
 # Log at a specific level (for programmatic use)

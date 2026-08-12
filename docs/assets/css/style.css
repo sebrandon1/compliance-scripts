@@ -1103,6 +1103,49 @@ button.quick-link {
   color: var(--color-text-muted);
 }
 
+.group-status-note {
+  background: var(--color-code-bg);
+  border-left: 3px solid var(--color-text-muted);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  border-radius: 0 6px 6px 0;
+}
+
+.scan-changes {
+  margin: 1rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.scan-changes summary {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.scan-change-entry {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.scan-change-date {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.scan-change-entry ul {
+  margin: 0.25rem 0;
+  padding-left: 1.5rem;
+}
+
+.scan-change-entry li {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
 .group-content {
   line-height: 1.7;
 }

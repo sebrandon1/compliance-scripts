@@ -5,6 +5,9 @@ layout: default
 {% include resolve-tracking.html %}
 {% assign group = tracking.groups[page.group_id] %}
 {% assign meta = tracking.meta %}
+{% assign version_slug = page.version | replace: ".", "_" %}
+{% assign scan_data_file = "ocp-" | append: version_slug %}
+{% assign version_data = site.data[scan_data_file] %}
 
 {% assign certsuite_total = 0 %}
 {% assign certsuite_covered = 0 %}
@@ -79,6 +82,12 @@ layout: default
       </a>
       {% endif %}
 
+      {% if version_data.scan_date %}
+      <span class="last-updated">
+        Scanned: {{ version_data.scan_date | date: "%Y-%m-%d" }}
+      </span>
+      {% endif %}
+
       {% if group.last_sync %}
       <span class="last-updated">
         Synced: {{ group.last_sync | date: "%Y-%m-%d" }}
@@ -92,6 +101,33 @@ layout: default
       {% endif %}
     </div>
   </div>
+
+  {% if group.status_note %}
+  <div class="group-status-note">
+    <em>{{ group.status_note }}</em>
+  </div>
+  {% endif %}
+
+  {% if group.scan_changes %}
+  <details class="scan-changes">
+    <summary><strong>Scan Change Log</strong> ({{ group.scan_changes | size }} update{{ group.scan_changes | size | minus: 1 | at_least: 0 | pluralize: '', 's' }})</summary>
+    {% for entry in group.scan_changes %}
+    <div class="scan-change-entry">
+      <div class="scan-change-date">{{ entry.date }}</div>
+      <ul>
+        {% for c in entry.changes %}
+        <li>
+          <code>{{ c.check }}</code>:
+          <span class="status-badge {{ c.from | downcase }}">{{ c.from }}</span> &rarr;
+          <span class="status-badge {{ c.to | downcase }}">{{ c.to }}</span>
+          {% if c.reason %}<br><em>{{ c.reason }}</em>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </details>
+  {% endif %}
 
   <div class="group-content">
     {{ content }}

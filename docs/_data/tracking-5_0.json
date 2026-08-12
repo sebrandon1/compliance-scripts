@@ -8,7 +8,43 @@
     "last_upstream_audit": "2026-07-21",
     "upstream_audit_note": "Full 40-group audit: 1 upstream-pr-exists (M21), 1 upstream-candidate (H2), 23 ran-only, 5 pass-vanilla, 4 platform-config, 1 site-specific, 5 not-applicable",
     "upstream_research_url": "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6",
-    "approach_note": "Upstream-first: Jiras only created for groups with upstream PRs. Release-tied epics retired 2026-07-23."
+    "approach_note": "Upstream-first: Jiras only created for groups with upstream PRs. Release-tied epics retired 2026-07-23.",
+    "scan_changes": [
+      {
+        "date": "2026-08-12",
+        "old_scan_date": "2026-07-21",
+        "changes": [
+          {
+            "check": "ocp4-moderate-cluster-version-operator-exists",
+            "from": "PASS",
+            "to": "FAIL",
+            "platform": "ocp",
+            "reason": "CVO pod may have been restarting during scan on freshly provisioned nightly cluster"
+          },
+          {
+            "check": "ocp4-moderate-resource-requests-limits-in-deployment",
+            "from": "FAIL",
+            "to": "PASS",
+            "platform": "ocp",
+            "reason": "OCP 5.0 nightly 2026-08-11 ships with resource limits on default operator deployments"
+          },
+          {
+            "check": "ocp4-moderate-route-ip-whitelist",
+            "from": "FAIL",
+            "to": "PASS",
+            "platform": "ocp",
+            "reason": "Default route configuration in this nightly includes IP whitelist annotation"
+          },
+          {
+            "check": "ocp4-moderate-routes-rate-limit",
+            "from": "FAIL",
+            "to": "PASS",
+            "platform": "ocp",
+            "reason": "Default route configuration in this nightly includes rate-limit annotation"
+          }
+        ]
+      }
+    ]
   },
   "groups": {
     "H1": {
