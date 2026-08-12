@@ -17,7 +17,8 @@
       "manual": 0,
       "pass": 0,
       "total": 1
-    }
+    },
+    "note": "Requires FIPS; systemd unit"
   },
   "H2": {
     "4_21": {
@@ -37,7 +38,8 @@
       "manual": 0,
       "pass": 1,
       "total": 1
-    }
+    },
+    "note": "Upstream fix broken; manual PAM"
   },
   "H3": {
     "4_21": {
@@ -57,7 +59,8 @@
       "manual": 0,
       "pass": 1,
       "total": 1
-    }
+    },
+    "note": "Fixed in RHCOS 9.8+"
   },
   "L1": {
     "4_21": {
@@ -77,7 +80,8 @@
       "manual": 0,
       "pass": 1,
       "total": 1
-    }
+    },
+    "note": "Fixed in RHCOS 9.8+"
   },
   "L2": {
     "4_21": {
@@ -97,7 +101,8 @@
       "manual": 0,
       "pass": 0,
       "total": 1
-    }
+    },
+    "note": "Sysctl MachineConfig needed"
   },
   "M1": {
     "4_21": {
@@ -117,7 +122,8 @@
       "manual": 0,
       "pass": 5,
       "total": 7
-    }
+    },
+    "note": "5/7 pass vanilla RHCOS 9.8"
   },
   "M10": {
     "4_21": {
@@ -137,7 +143,8 @@
       "manual": 0,
       "pass": 0,
       "total": 1
-    }
+    },
+    "note": "API encryption config"
   },
   "M11": {
     "4_21": {
@@ -157,7 +164,8 @@
       "manual": 0,
       "pass": 1,
       "total": 1
-    }
+    },
+    "note": "Fixed in OCP 4.22+"
   },
   "M12": {
     "4_21": {
@@ -177,7 +185,8 @@
       "manual": 0,
       "pass": 0,
       "total": 1
-    }
+    },
+    "note": "Audit profile API config"
   },
   "M13": {
     "4_21": {
@@ -197,7 +206,8 @@
       "manual": 0,
       "pass": 0,
       "total": 11
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M14": {
     "4_21": {
@@ -217,7 +227,8 @@
       "manual": 0,
       "pass": 0,
       "total": 12
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M15": {
     "4_21": {
@@ -237,7 +248,8 @@
       "manual": 0,
       "pass": 0,
       "total": 5
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M16": {
     "4_21": {
@@ -257,7 +269,8 @@
       "manual": 0,
       "pass": 0,
       "total": 32
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M17": {
     "4_21": {
@@ -277,7 +290,8 @@
       "manual": 0,
       "pass": 0,
       "total": 22
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M18": {
     "4_21": {
@@ -297,7 +311,8 @@
       "manual": 0,
       "pass": 0,
       "total": 4
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M19": {
     "4_21": {
@@ -317,7 +332,8 @@
       "manual": 0,
       "pass": 0,
       "total": 5
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M2": {
     "4_21": {
@@ -337,7 +353,8 @@
       "manual": 0,
       "pass": 0,
       "total": 4
-    }
+    },
+    "note": "Sysctl MachineConfig needed"
   },
   "M20": {
     "4_21": {
@@ -357,7 +374,8 @@
       "manual": 0,
       "pass": 0,
       "total": 4
-    }
+    },
+    "note": "Auditd retention config"
   },
   "M21": {
     "4_21": {
@@ -377,7 +395,8 @@
       "manual": 0,
       "pass": 0,
       "total": 18
-    }
+    },
+    "note": "Kernel module blacklist"
   },
   "M22": {
     "4_21": {
@@ -397,7 +416,8 @@
       "manual": 0,
       "pass": 0,
       "total": 20
-    }
+    },
+    "note": "Network sysctl hardening"
   },
   "M23": {
     "4_21": {
@@ -417,7 +437,8 @@
       "manual": 0,
       "pass": 0,
       "total": 3
-    }
+    },
+    "note": "Kernel sysctl hardening"
   },
   "M24": {
     "4_21": {
@@ -437,7 +458,8 @@
       "manual": 0,
       "pass": 0,
       "total": 6
-    }
+    },
+    "note": "Kernel boot arguments"
   },
   "M25": {
     "4_21": {
@@ -457,7 +479,8 @@
       "manual": 0,
       "pass": 0,
       "total": 4
-    }
+    },
+    "note": "Chrony/NTP site-specific"
   },
   "M26": {
     "4_21": {
@@ -477,7 +500,8 @@
       "manual": 0,
       "pass": 0,
       "total": 6
-    }
+    },
+    "note": "Systemd coredump/ctrl-alt-del"
   },
   "M27": {
     "4_21": {
@@ -497,7 +521,8 @@
       "manual": 0,
       "pass": 0,
       "total": 2
-    }
+    },
+    "note": "SSHD config MachineConfig"
   },
   "M28": {
     "4_21": {
@@ -517,7 +542,8 @@
       "manual": 0,
       "pass": 0,
       "total": 3
-    }
+    },
+    "note": "USBGuard not on RHCOS"
   },
   "M29": {
     "4_21": {
@@ -537,7 +563,8 @@
       "manual": 0,
       "pass": 0,
       "total": 7
-    }
+    },
+    "note": "Mixed node + platform checks"
   },
   "M3": {
     "4_21": {
@@ -557,7 +584,8 @@
       "manual": 0,
       "pass": 0,
       "total": 2
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M30": {
     "4_21": {
@@ -577,7 +605,8 @@
       "manual": 0,
       "pass": 0,
       "total": 2
-    }
+    },
+    "note": "OAuth timeout config"
   },
   "M4": {
     "4_21": {
@@ -597,7 +626,8 @@
       "manual": 0,
       "pass": 0,
       "total": 6
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M5": {
     "4_21": {
@@ -617,7 +647,8 @@
       "manual": 0,
       "pass": 0,
       "total": 3
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M6": {
     "4_21": {
@@ -637,7 +668,8 @@
       "manual": 0,
       "pass": 0,
       "total": 5
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M7": {
     "4_21": {
@@ -657,7 +689,8 @@
       "manual": 0,
       "pass": 0,
       "total": 6
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M8": {
     "4_21": {
@@ -677,7 +710,8 @@
       "manual": 0,
       "pass": 0,
       "total": 1
-    }
+    },
+    "note": "Audit rules MachineConfig"
   },
   "M9": {
     "4_21": {
@@ -697,7 +731,8 @@
       "manual": 0,
       "pass": 0,
       "total": 1
-    }
+    },
+    "note": "Auditd config MachineConfig"
   },
   "MAN1": {
     "4_21": {
@@ -717,7 +752,8 @@
       "manual": 15,
       "pass": 1,
       "total": 19
-    }
+    },
+    "note": "Manual review required"
   },
   "MAN2": {
     "4_21": {
@@ -737,7 +773,8 @@
       "manual": 5,
       "pass": 0,
       "total": 7
-    }
+    },
+    "note": "Manual review required"
   },
   "MAN3": {
     "4_21": {
@@ -757,7 +794,8 @@
       "manual": 2,
       "pass": 0,
       "total": 2
-    }
+    },
+    "note": "Manual review required"
   },
   "MAN4": {
     "4_21": {
@@ -777,7 +815,8 @@
       "manual": 2,
       "pass": 0,
       "total": 5
-    }
+    },
+    "note": "Manual review required"
   },
   "MAN5": {
     "4_21": {
@@ -797,6 +836,7 @@
       "manual": 3,
       "pass": 0,
       "total": 17
-    }
+    },
+    "note": "Manual review required"
   }
 }

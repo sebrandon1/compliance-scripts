@@ -196,33 +196,49 @@ layout: default
   <h2>Group Status by Version</h2>
 
   <p>Scan results for each remediation group across OCP versions. Derived from actual scan data, not tracking status. Hover for details.</p>
-  <p style="font-size: 0.85rem; color: var(--color-text-muted);">
-    <span class="matrix-dot pass" style="vertical-align: middle;"></span> All passing &nbsp;
-    <span class="matrix-dot partial" style="vertical-align: middle;"></span> Mixed &nbsp;
-    <span class="matrix-dot fail" style="vertical-align: middle;"></span> All failing &nbsp;
-    <span class="matrix-dot manual" style="vertical-align: middle;"></span> Manual
-  </p>
+  <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+    <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0;">
+      <span class="matrix-dot pass" style="vertical-align: middle;"></span> All passing &nbsp;
+      <span class="matrix-dot partial" style="vertical-align: middle;"></span> Mixed &nbsp;
+      <span class="matrix-dot fail" style="vertical-align: middle;"></span> All failing &nbsp;
+      <span class="matrix-dot manual" style="vertical-align: middle;"></span> Manual
+    </p>
+    <label style="font-size: 0.85rem; cursor: pointer; user-select: none;">
+      <input type="checkbox" id="hide-non-hardened" onchange="toggleNonHardened()" style="margin-right: 0.3rem;">
+      Hide non-hardened groups
+    </label>
+  </div>
 
   {% assign ref_key = "tracking-4_22" %}
   {% assign ref_tracking = site.data[ref_key] %}
 
   <div class="matrix-scroll">
-  <table class="status-table matrix-table">
+  <table class="status-table matrix-table" id="matrix-table">
     <thead>
       <tr>
         <th style="width: 5%;">Group</th>
         <th>Category</th>
         <th style="width: 8%;">Platform</th>
         {% for vp in version_pages %}
-        <th style="width: 10%; text-align: center;">{{ vp.version }}</th>
+        <th style="width: 8%; text-align: center;">{{ vp.version }}</th>
         {% endfor %}
+        <th>Note</th>
       </tr>
     </thead>
     <tbody>
       {% for group in ref_tracking.groups %}
         {% assign gid = group[0] %}
         {% assign g = group[1] %}
-        <tr>
+        {% assign gm = site.data.group-matrix[gid] %}
+        {% assign has_any_pass = false %}
+        {% if gm %}
+          {% for vp in version_pages %}
+            {% assign vs = vp.version | replace: ".", "_" %}
+            {% assign cell = gm[vs] %}
+            {% if cell and cell.pass > 0 %}{% assign has_any_pass = true %}{% endif %}
+          {% endfor %}
+        {% endif %}
+        <tr data-has-pass="{{ has_any_pass }}">
           <td><a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" data-tip="{{ gid }}: {{ g.title }}"><strong>{{ gid }}</strong></a></td>
           <td>{{ g.title }}</td>
           <td>
@@ -232,7 +248,6 @@ layout: default
             </span>
             {% endif %}
           </td>
-          {% assign gm = site.data.group-matrix[gid] %}
           {% for vp in version_pages %}
             {% assign vs = vp.version | replace: ".", "_" %}
             {% if gm %}
@@ -258,11 +273,26 @@ layout: default
               {% endif %}
             </td>
           {% endfor %}
+          <td style="font-size: 0.8rem; color: var(--color-text-muted); white-space: nowrap;">{% if gm.note %}{{ gm.note }}{% else %}&mdash;{% endif %}</td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
   </div>
+
+  <script>
+  function toggleNonHardened() {
+    var hide = document.getElementById('hide-non-hardened').checked;
+    var rows = document.querySelectorAll('#matrix-table tbody tr');
+    rows.forEach(function(row) {
+      if (hide && row.getAttribute('data-has-pass') === 'false') {
+        row.style.display = 'none';
+      } else {
+        row.style.display = '';
+      }
+    });
+  }
+  </script>
 
   <hr>
 
