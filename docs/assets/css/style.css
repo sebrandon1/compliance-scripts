@@ -2664,8 +2664,10 @@ kbd {
 
 .matrix-dot.pass { background: #28a745; }
 .matrix-dot.verified { background: #218838; }
+.matrix-dot.fail { background: #dc3545; }
 .matrix-dot.in-progress { background: #007bff; }
 .matrix-dot.partial { background: #ffc107; }
+.matrix-dot.manual { background: #6c757d; }
 .matrix-dot.pending { background: #e9ecef; border: 1px solid #dee2e6; }
 .matrix-dot.na { background: none; color: var(--color-text-muted); font-size: 0.8rem; width: auto; height: auto; }
 

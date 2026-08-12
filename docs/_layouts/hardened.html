@@ -195,7 +195,13 @@ layout: default
   <!-- Group Completion Matrix -->
   <h2>Group Status by Version</h2>
 
-  <p>Status of each remediation group across OCP versions. Hover for details.</p>
+  <p>Scan results for each remediation group across OCP versions. Derived from actual scan data, not tracking status. Hover for details.</p>
+  <p style="font-size: 0.85rem; color: var(--color-text-muted);">
+    <span class="matrix-dot pass" style="vertical-align: middle;"></span> All passing &nbsp;
+    <span class="matrix-dot partial" style="vertical-align: middle;"></span> Mixed &nbsp;
+    <span class="matrix-dot fail" style="vertical-align: middle;"></span> All failing &nbsp;
+    <span class="matrix-dot manual" style="vertical-align: middle;"></span> Manual
+  </p>
 
   {% assign ref_key = "tracking-4_22" %}
   {% assign ref_tracking = site.data[ref_key] %}
@@ -226,26 +232,26 @@ layout: default
             </span>
             {% endif %}
           </td>
+          {% assign gm = site.data.group-matrix[gid] %}
           {% for vp in version_pages %}
             {% assign vs = vp.version | replace: ".", "_" %}
-            {% assign vtk = "tracking-" | append: vs %}
-            {% assign vtrk = site.data[vtk] %}
-            {% unless vtrk %}{% assign vtrk = site.data.tracking %}{% endunless %}
-            {% assign vg = vtrk.groups[gid] %}
+            {% if gm %}
+              {% assign cell = gm[vs] %}
+            {% else %}
+              {% assign cell = nil %}
+            {% endif %}
             <td style="text-align: center;">
-              {% if vg %}
-                {% if vg.status contains "pass-vanilla" %}
-                  <span class="matrix-dot pass" data-tip="{{ gid }}: {{ g.title }} — PASS (vanilla)"></span>
-                {% elsif vg.status == "verified" or vg.status == "verified-needed" %}
-                  <span class="matrix-dot verified" data-tip="{{ gid }}: {{ g.title }} — Verified"></span>
-                {% elsif vg.status == "in_progress" %}
-                  <span class="matrix-dot in-progress" data-tip="{{ gid }}: {{ g.title }} — In Progress"></span>
-                {% elsif vg.status == "partial" %}
-                  <span class="matrix-dot partial" data-tip="{{ gid }}: {{ g.title }} — Partial"></span>
-                {% elsif vg.status == "pending" %}
-                  <span class="matrix-dot pending" data-tip="{{ gid }}: {{ g.title }} — Pending"></span>
+              {% if cell %}
+                {% if cell.fail == 0 and cell.pass > 0 %}
+                  <span class="matrix-dot pass" data-tip="{{ gid }}: {{ g.title }} — {{ cell.pass }}/{{ cell.total }} passing"></span>
+                {% elsif cell.pass == 0 and cell.fail > 0 %}
+                  <span class="matrix-dot fail" data-tip="{{ gid }}: {{ g.title }} — {{ cell.fail }}/{{ cell.total }} failing"></span>
+                {% elsif cell.pass > 0 and cell.fail > 0 %}
+                  <span class="matrix-dot partial" data-tip="{{ gid }}: {{ g.title }} — {{ cell.pass }} pass, {{ cell.fail }} fail of {{ cell.total }}"></span>
+                {% elsif cell.manual > 0 %}
+                  <span class="matrix-dot manual" data-tip="{{ gid }}: {{ g.title }} — {{ cell.manual }} manual checks"></span>
                 {% else %}
-                  <span class="matrix-dot" data-tip="{{ gid }}: {{ g.title }} — {{ vg.status }}"></span>
+                  <span class="matrix-dot na" data-tip="{{ gid }}: {{ g.title }} — No scan data">&mdash;</span>
                 {% endif %}
               {% else %}
                 <span class="matrix-dot na" data-tip="Not tracked">&mdash;</span>
