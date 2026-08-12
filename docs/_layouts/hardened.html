@@ -281,8 +281,17 @@ layout: default
             {% if cell and cell.pass > 0 %}{% assign has_any_pass = true %}{% endif %}
           {% endfor %}
         {% endif %}
-        <tr data-has-pass="{{ has_any_pass }}">
-          <td><a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html"><strong>{{ gid }}</strong></a></td>
+
+        {% comment %} Count remediations in this group {% endcomment %}
+        {% assign rem_count = 0 %}
+        {% for rem in ref_tracking.remediations %}
+          {% if rem[1].group == gid %}
+            {% assign rem_count = rem_count | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+
+        <tr class="group-row expandable" data-has-pass="{{ has_any_pass }}" onclick="toggleGroupDetail(this)" style="cursor: pointer;">
+          <td><span class="expand-arrow">&#x25B6;</span> <a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" onclick="event.stopPropagation();"><strong>{{ gid }}</strong></a></td>
           <td>{{ g.title }}</td>
           <td>
             {% if g.platform %}
@@ -318,18 +327,62 @@ layout: default
           {% endfor %}
           <td style="font-size: 0.8rem; color: var(--color-text-muted); white-space: nowrap;">{% if gm.note %}{{ gm.note }}{% else %}&mdash;{% endif %}</td>
         </tr>
+        <tr class="group-detail" data-has-pass="{{ has_any_pass }}" style="display: none;">
+          <td></td>
+          <td colspan="{{ version_pages.size | plus: 4 }}">
+            <div class="group-detail-content">
+              {% if gm.description %}
+              <p class="group-description">{{ gm.description }}</p>
+              {% endif %}
+              <div class="group-detail-meta">
+                <span class="detail-chip"><strong>{{ rem_count }}</strong> remediation{% if rem_count != 1 %}s{% endif %}</span>
+                <span class="detail-chip severity-{{ g.severity | downcase }}">{{ g.severity }}</span>
+                {% if g.status contains "pass-vanilla" %}
+                  <span class="detail-chip chip-pass">Passes without hardening</span>
+                {% elsif g.status == "verified" %}
+                  <span class="detail-chip chip-verified">Verified fix available</span>
+                {% elsif g.status == "partial" %}
+                  <span class="detail-chip chip-partial">Partial — some checks remain</span>
+                {% elsif g.status == "pending" %}
+                  <span class="detail-chip chip-pending">Pending — needs manual review</span>
+                {% endif %}
+                {% if g.upstream_verdict == "upstream-pr" %}
+                  <span class="detail-chip chip-upstream">Upstream fix submitted</span>
+                {% elsif g.upstream_verdict == "pass-vanilla" %}
+                  <span class="detail-chip chip-pass">Fixed in OS upgrade</span>
+                {% endif %}
+              </div>
+              <a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" class="group-detail-link">View full group details &rarr;</a>
+            </div>
+          </td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
   </div>
 
   <script>
+  function toggleGroupDetail(row) {
+    var detail = row.nextElementSibling;
+    if (detail && detail.classList.contains('group-detail')) {
+      var arrow = row.querySelector('.expand-arrow');
+      if (detail.style.display === 'none') {
+        detail.style.display = '';
+        arrow.classList.add('expanded');
+      } else {
+        detail.style.display = 'none';
+        arrow.classList.remove('expanded');
+      }
+    }
+  }
   function toggleNonHardened() {
     var hide = document.getElementById('hide-non-hardened').checked;
     var rows = document.querySelectorAll('#matrix-table tbody tr');
     rows.forEach(function(row) {
       if (hide && row.getAttribute('data-has-pass') === 'false') {
         row.style.display = 'none';
+      } else if (row.classList.contains('group-detail')) {
+        // detail rows stay hidden unless explicitly expanded
       } else {
         row.style.display = '';
       }

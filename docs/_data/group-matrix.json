@@ -18,6 +18,7 @@
       "pass": 0,
       "total": 1
     },
+    "description": "Sets the system-wide cryptographic policy to disable weak algorithms like SHA-1, protecting all TLS, SSH, and certificate operations on the node.",
     "note": "Requires FIPS; systemd unit"
   },
   "H2": {
@@ -39,6 +40,7 @@
       "pass": 1,
       "total": 1
     },
+    "description": "Removes 'nullok' from PAM authentication so that accounts with empty passwords cannot log in to cluster nodes.",
     "note": "Needs custom PAM config"
   },
   "H3": {
@@ -60,6 +62,7 @@
       "pass": 1,
       "total": 1
     },
+    "description": "Configures the SSH daemon to reject login attempts using empty passwords.",
     "note": "Fixed in RHCOS 9.8+"
   },
   "L1": {
@@ -81,6 +84,7 @@
       "pass": 1,
       "total": 1
     },
+    "description": "Sets SSH daemon log level to capture detailed connection and authentication events. Passes by default on RHCOS 9.8+.",
     "note": "Fixed in RHCOS 9.8+"
   },
   "L2": {
@@ -102,6 +106,7 @@
       "pass": 0,
       "total": 1
     },
+    "description": "Restricts access to kernel ring buffer messages (dmesg) to root only, preventing information leakage to unprivileged users.",
     "note": "Sysctl MachineConfig needed"
   },
   "M1": {
@@ -123,6 +128,7 @@
       "pass": 5,
       "total": 7
     },
+    "description": "Hardens SSH daemon settings: disables root login, GSSAPI, rhosts, user known hosts, user environment, and enables strict mode.",
     "note": "5/7 pass vanilla RHCOS 9.8"
   },
   "M10": {
@@ -144,6 +150,7 @@
       "pass": 0,
       "total": 1
     },
+    "description": "Enables encryption of etcd data at rest using AES-CBC, protecting secrets and sensitive API resources stored in the cluster database.",
     "note": "API encryption config"
   },
   "M11": {
@@ -165,6 +172,7 @@
       "pass": 1,
       "total": 1
     },
+    "description": "Ensures the cluster ingress controller uses strong TLS cipher suites. Passes by default on OCP 4.22+.",
     "note": "Fixed in OCP 4.22+"
   },
   "M12": {
@@ -186,6 +194,7 @@
       "pass": 0,
       "total": 1
     },
+    "description": "Sets the API server audit profile to WriteRequestBodies, logging the full content of write operations for forensic analysis.",
     "note": "Audit profile API config"
   },
   "M13": {
@@ -207,6 +216,7 @@
       "pass": 0,
       "total": 11
     },
+    "description": "Extends audit coverage with 11 additional rules for file attribute changes (chmod, chown, fsetxattr, etc.).",
     "note": "Audit rules MachineConfig"
   },
   "M14": {
@@ -228,6 +238,7 @@
       "pass": 0,
       "total": 12
     },
+    "description": "Adds audit watches on 12 identity and authentication files (/etc/passwd, /etc/shadow, /etc/group, etc.) to detect unauthorized modifications.",
     "note": "Audit rules MachineConfig"
   },
   "M15": {
@@ -249,6 +260,7 @@
       "pass": 0,
       "total": 5
     },
+    "description": "Adds audit rules to log file deletion operations (unlink, rename, rmdir) for forensic tracking of removed files.",
     "note": "Audit rules MachineConfig"
   },
   "M16": {
@@ -270,6 +282,7 @@
       "pass": 0,
       "total": 32
     },
+    "description": "Adds audit rules for 32 system calls to log all unsuccessful file modification attempts, catching permission-denied and missing-file errors.",
     "note": "Audit rules MachineConfig"
   },
   "M17": {
@@ -291,6 +304,7 @@
       "pass": 0,
       "total": 22
     },
+    "description": "Adds audit rules to log execution of 22 privileged commands (sudo, chage, mount, etc.) to track administrative actions.",
     "note": "Audit rules MachineConfig"
   },
   "M18": {
@@ -312,6 +326,7 @@
       "pass": 0,
       "total": 4
     },
+    "description": "Adds audit rules for session initiation, MAC policy changes, audit log exports, and makes the audit configuration immutable until reboot.",
     "note": "Audit rules MachineConfig"
   },
   "M19": {
@@ -333,6 +348,7 @@
       "pass": 0,
       "total": 5
     },
+    "description": "Adds audit watches on user/group management files (/etc/passwd, /etc/group, /etc/gshadow, /etc/security/opasswd) to log account changes.",
     "note": "Audit rules MachineConfig"
   },
   "M2": {
@@ -354,6 +370,7 @@
       "pass": 0,
       "total": 4
     },
+    "description": "Applies kernel sysctl parameters to restrict core dumps, disable ICMP redirects, and harden memory protections.",
     "note": "Sysctl MachineConfig needed"
   },
   "M20": {
@@ -375,6 +392,7 @@
       "pass": 0,
       "total": 4
     },
+    "description": "Configures audit log retention settings: maximum log file size, number of retained logs, and disk-full behavior.",
     "note": "Auditd retention config"
   },
   "M21": {
@@ -396,6 +414,7 @@
       "pass": 0,
       "total": 18
     },
+    "description": "Blacklists 18 kernel modules (USB storage, Firewire, Bluetooth, uncommon filesystems, etc.) to reduce the node attack surface.",
     "note": "Kernel module blacklist"
   },
   "M22": {
@@ -417,6 +436,7 @@
       "pass": 0,
       "total": 20
     },
+    "description": "Applies 20 network sysctl hardening parameters: disables IP forwarding, source routing, ICMP redirects, and enables reverse path filtering.",
     "note": "Network sysctl hardening"
   },
   "M23": {
@@ -438,6 +458,7 @@
       "pass": 0,
       "total": 3
     },
+    "description": "Sets kernel parameters to disable core dumps, block kexec_load, and increase perf_event paranoia level.",
     "note": "Kernel sysctl hardening"
   },
   "M24": {
@@ -459,6 +480,7 @@
       "pass": 0,
       "total": 6
     },
+    "description": "Adds 6 kernel boot arguments: enables audit at boot, sets audit backlog limit, disables USB, enables page poisoning, PTI, and disables vsyscall.",
     "note": "Kernel boot arguments"
   },
   "M25": {
@@ -480,6 +502,7 @@
       "pass": 0,
       "total": 4
     },
+    "description": "Configures Chrony NTP client to use designated time servers with restricted port access and polling intervals.",
     "note": "Chrony/NTP site-specific"
   },
   "M26": {
@@ -501,6 +524,7 @@
       "pass": 0,
       "total": 6
     },
+    "description": "Disables systemd core dump collection, masks the Ctrl-Alt-Del reboot target, and masks the systemd-coredump socket.",
     "note": "Systemd coredump/ctrl-alt-del"
   },
   "M27": {
@@ -522,6 +546,7 @@
       "pass": 0,
       "total": 2
     },
+    "description": "Applies additional SSHD hardening from the Moderate profile: sets ClientAliveInterval and ClientAliveCountMax for idle session timeout.",
     "note": "SSHD config MachineConfig"
   },
   "M28": {
@@ -543,6 +568,7 @@
       "pass": 0,
       "total": 3
     },
+    "description": "Requires USBGuard daemon to control USB device access. Cannot be remediated \u2014 USBGuard RPM is not included in RHCOS.",
     "note": "USBGuard not on RHCOS"
   },
   "M29": {
@@ -564,6 +590,7 @@
       "pass": 0,
       "total": 7
     },
+    "description": "Mixed group: restricts node-level terminal access (securetty, audit trail) and configures cluster login banner or OAuth templates.",
     "note": "Mixed node + platform checks"
   },
   "M3": {
@@ -585,6 +612,7 @@
       "pass": 0,
       "total": 2
     },
+    "description": "Adds audit rules to track changes to file permissions and ownership (DAC modifications) so unauthorized access attempts are logged.",
     "note": "Audit rules MachineConfig"
   },
   "M30": {
@@ -606,6 +634,7 @@
       "pass": 0,
       "total": 2
     },
+    "description": "Configures OAuth access token inactivity timeout and token max age to automatically expire idle sessions.",
     "note": "OAuth timeout config"
   },
   "M4": {
@@ -627,6 +656,7 @@
       "pass": 0,
       "total": 6
     },
+    "description": "Adds audit rules to log SELinux policy changes and access control modifications on the node.",
     "note": "Audit rules MachineConfig"
   },
   "M5": {
@@ -648,6 +678,7 @@
       "pass": 0,
       "total": 3
     },
+    "description": "Adds audit rules to log loading and unloading of kernel modules, detecting rootkits or unauthorized drivers.",
     "note": "Audit rules MachineConfig"
   },
   "M6": {
@@ -669,6 +700,7 @@
       "pass": 0,
       "total": 5
     },
+    "description": "Adds audit rules to detect attempts to change the system clock, which could be used to tamper with log timestamps.",
     "note": "Audit rules MachineConfig"
   },
   "M7": {
@@ -690,6 +722,7 @@
       "pass": 0,
       "total": 6
     },
+    "description": "Adds audit rules to monitor login events, failed authentication attempts, and account lockouts.",
     "note": "Audit rules MachineConfig"
   },
   "M8": {
@@ -711,6 +744,7 @@
       "pass": 0,
       "total": 1
     },
+    "description": "Adds audit rules to log changes to network configuration files and hostname changes.",
     "note": "Audit rules MachineConfig"
   },
   "M9": {
@@ -732,6 +766,7 @@
       "pass": 0,
       "total": 1
     },
+    "description": "Configures the audit daemon (auditd) with proper hostname identification for centralized log correlation.",
     "note": "Auditd config MachineConfig"
   },
   "MAN1": {
@@ -753,6 +788,7 @@
       "pass": 1,
       "total": 19
     },
+    "description": "Manual review items: workload container security \u2014 verifying pod security standards, resource limits, and image provenance.",
     "note": "Manual review required"
   },
   "MAN2": {
@@ -774,6 +810,7 @@
       "pass": 0,
       "total": 7
     },
+    "description": "Manual review items: RBAC and access control \u2014 verifying least-privilege roles, service accounts, and cluster-admin restrictions.",
     "note": "Manual review required"
   },
   "MAN3": {
@@ -795,6 +832,7 @@
       "pass": 0,
       "total": 2
     },
+    "description": "Manual review items: secrets management \u2014 verifying that sensitive data is stored in Secrets resources, not in ConfigMaps or environment variables.",
     "note": "Manual review required"
   },
   "MAN4": {
@@ -816,6 +854,7 @@
       "pass": 0,
       "total": 5
     },
+    "description": "Manual review items: audit log storage \u2014 verifying that dedicated partitions or persistent volumes are used for audit log retention.",
     "note": "Manual review required"
   },
   "MAN5": {
@@ -837,6 +876,7 @@
       "pass": 0,
       "total": 17
     },
+    "description": "Manual review items: hardware BIOS settings, alerting rules, and physical security controls that cannot be checked by automated scans.",
     "note": "Manual review required"
   }
 }
