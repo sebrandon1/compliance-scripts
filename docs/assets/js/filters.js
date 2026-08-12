@@ -103,7 +103,25 @@ function filterTables() {
     document.getElementById('filter-counts').textContent =
       visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
   }
+  hideEmptyColumns();
   updateHash();
+}
+
+function hideEmptyColumns() {
+  var table = document.getElementById('remediation-table');
+  if (!table) return;
+  var colClasses = ['col-compare', 'col-jira', 'col-pr'];
+  colClasses.forEach(function(cls) {
+    var cells = table.querySelectorAll('tbody td.' + cls);
+    var hasContent = false;
+    cells.forEach(function(td) {
+      if (td.closest('tr').style.display === 'none') return;
+      if (td.textContent.trim() !== '-') hasContent = true;
+    });
+    table.querySelectorAll('.' + cls).forEach(function(el) {
+      el.style.display = hasContent ? '' : 'none';
+    });
+  });
 }
 
 (function restoreFromHash() {

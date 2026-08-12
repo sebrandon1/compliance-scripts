@@ -416,7 +416,7 @@ table.status-table {
   overflow: hidden !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
   margin: 1.5rem 0 !important;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 table.status-table thead th {

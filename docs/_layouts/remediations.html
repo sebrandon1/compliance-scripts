@@ -152,16 +152,16 @@ layout: default
 <table class="status-table" id="remediation-table">
   <thead>
     <tr>
-      <th scope="col" class="sortable" data-type="text" style="width: 60px;">Group</th>
+      <th scope="col" class="sortable" data-type="text" style="width: 5%;">Group</th>
       <th scope="col" class="sortable" data-type="text">Category</th>
-      <th scope="col" class="sortable" data-type="text" style="width: 90px;">Platform</th>
-      <th scope="col" class="sortable" data-type="text" style="width: 80px;">Severity</th>
-      <th scope="col" class="sortable" data-type="number" style="width: 50px; text-align: center;">Checks</th>
-      <th scope="col" class="sortable" data-type="text" style="width: 160px;">Status</th>
-      <th scope="col" class="sortable" data-type="text" style="width: 120px;">Upstream</th>
-      <th scope="col" style="width: 50px; text-align: center;">Compare</th>
-      <th scope="col" class="sortable" data-type="text" style="width: 100px;">Jira</th>
-      <th scope="col" class="sortable" data-type="text" style="width: 70px;">PR</th>
+      <th scope="col" class="sortable" data-type="text" style="width: 8%;">Platform</th>
+      <th scope="col" class="sortable" data-type="text" style="width: 8%;">Severity</th>
+      <th scope="col" class="sortable" data-type="number" style="width: 6%; text-align: center;">Checks</th>
+      <th scope="col" class="sortable" data-type="text" style="width: 14%;">Status</th>
+      <th scope="col" class="sortable" data-type="text" style="width: 10%;">Upstream</th>
+      <th scope="col" class="col-compare" style="width: 6%; text-align: center;">Compare</th>
+      <th scope="col" class="sortable col-jira" data-type="text" style="width: 9%;">Jira</th>
+      <th scope="col" class="sortable col-pr" data-type="text" style="width: 6%;">PR</th>
     </tr>
   </thead>
   <tbody>
@@ -226,17 +226,17 @@ layout: default
           <span class="upstream-badge">&mdash;</span>
         {% endif %}
       </td>
-      <td style="text-align: center;">
+      <td class="col-compare" style="text-align: center;">
         {% if g.compare %}
           <a href="{{ meta.compare_base_url }}{{ g.compare }}" class="compare-btn">&#x1F4E6;</a>
         {% else %}-{% endif %}
       </td>
-      <td>
+      <td class="col-jira">
         {% if g.jira %}
           <a href="{{ meta.jira_base_url }}{{ g.jira }}" class="jira-badge">{{ g.jira }}</a>
         {% else %}-{% endif %}
       </td>
-      <td>
+      <td class="col-pr">
         {% if g.pr %}
           <a href="{{ meta.pr_base_url }}{{ g.pr }}" class="pr-badge{% if g.pr_state == 'merged' %} merged{% endif %}">#{{ g.pr }}{% if g.pr_state == "merged" %} &#x2713;{% endif %}</a>
         {% else %}-{% endif %}
