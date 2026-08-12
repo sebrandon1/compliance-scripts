@@ -3,8 +3,14 @@ name: Python Lint and Test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
 
 permissions: read-all
 
