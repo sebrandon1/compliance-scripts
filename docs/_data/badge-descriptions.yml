@@ -1,0 +1,21 @@
+status:
+  pass-vanilla: "Passes on unhardened RHCOS; no remediation needed"
+  verified: "Remediation tested on live cluster, confirmed PASS"
+  in_progress: "Remediation actively being developed or tested"
+  pending: "Not yet started; needs remediation work"
+  partial: "Some checks pass or remediation not fully validated"
+  on_hold: "Work paused (blocked or deprioritized)"
+
+upstream:
+  upstream-candidate: "Suitable for upstreaming to ComplianceAsCode"
+  upstream-pr: "Upstream PR filed"
+  ran-only: "Only applies to RAN deployments"
+  platform-config: "Requires OCP platform-level configuration"
+  pass-vanilla: "Already passing upstream"
+  site-specific: "Site/deployment-specific configuration"
+  not-applicable: "Not applicable for upstreaming"
+
+platform:
+  rhcos: "Node-level checks (MachineConfig)"
+  ocp: "Platform-level checks (API/CR)"
+  mixed: "Both RHCOS and OCP checks"

@@ -12,7 +12,9 @@
       "failing": 78,
       "manual": 27,
       "skipped": 0
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
   },
   {
     "version": "4.22",
@@ -29,7 +31,9 @@
       "skipped": 0,
       "rhcos_failing": 14,
       "ocp_failing": 44
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
   },
   {
     "version": "4.22",
@@ -46,7 +50,9 @@
       "skipped": 0,
       "rhcos_failing": 452,
       "ocp_failing": 48
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
   },
   {
     "version": "5.0",
@@ -63,7 +69,9 @@
       "skipped": 0,
       "rhcos_failing": 436,
       "ocp_failing": 45
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
   },
   {
     "version": "5.0",
@@ -79,7 +87,9 @@
       "skipped": 0,
       "rhcos_failing": 436,
       "ocp_failing": 45
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
   },
   {
     "version": "4.22",
@@ -95,7 +105,9 @@
       "skipped": 0,
       "rhcos_failing": 454,
       "ocp_failing": 49
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
   },
   {
     "version": "5.0",
@@ -111,6 +123,26 @@
       "skipped": 0,
       "rhcos_failing": 450,
       "ocp_failing": 49
-    }
+    },
+    "operator_image": null,
+    "scanner_image": null
+  },
+  {
+    "version": "5.0",
+    "scan_date": "2026-07-21T18:42:42Z",
+    "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+    "content_image_digest": null,
+    "cluster": "cnfdt16-7c6ff",
+    "summary": {
+      "total_checks": 914,
+      "passing": 334,
+      "failing": 501,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 450,
+      "ocp_failing": 51
+    },
+    "operator_image": null,
+    "scanner_image": null
   }
 ]

@@ -1,16 +1,16 @@
 {
   "version": "5.0",
-  "scan_date": "2026-07-10T22:13:37Z",
+  "scan_date": "2026-07-21T18:42:42Z",
   "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
   "content_image_digest": null,
   "summary": {
     "total_checks": 914,
-    "passing": 336,
-    "failing": 499,
+    "passing": 334,
+    "failing": 501,
     "manual": 79,
     "skipped": 0,
     "rhcos_failing": 450,
-    "ocp_failing": 49
+    "ocp_failing": 51
   },
   "remediations": {
     "high": [
@@ -305,15 +305,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-moderate-cluster-version-operator-exists",
-        "check": "ocp4-moderate-cluster-version-operator-exists",
-        "status": "FAIL",
-        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-moderate-cluster-wide-proxy-set",
         "check": "ocp4-moderate-cluster-wide-proxy-set",
         "status": "FAIL",
@@ -431,10 +422,37 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "status": "FAIL",
+        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-moderate-resource-requests-quota",
         "check": "ocp4-moderate-resource-requests-quota",
         "status": "FAIL",
         "description": "Ensure workloads use resource requests and limits\nThere are two ways to enable resource requests and limits. To create either: A multi-project quota, defined by a ClusterResourceQuota object, allows quotas to be shared across multiple projects. Resources used in each selected project are aggregated and that aggregate is used to limit resources across all the selected projects. A resource quota, defined by a ResourceQuota object, provides constraints that limit aggregate resource consumption per project. It can limit the quantity of objects that can be created in a project by type, as well as the total amount of compute resources and storage that might be consumed by resources in that project. We want to make sure either a ClusterResourceQuota is used in a cluster or a ResourceQuota is used per namespaces.\n\nTo configure ClusterResourceQuota, follow the directions in the documentation ( https://docs.openshift.com/container-platform/4.9/applications/quotas/quotas-setting-across-multiple-projects.html )\n\nTo configure ResourceQuota Per Project, follow the directions in the documentation ( https://docs.openshift.com/container-platform/4.9/applications/quotas/quotas-setting-per-project.html )",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-route-ip-whitelist",
+        "check": "ocp4-moderate-route-ip-whitelist",
+        "status": "FAIL",
+        "description": "Ensure that all Routes has IP whitelist annotation\nOpenShift has an option to set the IP whitelist for Routes [1] when creating new Routes. All routes outside the openshift namespaces and the kube namespaces should use the IP whitelist annotations. Requests from IP addresses that are not in the whitelist are dropped. [1] https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/ingress_and_load_balancing/configuring-routes#nw-route-specific-annotations_route-configuration",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-routes-rate-limit",
+        "check": "ocp4-moderate-routes-rate-limit",
+        "status": "FAIL",
+        "description": "Ensure that all Routes has rate limit enabled\nOpenShift has an option to set the rate limit for Routes [1] when creating new Routes. All routes outside the excluded namespaces (as defined by the variable ocp4-var-routes-excluded-namespaces-regex ) should use the rate-limiting annotations. [1] https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html#nw-route-specific-annotations_route-configuration",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -5614,6 +5632,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-moderate-cluster-version-operator-exists",
+        "check": "ocp4-moderate-cluster-version-operator-exists",
+        "status": "PASS",
+        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-moderate-cluster-version-operator-verify-integrity",
         "check": "ocp4-moderate-cluster-version-operator-verify-integrity",
         "status": "PASS",
@@ -5821,15 +5848,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "status": "PASS",
-        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-moderate-resource-requests-limits-in-statefulset",
         "check": "ocp4-moderate-resource-requests-limits-in-statefulset",
         "status": "PASS",
@@ -5839,28 +5857,10 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-moderate-route-ip-whitelist",
-        "check": "ocp4-moderate-route-ip-whitelist",
-        "status": "PASS",
-        "description": "Ensure that all Routes has IP whitelist annotation\nOpenShift has an option to set the IP whitelist for Routes [1] when creating new Routes. All routes outside the openshift namespaces and the kube namespaces should use the IP whitelist annotations. Requests from IP addresses that are not in the whitelist are dropped. [1] https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/ingress_and_load_balancing/configuring-routes#nw-route-specific-annotations_route-configuration",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-moderate-routes-protected-by-tls",
         "check": "ocp4-moderate-routes-protected-by-tls",
         "status": "PASS",
         "description": "Ensure that all edge-terminated OpenShift Routes prefer TLS\nOpenShift Container Platform provides methods for communicating from outside the cluster with services running in the cluster. TLS must be used to protect these communications. This rule specifically focuses on edge-terminated OpenShift Routes, which require additional TLS configuration. For these routes, ensure that any request coming from the outside must use TLS by setting the.spec.tls.insecureEdgeTerminationPolicy to either None or Redirect to ensure a secure endpoint is used for edge-terminated routes.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-routes-rate-limit",
-        "check": "ocp4-moderate-routes-rate-limit",
-        "status": "PASS",
-        "description": "Ensure that all Routes has rate limit enabled\nOpenShift has an option to set the rate limit for Routes [1] when creating new Routes. All routes outside the excluded namespaces (as defined by the variable ocp4-var-routes-excluded-namespaces-regex ) should use the rate-limiting annotations. [1] https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html#nw-route-specific-annotations_route-configuration",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"

@@ -24,6 +24,12 @@ layout: default
     {% if version_data.content_image %}
     <p><strong>Content Image:</strong> <code>{{ version_data.content_image }}</code></p>
     {% endif %}
+    {% if version_data.operator_image %}
+    <p><strong>Operator Image:</strong> <code>{{ version_data.operator_image }}</code></p>
+    {% endif %}
+    {% if version_data.scanner_image %}
+    <p><strong>Scanner Image:</strong> <code>{{ version_data.scanner_image }}</code></p>
+    {% endif %}
   </div>
 
   <div class="summary-cards">
