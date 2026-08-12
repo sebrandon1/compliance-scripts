@@ -16,12 +16,12 @@ layout: default
 
   <!-- Hero Stats -->
   <div class="summary-cards hero-stats">
-    <div class="card hero-card" title="All failing and manual checks are organized into 40 remediation groups spanning E8, CIS, Moderate, and PCI-DSS NIST profiles">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="All failing and manual checks are organized into 40 remediation groups spanning E8, CIS, Moderate, and PCI-DSS NIST profiles">
       <h3>Remediation Groups</h3>
       <span class="number">40</span>
       <div class="stat-note">Across 4 profiles (E8, CIS, Moderate, PCI-DSS)</div>
     </div>
-    <div class="card hero-card" title="Each remediation maps to a specific compliance check that requires a MachineConfig or cluster configuration change">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="Each remediation maps to a specific compliance check that requires a MachineConfig or cluster configuration change">
       <h3>Individual Remediations</h3>
       <span class="number">259</span>
       <div class="stat-note">Mapped from 592 failing + manual checks</div>
@@ -36,13 +36,13 @@ layout: default
         {% assign verified_total = verified_total | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <div class="card hero-card passing" title="Groups with status 'verified' or 'pass-vanilla' on OCP 4.22, the most mature tested version">
+    <div class="card hero-card passing" data-tip-pos="bottom" data-tip="Groups with status 'verified' or 'pass-vanilla' on OCP 4.22, the most mature tested version">
       <h3>Groups Verified</h3>
       <span class="number">{{ verified_total }} / 40</span>
       <div class="stat-note">On OCP 4.22 (most mature)</div>
     </div>
 
-    <div class="card hero-card" title="Node-level (RHCOS) compliance failures reduced from 452 to 14 after applying all MachineConfig remediations">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="Node-level (RHCOS) compliance failures reduced from 452 to 14 after applying all MachineConfig remediations">
       <h3>RHCOS Failure Reduction</h3>
       <span class="number">97%</span>
       <div class="stat-note">452 &rarr; 14 node-level failures</div>
@@ -59,13 +59,13 @@ layout: default
         {% assign upstream_pass_count = upstream_pass_count | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <div class="card hero-card" title="Pull requests submitted to ComplianceAsCode/content upstream to fix broken remediations at the source">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="Pull requests submitted to ComplianceAsCode/content upstream to fix broken remediations at the source">
       <h3>Upstream Contributions</h3>
       <span class="number">3 PRs</span>
       <div class="stat-note">{{ upstream_pass_count }} groups resolved via RHEL/Fedora</div>
     </div>
 
-    <div class="card hero-card" title="Number of OpenShift Container Platform versions with active compliance tracking and scan data">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="Number of OpenShift Container Platform versions with active compliance tracking and scan data">
       <h3>OCP Releases Covered</h3>
       <span class="number">{{ version_pages.size }}</span>
       <div class="stat-note">OCP {% for vp in version_pages %}{{ vp.version }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
@@ -123,7 +123,7 @@ layout: default
           {% assign cov_x10 = scan.summary.passing | times: 1000 | divided_by: scan.summary.total_checks %}
           {% assign cov_int = cov_x10 | divided_by: 10 %}
           {% assign cov_frac = cov_x10 | modulo: 10 %}
-          <div class="coverage-bar" style="margin: 0.5rem 0;" title="{{ scan.summary.passing }} of {{ scan.summary.total_checks }} checks passing across E8, CIS, Moderate, and PCI-DSS profiles">
+          <div class="coverage-bar" style="margin: 0.5rem 0;" data-tip="{{ scan.summary.passing }} of {{ scan.summary.total_checks }} checks passing across E8, CIS, Moderate, and PCI-DSS profiles">
             <div class="progress" style="width: {{ cov_int }}.{{ cov_frac }}%"></div>
             <span class="coverage-text">{{ cov_int }}.{{ cov_frac }}% passing ({{ scan.summary.passing }} / {{ scan.summary.total_checks }})</span>
           </div>
@@ -132,20 +132,20 @@ layout: default
 
         <div class="hv-groups">
           <div class="hv-group-bar">
-            {% if v_pass_vanilla > 0 %}<div class="hv-seg pass-vanilla" style="flex: {{ v_pass_vanilla }};" title="{{ v_pass_vanilla }} PASS (vanilla)"></div>{% endif %}
-            {% if v_verified > 0 %}<div class="hv-seg verified" style="flex: {{ v_verified }};" title="{{ v_verified }} Verified"></div>{% endif %}
-            {% if v_in_progress > 0 %}<div class="hv-seg in-progress" style="flex: {{ v_in_progress }};" title="{{ v_in_progress }} In Progress"></div>{% endif %}
-            {% if v_partial > 0 %}<div class="hv-seg partial" style="flex: {{ v_partial }};" title="{{ v_partial }} Partial"></div>{% endif %}
-            {% if v_pending > 0 %}<div class="hv-seg pending" style="flex: {{ v_pending }};" title="{{ v_pending }} Pending"></div>{% endif %}
-            {% if v_manual > 0 %}<div class="hv-seg manual" style="flex: {{ v_manual }};" title="{{ v_manual }} Manual"></div>{% endif %}
+            {% if v_pass_vanilla > 0 %}<div class="hv-seg pass-vanilla" style="flex: {{ v_pass_vanilla }};" data-tip="{{ v_pass_vanilla }} PASS (vanilla)"></div>{% endif %}
+            {% if v_verified > 0 %}<div class="hv-seg verified" style="flex: {{ v_verified }};" data-tip="{{ v_verified }} Verified"></div>{% endif %}
+            {% if v_in_progress > 0 %}<div class="hv-seg in-progress" style="flex: {{ v_in_progress }};" data-tip="{{ v_in_progress }} In Progress"></div>{% endif %}
+            {% if v_partial > 0 %}<div class="hv-seg partial" style="flex: {{ v_partial }};" data-tip="{{ v_partial }} Partial"></div>{% endif %}
+            {% if v_pending > 0 %}<div class="hv-seg pending" style="flex: {{ v_pending }};" data-tip="{{ v_pending }} Pending"></div>{% endif %}
+            {% if v_manual > 0 %}<div class="hv-seg manual" style="flex: {{ v_manual }};" data-tip="{{ v_manual }} Manual"></div>{% endif %}
           </div>
           <div class="hv-group-legend">
-            {% if v_pass_vanilla > 0 %}<span class="status-pill pass-vanilla legend-pill" title="{{ site.data.badge-descriptions.status.pass-vanilla }}">{{ v_pass_vanilla }} PASS</span>{% endif %}
-            {% if v_verified > 0 %}<span class="status-pill verified legend-pill" title="{{ site.data.badge-descriptions.status.verified }}">{{ v_verified }} Verified</span>{% endif %}
-            {% if v_in_progress > 0 %}<span class="status-pill in-progress legend-pill" title="{{ site.data.badge-descriptions.status.in_progress }}">{{ v_in_progress }} In Progress</span>{% endif %}
-            {% if v_partial > 0 %}<span class="status-pill partial legend-pill" title="{{ site.data.badge-descriptions.status.partial }}">{{ v_partial }} Partial</span>{% endif %}
-            {% if v_pending > 0 %}<span class="status-pill pending legend-pill" title="{{ site.data.badge-descriptions.status.pending }}">{{ v_pending }} Pending</span>{% endif %}
-            {% if v_manual > 0 %}<span class="status-pill on-hold legend-pill" title="Checks requiring manual review — no automated remediation available">{{ v_manual }} Manual</span>{% endif %}
+            {% if v_pass_vanilla > 0 %}<span class="status-pill pass-vanilla legend-pill" data-tip="{{ site.data.badge-descriptions.status.pass-vanilla }}">{{ v_pass_vanilla }} PASS</span>{% endif %}
+            {% if v_verified > 0 %}<span class="status-pill verified legend-pill" data-tip="{{ site.data.badge-descriptions.status.verified }}">{{ v_verified }} Verified</span>{% endif %}
+            {% if v_in_progress > 0 %}<span class="status-pill in-progress legend-pill" data-tip="{{ site.data.badge-descriptions.status.in_progress }}">{{ v_in_progress }} In Progress</span>{% endif %}
+            {% if v_partial > 0 %}<span class="status-pill partial legend-pill" data-tip="{{ site.data.badge-descriptions.status.partial }}">{{ v_partial }} Partial</span>{% endif %}
+            {% if v_pending > 0 %}<span class="status-pill pending legend-pill" data-tip="{{ site.data.badge-descriptions.status.pending }}">{{ v_pending }} Pending</span>{% endif %}
+            {% if v_manual > 0 %}<span class="status-pill on-hold legend-pill" data-tip="Checks requiring manual review — no automated remediation available">{{ v_manual }} Manual</span>{% endif %}
           </div>
         </div>
 
@@ -180,10 +180,10 @@ layout: default
       <tr>
         <td>{{ entry.scan_date | date: "%Y-%m-%d" }}</td>
         <td><strong>{{ entry.version }}</strong></td>
-        <td><span class="status-badge pass" title="Checks passing across all 4 profiles">{{ entry.summary.passing }}</span></td>
-        <td><span class="status-badge fail" title="Checks failing across all 4 profiles">{{ entry.summary.failing }}</span></td>
-        <td title="Checks requiring manual review">{{ entry.summary.manual }}</td>
-        <td>{% if entry.content_image %}<code title="{{ entry.content_image }}">{{ entry.content_image | split: "/" | last }}</code>{% else %}&mdash;{% endif %}</td>
+        <td><span class="status-badge pass" data-tip="Checks passing across all 4 profiles">{{ entry.summary.passing }}</span></td>
+        <td><span class="status-badge fail" data-tip="Checks failing across all 4 profiles">{{ entry.summary.failing }}</span></td>
+        <td data-tip="Checks requiring manual review">{{ entry.summary.manual }}</td>
+        <td>{% if entry.content_image %}<code data-tip="{{ entry.content_image }}">{{ entry.content_image | split: "/" | last }}</code>{% else %}&mdash;{% endif %}</td>
         <td>{{ entry.cluster | default: "&mdash;" }}</td>
       </tr>
       {% endfor %}
@@ -217,7 +217,7 @@ layout: default
         {% assign gid = group[0] %}
         {% assign g = group[1] %}
         <tr>
-          <td><a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" title="{{ gid }}: {{ g.title }}"><strong>{{ gid }}</strong></a></td>
+          <td><a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" data-tip="{{ gid }}: {{ g.title }}"><strong>{{ gid }}</strong></a></td>
           <td>{{ g.title }}</td>
           <td>
             {% if g.platform %}
@@ -235,20 +235,20 @@ layout: default
             <td style="text-align: center;">
               {% if vg %}
                 {% if vg.status contains "pass-vanilla" %}
-                  <span class="matrix-dot pass" title="{{ gid }}: {{ g.title }} — PASS (vanilla)"></span>
+                  <span class="matrix-dot pass" data-tip="{{ gid }}: {{ g.title }} — PASS (vanilla)"></span>
                 {% elsif vg.status == "verified" or vg.status == "verified-needed" %}
-                  <span class="matrix-dot verified" title="{{ gid }}: {{ g.title }} — Verified"></span>
+                  <span class="matrix-dot verified" data-tip="{{ gid }}: {{ g.title }} — Verified"></span>
                 {% elsif vg.status == "in_progress" %}
-                  <span class="matrix-dot in-progress" title="{{ gid }}: {{ g.title }} — In Progress"></span>
+                  <span class="matrix-dot in-progress" data-tip="{{ gid }}: {{ g.title }} — In Progress"></span>
                 {% elsif vg.status == "partial" %}
-                  <span class="matrix-dot partial" title="{{ gid }}: {{ g.title }} — Partial"></span>
+                  <span class="matrix-dot partial" data-tip="{{ gid }}: {{ g.title }} — Partial"></span>
                 {% elsif vg.status == "pending" %}
-                  <span class="matrix-dot pending" title="{{ gid }}: {{ g.title }} — Pending"></span>
+                  <span class="matrix-dot pending" data-tip="{{ gid }}: {{ g.title }} — Pending"></span>
                 {% else %}
-                  <span class="matrix-dot" title="{{ gid }}: {{ g.title }} — {{ vg.status }}"></span>
+                  <span class="matrix-dot" data-tip="{{ gid }}: {{ g.title }} — {{ vg.status }}"></span>
                 {% endif %}
               {% else %}
-                <span class="matrix-dot na" title="Not tracked">&mdash;</span>
+                <span class="matrix-dot na" data-tip="Not tracked">&mdash;</span>
               {% endif %}
             </td>
           {% endfor %}
@@ -285,22 +285,22 @@ layout: default
       {% endif %}
     {% endfor %}
 
-    <div class="card" title="Groups that pass on vanilla (unhardened) RHCOS — no remediation needed, resolved by OS upgrades">
+    <div class="card" data-tip="Groups that pass on vanilla (unhardened) RHCOS — no remediation needed, resolved by OS upgrades">
       <h3>Resolved Upstream</h3>
       <span class="number" style="color: var(--color-pass);">{{ us_pass }}</span>
       <div class="stat-note">Pass on vanilla RHCOS</div>
     </div>
-    <div class="card" title="Active pull requests submitted to ComplianceAsCode/content to fix broken remediations upstream">
+    <div class="card" data-tip="Active pull requests submitted to ComplianceAsCode/content to fix broken remediations upstream">
       <h3>PRs Open</h3>
       <span class="number" style="color: var(--color-info);">{{ us_pr }}</span>
       <div class="stat-note">Active upstream contributions</div>
     </div>
-    <div class="card" title="Remediations specific to RAN/Telco deployments, deployed via MachineConfig in telco-reference">
+    <div class="card" data-tip="Remediations specific to RAN/Telco deployments, deployed via MachineConfig in telco-reference">
       <h3>RAN-Specific</h3>
       <span class="number">{{ us_ran }}</span>
       <div class="stat-note">Deployed via MachineConfig</div>
     </div>
-    <div class="card" title="Groups requiring OCP platform-level API or CustomResource configuration changes">
+    <div class="card" data-tip="Groups requiring OCP platform-level API or CustomResource configuration changes">
       <h3>Platform Config</h3>
       <span class="number">{{ us_platform }}</span>
       <div class="stat-note">OCP API/CR settings</div>

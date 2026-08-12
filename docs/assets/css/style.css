@@ -1288,7 +1288,6 @@ button.quick-link {
   flex-wrap: wrap;
 }
 
-<<<<<<< HEAD
 /* Sortable columns */
 .sortable {
   cursor: pointer;
@@ -2672,3 +2671,55 @@ kbd {
 
 [data-theme="dark"] .matrix-dot.pending { background: #495057; border-color: #6c757d; }
 [data-theme="dark"] .hv-seg.pending { background: #495057; }
+
+/* CSS Tooltips */
+[data-tip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  color: #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  z-index: 1001;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  text-align: left;
+}
+
+[data-tip]:hover::after {
+  opacity: 1;
+}
+
+/* Tooltip below variant for elements near the top */
+[data-tip-pos="bottom"]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+
+/* Tooltip left-aligned for elements near the right edge */
+[data-tip-pos="left"]::after {
+  left: 0;
+  transform: none;
+}
+
+[data-theme="dark"] [data-tip]::after {
+  background: #334155;
+  color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
