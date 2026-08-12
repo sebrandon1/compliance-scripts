@@ -1,0 +1,88 @@
+{
+  "compliance_operator": [
+    {
+      "number": 1203,
+      "title": "Replace panics with error returns in production code",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1203",
+      "state": "open"
+    },
+    {
+      "number": 1197,
+      "title": "Add Dependabot config for GitHub Actions version updates",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1197",
+      "state": "closed"
+    },
+    {
+      "number": 1196,
+      "title": "Pin container image versions",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1196",
+      "state": "closed"
+    },
+    {
+      "number": 1187,
+      "title": "Propagate context through pkg/utils public API",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1187",
+      "state": "open"
+    },
+    {
+      "number": 1123,
+      "title": "Lowercase error strings per Go conventions",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1123",
+      "state": "open"
+    },
+    {
+      "number": 1122,
+      "title": "Fix typo in error message: retriving → retrieving",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1122",
+      "state": "open"
+    },
+    {
+      "number": 1121,
+      "title": "Remove deprecated GO111MODULE=auto from Makefile",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1121",
+      "state": "open"
+    },
+    {
+      "number": 1120,
+      "title": "Replace deprecated io/ioutil with io package",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1120",
+      "state": "open"
+    },
+    {
+      "number": 1119,
+      "title": "Rename KubeDepsNotFound to ErrKubeDepsNotFound",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1119",
+      "state": "open"
+    },
+    {
+      "number": 1118,
+      "title": "Fix typos in error variable names",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1118",
+      "state": "open"
+    },
+    {
+      "number": 1117,
+      "title": "Use strings.EqualFold for case-insensitive comparisons",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1117",
+      "state": "open"
+    },
+    {
+      "number": 1116,
+      "title": "Remove unused functions, variables, and struct fields",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1116",
+      "state": "open"
+    },
+    {
+      "number": 722,
+      "title": "Update tutorial readability",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/722",
+      "state": "merged"
+    },
+    {
+      "number": 721,
+      "title": "Update repository references from openshift to ComplianceAsCode org",
+      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/721",
+      "state": "open"
+    }
+  ]
+}

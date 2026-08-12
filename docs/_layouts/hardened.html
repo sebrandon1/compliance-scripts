@@ -440,6 +440,122 @@ layout: default
     </div>
   </div>
 
+  {% comment %} Build upstream PR table from tracking data {% endcomment %}
+  {% assign pr_rows = "" %}
+  {% for g in ref_tracking.groups %}
+    {% assign gid = g[0] %}
+    {% assign grp = g[1] %}
+    {% if grp.upstream %}
+      {% for u in grp.upstream %}
+        {% if u.pr_history %}
+          {% for pr in u.pr_history %}
+            {% if pr.url %}
+              {% assign row = gid | append: "|" | append: u.setting | append: "|" | append: pr.repo | append: "|" | append: pr.pr | append: "|" | append: pr.url | append: "|" | append: pr.state | append: "|" | append: pr.outcome %}
+              {% if pr_rows == "" %}
+                {% assign pr_rows = row %}
+              {% else %}
+                {% assign pr_rows = pr_rows | append: ";;;" | append: row %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+
+  {% if pr_rows != "" %}
+  {% assign pr_list = pr_rows | split: ";;;" %}
+  <h3 style="margin-top: 1.5em;">Upstream Remediation PRs</h3>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>Description</th>
+          <th>Repository</th>
+          <th>PR</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pr_row in pr_list %}
+          {% assign cols = pr_row | split: "|" %}
+          {% assign pr_gid = cols[0] %}
+          {% assign pr_desc = cols[1] %}
+          {% assign pr_repo = cols[2] %}
+          {% assign pr_num = cols[3] %}
+          {% assign pr_url = cols[4] %}
+          {% assign pr_state = cols[5] %}
+          {% assign pr_outcome = cols[6] %}
+          <tr>
+            <td><a href="{{ site.baseurl }}/groups/{{ pr_gid }}">{{ pr_gid }}</a></td>
+            <td>{{ pr_desc }}</td>
+            <td style="font-size: 0.85em;">{{ pr_repo }}</td>
+            <td><a href="{{ pr_url }}" target="_blank">#{{ pr_num }}</a></td>
+            <td>
+              {% if pr_state == "open" %}
+                <span class="detail-chip chip-upstream">Open</span>
+              {% elsif pr_state == "merged" %}
+                <span class="detail-chip chip-pass">Merged</span>
+              {% elsif pr_state == "closed" and pr_outcome == "redirected" %}
+                <span class="detail-chip chip-partial">Redirected</span>
+              {% elsif pr_state == "closed" %}
+                <span class="detail-chip chip-pending">Closed</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if site.data.upstream-prs.compliance_operator.size > 0 %}
+  {% assign co_prs = site.data.upstream-prs.compliance_operator %}
+  {% assign co_open = 0 %}
+  {% assign co_merged = 0 %}
+  {% assign co_closed = 0 %}
+  {% for pr in co_prs %}
+    {% if pr.state == "open" %}{% assign co_open = co_open | plus: 1 %}
+    {% elsif pr.state == "merged" %}{% assign co_merged = co_merged | plus: 1 %}
+    {% elsif pr.state == "closed" %}{% assign co_closed = co_closed | plus: 1 %}
+    {% endif %}
+  {% endfor %}
+  <h3 style="margin-top: 1.5em;">Upstream Compliance-Operator Changes</h3>
+  <p style="margin: 0.5em 0 1em; color: var(--color-text-muted); font-size: 0.9em;">
+    {{ co_prs.size }} PRs to <a href="https://github.com/ComplianceAsCode/compliance-operator/pulls/sebrandon1" target="_blank">ComplianceAsCode/compliance-operator</a>
+    — {{ co_open }} open, {{ co_merged }} merged, {{ co_closed }} closed
+  </p>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>PR</th>
+          <th>Title</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pr in co_prs %}
+          <tr>
+            <td><a href="{{ pr.url }}" target="_blank">#{{ pr.number }}</a></td>
+            <td>{{ pr.title }}</td>
+            <td>
+              {% if pr.state == "open" %}
+                <span class="detail-chip chip-upstream">Open</span>
+              {% elsif pr.state == "merged" %}
+                <span class="detail-chip chip-pass">Merged</span>
+              {% elsif pr.state == "closed" %}
+                <span class="detail-chip chip-pending">Closed</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   {{ content }}
 
 </div>
