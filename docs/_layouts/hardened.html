@@ -49,19 +49,15 @@ layout: default
     </div>
 
     {% comment %} Count upstream contributions {% endcomment %}
-    {% assign upstream_pr_count = 0 %}
     {% assign upstream_pass_count = 0 %}
     {% for g in t422.groups %}
-      {% if g[1].upstream_verdict contains "upstream-pr" or g[1].upstream_verdict == "upstream-candidate" %}
-        {% assign upstream_pr_count = upstream_pr_count | plus: 1 %}
-      {% endif %}
       {% if g[1].upstream_verdict == "pass-vanilla" %}
         {% assign upstream_pass_count = upstream_pass_count | plus: 1 %}
       {% endif %}
     {% endfor %}
     <div class="card hero-card" data-tip-pos="bottom" data-tip="Pull requests submitted to ComplianceAsCode/content upstream to fix broken remediations at the source">
       <h3>Upstream Contributions</h3>
-      <span class="number">{{ upstream_pr_count }} PR{% if upstream_pr_count != 1 %}s{% endif %}</span>
+      <span class="number">{{ t422.meta.upstream_pr_count }} PRs</span>
       <div class="stat-note">{{ upstream_pass_count }} groups resolved via RHEL/Fedora</div>
     </div>
 
@@ -376,7 +372,7 @@ layout: default
     </div>
     <div class="card" data-tip="Active pull requests submitted to ComplianceAsCode/content to fix broken remediations upstream">
       <h3>PRs Open</h3>
-      <span class="number" style="color: var(--color-info);">{{ us_pr }}</span>
+      <span class="number" style="color: var(--color-info);">{{ ref_tracking.meta.upstream_pr_count }}</span>
       <div class="stat-note">Active upstream contributions</div>
     </div>
     <div class="card" data-tip="Remediations specific to RAN/Telco deployments, deployed via MachineConfig in telco-reference">

@@ -44,7 +44,8 @@
           }
         ]
       }
-    ]
+    ],
+    "upstream_pr_count": 3
   },
   "groups": {
     "H1": {

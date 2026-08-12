@@ -6,7 +6,8 @@
     "epic": null,
     "last_sync": "2026-07-23",
     "last_upstream_audit": "2026-06-02",
-    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 1 upstream-candidate, 24 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable"
+    "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 1 upstream-candidate, 24 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable",
+    "upstream_pr_count": 3
   },
   "groups": {
     "H1": {

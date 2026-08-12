@@ -7,7 +7,8 @@
     "last_sync": "2026-07-23",
     "last_upstream_audit": "2026-07-21",
     "upstream_audit_note": "Full 40-group audit: 0 upstream-pr-exists, 1 upstream-candidate, 24 ran-only, 4 pass-vanilla, 4 platform-config, 1 site-specific, 6 not-applicable",
-    "upstream_research_url": "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6"
+    "upstream_research_url": "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6",
+    "upstream_pr_count": 3
   },
   "groups": {
     "H1": {
