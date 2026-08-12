@@ -39,7 +39,7 @@
       "pass": 1,
       "total": 1
     },
-    "note": "Upstream fix broken; manual PAM"
+    "note": "Needs custom PAM config"
   },
   "H3": {
     "4_21": {

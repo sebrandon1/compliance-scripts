@@ -239,7 +239,7 @@ layout: default
           {% endfor %}
         {% endif %}
         <tr data-has-pass="{{ has_any_pass }}">
-          <td><a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" data-tip="{{ gid }}: {{ g.title }}"><strong>{{ gid }}</strong></a></td>
+          <td><a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html"><strong>{{ gid }}</strong></a></td>
           <td>{{ g.title }}</td>
           <td>
             {% if g.platform %}
@@ -258,18 +258,18 @@ layout: default
             <td style="text-align: center;">
               {% if cell %}
                 {% if cell.fail == 0 and cell.pass > 0 %}
-                  <span class="matrix-dot pass" data-tip="{{ gid }}: {{ g.title }} — {{ cell.pass }}/{{ cell.total }} passing"></span>
+                  <span class="matrix-dot pass" title="{{ gid }}: {{ cell.pass }}/{{ cell.total }} passing"></span>
                 {% elsif cell.pass == 0 and cell.fail > 0 %}
-                  <span class="matrix-dot fail" data-tip="{{ gid }}: {{ g.title }} — {{ cell.fail }}/{{ cell.total }} failing"></span>
+                  <span class="matrix-dot fail" title="{{ gid }}: {{ cell.fail }}/{{ cell.total }} failing"></span>
                 {% elsif cell.pass > 0 and cell.fail > 0 %}
-                  <span class="matrix-dot partial" data-tip="{{ gid }}: {{ g.title }} — {{ cell.pass }} pass, {{ cell.fail }} fail of {{ cell.total }}"></span>
+                  <span class="matrix-dot partial" title="{{ gid }}: {{ cell.pass }} pass, {{ cell.fail }} fail of {{ cell.total }}"></span>
                 {% elsif cell.manual > 0 %}
-                  <span class="matrix-dot manual" data-tip="{{ gid }}: {{ g.title }} — {{ cell.manual }} manual checks"></span>
+                  <span class="matrix-dot manual" title="{{ gid }}: {{ cell.manual }} manual checks"></span>
                 {% else %}
-                  <span class="matrix-dot na" data-tip="{{ gid }}: {{ g.title }} — No scan data">&mdash;</span>
+                  <span class="matrix-dot na" title="{{ gid }}: No scan data">&mdash;</span>
                 {% endif %}
               {% else %}
-                <span class="matrix-dot na" data-tip="Not tracked">&mdash;</span>
+                <span class="matrix-dot na" title="Not tracked">&mdash;</span>
               {% endif %}
             </td>
           {% endfor %}
