@@ -69,11 +69,11 @@ check_image_exists() {
 		os_flag="--override-os linux --override-arch amd64"
 	fi
 
-	if podman manifest inspect "$image" &>/dev/null; then
+	if timeout 10 podman manifest inspect "$image" &>/dev/null; then
 		return 0
 	fi
 	# shellcheck disable=SC2086
-	if skopeo inspect $authfile_flag $os_flag "docker://$image" &>/dev/null; then
+	if timeout 10 skopeo inspect $authfile_flag $os_flag "docker://$image" &>/dev/null; then
 		return 0
 	fi
 	return 1
@@ -152,11 +152,12 @@ for ((i = SEARCH_MINOR; i >= 15; i--)); do
 	fi
 done
 
-# Fallback if no image found
+# Fallback if no image found by probing
 if [[ -z "$IMAGE_TAG" ]]; then
-	log_warn "Could not find compatible image by probing registry"
-	log_warn "Defaulting to v4.23 (known working version)"
-	IMAGE_TAG="v4.23"
+	log_warn "Could not find compatible image by probing registry (auth may be missing locally)"
+	FALLBACK_MINOR=$((SEARCH_MINOR - 1))
+	log_warn "Defaulting to v${SEARCH_MAJOR}.${FALLBACK_MINOR} (latest GA release)"
+	IMAGE_TAG="v${SEARCH_MAJOR}.${FALLBACK_MINOR}"
 fi
 
 log_info "Using image tag: ${IMAGE_TAG} for all CSI components"

@@ -123,6 +123,28 @@ layout: default
   </tbody>
 </table>
 
+{% if meta.scan_changes %}
+<details class="scan-changes" style="margin-top: 1rem;">
+  <summary><strong>Scan Change Log</strong> &mdash; Untracked check status changes between scans</summary>
+  {% for entry in meta.scan_changes %}
+  <div class="scan-change-entry">
+    <div class="scan-change-date">{{ entry.date }} (vs {{ entry.old_scan_date }})</div>
+    <ul>
+      {% for c in entry.changes %}
+      <li>
+        <code>{{ c.check }}</code>:
+        <span class="status-badge {{ c.from | downcase }}">{{ c.from }}</span> &rarr;
+        <span class="status-badge {{ c.to | downcase }}">{{ c.to }}</span>
+        <span class="platform-badge {{ c.platform }} inline-legend-badge">{{ c.platform | upcase }}</span>
+        {% if c.reason %}<br><em>{{ c.reason }}</em>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</details>
+{% endif %}
+
 <hr>
 
 <h2>Remediation Status</h2>

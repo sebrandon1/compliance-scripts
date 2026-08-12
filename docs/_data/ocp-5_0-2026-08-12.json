@@ -1,14 +1,15 @@
 {
-  "version": "4.22",
-  "scan_date": "2026-07-01T04:38:30Z",
+  "version": "5.0",
+  "scan_date": "2026-08-12T17:45:36Z",
   "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+  "content_image_digest": null,
   "summary": {
-    "total_checks": 916,
-    "passing": 334,
-    "failing": 503,
+    "total_checks": 914,
+    "passing": 336,
+    "failing": 499,
     "manual": 79,
     "skipped": 0,
-    "rhcos_failing": 454,
+    "rhcos_failing": 450,
     "ocp_failing": 49
   },
   "remediations": {
@@ -68,28 +69,10 @@
         "platform": "rhcos"
       },
       {
-        "name": "rhcos4-e8-master-no-empty-passwords",
-        "check": "rhcos4-e8-master-no-empty-passwords",
-        "status": "FAIL",
-        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
-        "severity": "high",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
         "name": "rhcos4-e8-worker-configure-crypto-policy",
         "check": "rhcos4-e8-worker-configure-crypto-policy",
         "status": "FAIL",
         "description": "Configure System Cryptography Policy\nTo configure the system cryptography policy to use ciphers only from the DEFAULT:NO-SHA1 policy, create a MachineConfig as follows:\n\n---\napiVersion: machineconfiguration.openshift.io/v1\nkind: MachineConfig\nmetadata:\n labels:\n   machineconfiguration.openshift.io/role: master\n name: 50-master-configure-crypto-policy\nspec:\n config:\n   ignition:\n     version: 3.1.0\n   systemd:\n     units:\n       - name: configure-crypto-policy.service\n         enabled: true\n         contents: |\n           [Unit]\n           Before=kubelet.service\n           [Service]\n           Type=oneshot\n           ExecStart=update-crypto-policies --set  DEFAULT:NO-SHA1 \n           RemainAfterExit=yes\n           [Install]\n           WantedBy=multi-user.target\n\nThis will configure the crypto policy appropriately in all the nodes labeled with the \"master\" role.\n\nNote that this needs to be done for each MachineConfigPool\n\nFor more information on how to configure nodes with the Machine Config Operator see the relevant documentation ( https://docs.openshift.com/container-platform/4.6/post_installation_configuration/machine-configuration-tasks.html ).\n\nThe rule checks if settings for selected crypto policy are configured as expected. Configuration files in the /etc/crypto-policies/back-ends are either symlinks to correct files provided by Crypto-policies package or they are regular files in case crypto policy customizations are applied. Crypto policies may be customized by crypto policy modules, in which case it is delimited from the base policy using a colon.",
-        "severity": "high",
-        "profile": "E8",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-e8-worker-no-empty-passwords",
-        "check": "rhcos4-e8-worker-no-empty-passwords",
-        "status": "FAIL",
-        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
         "severity": "high",
         "profile": "E8",
         "platform": "rhcos"
@@ -140,15 +123,6 @@
         "platform": "rhcos"
       },
       {
-        "name": "rhcos4-moderate-master-no-empty-passwords",
-        "check": "rhcos4-moderate-master-no-empty-passwords",
-        "status": "FAIL",
-        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
-        "severity": "high",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
         "name": "rhcos4-moderate-worker-configure-crypto-policy",
         "check": "rhcos4-moderate-worker-configure-crypto-policy",
         "status": "FAIL",
@@ -189,15 +163,6 @@
         "check": "rhcos4-moderate-worker-enable-fips-mode",
         "status": "FAIL",
         "description": "Enable FIPS Mode\nOpenShift has an installation-time flag that can enable FIPS mode for the cluster. The flag\n\nfips: true\n\nmust be enabled at install time in the\n\ninstall-config.yaml\n\nfile. If this rule fails on an installed cluster, then this is a permanent finding and cannot be fixed.",
-        "severity": "high",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-worker-no-empty-passwords",
-        "check": "rhcos4-moderate-worker-no-empty-passwords",
-        "status": "FAIL",
-        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
         "severity": "high",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -340,6 +305,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-moderate-cluster-version-operator-exists",
+        "check": "ocp4-moderate-cluster-version-operator-exists",
+        "status": "FAIL",
+        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-moderate-cluster-wide-proxy-set",
         "check": "ocp4-moderate-cluster-wide-proxy-set",
         "status": "FAIL",
@@ -452,15 +426,6 @@
         "check": "ocp4-moderate-resource-requests-limits-in-daemonset",
         "status": "FAIL",
         "description": "Ensure that all daemonsets has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "status": "FAIL",
-        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -4729,6 +4694,15 @@
         "platform": "rhcos"
       },
       {
+        "name": "rhcos4-e8-master-no-empty-passwords",
+        "check": "rhcos4-e8-master-no-empty-passwords",
+        "status": "PASS",
+        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
+        "severity": "high",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
         "name": "rhcos4-e8-master-selinux-state",
         "check": "rhcos4-e8-master-selinux-state",
         "status": "PASS",
@@ -4751,6 +4725,15 @@
         "check": "rhcos4-e8-worker-accounts-no-uid-except-zero",
         "status": "PASS",
         "description": "Verify Only Root Has UID 0\nIf any account other than root has a UID of 0, this misconfiguration should be investigated and the accounts other than root should be removed, locked or have their UID changed.\n\nIf the account is associated with system commands or applications the UID should be changed to one greater than \"0\" but less than \"1000.\" Otherwise assign a UID greater than \"1000\" that has not already been assigned.",
+        "severity": "high",
+        "profile": "E8",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-e8-worker-no-empty-passwords",
+        "check": "rhcos4-e8-worker-no-empty-passwords",
+        "status": "PASS",
+        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
         "severity": "high",
         "profile": "E8",
         "platform": "rhcos"
@@ -4792,6 +4775,15 @@
         "platform": "rhcos"
       },
       {
+        "name": "rhcos4-moderate-master-no-empty-passwords",
+        "check": "rhcos4-moderate-master-no-empty-passwords",
+        "status": "PASS",
+        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
+        "severity": "high",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
         "name": "rhcos4-moderate-master-selinux-state",
         "check": "rhcos4-moderate-master-selinux-state",
         "status": "PASS",
@@ -4814,6 +4806,15 @@
         "check": "rhcos4-moderate-worker-configure-kerberos-crypto-policy",
         "status": "PASS",
         "description": "Configure Kerberos to use System Crypto Policy\nCrypto Policies provide a centralized control over crypto algorithms usage of many packages. Kerberos is supported by crypto policy, but it's configuration may be set up to ignore it. To check that Crypto Policies settings for Kerberos are configured correctly, examine that there is a symlink at /etc/krb5.conf.d/crypto-policies targeting /etc/cypto-policies/back-ends/krb5.config. If the symlink exists, Kerberos is configured to use the system-wide crypto policy settings.",
+        "severity": "high",
+        "profile": "Moderate",
+        "platform": "rhcos"
+      },
+      {
+        "name": "rhcos4-moderate-worker-no-empty-passwords",
+        "check": "rhcos4-moderate-worker-no-empty-passwords",
+        "status": "PASS",
+        "description": "Prevent Login to Accounts With Empty Password\nIf an account is configured for password authentication but does not have an assigned password, it may be possible to log into the account without authentication. Remove any instances of the nullok in /etc/pam.d/system-auth and /etc/pam.d/password-auth to prevent logins with empty passwords.",
         "severity": "high",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -5613,15 +5614,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-moderate-cluster-version-operator-exists",
-        "check": "ocp4-moderate-cluster-version-operator-exists",
-        "status": "PASS",
-        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-moderate-cluster-version-operator-verify-integrity",
         "check": "ocp4-moderate-cluster-version-operator-verify-integrity",
         "status": "PASS",
@@ -5824,6 +5816,15 @@
         "check": "ocp4-moderate-rbac-debug-role-protects-pprof",
         "status": "PASS",
         "description": "Profiling is protected by RBAC\nEnsure that the cluster-debugger cluster role includes the /debug/pprof resource URL. This demonstrates that profiling is protected by RBAC, with a specific cluster role to allow access.",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "status": "PASS",
+        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -6882,15 +6883,6 @@
         "platform": "rhcos"
       },
       {
-        "name": "rhcos4-moderate-master-package-iptables-nft-installed",
-        "check": "rhcos4-moderate-master-package-iptables-nft-installed",
-        "status": "PASS",
-        "description": "Install iptables-nft Package\nThe iptables-nft package can be installed with the following command:\n\n$ sudo dnf install iptables-nft",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
         "name": "rhcos4-moderate-master-package-sudo-installed",
         "check": "rhcos4-moderate-master-package-sudo-installed",
         "status": "PASS",
@@ -7201,15 +7193,6 @@
         "check": "rhcos4-moderate-worker-package-audit-installed",
         "status": "PASS",
         "description": "Ensure the audit Subsystem is Installed\nThe audit package should be installed.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "rhcos"
-      },
-      {
-        "name": "rhcos4-moderate-worker-package-iptables-nft-installed",
-        "check": "rhcos4-moderate-worker-package-iptables-nft-installed",
-        "status": "PASS",
-        "description": "Install iptables-nft Package\nThe iptables-nft package can be installed with the following command:\n\n$ sudo dnf install iptables-nft",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "rhcos"
@@ -8201,37 +8184,7 @@
       "platform": "rhcos"
     }
   ],
-  "content_image_digest": null,
-  "previous_scans": [
-    {
-      "scan_date": "2026-06-04T19:01:51Z",
-      "content_image": null,
-      "operator_image": null,
-      "scanner_image": null,
-      "summary": {
-        "total_checks": 918,
-        "passing": 339,
-        "failing": 500,
-        "manual": 79,
-        "skipped": 0,
-        "rhcos_failing": 452,
-        "ocp_failing": 48
-      }
-    },
-    {
-      "scan_date": "2026-05-05T13:09:41Z",
-      "content_image": null,
-      "operator_image": null,
-      "scanner_image": null,
-      "summary": {
-        "total_checks": 910,
-        "passing": 773,
-        "failing": 58,
-        "manual": 79,
-        "skipped": 0,
-        "rhcos_failing": 14,
-        "ocp_failing": 44
-      }
-    }
-  ]
+  "exported_at": "2026-08-12T17:45:36Z",
+  "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
+  "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest"
 }

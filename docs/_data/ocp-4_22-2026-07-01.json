@@ -8201,37 +8201,5 @@
       "platform": "rhcos"
     }
   ],
-  "content_image_digest": null,
-  "previous_scans": [
-    {
-      "scan_date": "2026-06-04T19:01:51Z",
-      "content_image": null,
-      "operator_image": null,
-      "scanner_image": null,
-      "summary": {
-        "total_checks": 918,
-        "passing": 339,
-        "failing": 500,
-        "manual": 79,
-        "skipped": 0,
-        "rhcos_failing": 452,
-        "ocp_failing": 48
-      }
-    },
-    {
-      "scan_date": "2026-05-05T13:09:41Z",
-      "content_image": null,
-      "operator_image": null,
-      "scanner_image": null,
-      "summary": {
-        "total_checks": 910,
-        "passing": 773,
-        "failing": 58,
-        "manual": 79,
-        "skipped": 0,
-        "rhcos_failing": 14,
-        "ocp_failing": 44
-      }
-    }
-  ]
+  "content_image_digest": null
 }
