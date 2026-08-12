@@ -55,7 +55,7 @@ layout: default
         {% assign upstream_pass_count = upstream_pass_count | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <div class="card hero-card" data-tip-pos="bottom" data-tip="Pull requests submitted to ComplianceAsCode/content upstream to fix broken remediations at the source">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="Upstream pull requests to fix broken remediations (ComplianceAsCode, openshift/os)">
       <h3>Upstream Contributions</h3>
       <span class="number">{{ t422.meta.upstream_pr_count }} PRs</span>
       <div class="stat-note">{{ upstream_pass_count }} groups resolved via RHEL/Fedora</div>
@@ -370,7 +370,7 @@ layout: default
       <span class="number" style="color: var(--color-pass);">{{ us_pass }}</span>
       <div class="stat-note">Pass on vanilla RHCOS</div>
     </div>
-    <div class="card" data-tip="Active pull requests submitted to ComplianceAsCode/content to fix broken remediations upstream">
+    <div class="card" data-tip="Active upstream pull requests to fix broken remediations (ComplianceAsCode, openshift/os)">
       <h3>PRs Open</h3>
       <span class="number" style="color: var(--color-info);">{{ ref_tracking.meta.upstream_pr_count }}</span>
       <div class="stat-note">Active upstream contributions</div>
