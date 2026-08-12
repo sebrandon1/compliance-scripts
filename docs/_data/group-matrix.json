@@ -1,0 +1,802 @@
+{
+  "H1": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    }
+  },
+  "H2": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    }
+  },
+  "H3": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    }
+  },
+  "L1": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    }
+  },
+  "L2": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    }
+  },
+  "M1": {
+    "4_21": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 5,
+      "total": 7
+    },
+    "4_22": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 5,
+      "total": 7
+    },
+    "5_0": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 5,
+      "total": 7
+    }
+  },
+  "M10": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    }
+  },
+  "M11": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    }
+  },
+  "M12": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    }
+  },
+  "M13": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 11
+    },
+    "4_22": {
+      "fail": 11,
+      "manual": 0,
+      "pass": 0,
+      "total": 11
+    },
+    "5_0": {
+      "fail": 11,
+      "manual": 0,
+      "pass": 0,
+      "total": 11
+    }
+  },
+  "M14": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 12
+    },
+    "4_22": {
+      "fail": 12,
+      "manual": 0,
+      "pass": 0,
+      "total": 12
+    },
+    "5_0": {
+      "fail": 12,
+      "manual": 0,
+      "pass": 0,
+      "total": 12
+    }
+  },
+  "M15": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "4_22": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "5_0": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    }
+  },
+  "M16": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 32
+    },
+    "4_22": {
+      "fail": 32,
+      "manual": 0,
+      "pass": 0,
+      "total": 32
+    },
+    "5_0": {
+      "fail": 32,
+      "manual": 0,
+      "pass": 0,
+      "total": 32
+    }
+  },
+  "M17": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 22
+    },
+    "4_22": {
+      "fail": 22,
+      "manual": 0,
+      "pass": 0,
+      "total": 22
+    },
+    "5_0": {
+      "fail": 22,
+      "manual": 0,
+      "pass": 0,
+      "total": 22
+    }
+  },
+  "M18": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "4_22": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "5_0": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    }
+  },
+  "M19": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "4_22": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "5_0": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    }
+  },
+  "M2": {
+    "4_21": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "4_22": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "5_0": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    }
+  },
+  "M20": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "4_22": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "5_0": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    }
+  },
+  "M21": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 18
+    },
+    "4_22": {
+      "fail": 18,
+      "manual": 0,
+      "pass": 0,
+      "total": 18
+    },
+    "5_0": {
+      "fail": 18,
+      "manual": 0,
+      "pass": 0,
+      "total": 18
+    }
+  },
+  "M22": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 20
+    },
+    "4_22": {
+      "fail": 17,
+      "manual": 0,
+      "pass": 0,
+      "total": 20
+    },
+    "5_0": {
+      "fail": 17,
+      "manual": 0,
+      "pass": 0,
+      "total": 20
+    }
+  },
+  "M23": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "4_22": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "5_0": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    }
+  },
+  "M24": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "4_22": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    }
+  },
+  "M25": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "4_22": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "5_0": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    }
+  },
+  "M26": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "4_22": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    }
+  },
+  "M27": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "4_22": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "5_0": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    }
+  },
+  "M28": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "4_22": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "5_0": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    }
+  },
+  "M29": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 7
+    },
+    "4_22": {
+      "fail": 7,
+      "manual": 0,
+      "pass": 0,
+      "total": 7
+    },
+    "5_0": {
+      "fail": 7,
+      "manual": 0,
+      "pass": 0,
+      "total": 7
+    }
+  },
+  "M3": {
+    "4_21": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "4_22": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "5_0": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    }
+  },
+  "M30": {
+    "4_21": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "4_22": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "5_0": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    }
+  },
+  "M4": {
+    "4_21": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "4_22": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    }
+  },
+  "M5": {
+    "4_21": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "4_22": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "5_0": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    }
+  },
+  "M6": {
+    "4_21": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "4_22": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "5_0": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    }
+  },
+  "M7": {
+    "4_21": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "4_22": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    }
+  },
+  "M8": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    }
+  },
+  "M9": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "4_22": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    }
+  },
+  "MAN1": {
+    "4_21": {
+      "fail": 1,
+      "manual": 14,
+      "pass": 1,
+      "total": 19
+    },
+    "4_22": {
+      "fail": 3,
+      "manual": 15,
+      "pass": 1,
+      "total": 19
+    },
+    "5_0": {
+      "fail": 3,
+      "manual": 15,
+      "pass": 1,
+      "total": 19
+    }
+  },
+  "MAN2": {
+    "4_21": {
+      "fail": 2,
+      "manual": 5,
+      "pass": 0,
+      "total": 7
+    },
+    "4_22": {
+      "fail": 2,
+      "manual": 5,
+      "pass": 0,
+      "total": 7
+    },
+    "5_0": {
+      "fail": 2,
+      "manual": 5,
+      "pass": 0,
+      "total": 7
+    }
+  },
+  "MAN3": {
+    "4_21": {
+      "fail": 0,
+      "manual": 2,
+      "pass": 0,
+      "total": 2
+    },
+    "4_22": {
+      "fail": 0,
+      "manual": 2,
+      "pass": 0,
+      "total": 2
+    },
+    "5_0": {
+      "fail": 0,
+      "manual": 2,
+      "pass": 0,
+      "total": 2
+    }
+  },
+  "MAN4": {
+    "4_21": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "4_22": {
+      "fail": 3,
+      "manual": 2,
+      "pass": 0,
+      "total": 5
+    },
+    "5_0": {
+      "fail": 3,
+      "manual": 2,
+      "pass": 0,
+      "total": 5
+    }
+  },
+  "MAN5": {
+    "4_21": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 17
+    },
+    "4_22": {
+      "fail": 13,
+      "manual": 3,
+      "pass": 1,
+      "total": 17
+    },
+    "5_0": {
+      "fail": 14,
+      "manual": 3,
+      "pass": 0,
+      "total": 17
+    }
+  }
+}
