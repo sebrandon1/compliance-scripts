@@ -52,7 +52,7 @@ layout: default
     {% assign upstream_pr_count = 0 %}
     {% assign upstream_pass_count = 0 %}
     {% for g in t422.groups %}
-      {% if g[1].upstream_verdict contains "upstream-pr" %}
+      {% if g[1].upstream_verdict contains "upstream-pr" or g[1].upstream_verdict == "upstream-candidate" %}
         {% assign upstream_pr_count = upstream_pr_count | plus: 1 %}
       {% endif %}
       {% if g[1].upstream_verdict == "pass-vanilla" %}
@@ -61,7 +61,7 @@ layout: default
     {% endfor %}
     <div class="card hero-card" data-tip-pos="bottom" data-tip="Pull requests submitted to ComplianceAsCode/content upstream to fix broken remediations at the source">
       <h3>Upstream Contributions</h3>
-      <span class="number">3 PRs</span>
+      <span class="number">{{ upstream_pr_count }} PR{% if upstream_pr_count != 1 %}s{% endif %}</span>
       <div class="stat-note">{{ upstream_pass_count }} groups resolved via RHEL/Fedora</div>
     </div>
 
