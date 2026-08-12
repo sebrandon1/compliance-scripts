@@ -2544,3 +2544,131 @@ kbd {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Hardened Accomplishments Page */
+.hardened-page {
+  max-width: 1200px;
+}
+
+.hardened-subtitle {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero-stats {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.hero-card {
+  border-left-color: #667eea;
+}
+
+.hero-card.passing {
+  border-left-color: var(--color-pass);
+}
+
+/* Per-version cards */
+.hardened-versions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hardened-version-card {
+  background: var(--color-card);
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  border-left: 4px solid #667eea;
+}
+
+.hv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.hv-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.hv-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.hv-groups {
+  margin: 0.75rem 0;
+}
+
+.hv-group-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.hv-seg {
+  min-width: 4px;
+  transition: flex 0.3s;
+}
+
+.hv-seg.pass-vanilla { background: #28a745; }
+.hv-seg.verified { background: #218838; }
+.hv-seg.in-progress { background: #007bff; }
+.hv-seg.partial { background: #ffc107; }
+.hv-seg.pending { background: #e9ecef; }
+.hv-seg.manual { background: #adb5bd; }
+
+.hv-group-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.hv-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.hv-links a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.hv-links a:hover {
+  text-decoration: underline;
+}
+
+/* Matrix table */
+.matrix-scroll {
+  overflow-x: auto;
+}
+
+.matrix-table {
+  table-layout: auto;
+}
+
+.matrix-dot {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: default;
+}
+
+.matrix-dot.pass { background: #28a745; }
+.matrix-dot.verified { background: #218838; }
+.matrix-dot.in-progress { background: #007bff; }
+.matrix-dot.partial { background: #ffc107; }
+.matrix-dot.pending { background: #e9ecef; border: 1px solid #dee2e6; }
+.matrix-dot.na { background: none; color: var(--color-text-muted); font-size: 0.8rem; width: auto; height: auto; }
+
+[data-theme="dark"] .matrix-dot.pending { background: #495057; border-color: #6c757d; }
+[data-theme="dark"] .hv-seg.pending { background: #495057; }

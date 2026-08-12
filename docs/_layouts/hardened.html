@@ -1,0 +1,312 @@
+---
+layout: default
+---
+
+{% comment %}
+  Collect data from all versions for the hardened accomplishments dashboard.
+  Loops over all version pages and their tracking/scan data.
+{% endcomment %}
+
+{% assign version_pages = site.pages | where_exp: "p", "p.layout == 'version'" | sort: "version" | reverse %}
+
+<div class="hardened-page">
+
+  <h1>Hardening Accomplishments</h1>
+  <p class="hardened-subtitle">NIST 800-53 security hardening progress for Telco RAN deployments on OpenShift</p>
+
+  <!-- Hero Stats -->
+  <div class="summary-cards hero-stats">
+    <div class="card hero-card">
+      <h3>Remediation Groups</h3>
+      <span class="number">40</span>
+      <div class="stat-note">Across 4 profiles (E8, CIS, Moderate, PCI-DSS)</div>
+    </div>
+    <div class="card hero-card">
+      <h3>Individual Remediations</h3>
+      <span class="number">259</span>
+      <div class="stat-note">Mapped from 592 failing + manual checks</div>
+    </div>
+
+    {% comment %} Count verified groups from 4.22 tracking (most mature version) {% endcomment %}
+    {% assign t422_key = "tracking-4_22" %}
+    {% assign t422 = site.data[t422_key] %}
+    {% assign verified_total = 0 %}
+    {% for g in t422.groups %}
+      {% if g[1].status == "verified" or g[1].status contains "pass-vanilla" %}
+        {% assign verified_total = verified_total | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    <div class="card hero-card passing">
+      <h3>Groups Verified</h3>
+      <span class="number">{{ verified_total }} / 40</span>
+      <div class="stat-note">On OCP 4.22 (most mature)</div>
+    </div>
+
+    <div class="card hero-card">
+      <h3>RHCOS Failure Reduction</h3>
+      <span class="number">97%</span>
+      <div class="stat-note">452 &rarr; 14 node-level failures</div>
+    </div>
+
+    {% comment %} Count upstream contributions {% endcomment %}
+    {% assign upstream_pr_count = 0 %}
+    {% assign upstream_pass_count = 0 %}
+    {% for g in t422.groups %}
+      {% if g[1].upstream_verdict contains "upstream-pr" %}
+        {% assign upstream_pr_count = upstream_pr_count | plus: 1 %}
+      {% endif %}
+      {% if g[1].upstream_verdict == "pass-vanilla" %}
+        {% assign upstream_pass_count = upstream_pass_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    <div class="card hero-card">
+      <h3>Upstream Contributions</h3>
+      <span class="number">3 PRs</span>
+      <div class="stat-note">{{ upstream_pass_count }} groups resolved via RHEL/Fedora</div>
+    </div>
+
+    <div class="card hero-card">
+      <h3>OCP Releases Covered</h3>
+      <span class="number">{{ version_pages.size }}</span>
+      <div class="stat-note">OCP {% for vp in version_pages %}{{ vp.version }}{% unless forloop.last %}, {% endunless %}{% endfor %}</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Per-Version Progress -->
+  <h2>Progress by OCP Version</h2>
+
+  <div class="hardened-versions">
+    {% for vp in version_pages %}
+      {% assign vs = vp.version | replace: ".", "_" %}
+      {% assign scan_key = "ocp-" | append: vs %}
+      {% assign scan = site.data[scan_key] %}
+      {% assign trk_key = "tracking-" | append: vs %}
+      {% assign trk = site.data[trk_key] %}
+      {% unless trk %}{% assign trk = site.data.tracking %}{% endunless %}
+
+      {% assign v_pass_vanilla = 0 %}
+      {% assign v_verified = 0 %}
+      {% assign v_in_progress = 0 %}
+      {% assign v_pending = 0 %}
+      {% assign v_partial = 0 %}
+      {% assign v_manual = 0 %}
+      {% for g in trk.groups %}
+        {% if g[1].status contains "pass-vanilla" %}
+          {% assign v_pass_vanilla = v_pass_vanilla | plus: 1 %}
+        {% elsif g[1].status == "verified" or g[1].status == "verified-needed" %}
+          {% assign v_verified = v_verified | plus: 1 %}
+        {% elsif g[1].status == "in_progress" %}
+          {% assign v_in_progress = v_in_progress | plus: 1 %}
+        {% elsif g[1].status == "pending" %}
+          {% assign v_pending = v_pending | plus: 1 %}
+        {% elsif g[1].status == "partial" %}
+          {% assign v_partial = v_partial | plus: 1 %}
+        {% endif %}
+        {% if g[0] contains "MAN" %}
+          {% assign v_manual = v_manual | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+      {% assign v_done = v_pass_vanilla | plus: v_verified %}
+
+      <div class="hardened-version-card">
+        <div class="hv-header">
+          <h3><a href="{{ site.baseurl }}/versions/{{ vp.version }}.html">OCP {{ vp.version }}</a></h3>
+          {% if scan %}
+          <span class="hv-date">Last scan: {{ scan.scan_date | date: "%Y-%m-%d" }}</span>
+          {% endif %}
+        </div>
+
+        {% if scan and scan.summary.total_checks > 0 %}
+        <div class="hv-coverage">
+          {% assign cov_x10 = scan.summary.passing | times: 1000 | divided_by: scan.summary.total_checks %}
+          {% assign cov_int = cov_x10 | divided_by: 10 %}
+          {% assign cov_frac = cov_x10 | modulo: 10 %}
+          <div class="coverage-bar" style="margin: 0.5rem 0;">
+            <div class="progress" style="width: {{ cov_int }}.{{ cov_frac }}%"></div>
+            <span class="coverage-text">{{ cov_int }}.{{ cov_frac }}% passing ({{ scan.summary.passing }} / {{ scan.summary.total_checks }})</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="hv-groups">
+          <div class="hv-group-bar">
+            {% if v_pass_vanilla > 0 %}<div class="hv-seg pass-vanilla" style="flex: {{ v_pass_vanilla }};" title="{{ v_pass_vanilla }} PASS (vanilla)"></div>{% endif %}
+            {% if v_verified > 0 %}<div class="hv-seg verified" style="flex: {{ v_verified }};" title="{{ v_verified }} Verified"></div>{% endif %}
+            {% if v_in_progress > 0 %}<div class="hv-seg in-progress" style="flex: {{ v_in_progress }};" title="{{ v_in_progress }} In Progress"></div>{% endif %}
+            {% if v_partial > 0 %}<div class="hv-seg partial" style="flex: {{ v_partial }};" title="{{ v_partial }} Partial"></div>{% endif %}
+            {% if v_pending > 0 %}<div class="hv-seg pending" style="flex: {{ v_pending }};" title="{{ v_pending }} Pending"></div>{% endif %}
+            {% if v_manual > 0 %}<div class="hv-seg manual" style="flex: {{ v_manual }};" title="{{ v_manual }} Manual"></div>{% endif %}
+          </div>
+          <div class="hv-group-legend">
+            {% if v_pass_vanilla > 0 %}<span class="status-pill pass-vanilla legend-pill">{{ v_pass_vanilla }} PASS</span>{% endif %}
+            {% if v_verified > 0 %}<span class="status-pill verified legend-pill">{{ v_verified }} Verified</span>{% endif %}
+            {% if v_in_progress > 0 %}<span class="status-pill in-progress legend-pill">{{ v_in_progress }} In Progress</span>{% endif %}
+            {% if v_partial > 0 %}<span class="status-pill partial legend-pill">{{ v_partial }} Partial</span>{% endif %}
+            {% if v_pending > 0 %}<span class="status-pill pending legend-pill">{{ v_pending }} Pending</span>{% endif %}
+            {% if v_manual > 0 %}<span class="status-pill on-hold legend-pill">{{ v_manual }} Manual</span>{% endif %}
+          </div>
+        </div>
+
+        <div class="hv-links">
+          <a href="{{ site.baseurl }}/versions/{{ vp.version }}/remediations.html">Remediations</a>
+          <a href="{{ site.baseurl }}/versions/{{ vp.version }}/groups/">Groups</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <hr>
+
+  <!-- Scan History Timeline -->
+  <h2>Scan History</h2>
+
+  <table class="status-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Version</th>
+        <th>Passing</th>
+        <th>Failing</th>
+        <th>Manual</th>
+        <th>Content Image</th>
+        <th>Cluster</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% assign history = site.data.scan-history | sort: "scan_date" | reverse %}
+      {% for entry in history %}
+      <tr>
+        <td>{{ entry.scan_date | date: "%Y-%m-%d" }}</td>
+        <td><strong>{{ entry.version }}</strong></td>
+        <td><span class="status-badge pass">{{ entry.summary.passing }}</span></td>
+        <td><span class="status-badge fail">{{ entry.summary.failing }}</span></td>
+        <td>{{ entry.summary.manual }}</td>
+        <td>{% if entry.content_image %}<code>{{ entry.content_image | split: "/" | last }}</code>{% else %}&mdash;{% endif %}</td>
+        <td>{{ entry.cluster | default: "&mdash;" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <hr>
+
+  <!-- Group Completion Matrix -->
+  <h2>Group Status by Version</h2>
+
+  <p>Status of each remediation group across OCP versions. Hover for details.</p>
+
+  {% assign ref_key = "tracking-4_22" %}
+  {% assign ref_tracking = site.data[ref_key] %}
+
+  <div class="matrix-scroll">
+  <table class="status-table matrix-table">
+    <thead>
+      <tr>
+        <th style="width: 5%;">Group</th>
+        <th>Category</th>
+        <th style="width: 8%;">Platform</th>
+        {% for vp in version_pages %}
+        <th style="width: 10%; text-align: center;">{{ vp.version }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for group in ref_tracking.groups %}
+        {% assign gid = group[0] %}
+        {% assign g = group[1] %}
+        <tr>
+          <td><strong>{{ gid }}</strong></td>
+          <td>{{ g.title }}</td>
+          <td>
+            {% if g.platform %}
+            <span class="platform-badge {{ g.platform }}" style="font-size: 0.65rem; padding: 0.1rem 0.3rem;">
+              {% if g.platform == "rhcos" %}RHCOS{% elsif g.platform == "ocp" %}OCP{% elsif g.platform == "mixed" %}Mixed{% endif %}
+            </span>
+            {% endif %}
+          </td>
+          {% for vp in version_pages %}
+            {% assign vs = vp.version | replace: ".", "_" %}
+            {% assign vtk = "tracking-" | append: vs %}
+            {% assign vtrk = site.data[vtk] %}
+            {% unless vtrk %}{% assign vtrk = site.data.tracking %}{% endunless %}
+            {% assign vg = vtrk.groups[gid] %}
+            <td style="text-align: center;">
+              {% if vg %}
+                {% if vg.status contains "pass-vanilla" %}
+                  <span class="matrix-dot pass" title="PASS (vanilla)"></span>
+                {% elsif vg.status == "verified" or vg.status == "verified-needed" %}
+                  <span class="matrix-dot verified" title="Verified"></span>
+                {% elsif vg.status == "in_progress" %}
+                  <span class="matrix-dot in-progress" title="In Progress"></span>
+                {% elsif vg.status == "partial" %}
+                  <span class="matrix-dot partial" title="Partial"></span>
+                {% elsif vg.status == "pending" %}
+                  <span class="matrix-dot pending" title="Pending"></span>
+                {% else %}
+                  <span class="matrix-dot" title="{{ vg.status }}"></span>
+                {% endif %}
+              {% else %}
+                <span class="matrix-dot na" title="Not tracked">&mdash;</span>
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <hr>
+
+  <!-- Upstream Status -->
+  <h2>Upstream Strategy</h2>
+
+  <div class="summary-cards">
+    {% assign us_ran = 0 %}
+    {% assign us_platform = 0 %}
+    {% assign us_pass = 0 %}
+    {% assign us_candidate = 0 %}
+    {% assign us_pr = 0 %}
+    {% assign us_site = 0 %}
+    {% assign us_na = 0 %}
+    {% for g in ref_tracking.groups %}
+      {% case g[1].upstream_verdict %}
+        {% when "ran-only" %}{% assign us_ran = us_ran | plus: 1 %}
+        {% when "platform-config" %}{% assign us_platform = us_platform | plus: 1 %}
+        {% when "pass-vanilla" %}{% assign us_pass = us_pass | plus: 1 %}
+        {% when "upstream-candidate" %}{% assign us_candidate = us_candidate | plus: 1 %}
+        {% when "site-specific" %}{% assign us_site = us_site | plus: 1 %}
+        {% when "not-applicable" %}{% assign us_na = us_na | plus: 1 %}
+      {% endcase %}
+      {% if g[1].upstream_verdict contains "upstream-pr" %}
+        {% assign us_pr = us_pr | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    <div class="card">
+      <h3>Resolved Upstream</h3>
+      <span class="number" style="color: var(--color-pass);">{{ us_pass }}</span>
+      <div class="stat-note">Pass on vanilla RHCOS</div>
+    </div>
+    <div class="card">
+      <h3>PRs Open</h3>
+      <span class="number" style="color: var(--color-info);">{{ us_pr }}</span>
+      <div class="stat-note">Active upstream contributions</div>
+    </div>
+    <div class="card">
+      <h3>RAN-Specific</h3>
+      <span class="number">{{ us_ran }}</span>
+      <div class="stat-note">Deployed via MachineConfig</div>
+    </div>
+    <div class="card">
+      <h3>Platform Config</h3>
+      <span class="number">{{ us_platform }}</span>
+      <div class="stat-note">OCP API/CR settings</div>
+    </div>
+  </div>
+
+  {{ content }}
+
+</div>
