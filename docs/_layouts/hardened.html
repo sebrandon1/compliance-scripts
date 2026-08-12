@@ -204,7 +204,7 @@ layout: default
       <span class="matrix-dot manual" style="vertical-align: middle;"></span> Manual
     </p>
     <label style="font-size: 0.85rem; cursor: pointer; user-select: none;">
-      <input type="checkbox" id="hide-non-hardened" onchange="toggleNonHardened()" style="margin-right: 0.3rem;">
+      <input type="checkbox" id="hide-non-hardened" onchange="toggleNonHardened()" checked style="margin-right: 0.3rem;">
       Hide non-hardened groups
     </label>
   </div>
@@ -292,6 +292,7 @@ layout: default
       }
     });
   }
+  toggleNonHardened();
   </script>
 
   <hr>
