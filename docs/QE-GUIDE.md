@@ -15,17 +15,17 @@ This guide explains how to use the compliance validation tooling to verify scan 
 After running compliance scans, capture the current results as your expected baseline:
 
 ```bash
-make generate-expected OCP_VERSION=4.22
+make generate-expected OCP_VERSION=5.0
 ```
 
-This creates `tests/expected-results-4.22.json` with all E8 check results from your cluster.
+This creates `tests/expected-results-5.0.json` with all E8 check results from your cluster.
 
 ### 2. Validate results match the baseline
 
 After applying remediations or on a new Z-stream release, re-run scans and validate:
 
 ```bash
-make validate-compliance EXPECTED=tests/expected-results-4.22.json
+make validate-compliance EXPECTED=tests/expected-results-5.0.json
 ```
 
 Output shows:
@@ -39,8 +39,9 @@ We maintain baselines for tested versions:
 
 | File | Version | Checks |
 |------|---------|--------|
-| `tests/expected-results-4.21.json` | OCP 4.21 | 106 E8 checks |
+| `tests/expected-results-5.0.json` | OCP 5.0 | 112 E8 checks |
 | `tests/expected-results-4.22.json` | OCP 4.22 | 106 E8 checks |
+| `tests/expected-results-4.21.json` | OCP 4.21 | 106 E8 checks |
 
 These are validated nightly in CI against CRC clusters.
 
@@ -48,7 +49,7 @@ These are validated nightly in CI against CRC clusters.
 
 If your cluster uses a TailoredProfile (e.g., `rhcos4-e8-ran-hardened`), the scan may produce different check names or `notapplicable` results. In this case:
 
-1. Generate your own baseline: `make generate-expected OCP_VERSION=4.22`
+1. Generate your own baseline: `make generate-expected OCP_VERSION=5.0`
 2. Review the generated JSON — some checks may be missing (notapplicable)
 3. Use your custom baseline for validation going forward
 
@@ -56,6 +57,7 @@ If your cluster uses a TailoredProfile (e.g., `rhcos4-e8-ran-hardened`), the sca
 
 Each failing check is mapped to a remediation group. View the full tracking dashboard:
 
+- [OCP 5.0 Groups](https://sebrandon1.github.io/compliance-scripts/versions/5.0/groups/)
 - [OCP 4.22 Groups](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
 - [OCP 4.21 Groups](https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/)
 
