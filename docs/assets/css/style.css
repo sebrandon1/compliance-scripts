@@ -2048,7 +2048,7 @@ kbd {
 }
 
 /* Table first column gradient text dark mode fix */
-[data-theme="dark"] table td:first-child a {
+[data-theme="dark"] table td:first-child a:not([href*="/pull/"]) {
   background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
   -webkit-background-clip: text;
   background-clip: text;

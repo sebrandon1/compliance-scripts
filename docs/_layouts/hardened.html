@@ -526,8 +526,8 @@ layout: default
     <table>
       <thead>
         <tr>
-          <th>PR</th>
           <th>Title</th>
+          <th>PR</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -535,8 +535,8 @@ layout: default
         {% for pr in co_prs %}
           {% unless pr.state == "closed" %}
           <tr>
-            <td><a href="{{ pr.url }}" target="_blank">#{{ pr.number }}</a></td>
             <td>{{ pr.title }}</td>
+            <td><a href="{{ pr.url }}" target="_blank">#{{ pr.number }}</a></td>
             <td>
               {% if pr.state == "open" %}
                 <span class="detail-chip chip-upstream">Open</span>
