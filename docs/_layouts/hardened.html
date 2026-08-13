@@ -246,9 +246,13 @@ layout: default
       <span class="matrix-dot fail" style="vertical-align: middle;"></span> All failing &nbsp;
       <span class="matrix-dot manual" style="vertical-align: middle;"></span> Manual
     </p>
-    <label style="font-size: 0.85rem; cursor: pointer; user-select: none;">
-      <input type="checkbox" id="hide-non-hardened" onchange="toggleNonHardened()" checked style="margin-right: 0.3rem;">
+    <label style="font-size: 0.85rem; cursor: pointer; user-select: none; margin-right: 1rem;">
+      <input type="checkbox" id="hide-non-hardened" onchange="toggleFilters()" checked style="margin-right: 0.3rem;">
       Hide non-hardened groups
+    </label>
+    <label style="font-size: 0.85rem; cursor: pointer; user-select: none;">
+      <input type="checkbox" id="hide-manual" onchange="toggleFilters()" style="margin-right: 0.3rem;">
+      Hide manual-review groups
     </label>
   </div>
 
@@ -290,7 +294,9 @@ layout: default
           {% endif %}
         {% endfor %}
 
-        <tr class="group-row expandable" data-has-pass="{{ has_any_pass }}" onclick="toggleGroupDetail(this)" style="cursor: pointer;">
+        {% assign is_manual = false %}
+        {% if gid contains "MAN" %}{% assign is_manual = true %}{% endif %}
+        <tr class="group-row expandable" data-has-pass="{{ has_any_pass }}" data-manual="{{ is_manual }}" onclick="toggleGroupDetail(this)" style="cursor: pointer;">
           <td><span class="expand-arrow">&#x25B6;</span> <a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" onclick="event.stopPropagation();"><strong>{{ gid }}</strong></a></td>
           <td>{{ g.title }}</td>
           <td>
@@ -375,20 +381,31 @@ layout: default
       }
     }
   }
-  function toggleNonHardened() {
-    var hide = document.getElementById('hide-non-hardened').checked;
+  function toggleFilters() {
+    var hideNonHardened = document.getElementById('hide-non-hardened').checked;
+    var hideManual = document.getElementById('hide-manual').checked;
     var rows = document.querySelectorAll('#matrix-table tbody tr');
     rows.forEach(function(row) {
-      if (hide && row.getAttribute('data-has-pass') === 'false') {
-        row.style.display = 'none';
-      } else if (row.classList.contains('group-detail')) {
-        // detail rows stay hidden unless explicitly expanded
-      } else {
-        row.style.display = '';
+      if (row.classList.contains('group-detail')) {
+        return;
+      }
+      var hidden = false;
+      if (hideNonHardened && row.getAttribute('data-has-pass') === 'false') {
+        hidden = true;
+      }
+      if (hideManual && row.getAttribute('data-manual') === 'true') {
+        hidden = true;
+      }
+      row.style.display = hidden ? 'none' : '';
+      if (hidden) {
+        var detail = row.nextElementSibling;
+        if (detail && detail.classList.contains('group-detail')) {
+          detail.style.display = 'none';
+        }
       }
     });
   }
-  toggleNonHardened();
+  toggleFilters();
   </script>
 
   <hr>
