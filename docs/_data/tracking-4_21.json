@@ -1087,6 +1087,14 @@
                 "https://github.com/coreos/fedora-coreos-tracker/issues/249",
                 "https://bugzilla.redhat.com/show_bug.cgi?id=1700056"
               ]
+            },
+            {
+              "repo": "openshift/os",
+              "pr": 1951,
+              "url": "https://github.com/openshift/os/pull/1951",
+              "state": "open",
+              "outcome": null,
+              "reason": null
             }
           ]
         }
