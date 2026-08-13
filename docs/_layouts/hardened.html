@@ -266,6 +266,7 @@ layout: default
         <th style="width: 5%;">Group</th>
         <th>Category</th>
         <th style="width: 8%;">Platform</th>
+        <th style="width: 5%; text-align: center;">Checks</th>
         {% for vp in version_pages %}
         <th style="width: 8%; text-align: center;">{{ vp.version }}</th>
         {% endfor %}
@@ -306,6 +307,9 @@ layout: default
             </span>
             {% endif %}
           </td>
+          {% assign latest_vs = version_pages.first.version | replace: ".", "_" %}
+          {% assign latest_cell = gm[latest_vs] %}
+          <td style="text-align: center; font-size: 0.85rem;">{% if latest_cell %}{{ latest_cell.total }}{% else %}&mdash;{% endif %}</td>
           {% for vp in version_pages %}
             {% assign vs = vp.version | replace: ".", "_" %}
             {% if gm %}

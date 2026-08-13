@@ -63,7 +63,7 @@
       "total": 1
     },
     "description": "Configures the SSH daemon to reject login attempts using empty passwords.",
-    "note": "Fixed in RHCOS 9.8+"
+    "note": "Hardened in RHCOS 9.8+"
   },
   "L1": {
     "4_21": {
@@ -85,7 +85,7 @@
       "total": 1
     },
     "description": "Sets SSH daemon log level to capture detailed connection and authentication events. Passes by default on RHCOS 9.8+.",
-    "note": "Fixed in RHCOS 9.8+"
+    "note": "Hardened in RHCOS 9.8+"
   },
   "L2": {
     "4_21": {
@@ -129,7 +129,7 @@
       "total": 7
     },
     "description": "Hardens SSH daemon settings: disables root login, GSSAPI, rhosts, user known hosts, user environment, and enables strict mode.",
-    "note": "5/7 pass vanilla RHCOS 9.8"
+    "note": "5/7 Hardened vanilla RHCOS 9.8"
   },
   "M10": {
     "4_21": {
@@ -173,7 +173,7 @@
       "total": 1
     },
     "description": "Ensures the cluster ingress controller uses strong TLS cipher suites. Passes by default on OCP 4.22+.",
-    "note": "Fixed in OCP 4.22+"
+    "note": "Hardened in OCP 4.22+"
   },
   "M12": {
     "4_21": {
