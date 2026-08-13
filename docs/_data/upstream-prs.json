@@ -6,19 +6,7 @@
       "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1203",
       "state": "open"
     },
-    {
-      "number": 1197,
-      "title": "Add Dependabot config for GitHub Actions version updates",
-      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1197",
-      "state": "closed"
-    },
-    {
-      "number": 1196,
-      "title": "Pin container image versions",
-      "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1196",
-      "state": "closed"
-    },
-    {
+{
       "number": 1187,
       "title": "Propagate context through pkg/utils public API",
       "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1187",

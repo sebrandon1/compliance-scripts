@@ -347,8 +347,8 @@ table code {
   font-size: 0.85rem;
 }
 
-/* Group ID styling - first column */
-table td:first-child a {
+/* Group ID styling - first column, only for group links (not PR links) */
+table td:first-child a:not([href*="/pull/"]) {
   font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
   font-weight: 600;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -376,6 +376,7 @@ table td a[href*="/pull/"] {
   align-items: center;
   padding: 0.25rem 0.5rem;
   background: var(--color-code-bg);
+  color: var(--color-link);
   border-radius: 4px;
   font-size: 0.85rem;
   font-weight: 500;

@@ -487,6 +487,7 @@ layout: default
           {% assign pr_url = cols[4] %}
           {% assign pr_state = cols[5] %}
           {% assign pr_outcome = cols[6] %}
+          {% unless pr_state == "closed" %}
           <tr>
             <td><a href="{{ site.baseurl }}/groups/{{ pr_gid }}">{{ pr_gid }}</a></td>
             <td>{{ pr_desc }}</td>
@@ -497,13 +498,10 @@ layout: default
                 <span class="detail-chip chip-upstream">Open</span>
               {% elsif pr_state == "merged" %}
                 <span class="detail-chip chip-pass">Merged</span>
-              {% elsif pr_state == "closed" and pr_outcome == "redirected" %}
-                <span class="detail-chip chip-partial">Redirected</span>
-              {% elsif pr_state == "closed" %}
-                <span class="detail-chip chip-pending">Closed</span>
               {% endif %}
             </td>
           </tr>
+          {% endunless %}
         {% endfor %}
       </tbody>
     </table>
@@ -514,17 +512,15 @@ layout: default
   {% assign co_prs = site.data.upstream-prs.compliance_operator %}
   {% assign co_open = 0 %}
   {% assign co_merged = 0 %}
-  {% assign co_closed = 0 %}
   {% for pr in co_prs %}
     {% if pr.state == "open" %}{% assign co_open = co_open | plus: 1 %}
     {% elsif pr.state == "merged" %}{% assign co_merged = co_merged | plus: 1 %}
-    {% elsif pr.state == "closed" %}{% assign co_closed = co_closed | plus: 1 %}
     {% endif %}
   {% endfor %}
   <h3 style="margin-top: 1.5em;">Upstream Compliance-Operator Changes</h3>
   <p style="margin: 0.5em 0 1em; color: var(--color-text-muted); font-size: 0.9em;">
-    {{ co_prs.size }} PRs to <a href="https://github.com/ComplianceAsCode/compliance-operator/pulls/sebrandon1" target="_blank">ComplianceAsCode/compliance-operator</a>
-    — {{ co_open }} open, {{ co_merged }} merged, {{ co_closed }} closed
+    {{ co_open | plus: co_merged }} PRs to <a href="https://github.com/ComplianceAsCode/compliance-operator/pulls/sebrandon1" target="_blank">ComplianceAsCode/compliance-operator</a>
+    — {{ co_open }} open, {{ co_merged }} merged
   </p>
   <div class="table-wrapper">
     <table>
@@ -537,6 +533,7 @@ layout: default
       </thead>
       <tbody>
         {% for pr in co_prs %}
+          {% unless pr.state == "closed" %}
           <tr>
             <td><a href="{{ pr.url }}" target="_blank">#{{ pr.number }}</a></td>
             <td>{{ pr.title }}</td>
@@ -545,11 +542,10 @@ layout: default
                 <span class="detail-chip chip-upstream">Open</span>
               {% elsif pr.state == "merged" %}
                 <span class="detail-chip chip-pass">Merged</span>
-              {% elsif pr.state == "closed" %}
-                <span class="detail-chip chip-pending">Closed</span>
               {% endif %}
             </td>
           </tr>
+          {% endunless %}
         {% endfor %}
       </tbody>
     </table>
