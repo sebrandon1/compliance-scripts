@@ -162,6 +162,7 @@
           <div class="shortcut"><kbd>d</kbd> Toggle dark mode</div>
           <div class="shortcut"><kbd>?</kbd> Show this help</div>
           <div class="shortcut"><kbd>g</kbd> <kbd>h</kbd> Go to home</div>
+          <div class="shortcut"><kbd>g</kbd> <kbd>e</kbd> Go to Hardened</div>
         </div>
         <div class="shortcut-group">
           <div class="shortcut-title">Filters</div>
@@ -229,10 +230,12 @@
       return;
     }
 
-    // Handle two-key sequences (g + h for home)
+    // Handle two-key sequences (g + h for home, g + e for Hardened)
     if (waitingForSecondKey) {
       if (firstKey === 'g' && e.key === 'h') {
         window.location.href = '{{ "/" | relative_url }}';
+      } else if (firstKey === 'g' && e.key === 'e') {
+        window.location.href = '{{ "/hardened" | relative_url }}';
       }
       waitingForSecondKey = false;
       firstKey = '';
