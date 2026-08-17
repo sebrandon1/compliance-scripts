@@ -174,8 +174,8 @@ layout: default
     <tbody>
       {% assign history = site.data.scan-history | sort: "scan_date" | reverse %}
       {% for entry in history %}
-      <tr class="scan-row{% if entry.profiles %} expandable{% endif %}" {% if entry.profiles %}onclick="toggleScanDetail(this)" style="cursor: pointer;"{% endif %}>
-        <td class="scan-expand">{% if entry.profiles %}<span class="expand-arrow">&#x25B6;</span>{% endif %}</td>
+      <tr class="scan-row{% if entry.profiles %} expandable{% endif %}" {% if entry.profiles %}tabindex="0" aria-expanded="false" aria-controls="scan-detail-{{ forloop.index }}" onclick="toggleExpandableRow(this)" style="cursor: pointer;"{% endif %}>
+        <td class="scan-expand">{% if entry.profiles %}<button type="button" class="expand-toggle" aria-label="Expand details" tabindex="-1"><span class="expand-arrow">&#x25B6;</span></button>{% endif %}</td>
         <td>{{ entry.scan_date | date: "%Y-%m-%d" }}</td>
         <td><strong>{{ entry.version }}</strong></td>
         <td><span class="status-badge pass">{{ entry.summary.passing }}</span></td>
@@ -185,7 +185,7 @@ layout: default
         <td>{{ entry.cluster | default: "&mdash;" }}</td>
       </tr>
       {% if entry.profiles %}
-      <tr class="scan-detail" style="display: none;">
+      <tr class="scan-detail" id="scan-detail-{{ forloop.index }}" style="display: none;">
         <td></td>
         <td colspan="7">
           <table class="profile-breakdown">
@@ -216,22 +216,6 @@ layout: default
       {% endfor %}
     </tbody>
   </table>
-
-  <script>
-  function toggleScanDetail(row) {
-    var detail = row.nextElementSibling;
-    if (detail && detail.classList.contains('scan-detail')) {
-      var arrow = row.querySelector('.expand-arrow');
-      if (detail.style.display === 'none') {
-        detail.style.display = '';
-        arrow.classList.add('expanded');
-      } else {
-        detail.style.display = 'none';
-        arrow.classList.remove('expanded');
-      }
-    }
-  }
-  </script>
 
   <hr>
 
@@ -297,8 +281,8 @@ layout: default
 
         {% assign is_manual = false %}
         {% if gid contains "MAN" %}{% assign is_manual = true %}{% endif %}
-        <tr class="group-row expandable" data-has-pass="{{ has_any_pass }}" data-manual="{{ is_manual }}" onclick="toggleGroupDetail(this)" style="cursor: pointer;">
-          <td><span class="expand-arrow">&#x25B6;</span> <a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" onclick="event.stopPropagation();"><strong>{{ gid }}</strong></a></td>
+        <tr class="group-row expandable" data-has-pass="{{ has_any_pass }}" data-manual="{{ is_manual }}" tabindex="0" aria-expanded="false" aria-controls="group-detail-{{ gid }}" onclick="toggleExpandableRow(this)" style="cursor: pointer;">
+          <td><button type="button" class="expand-toggle" aria-label="Expand details" tabindex="-1"><span class="expand-arrow">&#x25B6;</span></button> <a href="{{ site.baseurl }}/versions/{{ version_pages.first.version }}/groups/{{ gid }}.html" onclick="event.stopPropagation();"><strong>{{ gid }}</strong></a></td>
           <td>{{ g.title }}</td>
           <td>
             {% if g.platform %}
@@ -337,7 +321,7 @@ layout: default
           {% endfor %}
           <td style="font-size: 0.8rem; color: var(--color-text-muted); white-space: nowrap;">{% if gm.note %}{{ gm.note }}{% else %}&mdash;{% endif %}</td>
         </tr>
-        <tr class="group-detail" data-has-pass="{{ has_any_pass }}" style="display: none;">
+        <tr class="group-detail" id="group-detail-{{ gid }}" data-has-pass="{{ has_any_pass }}" style="display: none;">
           <td></td>
           <td colspan="{{ version_pages.size | plus: 4 }}">
             <div class="group-detail-content">
@@ -372,19 +356,6 @@ layout: default
   </div>
 
   <script>
-  function toggleGroupDetail(row) {
-    var detail = row.nextElementSibling;
-    if (detail && detail.classList.contains('group-detail')) {
-      var arrow = row.querySelector('.expand-arrow');
-      if (detail.style.display === 'none') {
-        detail.style.display = '';
-        arrow.classList.add('expanded');
-      } else {
-        detail.style.display = 'none';
-        arrow.classList.remove('expanded');
-      }
-    }
-  }
   function toggleFilters() {
     var hideNonHardened = document.getElementById('hide-non-hardened').checked;
     var hideManual = document.getElementById('hide-manual').checked;
@@ -402,10 +373,7 @@ layout: default
       }
       row.style.display = hidden ? 'none' : '';
       if (hidden) {
-        var detail = row.nextElementSibling;
-        if (detail && detail.classList.contains('group-detail')) {
-          detail.style.display = 'none';
-        }
+        setExpandableRow(row, false);
       }
     });
   }

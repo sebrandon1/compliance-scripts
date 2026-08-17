@@ -23,6 +23,7 @@
       }
     })();
   </script>
+  <script src="{{ '/assets/js/expand-rows.js' | relative_url }}"></script>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to content</a>
@@ -267,7 +268,19 @@
         navigateRows(-1);
         break;
       case 'Enter':
-        activateSelectedRow();
+      case ' ':
+        if (e.target.closest('a') || e.target.closest('button')) {
+          break;
+        }
+        if (activateSelectedRow()) {
+          e.preventDefault();
+          break;
+        }
+        var focusedRow = e.target.closest('tr.expandable');
+        if (focusedRow) {
+          e.preventDefault();
+          toggleExpandableRow(focusedRow);
+        }
         break;
       case 'g':
         waitingForSecondKey = true;
@@ -285,9 +298,10 @@
   function getVisibleRows() {
     var rows = [];
     document.querySelectorAll('table tbody tr, .status-table tbody tr').forEach(function(row) {
-      if (row.style.display !== 'none' && !row.querySelector('th')) {
-        rows.push(row);
+      if (row.style.display === 'none' || isExpandableDetail(row) || row.querySelector('th')) {
+        return;
       }
+      rows.push(row);
     });
     return rows;
   }
@@ -315,18 +329,26 @@
   }
 
   function activateSelectedRow() {
+    if (selectedRowIndex < 0) return false;
     var rows = getVisibleRows();
-    if (selectedRowIndex >= 0 && selectedRowIndex < rows.length) {
+    if (selectedRowIndex < rows.length) {
       var row = rows[selectedRowIndex];
-      // Try to find a link or details element
-      var link = row.querySelector('a');
+      if (row.classList.contains('expandable')) {
+        toggleExpandableRow(row);
+        return true;
+      }
       var details = row.querySelector('details');
+      var link = row.querySelector('a');
       if (details) {
         details.open = !details.open;
-      } else if (link) {
+        return true;
+      }
+      if (link) {
         link.click();
+        return true;
       }
     }
+    return false;
   }
 
   function clickFilterButton(filter) {
