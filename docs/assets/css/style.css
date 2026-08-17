@@ -2927,3 +2927,53 @@ table.profile-breakdown tbody tr:last-child td {
   color: #e2e8f0;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
+
+@media print {
+  header,
+  footer,
+  .skip-link,
+  .floating-legend,
+  .keyboard-help-modal,
+  .filter-buttons,
+  .copy-btn,
+  .expand-toggle,
+  .legend-toggle {
+    display: none !important;
+  }
+
+  .scan-detail,
+  .group-detail {
+    display: table-row !important;
+  }
+
+  details {
+    display: block !important;
+  }
+
+  details .remediation-content {
+    display: block !important;
+  }
+
+  details::details-content {
+    display: block !important;
+    content-visibility: visible;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  table {
+    break-inside: auto;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+}
