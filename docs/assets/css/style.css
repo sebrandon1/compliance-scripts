@@ -2685,6 +2685,18 @@ kbd {
   text-align: center;
 }
 
+.expand-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .expand-arrow {
   display: inline-block;
   font-size: 0.7rem;
@@ -2692,7 +2704,7 @@ kbd {
   transition: transform 0.2s;
 }
 
-.expand-arrow.expanded {
+tr[aria-expanded="true"] .expand-arrow {
   transform: rotate(90deg);
 }
 
