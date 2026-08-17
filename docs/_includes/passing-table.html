@@ -1,4 +1,4 @@
-<table class="remediation-table passing-table">
+<table class="remediation-table passing-table" aria-label="Passing compliance checks">
   <thead>
     <tr>
       <th scope="col" class="sortable" data-type="text">Check Name</th>
@@ -15,7 +15,7 @@
     {% endif %}
     <tr data-platform="{{ check_platform }}">
       <td data-label="Check Name">
-        <code>{{ check.name }}</code><button class="copy-btn" onclick="copyText(this, '{{ check.name }}')" title="Copy check name">&#x1F4CB;</button>
+        <code>{{ check.name }}</code><button class="copy-btn" onclick="copyText(this, '{{ check.name }}')" title="Copy check name" aria-label="Copy check name" aria-live="polite">&#x1F4CB;</button>
         {% if check.summary %}
         <br><small class="description">{{ check.summary | escape }}</small>
         {% endif %}

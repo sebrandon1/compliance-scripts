@@ -1,5 +1,5 @@
 {% include resolve-tracking.html %}
-<table class="remediation-table">
+<table class="remediation-table" aria-label="Failing compliance checks">
   <thead>
     <tr>
       <th scope="col" class="sortable" data-type="text">Check Name</th>
@@ -28,8 +28,8 @@
     <tr data-platform="{{ check_platform }}">
       <td data-label="Check Name">
         <details class="check-details">
-          <summary>
-            <code>{{ check.name }}</code><button class="copy-btn" onclick="copyText(this, '{{ check.name }}')" title="Copy check name">&#x1F4CB;</button>
+          <summary aria-label="{{ check.name }} remediation details">
+            <code>{{ check.name }}</code><button class="copy-btn" onclick="copyText(this, '{{ check.name }}')" title="Copy check name" aria-label="Copy check name" aria-live="polite">&#x1F4CB;</button>
             {% if check.summary %}
             <span class="remediation-summary">{{ check.summary | escape }}</span>
             {% else %}
