@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for scripts/generate-group-matrix.py tracking source of truth."""
+"""Tests for scripts/generate-group-matrix.py."""
 from __future__ import annotations
 
 import json
@@ -99,6 +99,9 @@ class TestLatestTrackingFile:
         )
         assert chosen == newest
 
+    def test_non_matching_path_is_lowest(self):
+        assert matrix.tracking_version_key("foo.json") == (0, 0)
+
 
 class TestListScanFiles:
     def test_skips_timestamped_and_unversioned(self, tmpdir):
@@ -160,7 +163,110 @@ class TestLoadExistingMatrix:
         assert matrix.load_existing_matrix(path)["H1"]["note"] == "n"
 
 
-class TestBuildMatrixSourceOfTruth:
+class TestCountSuffixMatches:
+    def test_profile_prefix_matches(self):
+        assert matrix.count_suffix_matches(
+            {"configure-crypto-policy"},
+            {"ocp4-moderate-configure-crypto-policy",
+             "rhcos4-moderate-master-configure-crypto-policy"},
+        ) == 1
+
+    def test_no_match_when_not_a_suffix(self):
+        assert matrix.count_suffix_matches(
+            {"sshd-config"},
+            {"ocp4-moderate-sshd-config-extra"},
+        ) == 0
+
+    def test_short_name_can_match_a_longer_unrelated_check(self):
+        # endswith is intentional for profile prefixes, but a short tracking
+        # name that is a suffix of a different check still counts as a hit.
+        assert matrix.count_suffix_matches(
+            {"policy"},
+            {"ocp4-moderate-configure-crypto-policy"},
+        ) == 1
+
+    def test_empty_inputs(self):
+        assert matrix.count_suffix_matches(set(), {"a"}) == 0
+        assert matrix.count_suffix_matches({"a"}, set()) == 0
+
+
+class TestCollectScanStatus:
+    def test_prefers_check_key_over_name(self):
+        passing, failing, manual = matrix.collect_scan_status({
+            "passing_checks": {
+                "high": [{"check": "from-check", "name": "from-name"}],
+            },
+            "remediations": {"medium": [{"name": "fail-b"}]},
+            "manual_checks": [{"check": "man-c"}],
+        })
+        assert passing == {"from-check"}
+        assert failing == {"fail-b"}
+        assert manual == {"man-c"}
+
+    def test_skips_empty_names_and_missing_sections(self):
+        passing, failing, manual = matrix.collect_scan_status({
+            "passing_checks": {"high": [{"check": ""}, {"name": ""}]},
+            "remediations": {},
+        })
+        assert passing == set()
+        assert failing == set()
+        assert manual == set()
+
+
+class TestBuildMatrix:
+    def test_counts_pass_fail_manual_independently(self):
+        group_checks = {"H1": {"check-a", "check-b", "check-c"}}
+        scans = {
+            "5_0": scan_export(
+                passing=["ocp4-moderate-check-a"],
+                failing=["ocp4-moderate-check-b"],
+                manual=["ocp4-moderate-check-c"],
+            )
+        }
+        result = matrix.build_matrix(group_checks, scans, descriptions={})
+        cell = result["H1"]["5_0"]
+        assert cell == {"pass": 1, "fail": 1, "manual": 1, "total": 3}
+
+    def test_same_check_can_count_as_pass_and_fail(self):
+        group_checks = {"H1": {"check-a"}}
+        scans = {
+            "5_0": scan_export(
+                passing=["ocp4-moderate-check-a"],
+                failing=["ocp4-moderate-check-a"],
+            )
+        }
+        result = matrix.build_matrix(group_checks, scans, descriptions={})
+        assert result["H1"]["5_0"]["pass"] == 1
+        assert result["H1"]["5_0"]["fail"] == 1
+
+    def test_adds_known_descriptions_and_skips_unknown_groups(self):
+        group_checks = {"H1": {"a"}, "ZZZ": {"b"}}
+        result = matrix.build_matrix(
+            group_checks, {"5_0": scan_export()}, descriptions=None
+        )
+        assert "description" in result["H1"]
+        assert "description" not in result["ZZZ"]
+        assert result["H1"]["description"] == matrix.GROUP_DESCRIPTIONS["H1"]
+
+    def test_preserves_notes_only_when_present_and_nonempty(self):
+        group_checks = {"H1": {"a"}, "H2": {"b"}, "H3": {"c"}}
+        existing = {
+            "H1": {"note": "keep"},
+            "H2": {"note": ""},
+            "H3": {"pass": 1},
+        }
+        result = matrix.build_matrix(
+            group_checks, {"5_0": scan_export()}, existing=existing,
+            descriptions={},
+        )
+        assert result["H1"]["note"] == "keep"
+        assert "note" not in result["H2"]
+        assert "note" not in result["H3"]
+
+    def test_empty_scans_yield_empty_matrix(self):
+        result = matrix.build_matrix({"H1": {"a"}}, {}, descriptions={})
+        assert result == {}
+
     def test_five_oh_only_check_is_visible(self):
         group_checks = matrix.collect_group_checks([
             tracking(("shared-check", "H1"), ("new-50-only-check", "H1")),
@@ -214,3 +320,19 @@ class TestMain:
     def test_exits_when_no_tracking_files(self, tmpdir):
         with pytest.raises(SystemExit, match="No versioned tracking"):
             matrix.main(tmpdir)
+
+
+class TestWriteMatrix:
+    def test_writes_sorted_json_with_trailing_newline(self, tmpdir):
+        path = os.path.join(tmpdir, "group-matrix.json")
+        matrix.write_matrix(path, {"H2": {"total": 1}, "H1": {"total": 2}})
+        with open(path) as f:
+            text = f.read()
+        assert text.endswith("\n")
+        assert json.loads(text) == {"H1": {"total": 2}, "H2": {"total": 1}}
+        assert text.index('"H1"') < text.index('"H2"')
+
+
+class TestVersionSlugFromScan:
+    def test_strips_prefix_and_suffix(self):
+        assert matrix.version_slug_from_scan("/data/ocp-5_0.json") == "5_0"
