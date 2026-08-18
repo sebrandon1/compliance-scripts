@@ -82,13 +82,14 @@ class TestListVersionedTrackingFiles:
 
 class TestLatestTrackingFile:
     def test_picks_highest_numeric_version(self, tmpdir):
-        write_json(tmpdir, "tracking-4_22.json", tracking(("a", "H1")))
+        older = write_json(tmpdir, "tracking-4_22.json", tracking(("a", "H1")))
         newer = write_json(tmpdir, "tracking-5_0.json", tracking(("b", "H1")))
         write_json(tmpdir, "tracking-4_21.json", tracking(("c", "H1")))
         chosen = matrix.latest_tracking_file(
             matrix.list_versioned_tracking_files(tmpdir)
         )
         assert chosen == newer
+        assert chosen != older
 
     def test_two_digit_major_beats_single_digit(self, tmpdir):
         write_json(tmpdir, "tracking-5_0.json", tracking(("a", "H1")))
@@ -266,6 +267,25 @@ class TestBuildMatrix:
         result = matrix.build_matrix({"H1": {"a"}}, {}, descriptions={})
         assert result == {}
 
+    def test_five_oh_only_check_is_visible(self):
+        group_checks = matrix.collect_group_checks([
+            tracking(("shared-check", "H1"), ("new-50-only-check", "H1")),
+        ])
+        scans = {
+            "4_22": scan_export(failing=["ocp4-moderate-shared-check"]),
+            "5_0": scan_export(
+                failing=[
+                    "ocp4-moderate-shared-check",
+                    "ocp4-moderate-new-50-only-check",
+                ]
+            ),
+        }
+        result = matrix.build_matrix(group_checks, scans, descriptions={})
+        assert result["H1"]["4_22"]["total"] == 2
+        assert result["H1"]["5_0"]["total"] == 2
+        assert result["H1"]["5_0"]["fail"] == 2
+        assert result["H1"]["4_22"]["fail"] == 1
+
 
 class TestMain:
     def test_uses_latest_tracking_and_preserves_notes(self, tmpdir):
@@ -290,6 +310,7 @@ class TestMain:
 
         with open(os.path.join(tmpdir, "group-matrix.json")) as f:
             out = json.load(f)
+        assert "should-not-appear" not in str(out)
         assert out["H1"]["note"] == "keep me"
         assert out["H1"]["4_22"]["total"] == 2
         assert out["H1"]["5_0"]["fail"] == 2
