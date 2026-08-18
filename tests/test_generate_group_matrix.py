@@ -98,6 +98,9 @@ class TestLatestTrackingFile:
             matrix.list_versioned_tracking_files(tmpdir)
         )
         assert chosen == newest
+
+
+class TestListScanFiles:
     def test_skips_timestamped_and_unversioned(self, tmpdir):
         write_json(tmpdir, "ocp-4_22.json", scan_export())
         write_json(tmpdir, "ocp-5_0.json", scan_export())
