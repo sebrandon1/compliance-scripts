@@ -17,7 +17,7 @@ title: Compare Versions
       <select id="old-version" onchange="runCompare()">
         {% assign version_pages = site.pages | where: "layout", "version" | sort: "version" %}
         {% for vp in version_pages %}
-        <option value="{{ vp.version }}">OCP {{ vp.version }}</option>
+        <option value="{{ vp.version }}" {% if forloop.rindex == 2 %}selected{% endif %}>OCP {{ vp.version }}</option>
         {% endfor %}
       </select>
     </div>
