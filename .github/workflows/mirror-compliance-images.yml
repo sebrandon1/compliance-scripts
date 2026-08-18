@@ -16,6 +16,10 @@ on:
 
 permissions: read-all
 
+env:
+  IMAGE_REGISTRY: ${{ vars.IMAGE_REGISTRY || 'quay.io/bapalm' }}
+  IMAGE_HOST: ${{ vars.IMAGE_HOST || 'quay.io' }}
+
 jobs:
   detect-release:
     runs-on: ubuntu-latest
@@ -73,7 +77,7 @@ jobs:
             QUAY_HAS=false
             UPSTREAM_HAS=false
 
-            if skopeo inspect --raw --no-creds "docker://quay.io/bapalm/${IMG}:${CO_REF}" >/dev/null 2>&1; then
+            if skopeo inspect --raw --no-creds "docker://${IMAGE_REGISTRY}/${IMG}:${CO_REF}" >/dev/null 2>&1; then
               QUAY_HAS=true
             fi
             if skopeo inspect --raw --no-creds "docker://ghcr.io/complianceascode/${IMG}:${CO_REF}" >/dev/null 2>&1; then
@@ -114,10 +118,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Login to quay.io
+      - name: Login to image registry
         uses: docker/login-action@v4.6.0
         with:
-          registry: quay.io
+          registry: ${{ env.IMAGE_HOST }}
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
 
@@ -133,7 +137,7 @@ jobs:
           context: co-src
           file: co-src/build/Dockerfile
           push: true
-          tags: quay.io/bapalm/compliance-operator:${{ needs.detect-release.outputs.co_ref }}-amd64
+          tags: ${{ env.IMAGE_REGISTRY }}/compliance-operator:${{ needs.detect-release.outputs.co_ref }}-amd64
 
       - name: Build and push openscap (amd64)
         if: needs.detect-release.outputs.build_openscap == 'true'
@@ -142,7 +146,7 @@ jobs:
           context: co-src
           file: co-src/images/openscap/Dockerfile
           push: true
-          tags: quay.io/bapalm/openscap-ocp:${{ needs.detect-release.outputs.co_ref }}-amd64
+          tags: ${{ env.IMAGE_REGISTRY }}/openscap-ocp:${{ needs.detect-release.outputs.co_ref }}-amd64
 
   build-arm64:
     needs: detect-release
@@ -153,10 +157,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Login to quay.io
+      - name: Login to image registry
         uses: docker/login-action@v4.6.0
         with:
-          registry: quay.io
+          registry: ${{ env.IMAGE_HOST }}
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
 
@@ -172,7 +176,7 @@ jobs:
           context: co-src
           file: co-src/build/Dockerfile
           push: true
-          tags: quay.io/bapalm/compliance-operator:${{ needs.detect-release.outputs.co_ref }}-arm64
+          tags: ${{ env.IMAGE_REGISTRY }}/compliance-operator:${{ needs.detect-release.outputs.co_ref }}-arm64
 
       - name: Build and push openscap (arm64)
         if: needs.detect-release.outputs.build_openscap == 'true'
@@ -181,7 +185,7 @@ jobs:
           context: co-src
           file: co-src/images/openscap/Dockerfile
           push: true
-          tags: quay.io/bapalm/openscap-ocp:${{ needs.detect-release.outputs.co_ref }}-arm64
+          tags: ${{ env.IMAGE_REGISTRY }}/openscap-ocp:${{ needs.detect-release.outputs.co_ref }}-arm64
 
   # ── Assemble: mirror upstream images, create manifest lists, build bundle/catalog ──
 
@@ -206,9 +210,9 @@ jobs:
           components: |
             Quay.io
 
-      - name: Login to quay.io (skopeo)
+      - name: Login to image registry (skopeo)
         run: |
-          skopeo login quay.io \
+          skopeo login "${IMAGE_HOST}" \
             --username "${{ secrets.QUAY_ROBOT_USERNAME }}" \
             --password "${{ secrets.QUAY_ROBOT_TOKEN }}"
 
@@ -220,11 +224,11 @@ jobs:
         if: needs.detect-release.outputs.build_bundle == 'true' || needs.detect-release.outputs.build_catalog == 'true'
         uses: docker/setup-qemu-action@v4
 
-      - name: Login to quay.io (Docker)
+      - name: Login to image registry (Docker)
         if: needs.detect-release.outputs.build_bundle == 'true' || needs.detect-release.outputs.build_catalog == 'true'
         uses: docker/login-action@v4.6.0
         with:
-          registry: quay.io
+          registry: ${{ env.IMAGE_HOST }}
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
 
@@ -245,17 +249,17 @@ jobs:
           echo "Copying upstream compliance-operator image for ${CO_REF}..."
           skopeo copy --all \
             "docker://ghcr.io/complianceascode/compliance-operator:${CO_REF}" \
-            "docker://quay.io/bapalm/compliance-operator:${CO_REF}"
+            "docker://${IMAGE_REGISTRY}/compliance-operator:${CO_REF}"
 
       - name: Create operator manifest list
         if: needs.detect-release.outputs.build_operator == 'true'
         run: |
           CO_REF="${{ needs.detect-release.outputs.co_ref }}"
           echo "Creating multi-arch manifest for compliance-operator:${CO_REF}..."
-          docker manifest create "quay.io/bapalm/compliance-operator:${CO_REF}" \
-            "quay.io/bapalm/compliance-operator:${CO_REF}-amd64" \
-            "quay.io/bapalm/compliance-operator:${CO_REF}-arm64"
-          docker manifest push "quay.io/bapalm/compliance-operator:${CO_REF}"
+          docker manifest create "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}" \
+            "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}-amd64" \
+            "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}-arm64"
+          docker manifest push "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}"
 
       # ── OpenSCAP: mirror or create manifest list ──
 
@@ -268,17 +272,17 @@ jobs:
           echo "Copying upstream openscap-ocp image for ${CO_REF}..."
           skopeo copy --all \
             "docker://ghcr.io/complianceascode/openscap-ocp:${CO_REF}" \
-            "docker://quay.io/bapalm/openscap-ocp:${CO_REF}"
+            "docker://${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}"
 
       - name: Create openscap manifest list
         if: needs.detect-release.outputs.build_openscap == 'true'
         run: |
           CO_REF="${{ needs.detect-release.outputs.co_ref }}"
           echo "Creating multi-arch manifest for openscap-ocp:${CO_REF}..."
-          docker manifest create "quay.io/bapalm/openscap-ocp:${CO_REF}" \
-            "quay.io/bapalm/openscap-ocp:${CO_REF}-amd64" \
-            "quay.io/bapalm/openscap-ocp:${CO_REF}-arm64"
-          docker manifest push "quay.io/bapalm/openscap-ocp:${CO_REF}"
+          docker manifest create "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}" \
+            "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}-amd64" \
+            "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}-arm64"
+          docker manifest push "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}"
 
       # ── Bundle: mirror or build (lightweight, QEMU is fine) ──
 
@@ -291,7 +295,7 @@ jobs:
           echo "Copying upstream bundle image for ${CO_REF}..."
           skopeo copy --all \
             "docker://ghcr.io/complianceascode/compliance-operator-bundle:${CO_REF}" \
-            "docker://quay.io/bapalm/compliance-operator-bundle:${CO_REF}"
+            "docker://${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_REF}"
 
       - name: Build and push bundle
         if: needs.detect-release.outputs.build_bundle == 'true'
@@ -301,7 +305,7 @@ jobs:
           file: co-src/bundle.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: quay.io/bapalm/compliance-operator-bundle:${{ needs.detect-release.outputs.co_ref }}
+          tags: ${{ env.IMAGE_REGISTRY }}/compliance-operator-bundle:${{ needs.detect-release.outputs.co_ref }}
 
       # ── Catalog: mirror or build (lightweight, QEMU is fine) ──
 
@@ -314,7 +318,7 @@ jobs:
           echo "Copying upstream catalog image for ${CO_REF}..."
           skopeo copy --all \
             "docker://ghcr.io/complianceascode/compliance-operator-catalog:${CO_REF}" \
-            "docker://quay.io/bapalm/compliance-operator-catalog:${CO_REF}"
+            "docker://${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_REF}"
 
       - name: Build catalog from source
         if: needs.detect-release.outputs.build_catalog == 'true'
@@ -330,7 +334,7 @@ jobs:
 
           mkdir -p build/catalog
           cp co-src/catalog/preamble.json build/catalog/compliance-operator-catalog.json
-          opm render "quay.io/bapalm/compliance-operator-bundle:${CO_REF}" \
+          opm render "${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_REF}" \
             >> build/catalog/compliance-operator-catalog.json
 
           cat > build/Dockerfile <<'DEOF'
@@ -354,7 +358,7 @@ jobs:
           file: build/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: quay.io/bapalm/compliance-operator-catalog:${{ needs.detect-release.outputs.co_ref }}
+          tags: ${{ env.IMAGE_REGISTRY }}/compliance-operator-catalog:${{ needs.detect-release.outputs.co_ref }}
 
       # ── Verification ──
 
@@ -362,10 +366,10 @@ jobs:
         run: |
           CO_REF="${{ needs.detect-release.outputs.co_ref }}"
           ./utilities/verify-mirror-architectures.sh \
-            "quay.io/bapalm/compliance-operator:${CO_REF}" \
-            "quay.io/bapalm/openscap-ocp:${CO_REF}" \
-            "quay.io/bapalm/compliance-operator-bundle:${CO_REF}" \
-            "quay.io/bapalm/compliance-operator-catalog:${CO_REF}"
+            "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}" \
+            "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}" \
+            "${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_REF}" \
+            "${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_REF}"
 
       - name: Summary
         run: |
@@ -375,15 +379,15 @@ jobs:
           echo "### Mirrored Images" >> "$GITHUB_STEP_SUMMARY"
           echo "| Image | Tag | Source |" >> "$GITHUB_STEP_SUMMARY"
           echo "|-------|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`quay.io/bapalm/compliance-operator\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_operator_exists == 'true' && 'upstream' || 'built (native)' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`quay.io/bapalm/openscap-ocp\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_openscap_exists == 'true' && 'upstream' || 'built (native)' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`quay.io/bapalm/compliance-operator-bundle\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_bundle_exists == 'true' && 'upstream' || 'built' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| \`quay.io/bapalm/compliance-operator-catalog\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_catalog_exists == 'true' && 'upstream' || 'built' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`${IMAGE_REGISTRY}/compliance-operator\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_operator_exists == 'true' && 'upstream' || 'built (native)' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`${IMAGE_REGISTRY}/openscap-ocp\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_openscap_exists == 'true' && 'upstream' || 'built (native)' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`${IMAGE_REGISTRY}/compliance-operator-bundle\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_bundle_exists == 'true' && 'upstream' || 'built' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| \`${IMAGE_REGISTRY}/compliance-operator-catalog\` | \`${CO_REF}\` | ${{ needs.detect-release.outputs.upstream_catalog_exists == 'true' && 'upstream' || 'built' }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "### Override env vars for operator deployment" >> "$GITHUB_STEP_SUMMARY"
           echo '```bash' >> "$GITHUB_STEP_SUMMARY"
           echo "oc set env deployment/compliance-operator -n openshift-compliance \\" >> "$GITHUB_STEP_SUMMARY"
-          echo "  RELATED_IMAGE_OPERATOR=quay.io/bapalm/compliance-operator:${CO_REF} \\" >> "$GITHUB_STEP_SUMMARY"
-          echo "  RELATED_IMAGE_OPENSCAP=quay.io/bapalm/openscap-ocp:${CO_REF} \\" >> "$GITHUB_STEP_SUMMARY"
-          echo "  RELATED_IMAGE_PROFILE=quay.io/bapalm/k8scontent:latest" >> "$GITHUB_STEP_SUMMARY"
+          echo "  RELATED_IMAGE_OPERATOR=${IMAGE_REGISTRY}/compliance-operator:${CO_REF} \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  RELATED_IMAGE_OPENSCAP=${IMAGE_REGISTRY}/openscap-ocp:${CO_REF} \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  RELATED_IMAGE_PROFILE=${IMAGE_REGISTRY}/k8scontent:latest" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
