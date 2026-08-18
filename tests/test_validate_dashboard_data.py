@@ -681,6 +681,147 @@ class TestValidateScanHistory:
         assert errors == []
 
 
+def make_valid_group_matrix() -> dict[str, Any]:
+    return {
+        "H1": {
+            "4_22": {"pass": 0, "fail": 1, "manual": 0, "total": 1},
+            "5_0": {"pass": 1, "fail": 0, "manual": 0, "total": 1},
+            "description": "Crypto policy",
+            "note": "Requires FIPS",
+        }
+    }
+
+
+def make_valid_upstream_prs() -> dict[str, Any]:
+    return {
+        "compliance_operator": [
+            {
+                "number": 1203,
+                "title": "Replace panics with error returns",
+                "url": "https://github.com/ComplianceAsCode/compliance-operator/pull/1203",
+                "state": "open",
+            }
+        ]
+    }
+
+
+class TestValidateGroupMatrix:
+    def test_valid_data_passes(self, tmpdir):
+        fp = write_json(tmpdir, "group-matrix.json", make_valid_group_matrix())
+        assert validate_dashboard.validate_group_matrix(fp) == []
+
+    def test_not_an_object(self, tmpdir):
+        fp = write_json(tmpdir, "group-matrix.json", [])
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("must be a JSON object" in e for e in errors)
+
+    def test_invalid_group_id(self, tmpdir):
+        data = {"XX": make_valid_group_matrix()["H1"]}
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("invalid group ID" in e for e in errors)
+
+    def test_missing_cell_fields(self, tmpdir):
+        data = {"H1": {"5_0": {"pass": 1}}}
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("missing fields" in e for e in errors)
+
+    def test_cell_count_must_be_int(self, tmpdir):
+        data = make_valid_group_matrix()
+        data["H1"]["5_0"]["fail"] = "1"
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("must be int" in e for e in errors)
+
+    def test_null_count_rejected(self, tmpdir):
+        data = make_valid_group_matrix()
+        data["H1"]["5_0"]["pass"] = None
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("must be int" in e for e in errors)
+
+    def test_negative_count_rejected(self, tmpdir):
+        data = make_valid_group_matrix()
+        data["H1"]["5_0"]["pass"] = -1
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("must be >= 0" in e for e in errors)
+
+    def test_unexpected_key_rejected(self, tmpdir):
+        data = make_valid_group_matrix()
+        data["H1"]["extra"] = "nope"
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("unexpected key" in e for e in errors)
+
+    def test_no_version_cells(self, tmpdir):
+        fp = write_json(tmpdir, "group-matrix.json", {"H1": {"note": "only"}})
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("no version cells" in e for e in errors)
+
+    def test_meta_fields_must_be_strings(self, tmpdir):
+        data = make_valid_group_matrix()
+        data["H1"]["note"] = 1
+        fp = write_json(tmpdir, "group-matrix.json", data)
+        errors = validate_dashboard.validate_group_matrix(fp)
+        assert any("note must be a string" in e for e in errors)
+
+
+class TestValidateUpstreamPrs:
+    def test_valid_data_passes(self, tmpdir):
+        fp = write_json(tmpdir, "upstream-prs.json", make_valid_upstream_prs())
+        assert validate_dashboard.validate_upstream_prs(fp) == []
+
+    def test_not_an_object(self, tmpdir):
+        fp = write_json(tmpdir, "upstream-prs.json", [])
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("must be a JSON object" in e for e in errors)
+
+    def test_category_must_be_list(self, tmpdir):
+        fp = write_json(tmpdir, "upstream-prs.json", {"compliance_operator": {}})
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("must be a list" in e for e in errors)
+
+    def test_missing_required_fields(self, tmpdir):
+        data = {"compliance_operator": [{"number": 1}]}
+        fp = write_json(tmpdir, "upstream-prs.json", data)
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("missing fields" in e for e in errors)
+
+    def test_invalid_state(self, tmpdir):
+        data = make_valid_upstream_prs()
+        data["compliance_operator"][0]["state"] = "draft"
+        fp = write_json(tmpdir, "upstream-prs.json", data)
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("invalid state" in e for e in errors)
+
+    def test_non_string_state_rejected(self, tmpdir):
+        data = make_valid_upstream_prs()
+        data["compliance_operator"][0]["state"] = ["open"]
+        fp = write_json(tmpdir, "upstream-prs.json", data)
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("state must be a string" in e for e in errors)
+
+    def test_url_must_be_https(self, tmpdir):
+        data = make_valid_upstream_prs()
+        data["compliance_operator"][0]["url"] = "http://example.com/pr/1"
+        fp = write_json(tmpdir, "upstream-prs.json", data)
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("https URL" in e for e in errors)
+
+    def test_number_must_be_int(self, tmpdir):
+        data = make_valid_upstream_prs()
+        data["compliance_operator"][0]["number"] = "1203"
+        fp = write_json(tmpdir, "upstream-prs.json", data)
+        errors = validate_dashboard.validate_upstream_prs(fp)
+        assert any("number must be int" in e for e in errors)
+
+    def test_empty_categories_valid(self, tmpdir):
+        fp = write_json(tmpdir, "upstream-prs.json", {"compliance_operator": []})
+        assert validate_dashboard.validate_upstream_prs(fp) == []
+
+
 # --- main() integration ---
 
 
@@ -723,6 +864,27 @@ class TestMainIntegration:
         write_json(tmpdir, "ocp-4_22.json", make_valid_scan_export())
         write_json(tmpdir, "ocp-4_22-baseline.json", {"junk": True})
 
+        old_argv = sys.argv
+        try:
+            sys.argv = ["validate-dashboard-data.py", tmpdir]
+            validate_dashboard.main()
+        finally:
+            sys.argv = old_argv
+
+    def test_main_rejects_invalid_group_matrix(self, tmpdir):
+        write_json(tmpdir, "group-matrix.json", {"bad": {}})
+        old_argv = sys.argv
+        try:
+            sys.argv = ["validate-dashboard-data.py", tmpdir]
+            with pytest.raises(SystemExit) as exc_info:
+                validate_dashboard.main()
+            assert exc_info.value.code == 1
+        finally:
+            sys.argv = old_argv
+
+    def test_main_accepts_valid_hardened_files(self, tmpdir):
+        write_json(tmpdir, "group-matrix.json", make_valid_group_matrix())
+        write_json(tmpdir, "upstream-prs.json", make_valid_upstream_prs())
         old_argv = sys.argv
         try:
             sys.argv = ["validate-dashboard-data.py", tmpdir]
