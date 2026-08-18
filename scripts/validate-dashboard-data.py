@@ -2,7 +2,8 @@
 """
 Validate dashboard JSON data files for structural correctness.
 
-Checks docs/_data/ocp-*.json and tracking.json against expected schemas
+Checks docs/_data scan exports, tracking files, scan-history.json,
+group-matrix.json, and upstream-prs.json against expected schemas
 to prevent malformed data from breaking the live dashboard.
 
 Usage: python3 scripts/validate-dashboard-data.py [docs/_data/]
@@ -189,6 +190,10 @@ VALID_UPSTREAM_VERDICTS = {
     "site-specific", "not-applicable",
 }
 GROUP_ID_PATTERN = re.compile(r'^(H|M|L|MAN)\d+$')
+VERSION_SLUG_PATTERN = re.compile(r'^\d+_\d+$')
+MATRIX_CELL_FIELDS = ("pass", "fail", "manual", "total")
+MATRIX_META_KEYS = {"description", "note"}
+UPSTREAM_PR_REQUIRED = {"number", "title", "url", "state"}
 
 
 def _validate_tracking_groups(groups: dict[str, Any]) -> list[str]:
@@ -410,6 +415,122 @@ def validate_scan_history(filepath: str) -> list[str]:
     return errors
 
 
+def validate_group_matrix(filepath: str) -> list[str]:
+    """Validate group-matrix.json structure used by the Hardened page."""
+    errors = []
+    with open(filepath) as f:
+        data = json.load(f)
+
+    if not isinstance(data, dict):
+        errors.append("group-matrix.json must be a JSON object")
+        return errors
+
+    for gid, entry in data.items():
+        prefix = gid
+        if not GROUP_ID_PATTERN.match(gid):
+            errors.append(
+                f"{prefix}: invalid group ID format "
+                f"(expected H#, M#, L#, or MAN#)"
+            )
+        if not isinstance(entry, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+
+        version_cells = 0
+        for key, val in entry.items():
+            if key in MATRIX_META_KEYS:
+                if val is not None and not isinstance(val, str):
+                    errors.append(
+                        f"{prefix}.{key} must be a string, "
+                        f"got {type(val).__name__}"
+                    )
+                continue
+            if not VERSION_SLUG_PATTERN.match(key):
+                errors.append(f"{prefix}.{key}: unexpected key")
+                continue
+            version_cells += 1
+            cell_prefix = f"{prefix}.{key}"
+            if not isinstance(val, dict):
+                errors.append(f"{cell_prefix} must be an object")
+                continue
+            missing = set(MATRIX_CELL_FIELDS) - set(val.keys())
+            if missing:
+                errors.append(f"{cell_prefix} missing fields: {missing}")
+            for field in MATRIX_CELL_FIELDS:
+                count = val.get(field)
+                if field not in val:
+                    continue
+                if not isinstance(count, int):
+                    errors.append(
+                        f"{cell_prefix}.{field} must be int, "
+                        f"got {type(count).__name__}"
+                    )
+                elif count < 0:
+                    errors.append(
+                        f"{cell_prefix}.{field} must be >= 0, got {count}"
+                    )
+
+        if version_cells == 0:
+            errors.append(f"{prefix}: no version cells")
+
+    return errors
+
+
+def validate_upstream_prs(filepath: str) -> list[str]:
+    """Validate upstream-prs.json structure used by the Hardened page."""
+    errors = []
+    with open(filepath) as f:
+        data = json.load(f)
+
+    if not isinstance(data, dict):
+        errors.append("upstream-prs.json must be a JSON object")
+        return errors
+
+    for category, prs in data.items():
+        if not isinstance(prs, list):
+            errors.append(f"{category} must be a list")
+            continue
+        for i, pr in enumerate(prs):
+            prefix = f"{category}[{i}]"
+            if not isinstance(pr, dict):
+                errors.append(f"{prefix} must be an object")
+                continue
+            missing = UPSTREAM_PR_REQUIRED - set(pr.keys())
+            if missing:
+                errors.append(f"{prefix} missing fields: {missing}")
+            number = pr.get("number")
+            if "number" in pr and not isinstance(number, int):
+                errors.append(
+                    f"{prefix} number must be int, got {type(number).__name__}"
+                )
+            title = pr.get("title")
+            if "title" in pr and not isinstance(title, str):
+                errors.append(
+                    f"{prefix} title must be a string, "
+                    f"got {type(title).__name__}"
+                )
+            url = pr.get("url")
+            if "url" in pr:
+                if not isinstance(url, str):
+                    errors.append(
+                        f"{prefix} url must be a string, "
+                        f"got {type(url).__name__}"
+                    )
+                elif not url.startswith("https://"):
+                    errors.append(f"{prefix} url must be an https URL")
+            state = pr.get("state")
+            if "state" in pr:
+                if not isinstance(state, str):
+                    errors.append(
+                        f"{prefix} state must be a string, "
+                        f"got {type(state).__name__}"
+                    )
+                elif state not in VALID_PR_STATES:
+                    errors.append(f"{prefix} invalid state: '{state}'")
+
+    return errors
+
+
 def validate_cross_references(
     scan_filepath: str, tracking_filepath: str
 ) -> list[str]:
@@ -481,14 +602,21 @@ def main() -> None:
         else:
             print("OK")
 
-    history_file = os.path.join(data_dir, "scan-history.json")
-    if os.path.exists(history_file):
+    named_validators = (
+        ("scan-history.json", validate_scan_history),
+        ("group-matrix.json", validate_group_matrix),
+        ("upstream-prs.json", validate_upstream_prs),
+    )
+    for filename, validator in named_validators:
+        filepath = os.path.join(data_dir, filename)
+        if not os.path.exists(filepath):
+            continue
         total_files += 1
-        print("Validating scan-history.json...", end=" ")
-        errors = validate_scan_history(history_file)
+        print(f"Validating {filename}...", end=" ")
+        errors = validator(filepath)
         if errors:
             print("FAIL")
-            all_errors["scan-history.json"] = errors
+            all_errors[filename] = errors
         else:
             print("OK")
 
