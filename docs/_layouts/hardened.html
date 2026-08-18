@@ -8,6 +8,10 @@ layout: default
 {% endcomment %}
 
 {% assign version_pages = site.pages | where_exp: "p", "p.layout == 'version'" | sort: "version" | reverse %}
+{% assign latest_vp = version_pages.first %}
+{% assign latest_vs = latest_vp.version | replace: ".", "_" %}
+{% include resolve-tracking.html version=latest_vp.version %}
+{% assign ref_tracking = tracking %}
 
 <div class="hardened-page">
 
@@ -16,30 +20,27 @@ layout: default
 
   <!-- Hero Stats -->
   <div class="summary-cards hero-stats">
-    <div class="card hero-card" data-tip-pos="bottom" data-tip="All failing and manual checks are organized into 40 remediation groups spanning E8, CIS, Moderate, and PCI-DSS NIST profiles">
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="All failing and manual checks are organized into remediation groups spanning E8, CIS, Moderate, and PCI-DSS NIST profiles">
       <h3>Remediation Groups</h3>
-      <span class="number">40</span>
+      <span class="number">{{ ref_tracking.groups.size }}</span>
       <div class="stat-note">Across 4 profiles (E8, CIS, Moderate, PCI-DSS)</div>
     </div>
     <div class="card hero-card" data-tip-pos="bottom" data-tip="Each remediation maps to a specific compliance check that requires a MachineConfig or cluster configuration change">
       <h3>Individual Remediations</h3>
-      <span class="number">259</span>
+      <span class="number">{{ ref_tracking.remediations.size }}</span>
       <div class="stat-note">Mapped from 592 failing + manual checks</div>
     </div>
 
-    {% comment %} Count verified groups from 4.22 tracking (most mature version) {% endcomment %}
-    {% assign t422_key = "tracking-4_22" %}
-    {% assign t422 = site.data[t422_key] %}
     {% assign verified_total = 0 %}
-    {% for g in t422.groups %}
+    {% for g in ref_tracking.groups %}
       {% if g[1].status == "verified" or g[1].status contains "pass-vanilla" %}
         {% assign verified_total = verified_total | plus: 1 %}
       {% endif %}
     {% endfor %}
-    <div class="card hero-card passing" data-tip-pos="bottom" data-tip="Groups with status 'verified' or 'pass-vanilla' on OCP 4.22, the most mature tested version">
+    <div class="card hero-card passing" data-tip-pos="bottom" data-tip="Groups with status 'verified' or 'pass-vanilla' on the latest tracked OCP version">
       <h3>Groups Verified</h3>
-      <span class="number">{{ verified_total }} / 40</span>
-      <div class="stat-note">On OCP 4.22 (most mature)</div>
+      <span class="number">{{ verified_total }} / {{ ref_tracking.groups.size }}</span>
+      <div class="stat-note">On OCP {{ latest_vp.version }}</div>
     </div>
 
     <div class="card hero-card" data-tip-pos="bottom" data-tip="Node-level (RHCOS) compliance failures reduced from 452 to 14 after applying all MachineConfig remediations">
@@ -48,16 +49,15 @@ layout: default
       <div class="stat-note">452 &rarr; 14 node-level failures</div>
     </div>
 
-    {% comment %} Count upstream contributions {% endcomment %}
     {% assign upstream_pass_count = 0 %}
-    {% for g in t422.groups %}
+    {% for g in ref_tracking.groups %}
       {% if g[1].upstream_verdict == "pass-vanilla" %}
         {% assign upstream_pass_count = upstream_pass_count | plus: 1 %}
       {% endif %}
     {% endfor %}
     <div class="card hero-card" data-tip-pos="bottom" data-tip="Upstream pull requests to fix broken remediations (ComplianceAsCode, openshift/os)">
       <h3>Upstream Contributions</h3>
-      <span class="number">{{ t422.meta.upstream_pr_count }} PRs</span>
+      <span class="number">{{ ref_tracking.meta.upstream_pr_count }} PRs</span>
       <div class="stat-note">{{ upstream_pass_count }} groups resolved via RHEL/Fedora</div>
     </div>
 
@@ -240,9 +240,6 @@ layout: default
     </label>
   </div>
 
-  {% assign ref_key = "tracking-4_22" %}
-  {% assign ref_tracking = site.data[ref_key] %}
-
   <div class="matrix-scroll">
   <table class="status-table matrix-table" id="matrix-table">
     <thead>
@@ -291,7 +288,6 @@ layout: default
             </span>
             {% endif %}
           </td>
-          {% assign latest_vs = version_pages.first.version | replace: ".", "_" %}
           {% assign latest_cell = gm[latest_vs] %}
           <td style="text-align: center; font-size: 0.85rem;">{% if latest_cell %}{{ latest_cell.total }}{% else %}&mdash;{% endif %}</td>
           {% for vp in version_pages %}

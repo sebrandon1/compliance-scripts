@@ -1,3 +1,4 @@
-{% assign version_slug = page.version | replace: ".", "_" %}
+{% assign resolve_version = include.version | default: page.version %}
+{% assign version_slug = resolve_version | replace: ".", "_" %}
 {% assign tracking_file = "tracking-" | append: version_slug %}
 {% assign tracking = site.data[tracking_file] | default: site.data.tracking %}

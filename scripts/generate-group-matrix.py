@@ -3,11 +3,21 @@
 
 Cross-references remediation group check names against actual scan results
 to produce pass/fail/manual counts per group per OCP version.
+
+Group membership comes from the latest versioned tracking file
+(tracking-X_Y.json), so checks added on newer OCP versions appear in the
+matrix.
 """
+
+from __future__ import annotations
 
 import glob
 import json
 import os
+import re
+
+VERSIONED_TRACKING_RE = re.compile(r"^tracking-(\d+)_(\d+)\.json$")
+VERSIONED_SCAN_RE = re.compile(r"^ocp-\d+_\d+\.json$")
 
 GROUP_DESCRIPTIONS: dict[str, str] = {
     "H1": "Sets the system-wide cryptographic policy to disable weak algorithms like SHA-1, protecting all TLS, SSH, and certificate operations on the node.",
@@ -53,87 +63,151 @@ GROUP_DESCRIPTIONS: dict[str, str] = {
 }
 
 
-def main() -> None:
-    data_dir = os.path.join(os.path.dirname(__file__), "..", "docs", "_data")
-    data_dir = os.path.normpath(data_dir)
+def default_data_dir() -> str:
+    return os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "docs", "_data")
+    )
 
-    tracking_file = os.path.join(data_dir, "tracking-4_22.json")
-    with open(tracking_file) as f:
-        tracking = json.load(f)
 
+def list_matching_json(data_dir: str, name_re: re.Pattern[str]) -> list[str]:
+    return sorted(
+        path for path in glob.glob(os.path.join(data_dir, "*.json"))
+        if name_re.match(os.path.basename(path))
+    )
+
+
+def list_versioned_tracking_files(data_dir: str) -> list[str]:
+    return list_matching_json(data_dir, VERSIONED_TRACKING_RE)
+
+
+def list_scan_files(data_dir: str) -> list[str]:
+    return list_matching_json(data_dir, VERSIONED_SCAN_RE)
+
+
+def tracking_version_key(path: str) -> tuple[int, int]:
+    match = VERSIONED_TRACKING_RE.match(os.path.basename(path))
+    if not match:
+        return (0, 0)
+    return (int(match.group(1)), int(match.group(2)))
+
+
+def latest_tracking_file(paths: list[str]) -> str:
+    return max(paths, key=tracking_version_key)
+
+
+def load_json(path: str) -> dict:
+    with open(path) as f:
+        return json.load(f)
+
+
+def load_existing_matrix(path: str) -> dict:
+    try:
+        return load_json(path)
+    except FileNotFoundError:
+        return {}
+
+
+def collect_group_checks(tracking_docs: list[dict]) -> dict[str, set[str]]:
+    """Union remediations from tracking documents, keyed by group id."""
     group_checks: dict[str, set[str]] = {}
-    for check_name, info in tracking["remediations"].items():
-        gid = info.get("group", "")
-        if gid:
-            group_checks.setdefault(gid, set()).add(check_name)
+    for tracking in tracking_docs:
+        for check_name, info in tracking.get("remediations", {}).items():
+            gid = info.get("group") or ""
+            if gid:
+                group_checks.setdefault(gid, set()).add(check_name)
+    return group_checks
 
-    scan_files = sorted(glob.glob(os.path.join(data_dir, "ocp-[0-9]_[0-9]*.json")))
-    scan_files = [
-        f
-        for f in scan_files
-        if not os.path.basename(f).count("-") > 1  # skip timestamped baselines
-    ]
 
-    matrix: dict[str, dict[str, object]] = {}
+def _check_names(entries: list) -> set[str]:
+    names: set[str] = set()
+    for entry in entries:
+        name = entry.get("check", entry.get("name", ""))
+        if name:
+            names.add(name)
+    return names
 
-    existing_file = os.path.join(data_dir, "group-matrix.json")
-    existing: dict[str, dict] = {}
-    if os.path.exists(existing_file):
-        with open(existing_file) as f:
-            existing = json.load(f)
 
-    for scan_file in scan_files:
-        basename = os.path.basename(scan_file)
-        vs = basename.replace("ocp-", "").replace(".json", "")
+def collect_scan_status(scan: dict) -> tuple[set[str], set[str], set[str]]:
+    passing: set[str] = set()
+    for sev_checks in scan.get("passing_checks", {}).values():
+        passing.update(_check_names(sev_checks))
+    failing: set[str] = set()
+    for sev_checks in scan.get("remediations", {}).values():
+        failing.update(_check_names(sev_checks))
+    manual = _check_names(scan.get("manual_checks", []))
+    return passing, failing, manual
 
-        with open(scan_file) as f:
-            scan = json.load(f)
 
-        all_passing: set[str] = set()
-        for sev_checks in scan.get("passing_checks", {}).values():
-            for c in sev_checks:
-                all_passing.add(c.get("check", c.get("name", "")))
+def count_suffix_matches(short_names: set[str], scan_names: set[str]) -> int:
+    return sum(
+        1 for short in short_names
+        if any(sc.endswith(short) for sc in scan_names)
+    )
 
-        all_failing: set[str] = set()
-        for sev_checks in scan.get("remediations", {}).values():
-            for c in sev_checks:
-                all_failing.add(c.get("check", c.get("name", "")))
 
-        all_manual: set[str] = set()
-        for c in scan.get("manual_checks", []):
-            all_manual.add(c.get("check", c.get("name", "")))
+def version_slug_from_scan(path: str) -> str:
+    return os.path.basename(path).replace("ocp-", "").replace(".json", "")
 
+
+def build_matrix(
+    group_checks: dict[str, set[str]],
+    scans_by_version: dict[str, dict],
+    existing: dict | None = None,
+    descriptions: dict[str, str] | None = None,
+) -> dict[str, dict]:
+    existing = existing or {}
+    descriptions = (
+        descriptions if descriptions is not None else GROUP_DESCRIPTIONS
+    )
+    matrix: dict[str, dict] = {}
+
+    for vs, scan in scans_by_version.items():
+        passing, failing, manual = collect_scan_status(scan)
         for gid, short_names in group_checks.items():
-            pass_count = 0
-            fail_count = 0
-            manual_count = 0
-            for short in short_names:
-                if any(sc.endswith(short) for sc in all_passing):
-                    pass_count += 1
-                if any(sc.endswith(short) for sc in all_failing):
-                    fail_count += 1
-                if any(sc.endswith(short) for sc in all_manual):
-                    manual_count += 1
-
             entry = matrix.setdefault(gid, {})
             entry[vs] = {
-                "pass": pass_count,
-                "fail": fail_count,
-                "manual": manual_count,
+                "pass": count_suffix_matches(short_names, passing),
+                "fail": count_suffix_matches(short_names, failing),
+                "manual": count_suffix_matches(short_names, manual),
                 "total": len(short_names),
             }
-            if gid in GROUP_DESCRIPTIONS:
-                entry["description"] = GROUP_DESCRIPTIONS[gid]
+            if gid in descriptions:
+                entry["description"] = descriptions[gid]
 
-    for gid in matrix:
-        if gid in existing and "note" in existing[gid]:
-            matrix[gid]["note"] = existing[gid]["note"]
+    for gid, entry in matrix.items():
+        note = existing.get(gid, {}).get("note")
+        if note:
+            entry["note"] = note
 
-    output = os.path.join(data_dir, "group-matrix.json")
-    with open(output, "w") as f:
+    return matrix
+
+
+def write_matrix(path: str, matrix: dict) -> None:
+    with open(path, "w") as f:
         json.dump(matrix, f, indent=2, sort_keys=True)
         f.write("\n")
 
+
+def main(data_dir: str | None = None) -> None:
+    data_dir = data_dir or default_data_dir()
+    tracking_files = list_versioned_tracking_files(data_dir)
+    if not tracking_files:
+        raise SystemExit(f"No versioned tracking files found in {data_dir}")
+
+    group_checks = collect_group_checks(
+        [load_json(latest_tracking_file(tracking_files))]
+    )
+    scans_by_version = {
+        version_slug_from_scan(path): load_json(path)
+        for path in list_scan_files(data_dir)
+    }
+    output = os.path.join(data_dir, "group-matrix.json")
+    matrix = build_matrix(
+        group_checks,
+        scans_by_version,
+        existing=load_existing_matrix(output),
+    )
+    write_matrix(output, matrix)
     print(f"Generated {output} with {len(matrix)} groups")
 
 
