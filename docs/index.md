@@ -58,6 +58,7 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
 ## Quick Links
 
 - [Remediation Groupings]({{ '/REMEDIATION_GROUPINGS' | relative_url }}) - Grouped remediations by category
+- [Compare]({{ '/compare' | relative_url }}) - Diff check results between OCP versions
 - [Hardened]({{ '/hardened' | relative_url }}) - Scan history and group status across versions
 - [GitHub Repository](https://github.com/sebrandon1/compliance-scripts) - Source code and scripts
 - [Telco Reference PRs](https://github.com/openshift-kni/telco-reference/pulls) - Open remediation PRs

@@ -3,7 +3,7 @@
 Expected FAIL results per RHCOS version, generated from `scripts/rhcos-static-scan.sh`.
 
 Each file lists the check names expected to FAIL on that RHCOS version with the
-pinned content image (`k8scontent:v0.1.80`). One check name per line.
+pinned content image (`k8scontent:v0.1.81`). One check name per line.
 
 To regenerate a baseline:
 ```bash

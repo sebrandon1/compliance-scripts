@@ -11,7 +11,7 @@ This is a collection of shell and Python scripts for automating OpenShift Compli
 ### Linting
 ```bash
 make lint              # Run all linters (Python + Bash)
-make python-lint       # Python only (flake8)
+make python-lint       # Python only (flake8 + mypy)
 make bash-lint         # Bash only (shellcheck + shfmt)
 ```
 
@@ -19,8 +19,10 @@ make bash-lint         # Bash only (shellcheck + shfmt)
 ```bash
 make test-compliance   # Run CI validation on a connected OpenShift cluster
 make python-test       # Run Python unit tests (pytest)
+make shell-smoke-test  # bash -n syntax checks
 make validate-compliance EXPECTED=tests/expected-results-4.21.json  # Validate results against baseline
 make generate-expected OCP_VERSION=4.22  # Generate expected results from live cluster
+make dashboard-validate  # Validate docs/_data JSON (pre-push check)
 ```
 
 ### Full Workflow
@@ -57,7 +59,7 @@ make clean-complianceremediations  # Reset complianceremediations directory only
 
 ### Image Management
 ```bash
-make mirror-images CO_REF=v1.7.0           # Mirror compliance-operator images to quay.io/bapalm
+make mirror-images CO_REF=v1.9.0           # Mirror compliance-operator images to quay.io/bapalm
 make rhcos-static-scan OCP_VERSION=4.21    # Run offline OSCAP scan against RHCOS rootfs
 ```
 
@@ -77,11 +79,11 @@ make install-jekyll                       # Install Jekyll dependencies
 - **`modular/`** - Modular MachineConfig tools using `.d` directory includes
 - **`lab-tools/`** - BeakerLab-specific utilities (cluster provisioning, kubeconfig fetch)
 - **`misc/`** - Helpers (network policies, pull secrets, loopback devices)
-- **`scripts/`** - Preflight checks, validation, conflict detection, scan comparison, OSCAP parsing, and group suggestion scripts
+- **`scripts/`** - Preflight checks, validation, conflict detection, scan comparison, OSCAP parsing, group suggestion, and group-matrix scripts
 - **`tests/`** - Python unit tests (pytest) and expected-results baselines for compliance validation
-- **`lib/`** - Shared library functions (`common.sh`)
+- **`lib/`** - Shared library functions (`common.sh`, `compliance_utils.py`)
 - **`docs/`** - Jekyll-based compliance dashboard (GitHub Pages), plus RUNBOOK.md and QE-GUIDE.md
-- **`curated-configs/`** - Curated configuration files
+- **`model-context/`** - Modular MachineConfig design notes
 
 ### Key Workflow
 1. `install-compliance-operator.sh` - Installs operator, auto-deploys HostPath CSI if needed
@@ -137,10 +139,11 @@ pip install -r requirements.txt
 ### Bash
 - Scripts use `shellcheck` and `shfmt` for linting
 - Excluded shellcheck codes: SC1091, SC2034, SC2001, SC2028, SC2129, SC2155, SC2317, SC2329
-- Run `shfmt -w core utilities modular lab-tools misc` to auto-fix formatting
+- Run `shfmt -w core utilities modular lab-tools misc scripts` to auto-fix formatting
 
 ### Python
 - Uses `flake8` with ignored rules: E501 (line length), E402 (module import order), W503 (line break before operator)
+- `make python-lint` also runs `mypy --ignore-missing-imports` on `core/*.py`, `scripts/*.py`, `modular/*.py`, and `misc/*.py`
 - Virtual environments (`venv/`, `.venv/`) are excluded from linting
 
 ## Requirements
@@ -152,6 +155,7 @@ pip install -r requirements.txt
   - `beautifulsoup4` - HTML parsing
   - `playwright` - Browser automation
 - `pytest` - for Python unit tests
+- `jq` - JSON processing (export and QE validation)
 - `shellcheck` and `shfmt` - for bash linting
 - `jekyll` - for local dashboard development (optional)
 - `skopeo` - for image mirroring (optional)
@@ -169,13 +173,12 @@ If you see this error:
 1. Check if the failing pods are very young (a few seconds old) - this indicates the catalog reconciliation race condition
 2. The fix is already in place to ignore recently created pods
 
-**CRC cluster startup issues**
+**CI cluster startup issues**
 
-When running in GitHub Actions with CRC (CodeReady Containers):
-- Ensure `CRC_PULL_SECRET` secret is configured
-- CRC requires significant memory (10GB+ configured for CI)
-- The cluster may take 15-20 minutes to fully start
+The `test-compliance-versions` workflow provisions clusters with `palmsoftware/quick-ocp` (matrix: OCP 4.20/4.21, operator v1.8.2/v1.9.0). It still uses the `CRC_PULL_SECRET` secret as the pull secret:
+- Ensure `CRC_PULL_SECRET` is configured
 - API server connection refused errors during startup are normal
+- The job skips markdown-only PRs (`paths-ignore: docs/**, *.md`)
 
 **ProfileBundle not VALID**
 

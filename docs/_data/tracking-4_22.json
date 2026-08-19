@@ -154,7 +154,7 @@
       "priority_label": "High",
       "jira": null,
       "pr": null,
-      "compare": "compliance/4.22/m1-sshd-medium",
+      "compare": null,
       "status": "partial",
       "jira_status": null,
       "pr_state": null,

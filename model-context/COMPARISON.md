@@ -1,5 +1,7 @@
 # Comparison: Our Implementation vs PR #439
 
+Historical comparison against [telco-reference PR #439](https://github.com/openshift-kni/telco-reference/pull/439). Current usage is in [MODULAR_APPROACH.md](MODULAR_APPROACH.md).
+
 ## PR #439 Example: Base File
 
 From the PR description, the other AI model created:

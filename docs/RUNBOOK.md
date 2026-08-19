@@ -1,6 +1,16 @@
 # Compliance Dashboard Runbook
 
-This runbook documents the complete workflow for setting up and maintaining compliance tracking for OpenShift versions. Follow these steps when onboarding a new OCP version (e.g., 4.22) or updating existing versions.
+This runbook documents the complete workflow for setting up and maintaining compliance tracking for OpenShift versions. Follow these steps when onboarding a new OCP version (e.g., 5.1) or updating existing versions.
+
+Prefer automation where it exists:
+
+```bash
+make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0
+make export-compliance OCP_VERSION=5.1
+python3 scripts/generate-group-matrix.py
+```
+
+The scaffolder copies version pages, group pages, and `docs/_data/tracking-X_Y.json` from a source version. The rest of this runbook covers what still needs a human: export, Jira/PR tracking, and review.
 
 ---
 
@@ -33,14 +43,14 @@ This runbook documents the complete workflow for setting up and maintaining comp
 
 ## Quick Start Checklist
 
-For a new OCP version (e.g., 4.22), complete these steps in order:
+For a new OCP version (e.g., 5.1), complete these steps in order:
 
-- [ ] Export compliance data from cluster
-- [ ] Create `docs/_data/ocp-4_22.json` data file
-- [ ] Create `docs/versions/4.22.md` version page
-- [ ] Create `docs/versions/4.22/remediations.md` summary page
-- [ ] Create `docs/versions/4.22/groups/` directory with all group pages
-- [ ] Update `docs/_data/tracking.json` with Jira/PR info
+- [ ] Scaffold pages: `make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0`
+- [ ] Export compliance data from cluster (`make export-compliance OCP_VERSION=5.1`)
+- [ ] Review `docs/_data/ocp-5_1.json`
+- [ ] Review `docs/versions/5.1.md`, `docs/versions/5.1/remediations.md`, and group pages
+- [ ] Update `docs/_data/tracking-5_1.json` with Jira/PR info
+- [ ] Run `python3 scripts/generate-group-matrix.py`
 - [ ] Update `docs/REMEDIATION_GROUPINGS.md` index
 - [ ] Create Jira tickets for new remediation groups
 - [ ] Commit and push changes
@@ -102,6 +112,8 @@ cat docs/_data/ocp-4_22.json | jq '.summary'
 
 ## Phase 2: Create Version Pages
 
+`make add-version` copies these from the source version. Create or edit them by hand only if you are not using the scaffolder.
+
 ### 2.1 Create Version Landing Page
 
 Create `docs/versions/4.22.md`:
@@ -156,7 +168,7 @@ Group checks that can be remediated together:
 | H3 | SSHD Empty Passwords | sshd-disable-empty-passwords |
 | M1 | SSHD Configuration | sshd-disable-root-login, sshd-disable-gssapi-auth, etc. |
 | M2 | Kernel Sysctl | sysctl-kernel-randomize-va-space, etc. |
-| M3-M9 | Audit Rules | Various audit rule checks |
+| M3-M20 | Audit Rules | Various audit rule checks |
 | M10 | API Server Encryption | api-server-encryption-provider-cipher |
 | M11 | Ingress TLS | ingress-controller-tls-cipher-suites |
 | M12 | Audit Profile | audit-profile-set |
@@ -203,8 +215,9 @@ From E8 and CIS benchmark scans: **XX total remediations**
 
 **Group IDs:** Groups are labeled by severity and sequence number:
 - **H** = HIGH severity (H1, H2, H3)
-- **M** = MEDIUM severity (M1-M12)
+- **M** = MEDIUM severity (M1–M30)
 - **L** = LOW severity (L1, L2)
+- **MAN** = Manual review (MAN1–MAN5)
 ```
 
 ---
@@ -259,7 +272,7 @@ kind: MachineConfig
 
 | Check | Profile | Description | Docs |
 |-------|---------|-------------|------|
-| `check-name` | E8/CIS | Description | [📖](docs-url) |
+| `check-name` | E8/CIS | Description | [📖](https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/services/ssh/ssh_server/sshd_disable_root_login) |
 
 <div class="source-files">
 <h4>Source Remediation Files</h4>
@@ -292,7 +305,7 @@ title: OCP 4.22 Remediation Groups
 
 # OCP 4.22 Remediation Groups
 
-[← Back to OCP 4.22 Compliance Status](../4.22.html) | [View Summary](../remediations.html)
+[← Back to OCP 4.22 Compliance Status](../../4.22.html) | [View Summary](../remediations.html)
 
 ## HIGH Severity
 
@@ -320,30 +333,43 @@ https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/H1.html
 Ensure prev_group/next_group form a complete chain:
 
 ```
-H1 → H2 → H3 → M1 → M2 → ... → M12 → L1 → L2
+H1 → H2 → H3 → M1 → … → M30 → L1 → L2 → MAN1 → … → MAN5
 ```
 
 ---
 
 ## Phase 5: Update Tracking Data
 
-### 5.1 Update tracking.json
+### 5.1 Update tracking JSON
 
-Edit `docs/_data/tracking.json` to add Jira/PR tracking:
+Each version has its own file: `docs/_data/tracking-4_21.json`, `tracking-4_22.json`, `tracking-5_0.json`. `docs/_data/tracking.json` is the default/latest copy used by some layouts.
+
+Group records look like:
 
 ```json
 {
-  "jira_base_url": "https://issues.redhat.com/browse/",
-  "pr_base_url": "https://github.com/openshift-kni/telco-reference/pull/",
-  "remediations": {
-    "configure-crypto-policy": {
-      "jira": "CNF-XXXXX",
-      "pr": "XXX",
-      "status": "pending"
+  "meta": {
+    "jira_base_url": "https://issues.redhat.com/browse/",
+    "pr_base_url": "https://github.com/openshift-kni/telco-reference/pull/",
+    "compare_base_url": "https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:"
+  },
+  "groups": {
+    "H1": {
+      "title": "Crypto Policy",
+      "severity": "HIGH",
+      "platform": "rhcos",
+      "jira": null,
+      "pr": null,
+      "compare": "compliance/4.22/h1-crypto-policy",
+      "status": "verified",
+      "prev_group": null,
+      "next_group": "H2"
     }
   }
 }
 ```
+
+`compare` is a branch slug appended to `compare_base_url`. GitHub returns 404 after the branch is deleted; leave it for history or set it to `null`.
 
 ### 5.2 Status Values
 
@@ -378,7 +404,7 @@ This ticket tracks the implementation of {Group Title} remediation for OCP 4.22.
 - **Settings Count**: X
 
 ## Documentation
-- [Group Details](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/{GROUP_ID}.html)
+- [Group Details](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/H1.html)
 - [Remediations Summary](https://sebrandon1.github.io/compliance-scripts/versions/4.22/remediations.html)
 
 ## Compliance Checks
@@ -465,34 +491,32 @@ docs/
 ├── _data/
 │   ├── ocp-4_21.json                    # OCP 4.21 compliance data
 │   ├── ocp-4_22.json                    # OCP 4.22 compliance data
-│   └── tracking.json                     # Jira/PR tracking
+│   ├── ocp-5_0.json                     # OCP 5.0 compliance data
+│   ├── tracking.json                    # Default/latest group tracking
+│   ├── tracking-4_21.json               # Per-version tracking
+│   ├── tracking-4_22.json
+│   ├── tracking-5_0.json
+│   ├── group-matrix.json                # Hardened page matrix
+│   └── scan-history.json
 ├── _includes/
 │   ├── remediation-table.html           # Failing checks table
 │   └── passing-table.html               # Passing checks table
 ├── _layouts/
 │   ├── default.html                     # Base layout
 │   ├── version.html                     # Version page layout
-│   └── group.html                       # Group page layout
-├── assets/css/
-│   └── style.css                        # Custom styles
+│   ├── remediations.html                # Remediations summary layout
+│   ├── group.html                       # Group page layout
+│   └── hardened.html                    # Hardened accomplishments
+├── compare.md                           # Version diff page
+├── hardened.md                          # Hardened dashboard
 ├── index.md                             # Homepage
 ├── REMEDIATION_GROUPINGS.md             # Version index
 ├── RUNBOOK.md                           # This file
 └── versions/
     ├── 4.21.md                          # OCP 4.21 landing page
-    ├── 4.21/
-    │   ├── remediations.md              # Remediations summary
-    │   └── groups/
-    │       ├── index.md                 # Groups index
-    │       ├── H1.md                    # Individual group pages
-    │       ├── H2.md
-    │       └── ...
-    ├── 4.22.md                          # OCP 4.22 landing page
-    └── 4.22/
-        ├── remediations.md
-        └── groups/
-            ├── index.md
-            └── ...
+    ├── 4.22.md
+    ├── 5.0.md
+    └── 5.0/groups/                      # H1–H3, M1–M30, L1–L2, MAN1–MAN5
 ```
 
 ---
@@ -505,7 +529,7 @@ docs/
 |------|------------|---------|
 | Data files | `ocp-{version with underscores}.json` | `ocp-4_22.json` |
 | Version pages | `{version}.md` | `4.22.md` |
-| Group IDs | `{H\|M\|L}{number}` | `H1`, `M12`, `L2` |
+| Group IDs | `{H\|M\|L\|MAN}{number}` | `H1`, `M30`, `L2`, `MAN1` |
 | MachineConfig names | `75-{category}-{severity}.yaml` | `75-sshd-hardening.yaml` |
 
 ### Status Badges
@@ -533,7 +557,7 @@ docs/
 | Crypto | H1 | MachineConfig |
 | PAM | H2 | MachineConfig |
 | Kernel Sysctl | M2, L2 | MachineConfig |
-| Audit Rules | M3-M9 | MachineConfig |
+| Audit Rules | M3–M20 | MachineConfig |
 | API Server | M10, M12 | APIServer CRD |
 | Ingress | M11 | IngressController CRD |
 
@@ -545,7 +569,8 @@ Each compliance check should include a documentation link (📖) in the Complian
 |------------|---------------------------|
 | RHCOS SSHD rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/services/ssh/ssh_server/{rule_name}` |
 | RHCOS Sysctl rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/system/permissions/restrictions/{rule_name}` |
-| RHCOS Audit rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/auditing/auditd_configure_rules/{rule_name}` |
+| RHCOS Audit time rules | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/auditing/auditd_configure_rules/audit_time_rules/{rule_name}` |
+| RHCOS Auditd retention | `https://github.com/ComplianceAsCode/content/tree/master/linux_os/guide/auditing/configure_auditd_data_retention/{rule_name}` |
 | OCP4 API Server | `https://docs.openshift.com/container-platform/latest/security/encrypting-etcd.html` |
 | OCP4 Ingress TLS | `https://docs.openshift.com/container-platform/latest/security/tls-security-profiles.html` |
 | OCP4 Audit Profile | `https://docs.openshift.com/container-platform/latest/security/audit-log-policy-config.html` |
@@ -602,15 +627,20 @@ oc auth can-i get compliancecheckresults -n openshift-compliance
 
 ---
 
-## Automation Opportunities
+## Automation
 
-Future improvements that could automate parts of this workflow:
+Already implemented:
 
-1. **Auto-generate group pages** from compliance data export
-2. **Jira integration** to auto-create tickets from pending groups
-3. **PR template generator** based on selected groups
-4. **Status sync** between Jira/PR and documentation
-5. **Diff report** between OCP versions showing new/removed checks
+1. **`make add-version`** — scaffold version/group pages and tracking JSON
+2. **`make export-compliance`** — export scan data from a live cluster
+3. **`python3 scripts/generate-group-matrix.py`** — rebuild the Hardened matrix
+4. **`make diff-scans`** — compare two scan exports
+
+Possible follow-ups:
+
+1. **Jira integration** to auto-create tickets from pending groups
+2. **PR template generator** based on selected groups
+3. **Status sync** between Jira/PR and documentation
 
 ---
 

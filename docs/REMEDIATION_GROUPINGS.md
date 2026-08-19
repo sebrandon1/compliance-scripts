@@ -38,6 +38,12 @@ Remediation groupings consolidate individual compliance check failures into logi
 
 To add remediation groupings for a new OCP version:
 
-1. Create directory: `docs/versions/X.XX/`
-2. Add `remediations.md` with version-specific content
-3. Update this index page with a link to the new version
+```bash
+make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0
+```
+
+That scaffolds version pages, group pages, and `docs/_data/tracking-X_Y.json`. Then:
+
+1. Export scan data: `make export-compliance OCP_VERSION=5.1`
+2. Update this index page with a link to the new version
+3. Refresh `docs/_data/group-matrix.json` with `python3 scripts/generate-group-matrix.py`

@@ -1,8 +1,10 @@
 # Implementation Summary: Modular MachineConfig Support
 
+Historical design notes for the modular `.d` include approach. For current usage, see [MODULAR_APPROACH.md](MODULAR_APPROACH.md) and [docs/scripts-reference.md](../docs/scripts-reference.md).
+
 ## What Was Implemented
 
-I've successfully added support for creating modular MachineConfig files using `.d` directory includes, similar to the approach shown in [PR #439](https://github.com/openshift-kni/telco-reference/pull/439).
+Modular MachineConfig files using `.d` directory includes, similar to the approach in [telco-reference PR #439](https://github.com/openshift-kni/telco-reference/pull/439).
 
 ## Files Created
 
@@ -18,7 +20,7 @@ I've successfully added support for creating modular MachineConfig files using `
 
 **Usage**:
 ```bash
-python3 split-machineconfigs-modular.py \
+python3 modular/split-machineconfigs-modular.py \
   --src-dir complianceremediations \
   --out-dir complianceremediations/modular \
   -s high
@@ -35,9 +37,9 @@ python3 split-machineconfigs-modular.py \
 
 **Usage**:
 ```bash
-./create-modular-configs.sh -s high
-./create-modular-configs.sh -s high,medium
-./create-modular-configs.sh -i custom-dir -o output-dir -s high
+./modular/create-modular-configs.sh -s high
+./modular/create-modular-configs.sh -s high,medium
+./modular/create-modular-configs.sh -i custom-dir -o output-dir -s high
 ```
 
 ### 3. `MODULAR_APPROACH.md`
@@ -53,9 +55,8 @@ python3 split-machineconfigs-modular.py \
 ## Files Updated
 
 ### 1. `README.md`
-- Added section 23 documenting `split-machineconfigs-modular.py`
-- Placed after `combine-machineconfigs-by-path.py` for logical flow
-- Includes usage examples and output description
+- Links to [MODULAR_APPROACH.md](MODULAR_APPROACH.md) from the Guides table
+- `docs/scripts-reference.md` documents `modular/split-machineconfigs-modular.py` and `modular/create-modular-configs.sh`
 
 ### 2. `requirements.txt`
 - Added `pyyaml>=6.0.0` to support YAML processing
