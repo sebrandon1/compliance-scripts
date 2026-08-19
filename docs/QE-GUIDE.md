@@ -40,10 +40,10 @@ We maintain baselines for tested versions:
 | File | Version | Checks |
 |------|---------|--------|
 | `tests/expected-results-5.0.json` | OCP 5.0 | 112 E8 checks |
-| `tests/expected-results-4.22.json` | OCP 4.22 | 106 E8 checks |
+| `tests/expected-results-4.22.json` | OCP 4.22 | 910 checks (E8, CIS, Moderate, PCI-DSS) |
 | `tests/expected-results-4.21.json` | OCP 4.21 | 106 E8 checks |
 
-These are validated nightly in CI against CRC clusters.
+CI (`test-compliance-versions.yml`) runs daily against quick-ocp clusters on OCP 4.20 and 4.21 with operator v1.8.2 and v1.9.0.
 
 ## Using with TailoredProfiles
 

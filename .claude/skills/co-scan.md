@@ -8,7 +8,7 @@ The user provides:
 - Cluster kubeconfig path (ask user if not obvious from context)
 - OCP version (e.g., 4.22, 5.0) — used for export filename. Auto-detect from `oc get clusterversion` if not provided.
 - Platform filter: `all` (default), `ocp`, `rhcos`
-- Compliance operator version (default: use whatever is installed; `v1.7.0` for fresh installs)
+- Compliance operator version (default: use whatever is installed; `v1.9.0` for fresh installs)
 
 ## Workflow
 

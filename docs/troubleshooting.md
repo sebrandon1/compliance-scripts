@@ -8,10 +8,8 @@ If you see this error, check whether the failing pods are very young (a few seco
 
 ## CRC Cluster Startup Issues
 
-When running in GitHub Actions with CRC (CodeReady Containers):
+The `test-compliance-versions` workflow provisions clusters with `palmsoftware/quick-ocp` (OCP 4.20/4.21, operator v1.8.2/v1.9.0). It still uses the `CRC_PULL_SECRET` secret as the pull secret:
 - Ensure the `CRC_PULL_SECRET` secret is configured
-- CRC requires significant memory (10GB+ configured for CI)
-- The cluster may take 15-20 minutes to fully start
 - API server "connection refused" errors during startup are normal
 
 ## ProfileBundle Not Reaching VALID Status
@@ -36,9 +34,9 @@ grep -i "error\|fail" gha-logs/*.txt
 
 There are two distribution channels with different version numbers:
 
-- **Upstream/community** at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator), used by the install script's `--co-ref` flag. Supported versions: v1.7.0 and v1.8.2.
+- **Upstream/community** at [ComplianceAsCode/compliance-operator](https://github.com/ComplianceAsCode/compliance-operator), used by the install script's `--co-ref` flag. Current pins in `versions.env` are operator **v1.9.0** and content **v0.1.81**. CI tests v1.8.2 and v1.9.0. ARM64 needs v1.7.0 or later.
 - **Red Hat certified**, installed automatically when `redhat-operators` is present in `openshift-marketplace`. Uses its own versioning and is not publicly tagged on GitHub.
 
 The old downstream repo at [openshift/compliance-operator](https://github.com/openshift/compliance-operator) is deprecated.
 
-Upstream images from `ghcr.io/complianceascode` are mirrored to `quay.io/bapalm` for reliability. The install script automatically falls back to the mirror if the upstream tag is unavailable. To manually mirror: `make mirror-images CO_REF=v1.8.2`.
+Upstream images from `ghcr.io/complianceascode` are mirrored to `quay.io/bapalm` for reliability. The install script automatically falls back to the mirror if the upstream tag is unavailable. To manually mirror: `make mirror-images CO_REF=v1.9.0`.
