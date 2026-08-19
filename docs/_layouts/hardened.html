@@ -13,6 +13,38 @@ layout: default
 {% include resolve-tracking.html version=latest_vp.version %}
 {% assign ref_tracking = tracking %}
 
+{% assign latest_scan_key = "ocp-" | append: latest_vs %}
+{% assign latest_scan = site.data[latest_scan_key] %}
+{% assign mapped_failing_manual = 0 %}
+{% if latest_scan %}
+  {% assign mapped_failing_manual = latest_scan.summary.failing | plus: latest_scan.summary.manual %}
+{% endif %}
+
+{% assign rhcos_vanilla = 0 %}
+{% assign rhcos_hardened = "" %}
+{% for entry in site.data.scan-history %}
+  {% assign rf = entry.summary.rhcos_failing %}
+  {% unless rf == nil %}
+    {% assign notes = entry.notes | downcase %}
+    {% if notes contains "vanilla scan" %}
+      {% if rf > rhcos_vanilla %}
+        {% assign rhcos_vanilla = rf %}
+      {% endif %}
+    {% elsif notes contains "with hardening" %}
+      {% if rhcos_hardened == "" %}
+        {% assign rhcos_hardened = rf %}
+      {% elsif rf < rhcos_hardened %}
+        {% assign rhcos_hardened = rf %}
+      {% endif %}
+    {% endif %}
+  {% endunless %}
+{% endfor %}
+{% assign rhcos_pct = 0 %}
+{% if rhcos_vanilla > 0 and rhcos_hardened != "" %}
+  {% assign rhcos_drop = rhcos_vanilla | minus: rhcos_hardened %}
+  {% assign rhcos_pct = rhcos_drop | times: 100.0 | divided_by: rhcos_vanilla | round %}
+{% endif %}
+
 <div class="hardened-page">
 
   <h1>Hardening Accomplishments</h1>
@@ -28,7 +60,9 @@ layout: default
     <div class="card hero-card" data-tip-pos="bottom" data-tip="Each remediation maps to a specific compliance check that requires a MachineConfig or cluster configuration change">
       <h3>Individual Remediations</h3>
       <span class="number">{{ ref_tracking.remediations.size }}</span>
-      <div class="stat-note">Mapped from 592 failing + manual checks</div>
+      {% if mapped_failing_manual > 0 %}
+      <div class="stat-note">Mapped from {{ mapped_failing_manual }} failing + manual checks</div>
+      {% endif %}
     </div>
 
     {% assign verified_total = 0 %}
@@ -43,11 +77,13 @@ layout: default
       <div class="stat-note">On OCP {{ latest_vp.version }}</div>
     </div>
 
-    <div class="card hero-card" data-tip-pos="bottom" data-tip="Node-level (RHCOS) compliance failures reduced from 452 to 14 after applying all MachineConfig remediations">
+    {% if rhcos_vanilla > 0 and rhcos_hardened != "" %}
+    <div class="card hero-card" data-tip-pos="bottom" data-tip="Node-level (RHCOS) compliance failures reduced from {{ rhcos_vanilla }} to {{ rhcos_hardened }} after applying all MachineConfig remediations">
       <h3>RHCOS Failure Reduction</h3>
-      <span class="number">97%</span>
-      <div class="stat-note">452 &rarr; 14 node-level failures</div>
+      <span class="number">{{ rhcos_pct }}%</span>
+      <div class="stat-note">{{ rhcos_vanilla }} &rarr; {{ rhcos_hardened }} node-level failures</div>
     </div>
+    {% endif %}
 
     {% assign upstream_pass_count = 0 %}
     {% for g in ref_tracking.groups %}
