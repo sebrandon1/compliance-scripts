@@ -1,6 +1,7 @@
 ---
 layout: default
 title: OCP 4.21 Remediation Groups
+version: "4.21"
 ---
 
 # OCP 4.21 Remediation Groups
@@ -13,13 +14,7 @@ Each group below represents a logical set of related compliance checks that can 
   <div class="filter-search">
     <input type="text" id="table-search" placeholder="Search groups..." onkeyup="filterTables()">
   </div>
-  <div class="filter-buttons">
-    <button class="filter-btn active" data-filter="all" onclick="setStatusFilter('all')">All</button>
-    <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">🟡 Pending</button>
-    <button class="filter-btn" data-filter="in_progress" onclick="setStatusFilter('in_progress')">🔵 In Progress</button>
-    <button class="filter-btn" data-filter="on_hold" onclick="setStatusFilter('on_hold')">⚪ On Hold</button>
-    <button class="filter-btn" data-filter="complete" onclick="setStatusFilter('complete')">🟢 Complete</button>
-  </div>
+  {% include status-filter-buttons.html %}
   <div class="filter-counts" id="filter-counts"></div>
 </div>
 
@@ -79,14 +74,7 @@ Each group below represents a logical set of related compliance checks that can 
 | <span class="priority-score p4">P4</span> | Low | LOW severity - best practices |
 | <span class="priority-score p5">P5</span> | Deferred | On hold or blocked |
 
-## Status Legend
-
-| Status | Meaning |
-|--------|---------|
-| 🔵 In Progress | Active PR open for remediation |
-| 🟡 Pending | Not yet started |
-| ⚪ On Hold | Paused |
-| 🟢 Complete | Merged and verified |
+{% include status-legend.md %}
 
 ---
 
@@ -109,51 +97,13 @@ Example markdown for PR descriptions:
   <button class="copy-btn" onclick="copyToClipboard('example-md')" title="Copy to clipboard">📋</button>
 </div>
 
+<script src="{{ '/assets/js/status-filter.js' | relative_url }}"></script>
 <script>
-var currentFilter = 'all';
-var searchTerm = '';
-
-function setStatusFilter(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
-  filterTables();
-}
-
-function filterTables() {
-  searchTerm = document.getElementById('table-search').value.toLowerCase();
-  var tables = document.querySelectorAll('table');
-  var visibleCount = 0;
-  var totalCount = 0;
-
-  tables.forEach(function(table) {
-    var rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
-    rows.forEach(function(row) {
-      if (row.querySelector('th')) return; // Skip header rows
-      totalCount++;
-      var text = row.textContent.toLowerCase();
-      var statusCell = row.cells[2] ? row.cells[2].textContent : '';
-
-      var matchesSearch = searchTerm === '' || text.includes(searchTerm);
-      var matchesFilter = currentFilter === 'all' ||
-        (currentFilter === 'pending' && statusCell.includes('Pending')) ||
-        (currentFilter === 'in_progress' && statusCell.includes('In Progress')) ||
-        (currentFilter === 'on_hold' && statusCell.includes('On Hold')) ||
-        (currentFilter === 'complete' && statusCell.includes('Complete'));
-
-      if (matchesSearch && matchesFilter) {
-        row.style.display = '';
-        visibleCount++;
-      } else {
-        row.style.display = 'none';
-      }
-    });
-  });
-
-  document.getElementById('filter-counts').textContent =
-    visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
-}
-
+{% include resolve-tracking.html %}
+{% include group-statuses-js.html %}
+</script>
+<script src="{{ '/assets/js/group-index-filters.js' | relative_url }}"></script>
+<script>
 function copyToClipboard(elementId) {
   var text = document.getElementById(elementId).textContent;
   navigator.clipboard.writeText(text).then(function() {

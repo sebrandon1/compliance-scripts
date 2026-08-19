@@ -14,13 +14,7 @@ Each group below represents a logical set of related compliance checks that can 
   <div class="filter-search">
     <input type="text" id="table-search" placeholder="Search groups..." onkeyup="filterTables()">
   </div>
-  <div class="filter-buttons">
-    <button class="filter-btn active" data-filter="all" onclick="setStatusFilter('all')">All</button>
-    <button class="filter-btn" data-filter="pending" onclick="setStatusFilter('pending')">🟡 Pending</button>
-    <button class="filter-btn" data-filter="in_progress" onclick="setStatusFilter('in_progress')">🔵 In Progress</button>
-    <button class="filter-btn" data-filter="on_hold" onclick="setStatusFilter('on_hold')">⚪ On Hold</button>
-    <button class="filter-btn" data-filter="complete" onclick="setStatusFilter('complete')">🟢 Complete</button>
-  </div>
+  {% include status-filter-buttons.html %}
   <div class="filter-buttons">
     <button class="filter-btn upstream-filter active" data-upstream="all" onclick="setUpstreamFilter('all')">All Upstream</button>
     <button class="filter-btn upstream-filter" data-upstream="upstream-candidate" onclick="setUpstreamFilter('upstream-candidate')">🔼 Candidate</button>
@@ -122,14 +116,7 @@ These checks require manual operator review — no MachineConfig or CRD can fix 
 | <span class="priority-score p4">P4</span> | Low | LOW severity - best practices |
 | <span class="priority-score p5">P5</span> | Deferred | On hold or blocked |
 
-## Status Legend
-
-| Status | Meaning |
-|--------|---------|
-| 🔵 In Progress | Active PR open for remediation |
-| 🟡 Pending | Not yet started |
-| ⚪ On Hold | Paused |
-| 🟢 Complete | Merged and verified |
+{% include status-legend.md %}
 
 ---
 
@@ -152,13 +139,11 @@ Example markdown for PR descriptions:
   <button class="copy-btn" onclick="copyToClipboard('example-md')" title="Copy to clipboard">📋</button>
 </div>
 
+<script src="{{ '/assets/js/status-filter.js' | relative_url }}"></script>
 <script>
-var currentFilter = 'all';
-var currentUpstream = 'all';
-var searchTerm = '';
-
 {% include resolve-tracking.html %}
 {% assign groups = tracking.groups %}
+{% include group-statuses-js.html %}
 var upstreamVerdicts = {
 {% for group in groups %}  "{{ group[0] }}": "{{ group[1].upstream_verdict }}"{% unless forloop.last %},
 {% endunless %}{% endfor %}
@@ -167,68 +152,9 @@ var hasBranch = {
 {% for group in groups %}{% assign has_url = false %}{% if group[1].upstream %}{% for u in group[1].upstream %}{% if u.compare_url %}{% assign has_url = true %}{% endif %}{% endfor %}{% endif %}{% if has_url %}  "{{ group[0] }}": true,
 {% endif %}{% endfor %}
 };
-
-function setStatusFilter(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn:not(.upstream-filter)').forEach(btn => btn.classList.remove('active'));
-  document.querySelector('[data-filter="' + filter + '"]').classList.add('active');
-  filterTables();
-}
-
-function setUpstreamFilter(upstream) {
-  currentUpstream = upstream;
-  document.querySelectorAll('.upstream-filter').forEach(btn => btn.classList.remove('active'));
-  document.querySelector('[data-upstream="' + upstream + '"]').classList.add('active');
-  filterTables();
-}
-
-function getGroupId(row) {
-  var link = row.querySelector('a[href]');
-  if (link) {
-    var match = link.getAttribute('href').match(/([A-Z]+\d+)\.html/);
-    if (match) return match[1];
-  }
-  return null;
-}
-
-function filterTables() {
-  searchTerm = document.getElementById('table-search').value.toLowerCase();
-  var tables = document.querySelectorAll('table');
-  var visibleCount = 0;
-  var totalCount = 0;
-
-  tables.forEach(function(table) {
-    var rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
-    rows.forEach(function(row) {
-      if (row.querySelector('th')) return;
-      totalCount++;
-      var text = row.textContent.toLowerCase();
-      var statusCell = row.cells[2] ? row.cells[2].textContent : '';
-      var groupId = getGroupId(row);
-      var verdict = groupId ? (upstreamVerdicts[groupId] || '') : '';
-
-      var matchesSearch = searchTerm === '' || text.includes(searchTerm);
-      var matchesFilter = currentFilter === 'all' ||
-        (currentFilter === 'pending' && statusCell.includes('Pending')) ||
-        (currentFilter === 'in_progress' && statusCell.includes('In Progress')) ||
-        (currentFilter === 'on_hold' && statusCell.includes('On Hold')) ||
-        (currentFilter === 'complete' && statusCell.includes('Complete'));
-      var matchesUpstream = currentUpstream === 'all' || verdict === currentUpstream ||
-        (currentUpstream === 'has-branch' && groupId && hasBranch[groupId]);
-
-      if (matchesSearch && matchesFilter && matchesUpstream) {
-        row.style.display = '';
-        visibleCount++;
-      } else {
-        row.style.display = 'none';
-      }
-    });
-  });
-
-  document.getElementById('filter-counts').textContent =
-    visibleCount === totalCount ? '' : 'Showing ' + visibleCount + ' of ' + totalCount;
-}
-
+</script>
+<script src="{{ '/assets/js/group-index-filters.js' | relative_url }}"></script>
+<script>
 function copyToClipboard(elementId) {
   var text = document.getElementById(elementId).textContent;
   navigator.clipboard.writeText(text).then(function() {
