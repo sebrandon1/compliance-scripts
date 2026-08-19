@@ -29,8 +29,7 @@ require_cmd oc yq
 require_cluster
 
 NAMESPACE=$(get_compliance_namespace)
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-SRC_DIR="$REPO_DIR/complianceremediations"
+SRC_DIR="$SCRIPT_DIR/complianceremediations"
 
 log_info "Applying combined remediation YAMLs (no ComplianceRemediation patching)."
 
@@ -57,7 +56,7 @@ fi
 COUNT=$(printf "%s\n" "$FILES_TO_APPLY" | grep -c ".")
 log_info "Applying $COUNT remediation YAML(s) for severity '$SEVERITY'..."
 
-report_path="$REPO_DIR/applied-yamls-$SEVERITY-$(date -u +%Y%m%dT%H%M%SZ).txt"
+report_path="$SCRIPT_DIR/applied-yamls-$SEVERITY-$(date -u +%Y%m%dT%H%M%SZ).txt"
 echo "# YAML apply report ($SEVERITY) - $(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$report_path"
 echo "file,reboot_hint,result" >>"$report_path"
 
