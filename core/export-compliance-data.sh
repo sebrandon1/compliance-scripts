@@ -10,7 +10,7 @@
 # Usage: ./core/export-compliance-data.sh <ocp-version>
 # Example: ./core/export-compliance-data.sh 4.17
 #
-# Requires: oc, jq
+# Requires: oc, jq, bc
 
 set -euo pipefail
 
@@ -53,7 +53,7 @@ log_info "OCP Version: ${OCP_VERSION}"
 log_info "Namespace: ${NAMESPACE}"
 log_info "Output: ${OUTPUT_FILE}"
 
-require_cmd oc jq
+require_cmd oc jq bc
 require_cluster
 
 log_info "Cluster: connected"

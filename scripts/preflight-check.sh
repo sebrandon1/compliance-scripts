@@ -42,7 +42,7 @@ WARNINGS=0
 # ----------------------------------------------------------------------------
 echo "${BOLD}Checking CLI tools...${NC}"
 
-REQUIRED_TOOLS=(oc yq jq python3)
+REQUIRED_TOOLS=(oc yq jq python3 bc)
 for cmd in "${REQUIRED_TOOLS[@]}"; do
 	if command -v "$cmd" &>/dev/null; then
 		version=$("$cmd" --version 2>/dev/null | head -1 || echo "version unknown")
