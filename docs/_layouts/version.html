@@ -96,7 +96,7 @@ layout: default
           {% assign group_id = rem[1].group %}
           {% assign group = tracking.groups[group_id] %}
           {% if group.status == "in_progress" %}
-            {% assign fixable = fixable | plus: 2 %}
+            {% assign fixable = fixable | plus: 1 %}
           {% endif %}
         {% endfor %}
         {% assign projected_passing = version_data.summary.passing | plus: fixable %}
