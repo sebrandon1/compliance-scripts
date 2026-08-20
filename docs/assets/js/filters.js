@@ -62,9 +62,7 @@ function filterTables() {
       var upstream = row.getAttribute('data-upstream') || '';
       var text = row.textContent.toLowerCase();
       var matchSearch = !search || text.indexOf(search) !== -1;
-      var matchFilter = currentFilter === 'all' ||
-        (currentFilter === 'pass-vanilla' && status.indexOf('pass-vanilla') !== -1) ||
-        (currentFilter !== 'pass-vanilla' && status === currentFilter);
+      var matchFilter = statusMatchesFilter(status, currentFilter);
       var matchPlatform = currentPlatform === 'all' || platform === currentPlatform;
       var hasBranch = row.getAttribute('data-has-branch') === 'true';
       var matchUpstream = currentUpstream === 'all' || upstream === currentUpstream ||
