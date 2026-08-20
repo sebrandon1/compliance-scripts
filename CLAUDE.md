@@ -66,10 +66,14 @@ make rhcos-static-scan OCP_VERSION=4.21    # Run offline OSCAP scan against RHCO
 ### Dashboard and Export
 ```bash
 make export-compliance OCP_VERSION=X.XX   # Export compliance data to JSON
+make generate-group-matrix                # Rebuild Hardened page group-matrix.json
+make backfill-scan-profiles               # Fill missing per-profile counts in scan-history.json
 make update-dashboard OCP_VERSION=X.XX    # Export and push to trigger dashboard rebuild
 make serve-docs                           # Serve Jekyll dashboard locally
 make install-jekyll                       # Install Jekyll dependencies
 ```
+
+After a scan export, rerun `make generate-group-matrix` so the Hardened matrix matches the new `ocp-X_Y.json`, then `make backfill-scan-profiles` so the new `scan-history.json` row gets E8/CIS/Moderate/PCI-DSS breakdowns (export does not write `profiles`). Neither script takes CLI flags; both use `docs/_data/`. `make update-dashboard` exports and opens a PR; it does not run these two scripts.
 
 ## Architecture
 

@@ -34,6 +34,8 @@ make dashboard-validate               # Alias for validate-dashboard-data
 
 # Dashboard
 make export-compliance OCP_VERSION=5.0    # Export scan data to JSON
+make generate-group-matrix                # Rebuild Hardened page group-matrix.json
+make backfill-scan-profiles               # Fill missing per-profile counts in scan-history.json
 make update-dashboard OCP_VERSION=5.0     # Export, validate, and open a PR
 make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0
 make serve-docs                           # Serve dashboard locally

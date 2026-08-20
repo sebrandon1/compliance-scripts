@@ -46,4 +46,5 @@ That scaffolds version pages, group pages, and `docs/_data/tracking-X_Y.json`. T
 
 1. Export scan data: `make export-compliance OCP_VERSION=5.1`
 2. Update this index page with a link to the new version
-3. Refresh `docs/_data/group-matrix.json` with `python3 scripts/generate-group-matrix.py`
+3. Refresh `docs/_data/group-matrix.json` with `make generate-group-matrix`
+4. Fill missing scan-history profile counts with `make backfill-scan-profiles`

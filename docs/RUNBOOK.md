@@ -7,7 +7,8 @@ Prefer automation where it exists:
 ```bash
 make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0
 make export-compliance OCP_VERSION=5.1
-python3 scripts/generate-group-matrix.py
+make generate-group-matrix
+make backfill-scan-profiles
 ```
 
 The scaffolder copies version pages, group pages, and `docs/_data/tracking-X_Y.json` from a source version. The rest of this runbook covers what still needs a human: export, Jira/PR tracking, and review.
@@ -50,7 +51,8 @@ For a new OCP version (e.g., 5.1), complete these steps in order:
 - [ ] Review `docs/_data/ocp-5_1.json`
 - [ ] Review `docs/versions/5.1.md`, `docs/versions/5.1/remediations.md`, and group pages
 - [ ] Update `docs/_data/tracking-5_1.json` with Jira/PR info
-- [ ] Run `python3 scripts/generate-group-matrix.py`
+- [ ] Run `make generate-group-matrix`
+- [ ] Run `make backfill-scan-profiles`
 - [ ] Update `docs/REMEDIATION_GROUPINGS.md` index
 - [ ] Create Jira tickets for new remediation groups
 - [ ] Commit and push changes
@@ -633,8 +635,9 @@ Already implemented:
 
 1. **`make add-version`** — scaffold version/group pages and tracking JSON
 2. **`make export-compliance`** — export scan data from a live cluster
-3. **`python3 scripts/generate-group-matrix.py`** — rebuild the Hardened matrix
-4. **`make diff-scans`** — compare two scan exports
+3. **`make generate-group-matrix`** — rebuild the Hardened matrix
+4. **`make backfill-scan-profiles`** — fill missing per-profile counts in scan-history.json
+5. **`make diff-scans`** — compare two scan exports
 
 Possible follow-ups:
 
