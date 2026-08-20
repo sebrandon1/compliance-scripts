@@ -34,7 +34,8 @@ IMAGE_REGISTRY ?= quay.io/bapalm
         generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
         export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
-        mirror-images rhcos-static-scan shell-smoke-test dashboard-validate add-version
+        mirror-images rhcos-static-scan shell-smoke-test dashboard-validate add-version \
+        generate-group-matrix backfill-scan-profiles
 
 # Default target
 all: help
@@ -59,13 +60,13 @@ help: banner ## 📖 Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(workflow|install|apply|create|wait-for|test-compliance)"
 	@echo ""
 	@echo "$(YELLOW)📊 Data Collection Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(collect|organize|generate)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(collect|organize|generate-compliance-markdown|generate-expected)"
 	@echo ""
 	@echo "$(YELLOW)🔍 Code Quality Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(lint)"
 	@echo ""
 	@echo "$(YELLOW)🌐 Dashboard Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(export-compliance|update-dashboard|serve-docs|install-jekyll)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(export-compliance|update-dashboard|serve-docs|install-jekyll|generate-group-matrix|backfill-scan-profiles)"
 	@echo ""
 	@echo "$(YELLOW)🧹 Utility Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(clean|help|preflight)"
@@ -381,6 +382,12 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 # ────────────────────────────────────────────────────────────────────────────────
 # 🌐 Compliance Dashboard (GitHub Pages)
 # ────────────────────────────────────────────────────────────────────────────────
+
+generate-group-matrix: ## 📊 Rebuild Hardened page group-matrix.json from tracking and scan exports
+	@python3 scripts/generate-group-matrix.py
+
+backfill-scan-profiles: ## 📊 Fill missing per-profile counts in scan-history.json
+	@python3 scripts/backfill-scan-profiles.py
 
 export-compliance: ## 📊 Export compliance data to JSON for dashboard (requires OCP_VERSION)
 	@if [ -z "$(OCP_VERSION)" ]; then \

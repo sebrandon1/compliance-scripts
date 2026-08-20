@@ -285,16 +285,22 @@ python3 scripts/add-version.py --source 5.0 --target 5.1
 make add-version OCP_VERSION=5.1 SOURCE_VERSION=5.0
 ```
 
-**generate-group-matrix.py** — Builds `docs/_data/group-matrix.json` for the Hardened dashboard page from scan data and the latest tracking file.
+**generate-group-matrix.py** — Builds `docs/_data/group-matrix.json` for the Hardened dashboard page. Group membership comes from the latest `tracking-X_Y.json`; pass/fail/manual counts come from every `ocp-X_Y.json` scan export. There are no CLI flags — the script always reads and writes `docs/_data/`.
+
+Rerun after every `make export-compliance` (or after editing tracking groups / scan JSON) so the Hardened page matrix matches the new export.
 
 ```bash
 python3 scripts/generate-group-matrix.py
+make generate-group-matrix
 ```
 
-**backfill-scan-profiles.py** — Fills per-profile pass/fail/manual counts in `scan-history.json`.
+**backfill-scan-profiles.py** — Fills per-profile pass/fail/manual counts (E8, CIS, Moderate, PCI-DSS) on `scan-history.json` entries that are missing a `profiles` object. Entries that already have profiles are left unchanged. There are no CLI flags — the script always reads and writes `docs/_data/`.
+
+`make export-compliance` appends a scan-history row without `profiles`. Rerun this script after each export so Hardened scan-history rows can expand by profile. Skip only if every history row already has a `profiles` object.
 
 ```bash
 python3 scripts/backfill-scan-profiles.py
+make backfill-scan-profiles
 ```
 
 **rhcos-static-scan.sh** — Runs an offline OSCAP scan against an RHCOS rootfs.
