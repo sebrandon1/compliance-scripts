@@ -28,11 +28,22 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
         <span class="stat-label">Failing</span>
       </div>
     </div>
-    {% assign version_groups = site.pages | where: "layout", "group" | where: "version", version_page.version %}
-    {% assign in_progress_count = version_groups | where: "status", "in_progress" | size %}
-    {% assign pending_count = version_groups | where: "status", "pending" | size %}
-    {% assign on_hold_count = version_groups | where: "status", "on_hold" | size %}
-    {% assign complete_count = version_groups | where: "status", "complete" | size %}
+    {% include resolve-tracking.html version=version_page.version %}
+    {% assign in_progress_count = 0 %}
+    {% assign pending_count = 0 %}
+    {% assign on_hold_count = 0 %}
+    {% assign complete_count = 0 %}
+    {% for g in tracking.groups %}
+      {% if g[1].status == "in_progress" %}
+        {% assign in_progress_count = in_progress_count | plus: 1 %}
+      {% elsif g[1].status == "pending" %}
+        {% assign pending_count = pending_count | plus: 1 %}
+      {% elsif g[1].status == "on_hold" %}
+        {% assign on_hold_count = on_hold_count | plus: 1 %}
+      {% elsif g[1].status == "verified" or g[1].status contains "pass-vanilla" %}
+        {% assign complete_count = complete_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
     <p class="status-breakdown">
       <span title="In Progress">🔵 {{ in_progress_count }}</span>
       <span title="Pending">🟡 {{ pending_count }}</span>
