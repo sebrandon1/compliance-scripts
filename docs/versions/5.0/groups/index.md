@@ -27,61 +27,40 @@ Each group below represents a logical set of related compliance checks that can 
   <div class="filter-counts" id="filter-counts"></div>
 </div>
 
+{% include resolve-tracking.html %}
+{% assign groups = tracking.groups %}
+{% assign meta = tracking.meta %}
+{% assign high_order = "H1,H2,H3" | split: "," %}
+{% assign medium_order = "M1,M2,M3,M4,M5,M6,M7,M8,M9,M10,M11,M12,M13,M14,M15,M16,M17,M18,M19,M20,M21,M22,M23,M24,M25,M26,M27,M28,M29,M30" | split: "," %}
+{% assign low_order = "L1,L2" | split: "," %}
+{% assign manual_order = "MAN1,MAN2,MAN3,MAN4,MAN5" | split: "," %}
+
 ---
 
 ## HIGH Severity
 
-| Group | Title | Priority | Status | Tested | Jira | PR |
-|-------|-------|----------|--------|--------|------|-----|
-| [H1](H1.html) | Crypto Policy | <span class="priority-score p1">P1</span> | 🔵 In Progress | PASS | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#735](https://github.com/openshift-kni/telco-reference/pull/735) |
-| [H2](H2.html) | PAM Empty Passwords | <span class="priority-score p1">P1</span> | 🔵 In Progress | PASS | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#736](https://github.com/openshift-kni/telco-reference/pull/736) |
-| [H3](H3.html) | SSHD Empty Passwords | <span class="priority-score p1">P1</span> | 🟢 Complete | PASS | [CNF-21326](https://issues.redhat.com/browse/CNF-21326) | - |
+| Group | Title | Priority | Status | Jira | PR |
+|-------|-------|----------|--------|------|-----|
+{% for gid in high_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} | {% if g.jira %}[{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% else %}-{% endif %} | {% if g.pr %}[#{{ g.pr }}]({{ meta.pr_base_url }}{{ g.pr }}){% else %}-{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
 ## MEDIUM Severity
 
-| Group | Title | Priority | Status | Tested | Compare | Jira | PR |
-|-------|-------|----------|--------|--------|---------|------|-----|
-| [M1](M1.html) | SSHD Configuration | <span class="priority-score p2">P2</span> | 🔵 In Progress | PARTIAL | - | [CNF-22620](https://issues.redhat.com/browse/CNF-22620) | - |
-| [M4](M4.html) | Audit Rules - SELinux | <span class="priority-score p2">P2</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m4-audit-selinux) | [CNF-22621](https://issues.redhat.com/browse/CNF-22621) | - |
-| [M6](M6.html) | Audit Rules - Time Modifications | <span class="priority-score p2">P2</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m6-audit-time) | [CNF-22622](https://issues.redhat.com/browse/CNF-22622) | - |
-| [M7](M7.html) | Audit Rules - Login Monitoring | <span class="priority-score p2">P2</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m7-audit-login) | [CNF-22623](https://issues.redhat.com/browse/CNF-22623) | - |
-| [M10](M10.html) | API Server Encryption | <span class="priority-score p2">P2</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m10-api-encryption) | [CNF-22624](https://issues.redhat.com/browse/CNF-22624) | [#678](https://github.com/openshift-kni/telco-reference/pull/678) |
-| [M2](M2.html) | Kernel Hardening (Sysctl) | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | - | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | [#737](https://github.com/openshift-kni/telco-reference/pull/737) |
-| [M3](M3.html) | Audit Rules - DAC Modifications | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m3-audit-dac) | [CNF-23513](https://issues.redhat.com/browse/CNF-23513) | - |
-| [M5](M5.html) | Audit Rules - Kernel Modules | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m5-audit-modules) | [CNF-23448](https://issues.redhat.com/browse/CNF-23448) | [#738](https://github.com/openshift-kni/telco-reference/pull/738) |
-| [M8](M8.html) | Audit Rules - Network Config | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m8-audit-network) | [CNF-23449](https://issues.redhat.com/browse/CNF-23449) | - |
-| [M9](M9.html) | Auditd Configuration | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m9-auditd-config) | [CNF-23514](https://issues.redhat.com/browse/CNF-23514) | - |
-| [M11](M11.html) | Ingress TLS Ciphers | <span class="priority-score p3">P3</span> | 🟢 Complete | PASS | - | [CNF-23451](https://issues.redhat.com/browse/CNF-23451) | - |
-| [M12](M12.html) | Audit Profile | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m12-audit-profile) | [CNF-23452](https://issues.redhat.com/browse/CNF-23452) | - |
-| [M13](M13.html) | Extended DAC Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m13-audit-dac-extended) | [CNF-23515](https://issues.redhat.com/browse/CNF-23515) | - |
-| [M14](M14.html) | Identity File Access Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m14-audit-identity-files) | [CNF-23516](https://issues.redhat.com/browse/CNF-23516) | - |
-| [M15](M15.html) | File Deletion Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m15-audit-file-deletion) | [CNF-23517](https://issues.redhat.com/browse/CNF-23517) | - |
-| [M16](M16.html) | Unsuccessful File Modification Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m16-audit-unsuccessful-access) | [CNF-23518](https://issues.redhat.com/browse/CNF-23518) | - |
-| [M17](M17.html) | Privileged Commands Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m17-audit-privileged-commands) | [CNF-23519](https://issues.redhat.com/browse/CNF-23519) | - |
-| [M18](M18.html) | Session & MAC Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m18-audit-session-mac) | [CNF-23520](https://issues.redhat.com/browse/CNF-23520) | - |
-| [M19](M19.html) | Usergroup Modification Audit | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m19-audit-usergroup-files) | [CNF-23521](https://issues.redhat.com/browse/CNF-23521) | - |
-| [M20](M20.html) | Auditd Data Retention | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m20-auditd-data-retention) | [CNF-23522](https://issues.redhat.com/browse/CNF-23522) | - |
-| [M21](M21.html) | Kernel Module Blacklist | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m21-kernel-module-blacklist) | [CNF-23523](https://issues.redhat.com/browse/CNF-23523) | - |
-| [M22](M22.html) | Network Sysctl Hardening | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m22-sysctl-network) | [CNF-23524](https://issues.redhat.com/browse/CNF-23524) | - |
-| [M23](M23.html) | Kernel Sysctl Extended | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m23-sysctl-kernel-extended) | [CNF-23525](https://issues.redhat.com/browse/CNF-23525) | - |
-| [M24](M24.html) | CoreOS Kernel Arguments | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m24-coreos-kernel-args) | [CNF-23526](https://issues.redhat.com/browse/CNF-23526) | - |
-| [M25](M25.html) | Chrony/NTP Configuration | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m25-chrony-hardening) | [CNF-23527](https://issues.redhat.com/browse/CNF-23527) | - |
-| [M26](M26.html) | Systemd Hardening | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m26-systemd-hardening) | [CNF-23528](https://issues.redhat.com/browse/CNF-23528) | - |
-| [M27](M27.html) | SSHD Moderate Extensions | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m27-sshd-session-hardening) | [CNF-23529](https://issues.redhat.com/browse/CNF-23529) | - |
-| [M28](M28.html) | USBGuard | <span class="priority-score p3">P3</span> | ⚪ On Hold | WARN | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m28-usbguard) | - | - |
-| [M29](M29.html) | System Access Controls | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m29-access-controls) | [CNF-23453](https://issues.redhat.com/browse/CNF-23453) | - |
-| [M30](M30.html) | OAuth Configuration | <span class="priority-score p3">P3</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/m30-oauth) | [CNF-23454](https://issues.redhat.com/browse/CNF-23454) | - |
+| Group | Title | Priority | Status | Compare | Jira | PR |
+|-------|-------|----------|--------|---------|------|-----|
+{% for gid in medium_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} | {% if g.compare %}[📦]({{ meta.compare_base_url }}{{ g.compare }}){% else %}-{% endif %} | {% if g.jira %}[{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% else %}-{% endif %} | {% if g.pr %}[#{{ g.pr }}]({{ meta.pr_base_url }}{{ g.pr }}){% else %}-{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
 ## LOW Severity
 
-| Group | Title | Priority | Status | Tested | Compare | Jira | PR |
-|-------|-------|----------|--------|--------|---------|------|-----|
-| [L1](L1.html) | SSHD LogLevel | <span class="priority-score p4">P4</span> | 🟢 Complete | PASS | - | - | - |
-| [L2](L2.html) | Sysctl dmesg_restrict | <span class="priority-score p4">P4</span> | 🔵 In Progress | PASS | [📦](https://github.com/openshift-kni/telco-reference/compare/main...sebrandon1:telco-reference:compliance/5.0/l2-sysctl-dmesg) | [CNF-23450](https://issues.redhat.com/browse/CNF-23450) | - |
+| Group | Title | Priority | Status | Compare | Jira | PR |
+|-------|-------|----------|--------|---------|------|-----|
+{% for gid in low_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} | {% if g.compare %}[📦]({{ meta.compare_base_url }}{{ g.compare }}){% else %}-{% endif %} | {% if g.jira %}[{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% else %}-{% endif %} | {% if g.pr %}[#{{ g.pr }}]({{ meta.pr_base_url }}{{ g.pr }}){% else %}-{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
@@ -89,13 +68,10 @@ Each group below represents a logical set of related compliance checks that can 
 
 These checks require manual operator review — no MachineConfig or CRD can fix them automatically.
 
-| Group | Title | Checks | Priority | Status |
-|-------|-------|--------|----------|--------|
-| [MAN1](MAN1.html) | Workload Security | 15 | <span class="priority-score p3">P3</span> | 🟡 Pending |
-| [MAN2](MAN2.html) | RBAC & Access Control | 5 | <span class="priority-score p2">P2</span> | 🟡 Pending |
-| [MAN3](MAN3.html) | Secrets Management | 2 | <span class="priority-score p3">P3</span> | 🟡 Pending |
-| [MAN4](MAN4.html) | Audit Log Partitions | 4 | <span class="priority-score p4">P4</span> | 🟡 Pending |
-| [MAN5](MAN5.html) | Hardware/BIOS & Alerting | 5 | <span class="priority-score p4">P4</span> | 🟡 Pending |
+| Group | Title | Priority | Status |
+|-------|-------|----------|--------|
+{% for gid in manual_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
@@ -141,8 +117,6 @@ Example markdown for PR descriptions:
 
 <script src="{{ '/assets/js/status-filter.js' | relative_url }}"></script>
 <script>
-{% include resolve-tracking.html %}
-{% assign groups = tracking.groups %}
 {% include group-statuses-js.html %}
 var upstreamVerdicts = {
 {% for group in groups %}  "{{ group[0] }}": "{{ group[1].upstream_verdict }}"{% unless forloop.last %},
