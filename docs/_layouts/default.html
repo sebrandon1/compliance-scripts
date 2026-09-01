@@ -164,12 +164,9 @@
           <div class="shortcut"><kbd>g</kbd> <kbd>h</kbd> Go to home</div>
           <div class="shortcut"><kbd>g</kbd> <kbd>e</kbd> Go to Hardened</div>
         </div>
-        <div class="shortcut-group">
+        <div class="shortcut-group" id="filter-shortcut-group">
           <div class="shortcut-title">Filters</div>
-          <div class="shortcut"><kbd>1</kbd> Show all</div>
-          <div class="shortcut"><kbd>2</kbd> Pending only</div>
-          <div class="shortcut"><kbd>3</kbd> In Progress only</div>
-          <div class="shortcut"><kbd>4</kbd> Complete only</div>
+          <div id="filter-shortcuts"></div>
         </div>
       </div>
     </div>
@@ -192,7 +189,30 @@
 
   // Keyboard help toggle
   function toggleKeyboardHelp() {
-    document.getElementById('keyboard-help-modal').classList.toggle('active');
+    var modal = document.getElementById('keyboard-help-modal');
+    var opening = !modal.classList.contains('active');
+    if (opening) buildFilterShortcuts();
+    modal.classList.toggle('active');
+  }
+
+  function buildFilterShortcuts() {
+    var container = document.getElementById('filter-shortcuts');
+    var group = document.getElementById('filter-shortcut-group');
+    if (!container || !group) return;
+    var btns = document.querySelectorAll('.filter-buttons [data-filter]');
+    if (!btns.length) {
+      group.hidden = true;
+      return;
+    }
+    group.hidden = false;
+    container.innerHTML = '';
+    btns.forEach(function(btn, i) {
+      if (i >= 4) return;
+      var div = document.createElement('div');
+      div.className = 'shortcut';
+      div.innerHTML = '<kbd>' + (i + 1) + '</kbd> ' + btn.textContent.trim();
+      container.appendChild(div);
+    });
   }
 
   function setNavOpen(open) {
