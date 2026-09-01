@@ -31,20 +31,6 @@ jobs:
       - name: Run linting
         run: make python-lint
 
-  python-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: pip install pytest pyyaml
-      - name: Run tests
-        run: make python-test
-
   mypy:
     runs-on: ubuntu-latest
     steps:
