@@ -14,6 +14,7 @@
 #   --batch-size N         Apply N groups at a time, waiting for MCP rollout between batches
 #                          (recommended for SNO/CRC clusters to avoid reboot cascades)
 #   --output-dir DIR       Output directory for artifacts (default: test-results/<timestamp>)
+#   --ocp-version X.YY     Use tracking-X_YY.json (default: auto-detect from oc version)
 #   --dry-run              Download MCs but don't apply them
 #   -h, --help             Show this help message
 
@@ -26,7 +27,8 @@ source "$SCRIPT_DIR/lib/common.sh"
 require_cmd oc jq yq curl
 require_cluster
 
-TRACKING="$SCRIPT_DIR/docs/_data/tracking.json"
+OCP_VERSION=""
+TRACKING=""
 SKIP_BASELINE=false
 SKIP_APPLY=false
 GROUP_FILTER=""
@@ -45,6 +47,7 @@ usage() {
 	echo "  --groups G1,G2,...     Only apply specific groups (default: all with compare branches)"
 	echo "  --batch-size N         Apply N groups per batch, wait for MCP between (default: all at once)"
 	echo "  --output-dir DIR       Output directory for artifacts (default: test-results/<timestamp>)"
+	echo "  --ocp-version X.YY     Use tracking-X_YY.json (default: auto-detect from oc version)"
 	echo "  --dry-run              Download MCs but don't apply them"
 	echo "  -h, --help             Show this help message"
 	exit 0
@@ -72,6 +75,10 @@ while [[ $# -gt 0 ]]; do
 		OUTPUT_DIR="$2"
 		shift 2
 		;;
+	--ocp-version)
+		OCP_VERSION="$2"
+		shift 2
+		;;
 	--dry-run)
 		DRY_RUN=true
 		shift
@@ -85,6 +92,20 @@ while [[ $# -gt 0 ]]; do
 		;;
 	esac
 done
+
+if [[ -z "$OCP_VERSION" ]]; then
+	OCP_VERSION="$(oc version -o json 2>/dev/null | jq -r '.openshiftVersion // empty' | grep -oE '^[0-9]+\.[0-9]+' || true)"
+fi
+if [[ -n "$OCP_VERSION" ]]; then
+	VERSION_SLUG="${OCP_VERSION//./_}"
+	VERSIONED="$SCRIPT_DIR/docs/_data/tracking-${VERSION_SLUG}.json"
+	if [[ -f "$VERSIONED" ]]; then
+		TRACKING="$VERSIONED"
+	fi
+fi
+if [[ -z "$TRACKING" ]]; then
+	TRACKING="$SCRIPT_DIR/docs/_data/tracking.json"
+fi
 
 if [[ -z "$OUTPUT_DIR" ]]; then
 	OUTPUT_DIR="test-results/$(date -u +%Y%m%dT%H%M%SZ)"
