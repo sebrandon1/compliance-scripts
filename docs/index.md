@@ -32,6 +32,7 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
     {% assign in_progress_count = 0 %}
     {% assign pending_count = 0 %}
     {% assign on_hold_count = 0 %}
+    {% assign partial_count = 0 %}
     {% assign complete_count = 0 %}
     {% for g in tracking.groups %}
       {% if g[1].status == "in_progress" %}
@@ -40,6 +41,8 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
         {% assign pending_count = pending_count | plus: 1 %}
       {% elsif g[1].status == "on_hold" %}
         {% assign on_hold_count = on_hold_count | plus: 1 %}
+      {% elsif g[1].status == "partial" %}
+        {% assign partial_count = partial_count | plus: 1 %}
       {% elsif g[1].status == "verified" or g[1].status contains "pass-vanilla" %}
         {% assign complete_count = complete_count | plus: 1 %}
       {% endif %}
@@ -48,6 +51,7 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
       <span title="In Progress">🔵 {{ in_progress_count }}</span>
       <span title="Pending">🟡 {{ pending_count }}</span>
       <span title="On Hold">⚪ {{ on_hold_count }}</span>
+      {% if partial_count > 0 %}<span title="Partial">🟠 {{ partial_count }}</span>{% endif %}
       <span title="Complete">🟢 {{ complete_count }}</span>
     </p>
     <p><small>Last scan: {{ version_data.scan_date | date: "%Y-%m-%d" }}</small></p>
