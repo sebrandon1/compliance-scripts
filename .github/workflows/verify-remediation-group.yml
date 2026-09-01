@@ -8,9 +8,9 @@ on:
         required: true
         type: string
       ocp_version:
-        description: 'OCP version for CRC cluster (default: 4.21)'
+        description: 'OCP version for CRC cluster (default: 5.0)'
         required: false
-        default: '4.21'
+        default: '5.0'
         type: string
       co_ref:
         description: 'Compliance Operator version (default: latest)'
@@ -45,9 +45,14 @@ jobs:
           GROUP_ID=$(echo "$GROUP_ID" | tr '[:lower:]' '[:upper:]')
           echo "id=$GROUP_ID" >> "$GITHUB_OUTPUT"
 
-          TRACKING="docs/_data/tracking.json"
+          VERSION="${{ github.event.inputs.ocp_version }}"
+          VERSION_SLUG="${VERSION//./_}"
+          TRACKING="docs/_data/tracking-${VERSION_SLUG}.json"
+          if [[ ! -f "$TRACKING" ]]; then
+            TRACKING="docs/_data/tracking.json"
+          fi
           if ! jq -e --arg g "$GROUP_ID" '.groups[$g]' "$TRACKING" >/dev/null 2>&1; then
-            echo "::error::Group '$GROUP_ID' not found in tracking.json"
+            echo "::error::Group '$GROUP_ID' not found in $TRACKING"
             jq -r '.groups | keys[]' "$TRACKING"
             exit 1
           fi
