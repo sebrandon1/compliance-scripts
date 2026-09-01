@@ -412,7 +412,7 @@ update-dashboard: ## 🔄 Export compliance data and open a PR to update the das
 	@python3 scripts/validate-dashboard-data.py docs/_data/ || (echo "$(RED)❌ Validation failed, aborting PR creation$(RESET)" && exit 1)
 	@branch="update-dashboard-$(OCP_VERSION)-$$(date +%Y%m%d)"; \
 	git checkout -b "$$branch"; \
-	git add docs/_data/; \
+	git add docs/_data/ docs/badges/; \
 	git commit -m "Update compliance data for OCP $(OCP_VERSION)"; \
 	git push -u origin "$$branch"; \
 	gh pr create --title "Update compliance data for OCP $(OCP_VERSION)" \
