@@ -142,11 +142,11 @@
   </div>
 
   <!-- Keyboard Shortcuts Help Modal -->
-  <div class="keyboard-help-modal" id="keyboard-help-modal">
+  <div class="keyboard-help-modal" id="keyboard-help-modal" role="dialog" aria-modal="true" aria-labelledby="keyboard-help-title">
     <div class="keyboard-help-content">
       <div class="keyboard-help-header">
-        <h3>Keyboard Shortcuts</h3>
-        <button onclick="toggleKeyboardHelp()" class="close-btn">&times;</button>
+        <h3 id="keyboard-help-title">Keyboard Shortcuts</h3>
+        <button onclick="toggleKeyboardHelp()" class="close-btn" aria-label="Close">&times;</button>
       </div>
       <div class="keyboard-help-body">
         <div class="shortcut-group">
@@ -188,12 +188,24 @@
     localStorage.setItem('theme', newTheme);
   }
 
+  var _kbHelpPreviousFocus = null;
+
   // Keyboard help toggle
   function toggleKeyboardHelp() {
     var modal = document.getElementById('keyboard-help-modal');
     var opening = !modal.classList.contains('active');
-    if (opening) buildFilterShortcuts();
-    modal.classList.toggle('active');
+    if (opening) {
+      buildFilterShortcuts();
+      _kbHelpPreviousFocus = document.activeElement;
+      modal.classList.add('active');
+      var closeBtn = modal.querySelector('.close-btn');
+      if (closeBtn) closeBtn.focus();
+      modal.addEventListener('keydown', _trapFocus);
+    } else {
+      modal.classList.remove('active');
+      modal.removeEventListener('keydown', _trapFocus);
+      if (_kbHelpPreviousFocus) _kbHelpPreviousFocus.focus();
+    }
   }
 
   function buildFilterShortcuts() {
@@ -214,6 +226,20 @@
       div.innerHTML = '<kbd>' + (i + 1) + '</kbd> ' + btn.textContent.trim();
       container.appendChild(div);
     });
+  }
+
+  function _trapFocus(e) {
+    if (e.key !== 'Tab') return;
+    var modal = document.getElementById('keyboard-help-modal');
+    var focusable = Array.from(modal.querySelectorAll('button, [href], input, [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
   }
 
   function setNavOpen(open) {
@@ -271,7 +297,9 @@
         toggleKeyboardHelp();
         break;
       case 'Escape':
-        document.getElementById('keyboard-help-modal').classList.remove('active');
+        if (document.getElementById('keyboard-help-modal').classList.contains('active')) {
+          toggleKeyboardHelp();
+        }
         clearRowSelection();
         setNavOpen(false);
         break;
