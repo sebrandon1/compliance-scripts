@@ -15,8 +15,25 @@ Each group below represents a logical set of related compliance checks that can 
     <input type="text" id="table-search" placeholder="Search groups..." onkeyup="filterTables()">
   </div>
   {% include status-filter-buttons.html %}
+  <div class="filter-buttons">
+    <button class="filter-btn upstream-filter active" data-upstream="all" onclick="setUpstreamFilter('all')">All Upstream</button>
+    <button class="filter-btn upstream-filter" data-upstream="upstream-candidate" onclick="setUpstreamFilter('upstream-candidate')">🔼 Candidate</button>
+    <button class="filter-btn upstream-filter" data-upstream="ran-only" onclick="setUpstreamFilter('ran-only')">🎯 RAN Only</button>
+    <button class="filter-btn upstream-filter" data-upstream="platform-config" onclick="setUpstreamFilter('platform-config')">⚙️ Platform</button>
+    <button class="filter-btn upstream-filter" data-upstream="pass-vanilla" onclick="setUpstreamFilter('pass-vanilla')">✅ Pass</button>
+    <button class="filter-btn upstream-filter" data-upstream="not-applicable" onclick="setUpstreamFilter('not-applicable')">— N/A</button>
+    <button class="filter-btn upstream-filter" data-upstream="has-branch" onclick="setUpstreamFilter('has-branch')">🔧 Branch Prepared</button>
+  </div>
   <div class="filter-counts" id="filter-counts"></div>
 </div>
+
+{% include resolve-tracking.html %}
+{% assign groups = tracking.groups %}
+{% assign meta = tracking.meta %}
+{% assign high_order = "H1,H2,H3" | split: "," %}
+{% assign medium_order = "M1,M2,M3,M4,M5,M6,M7,M8,M9,M10,M11,M12,M13,M14,M15,M16,M17,M18,M19,M20,M21,M22,M23,M24,M25,M26,M27,M28,M29,M30" | split: "," %}
+{% assign low_order = "L1,L2" | split: "," %}
+{% assign manual_order = "MAN1,MAN2,MAN3,MAN4,MAN5" | split: "," %}
 
 ---
 
@@ -24,9 +41,8 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Priority | Status | Jira | PR |
 |-------|-------|----------|--------|------|-----|
-| [H1](H1.html) | Crypto Policy | <span class="priority-score p1">P1</span> | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H2](H2.html) | PAM Empty Passwords | <span class="priority-score p1">P1</span> | 🔵 In Progress | [CNF-21212](https://issues.redhat.com/browse/CNF-21212) | [#529](https://github.com/openshift-kni/telco-reference/pull/529) |
-| [H3](H3.html) | SSHD Empty Passwords | <span class="priority-score p1">P1</span> | 🔵 In Progress | [CNF-19031](https://issues.redhat.com/browse/CNF-19031) | [#466](https://github.com/openshift-kni/telco-reference/pull/466) |
+{% for gid in high_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} | {% if g.jira %}[{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% else %}-{% endif %} | {% if g.pr %}[#{{ g.pr }}]({{ meta.pr_base_url }}{{ g.pr }}){% else %}-{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
@@ -34,18 +50,8 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Priority | Status | Compare | Jira | PR |
 |-------|-------|----------|--------|---------|------|-----|
-| [M1](M1.html) | SSHD Configuration | <span class="priority-score p2">P2</span> | 🟡 Pending | - | - | - |
-| [M4](M4.html) | Audit Rules - SELinux | <span class="priority-score p2">P2</span> | 🟡 Pending | - | - | - |
-| [M6](M6.html) | Audit Rules - Time Modifications | <span class="priority-score p2">P2</span> | 🟡 Pending | - | - | - |
-| [M7](M7.html) | Audit Rules - Login Monitoring | <span class="priority-score p2">P2</span> | 🟡 Pending | - | - | - |
-| [M10](M10.html) | API Server Encryption | <span class="priority-score p2">P2</span> | 🟡 Pending | - | - | - |
-| [M2](M2.html) | Kernel Hardening (Sysctl) | <span class="priority-score p3">P3</span> | ⚪ On Hold | - | [CNF-21196](https://issues.redhat.com/browse/CNF-21196) | - |
-| [M3](M3.html) | Audit Rules - DAC Modifications | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
-| [M5](M5.html) | Audit Rules - Kernel Modules | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
-| [M8](M8.html) | Audit Rules - Network Config | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
-| [M9](M9.html) | Auditd Configuration | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
-| [M11](M11.html) | Ingress TLS Ciphers | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
-| [M12](M12.html) | Audit Profile | <span class="priority-score p3">P3</span> | 🟡 Pending | - | - | - |
+{% for gid in medium_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} | {% if g.compare %}[📦]({{ meta.compare_base_url }}{{ g.compare }}){% else %}-{% endif %} | {% if g.jira %}[{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% else %}-{% endif %} | {% if g.pr %}[#{{ g.pr }}]({{ meta.pr_base_url }}{{ g.pr }}){% else %}-{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
@@ -53,16 +59,28 @@ Each group below represents a logical set of related compliance checks that can 
 
 | Group | Title | Priority | Status | Compare | Jira | PR |
 |-------|-------|----------|--------|---------|------|-----|
-| [L1](L1.html) | SSHD LogLevel | <span class="priority-score p4">P4</span> | 🟡 Pending | - | - | - |
-| [L2](L2.html) | Sysctl dmesg_restrict | <span class="priority-score p4">P4</span> | 🟡 Pending | - | - | - |
+{% for gid in low_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} | {% if g.compare %}[📦]({{ meta.compare_base_url }}{{ g.compare }}){% else %}-{% endif %} | {% if g.jira %}[{{ g.jira }}]({{ meta.jira_base_url }}{{ g.jira }}){% else %}-{% endif %} | {% if g.pr %}[#{{ g.pr }}]({{ meta.pr_base_url }}{{ g.pr }}){% else %}-{% endif %} |
+{% endif %}{% endfor %}
+
+---
+
+## Manual Checks (No Auto-Remediation)
+
+These checks require manual operator review — no MachineConfig or CRD can fix them automatically.
+
+| Group | Title | Priority | Status |
+|-------|-------|----------|--------|
+{% for gid in manual_order %}{% assign g = groups[gid] %}{% if g %}| [{{ gid }}]({{ gid }}.html) | {{ g.title }} | <span class="priority-score p{{ g.priority }}">P{{ g.priority }}</span> | {% if g.status == "verified" %}🟢 Verified{% elsif g.status == "in_progress" %}🔵 In Progress{% elsif g.status == "pending" %}🟡 Pending{% elsif g.status == "on_hold" %}⚪ On Hold{% elsif g.status == "partial" %}🟠 Partial{% elsif g.status contains "pass-vanilla" %}✅ PASS (vanilla){% else %}{{ g.status }}{% endif %} |
+{% endif %}{% endfor %}
 
 ---
 
 ## Group Naming Convention
 
 - **H** = HIGH severity (H1, H2, H3)
-- **M** = MEDIUM severity (M1-M12)
+- **M** = MEDIUM severity (M1-M30)
 - **L** = LOW severity (L1, L2)
+- **MAN** = Manual checks (MAN1-MAN5)
 
 ## Priority Legend
 
@@ -99,7 +117,6 @@ Example markdown for PR descriptions:
 
 <script src="{{ '/assets/js/status-filter.js' | relative_url }}"></script>
 <script>
-{% include resolve-tracking.html %}
 {% include group-statuses-js.html %}
 </script>
 <script src="{{ '/assets/js/group-index-filters.js' | relative_url }}"></script>
