@@ -70,6 +70,83 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
 </div>
 {% endif %}
 
+## Scan History
+
+<div style="max-width:800px;margin:1.5rem 0;">
+  <canvas id="scan-trend-chart" aria-label="Compliance scan trend chart"></canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+(function() {
+  var scanHistory = {{ site.data.scan-history | jsonify }};
+  var sorted = scanHistory.slice().sort(function(a, b) {
+    return a.scan_date.localeCompare(b.scan_date);
+  });
+  var labels = sorted.map(function(r) {
+    return 'OCP ' + r.version + ' (' + r.scan_date.slice(0, 10) + ')';
+  });
+  var ctx = document.getElementById('scan-trend-chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Passing',
+          data: sorted.map(function(r) { return r.summary.passing; }),
+          borderColor: '#2a9d44',
+          backgroundColor: 'rgba(42,157,68,0.1)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Failing',
+          data: sorted.map(function(r) { return r.summary.failing; }),
+          borderColor: '#c00',
+          backgroundColor: 'rgba(204,0,0,0.1)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Manual',
+          data: sorted.map(function(r) { return r.summary.manual; }),
+          borderColor: '#888',
+          backgroundColor: 'rgba(136,136,136,0.1)',
+          tension: 0.3,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            afterBody: function(items) {
+              var r = sorted[items[0].dataIndex];
+              var lines = [];
+              if (r.notes) lines.push('Note: ' + r.notes);
+              if (r.profiles) {
+                Object.keys(r.profiles).forEach(function(p) {
+                  var pr = r.profiles[p];
+                  lines.push(p + ': ' + pr.passing + ' pass / ' + pr.failing + ' fail');
+                });
+              }
+              return lines;
+            }
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: 'Check Count' } }
+      }
+    }
+  });
+})();
+</script>
+
 ## Quick Links
 
 - [Remediation Groupings]({{ '/REMEDIATION_GROUPINGS' | relative_url }}) - Grouped remediations by category
