@@ -1,6 +1,6 @@
 {
   "version": "5.0",
-  "scan_date": "2026-09-02T19:13:20Z",
+  "scan_date": "2026-09-02T20:54:02Z",
   "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
   "content_image_digest": null,
   "summary": {
@@ -8184,10 +8184,25 @@
       "platform": "rhcos"
     }
   ],
-  "exported_at": "2026-09-02T19:13:20Z",
+  "exported_at": "2026-09-02T20:54:02Z",
   "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
   "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
   "previous_scans": [
+    {
+      "scan_date": "2026-09-02T19:13:20Z",
+      "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+      "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
+      "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
+      "summary": {
+        "total_checks": 914,
+        "passing": 332,
+        "failing": 503,
+        "manual": 79,
+        "skipped": 0,
+        "rhcos_failing": 450,
+        "ocp_failing": 53
+      }
+    },
     {
       "scan_date": "2026-08-12T17:45:36Z",
       "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
