@@ -63,10 +63,14 @@ function buildCheckMap(data) {
   return checks;
 }
 
+var regressions, fixes, added, removed, manualChanges;
+
 function runCompare() {
   var oldV = document.getElementById('old-version').value;
   var newV = document.getElementById('new-version').value;
   var el = document.getElementById('compare-results');
+
+  regressions = []; fixes = []; added = []; removed = []; manualChanges = [];
 
   if (oldV === newV) {
     el.innerHTML = '<p style="color: var(--color-text-muted);">Select two different versions to compare.</p>';
@@ -88,8 +92,6 @@ function runCompare() {
   var newNames = Object.keys(newChecks);
   var allNames = new Set(oldNames.concat(newNames));
 
-  var regressions = [], fixes = [], added = [], removed = [], manualChanges = [];
-
   allNames.forEach(function(name) {
     var o = oldChecks[name], n = newChecks[name];
     if (!o) { added.push({name: name, status: n.status, platform: n.platform}); return; }
@@ -102,7 +104,11 @@ function runCompare() {
   });
 
   var os = oldData.summary, ns = newData.summary;
-  var html = '<div class="summary-cards" style="margin: 1rem 0;">';
+  var html = '<div style="display:flex;gap:0.5rem;margin-bottom:1rem;">' +
+    '<button class="quick-link export-btn" onclick="exportCompareJSON()">&#128230; Export JSON</button>' +
+    '<button class="quick-link export-btn" onclick="exportCompareCSV()">&#128196; Export CSV</button>' +
+    '</div>';
+  html += '<div class="summary-cards" style="margin: 1rem 0;">';
   html += summaryCard('', 'Old: ' + oldV, 'New: ' + newV, 'Delta');
   html += summaryCard('Total', os.total_checks, ns.total_checks);
   html += summaryCard('Passing', os.passing, ns.passing);
@@ -137,6 +143,7 @@ function runCompare() {
   }
 
   el.innerHTML = html;
+  if (window.initSortable) window.initSortable(el);
   history.replaceState(null, '', '#left=' + encodeURIComponent(oldV) + '&right=' + encodeURIComponent(newV));
 }
 
@@ -165,11 +172,11 @@ function summaryCard(label, oldVal, newVal, deltaLabel) {
 function changeSection(title, items, cls, showTransition) {
   var html = '<h3 style="margin-top:1.5rem;">' + title + ' (' + items.length + ')</h3>';
   html += '<table class="remediation-table"><thead><tr>';
-  html += '<th>Check Name</th><th>Platform</th>';
-  if (showTransition) html += '<th>Change</th>';
-  else html += '<th>Status</th>';
+  html += '<th class="sortable">Check Name</th><th class="sortable">Platform</th>';
+  if (showTransition) html += '<th class="sortable">Change</th>';
+  else html += '<th class="sortable">Status</th>';
   html += '</tr></thead><tbody>';
-  items.sort(function(a,b) { return a.name.localeCompare(b.name); });
+  items = items.slice().sort(function(a,b) { return a.name.localeCompare(b.name); });
   items.forEach(function(item) {
     var platform = item.platform === 'rhcos' ? '<span class="platform-badge rhcos">RHCOS</span>' :
                    item.platform === 'ocp' ? '<span class="platform-badge ocp">OCP</span>' : '-';
@@ -180,6 +187,48 @@ function changeSection(title, items, cls, showTransition) {
   });
   html += '</tbody></table>';
   return html;
+}
+
+function exportCompareJSON() {
+  if (!regressions) { alert('Run a comparison first.'); return; }
+  var oldV = document.getElementById('old-version').value;
+  var newV = document.getElementById('new-version').value;
+  var data = {
+    old_version: oldV,
+    new_version: newV,
+    exported_at: new Date().toISOString(),
+    summary: {regressions: regressions.length, fixes: fixes.length, added: added.length, removed: removed.length, other: manualChanges.length},
+    regressions: regressions,
+    fixes: fixes,
+    added: added,
+    removed: removed,
+    other_changes: manualChanges
+  };
+  downloadBlob(JSON.stringify(data, null, 2), 'application/json', 'compliance-compare-' + oldV + '-to-' + newV + '.json');
+}
+
+function exportCompareCSV() {
+  if (!regressions) { alert('Run a comparison first.'); return; }
+  var oldV = document.getElementById('old-version').value;
+  var newV = document.getElementById('new-version').value;
+  var rows = [['Category', 'Check Name', 'Platform', 'Old Status', 'New Status'].join(',')];
+  function addRows(category, items, oldStatus, newStatus) {
+    items.forEach(function(item) {
+      rows.push([
+        csvEscape(category),
+        csvEscape(item.name),
+        csvEscape(item.platform || ''),
+        csvEscape(oldStatus !== null ? item[oldStatus] : ''),
+        csvEscape(newStatus !== null ? item[newStatus] : '')
+      ].join(','));
+    });
+  }
+  addRows('regression', regressions, 'old', 'new');
+  addRows('fix', fixes, 'old', 'new');
+  addRows('other', manualChanges, 'old', 'new');
+  addRows('added', added, null, 'status');
+  addRows('removed', removed, 'status', null);
+  downloadBlob(rows.join('\n'), 'text/csv', 'compliance-compare-' + oldV + '-to-' + newV + '.csv');
 }
 
 (function restoreFromHash() {
