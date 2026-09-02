@@ -1,5 +1,7 @@
-(function() {
-  document.querySelectorAll('th.sortable').forEach(function(th) {
+function initSortable(root) {
+  (root || document).querySelectorAll('th.sortable').forEach(function(th) {
+    if (th._sortInitialized) return;
+    th._sortInitialized = true;
     th.setAttribute('aria-sort', 'none');
     th.addEventListener('click', function() {
       var table = th.closest('table');
@@ -31,4 +33,6 @@
       rows.forEach(function(row) { tbody.appendChild(row); });
     });
   });
-})();
+}
+window.initSortable = initSortable;
+initSortable(document);
