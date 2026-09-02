@@ -62,6 +62,9 @@ echo "file,reboot_hint,result" >>"$report_path"
 
 # Use a temp workspace for metadata-injected files
 TMP_DIR=$(make_temp_dir)
+declare -A roles_applied
+apiserver_applied=false
+
 while IFS= read -r file; do
 	[[ -z "$file" ]] && continue
 	# Prepare metadata-injected temp file mirroring organize-machine-configs.sh behavior
@@ -103,19 +106,37 @@ while IFS= read -r file; do
 	echo "$result"
 	echo "$file,$reboot_hint,${result//,/;}" >>"$report_path"
 
-	# Wait for reconciliation where appropriate
+	# Collect roles for deferred MCP wait; check existence for other kinds
 	if [[ "$kind" == "MachineConfig" ]]; then
-		log_info "Waiting for MCP/$role to become Updated=True"
-		oc wait mcp/"$role" --for=condition=Updated=True --timeout=45m
-		oc get mcp "$role" -o wide || true
+		roles_applied["$role"]=1
 	elif [[ "$kind" == "APIServer" ]]; then
-		log_info "Waiting for kube-apiserver operator Available=True"
-		oc wait co/kube-apiserver --for=condition=Available=True --timeout=10m || true
+		apiserver_applied=true
 	else
-		# Basic existence check for other resource kinds
 		oc get -f "$modified_file" >/dev/null 2>&1 || true
 	fi
 done <<<"$FILES_TO_APPLY"
+
+# Wait for each unique MachineConfigPool role once (in parallel across roles)
+if [[ ${#roles_applied[@]} -gt 0 ]]; then
+	log_info "Waiting for MachineConfigPool(s) to reconcile: ${!roles_applied[*]}"
+	mcp_pids=()
+	for role in "${!roles_applied[@]}"; do
+		oc wait mcp/"$role" --for=condition=Updated=True --timeout=45m &
+		mcp_pids+=($!)
+	done
+	for pid in "${mcp_pids[@]}"; do
+		wait "$pid" || log_warn "MCP wait failed (pid $pid)"
+	done
+	for role in "${!roles_applied[@]}"; do
+		oc get mcp "$role" -o wide || true
+	done
+fi
+
+# Wait for APIServer once if any APIServer resource was applied
+if [[ "$apiserver_applied" == "true" ]]; then
+	log_info "Waiting for kube-apiserver operator Available=True"
+	oc wait co/kube-apiserver --for=condition=Available=True --timeout=10m || true
+fi
 
 log_success "Completed applying remediations for severity '$SEVERITY'."
 log_info "Wrote YAML apply report to $report_path"
