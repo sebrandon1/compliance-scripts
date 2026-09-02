@@ -1,16 +1,16 @@
 {
   "version": "5.0",
-  "scan_date": "2026-08-12T17:45:36Z",
+  "scan_date": "2026-09-02T19:13:20Z",
   "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
   "content_image_digest": null,
   "summary": {
     "total_checks": 914,
-    "passing": 336,
-    "failing": 499,
+    "passing": 332,
+    "failing": 503,
     "manual": 79,
     "skipped": 0,
     "rhcos_failing": 450,
-    "ocp_failing": 49
+    "ocp_failing": 53
   },
   "remediations": {
     "high": [
@@ -233,6 +233,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-cis-scc-limit-container-allowed-capabilities",
+        "check": "ocp4-cis-scc-limit-container-allowed-capabilities",
+        "status": "FAIL",
+        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
+        "severity": "medium",
+        "profile": "CIS",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-e8-api-server-encryption-provider-cipher",
         "check": "ocp4-e8-api-server-encryption-provider-cipher",
         "status": "FAIL",
@@ -255,6 +264,15 @@
         "check": "ocp4-e8-ocp-allowed-registries-for-import",
         "status": "FAIL",
         "description": "Allowed registries for import are configured\nThe configuration allowedRegistriesForImport limits the container image registries from which normal users may import images. This is important to control, as a user who can stand up a malicious registry can then import content which claims to include the SHAs of legitimate content layers. You can set the allowed repositories for import by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-import-registries-patch.yaml\n\nspec:\n allowedRegistriesForImport:\n - domainName: my-trusted-registry.internal.example.com\n   insecure: false\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-import-registries-patch.yaml)\" --type=merge",
+        "severity": "medium",
+        "profile": "E8",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-e8-scc-limit-container-allowed-capabilities",
+        "check": "ocp4-e8-scc-limit-container-allowed-capabilities",
+        "status": "FAIL",
+        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "E8",
         "platform": "ocp"
@@ -300,15 +318,6 @@
         "check": "ocp4-moderate-banner-or-login-template-set",
         "status": "FAIL",
         "description": "Ensure that a OpenShift OAuth login template or a classification banner is set\nA legal notice must be configured.\n\nThis is achievable via the OAuth object by creating a custom login page, storing it in a Kubernetes Secret and referencing it in the appropriate field as described in the documentation ( https://docs.openshift.com/container-platform/latest/web_console/customizing-the-web-console.html#customizing-the-login-page_customizing-web-console )\n\nAnother way of achieving this is via a custom classification banner which is possible to set via the ConsoleNotification CRD as described in the documentation ( https://docs.openshift.com/container-platform/4.7/web_console/customizing-the-web-console.html#creating-custom-notification-banners_customizing-web-console )",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-cluster-version-operator-exists",
-        "check": "ocp4-moderate-cluster-version-operator-exists",
-        "status": "FAIL",
-        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -431,10 +440,28 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
+        "status": "FAIL",
+        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-moderate-resource-requests-quota",
         "check": "ocp4-moderate-resource-requests-quota",
         "status": "FAIL",
         "description": "Ensure workloads use resource requests and limits\nThere are two ways to enable resource requests and limits. To create either: A multi-project quota, defined by a ClusterResourceQuota object, allows quotas to be shared across multiple projects. Resources used in each selected project are aggregated and that aggregate is used to limit resources across all the selected projects. A resource quota, defined by a ResourceQuota object, provides constraints that limit aggregate resource consumption per project. It can limit the quantity of objects that can be created in a project by type, as well as the total amount of compute resources and storage that might be consumed by resources in that project. We want to make sure either a ClusterResourceQuota is used in a cluster or a ResourceQuota is used per namespaces.\n\nTo configure ClusterResourceQuota, follow the directions in the documentation ( https://docs.openshift.com/container-platform/4.9/applications/quotas/quotas-setting-across-multiple-projects.html )\n\nTo configure ResourceQuota Per Project, follow the directions in the documentation ( https://docs.openshift.com/container-platform/4.9/applications/quotas/quotas-setting-per-project.html )",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-moderate-scc-limit-container-allowed-capabilities",
+        "check": "ocp4-moderate-scc-limit-container-allowed-capabilities",
+        "status": "FAIL",
+        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -552,6 +579,15 @@
         "check": "ocp4-pci-dss-ocp-allowed-registries-for-import",
         "status": "FAIL",
         "description": "Allowed registries for import are configured\nThe configuration allowedRegistriesForImport limits the container image registries from which normal users may import images. This is important to control, as a user who can stand up a malicious registry can then import content which claims to include the SHAs of legitimate content layers. You can set the allowed repositories for import by applying the following manifest using\n\noc patch\n\n, e.g. if you save the following snippet to\n\n/tmp/allowed-import-registries-patch.yaml\n\nspec:\n allowedRegistriesForImport:\n - domainName: my-trusted-registry.internal.example.com\n   insecure: false\n\nyou would call\n\noc patch image.config.openshift.io cluster --patch=\"$(cat /tmp/allowed-import-registries-patch.yaml)\" --type=merge",
+        "severity": "medium",
+        "profile": "PCI-DSS",
+        "platform": "ocp"
+      },
+      {
+        "name": "ocp4-pci-dss-scc-limit-container-allowed-capabilities",
+        "check": "ocp4-pci-dss-scc-limit-container-allowed-capabilities",
+        "status": "FAIL",
+        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "PCI-DSS",
         "platform": "ocp"
@@ -5254,15 +5290,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-cis-scc-limit-container-allowed-capabilities",
-        "check": "ocp4-cis-scc-limit-container-allowed-capabilities",
-        "status": "PASS",
-        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
-        "severity": "medium",
-        "profile": "CIS",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-cis-scheduler-profiling-protected-by-rbac",
         "check": "ocp4-cis-scheduler-profiling-protected-by-rbac",
         "status": "PASS",
@@ -5294,15 +5321,6 @@
         "check": "ocp4-e8-ocp-idp-no-htpasswd",
         "status": "PASS",
         "description": "Do Not Use htpasswd-based IdP\nFor users to interact with OpenShift Container Platform, they must first authenticate to the cluster. The authentication layer identifies the user associated with requests to the OpenShift Container Platform API. The authorization layer then uses information about the requesting user to determine if the request is allowed. Understanding authentication | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/latest/logging/cluster-logging-external.html )\n\nThe OpenShift Container Platform includes a built-in OAuth server for token-based authentication. Developers and administrators obtain OAuth access tokens to authenticate themselves to the API. It is recommended for an administrator to configure OAuth to specify an identity provider after the cluster is installed. User access to the cluster is managed through the identity provider. Understanding identity provider configuration | Authentication | OpenShift Container Platform ( https://docs.openshift.com/container-platform/latest/authentication/understanding-identity-provider.html )\n\nHowever, not all Identity Providers supported by OpenShift provide the same level of capabilities. As an example, the htpasswd Identity Provider only checks the username and password match and provides no means of 2FA, account lockout or notification mechanism. This rule therefore only allows a subset of identity providers.",
-        "severity": "medium",
-        "profile": "E8",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-e8-scc-limit-container-allowed-capabilities",
-        "check": "ocp4-e8-scc-limit-container-allowed-capabilities",
-        "status": "PASS",
-        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "E8",
         "platform": "ocp"
@@ -5614,6 +5632,15 @@
         "platform": "ocp"
       },
       {
+        "name": "ocp4-moderate-cluster-version-operator-exists",
+        "check": "ocp4-moderate-cluster-version-operator-exists",
+        "status": "PASS",
+        "description": "Ensure that Cluster Version Operator is deployed\nIntegrity of the OpenShift platform is handled to start by the cluster version operator. Cluster Version Operator will by default GPG verify the integrity of the release image before applying it. [1] This rule checks if Cluster Version Operator is deployed and available in the system. [1] https://github.com/openshift/machine-config-operator/blob/master/docs/OSUpgrades.md#questions-and-answers",
+        "severity": "medium",
+        "profile": "Moderate",
+        "platform": "ocp"
+      },
+      {
         "name": "ocp4-moderate-cluster-version-operator-verify-integrity",
         "check": "ocp4-moderate-cluster-version-operator-verify-integrity",
         "status": "PASS",
@@ -5821,15 +5848,6 @@
         "platform": "ocp"
       },
       {
-        "name": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "check": "ocp4-moderate-resource-requests-limits-in-deployment",
-        "status": "PASS",
-        "description": "Ensure that all deployments has resource limits\nWhen deploying an application, it is important to tune based on memory and CPU consumption, allocating enough resources for the application to function properly. Images provided by OpenShift Dedicated behave properly within the confines of the memory they are allocated. However, any application images must pay attention to the specific resources required to ensure they are available. If the node where a Pod is running has enough of a resource available, it's possible (and allowed) for a container to use more resource than its request for that resource specifies. However, a container is not allowed to use more than its resource limit.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
         "name": "ocp4-moderate-resource-requests-limits-in-statefulset",
         "check": "ocp4-moderate-resource-requests-limits-in-statefulset",
         "status": "PASS",
@@ -5870,15 +5888,6 @@
         "check": "ocp4-moderate-scansettingbinding-exists",
         "status": "PASS",
         "description": "Ensure that Compliance Operator is scanning the cluster\nThe Compliance Operator ( https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-overview.html ) scans the hosts and the platform (OCP) configurations for software flaws and improper configurations according to different compliance benchmarks. It uses OpenSCAP as a backend, which is a known and certified tool to do such scans.",
-        "severity": "medium",
-        "profile": "Moderate",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-moderate-scc-limit-container-allowed-capabilities",
-        "check": "ocp4-moderate-scc-limit-container-allowed-capabilities",
-        "status": "PASS",
-        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "Moderate",
         "platform": "ocp"
@@ -6401,15 +6410,6 @@
         "check": "ocp4-pci-dss-scansettingbinding-exists",
         "status": "PASS",
         "description": "Ensure that Compliance Operator is scanning the cluster\nThe Compliance Operator ( https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-overview.html ) scans the hosts and the platform (OCP) configurations for software flaws and improper configurations according to different compliance benchmarks. It uses OpenSCAP as a backend, which is a known and certified tool to do such scans.",
-        "severity": "medium",
-        "profile": "PCI-DSS",
-        "platform": "ocp"
-      },
-      {
-        "name": "ocp4-pci-dss-scc-limit-container-allowed-capabilities",
-        "check": "ocp4-pci-dss-scc-limit-container-allowed-capabilities",
-        "status": "PASS",
-        "description": "Limit Container Capabilities\nContainers should not enable more capabilites than needed as this opens the door for malicious use. To enable only the required capabilities, the appropriate Security Context Constraints (SCCs) should set capabilities as a list in allowedCapabilities.\n\nIn case an SCC outside the default allow list in the variable var-sccs-with-allowed-capabilities-regex is being flagged, create a TailoredProfile and add the additional SCC to the regular expression in the variable var-sccs-with-allowed-capabilities-regex. An example allowing an SCC named additional follows:\n\napiVersion: compliance.openshift.io/v1alpha1\nkind: TailoredProfile\nmetadata:\n name: cis-additional-scc\nspec:\n description: Allows an additional scc\n setValues:\n - name: ocp4-var-sccs-with-allowed-capabilities-regex\n   rationale: Allow our own custom SCC\n   value: ^privileged$|^hostnetwork-v2$|^restricted-v2$|^nonroot-v2$|^additional$\n extends: ocp4-cis\n title: Modified CIS allowing one more SCC\n\nFinally, reference this TailoredProfile in a ScanSettingBinding For more information on Tailoring the Compliance Operator, please consult the OpenShift documentation: https://docs.openshift.com/container-platform/latest/security/compliance_operator/co-scans/compliance-operator-tailor.html",
         "severity": "medium",
         "profile": "PCI-DSS",
         "platform": "ocp"
@@ -8184,10 +8184,25 @@
       "platform": "rhcos"
     }
   ],
-  "exported_at": "2026-08-12T17:45:36Z",
+  "exported_at": "2026-09-02T19:13:20Z",
   "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
   "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
   "previous_scans": [
+    {
+      "scan_date": "2026-08-12T17:45:36Z",
+      "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+      "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
+      "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
+      "summary": {
+        "total_checks": 914,
+        "passing": 336,
+        "failing": 499,
+        "manual": 79,
+        "skipped": 0,
+        "rhcos_failing": 450,
+        "ocp_failing": 49
+      }
+    },
     {
       "scan_date": "2026-07-21T18:42:42Z",
       "content_image": "quay.io/bapalm/k8scontent:v0.1.81",

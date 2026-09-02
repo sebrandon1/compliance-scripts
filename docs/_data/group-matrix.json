@@ -783,9 +783,9 @@
       "total": 19
     },
     "5_0": {
-      "fail": 3,
+      "fail": 4,
       "manual": 15,
-      "pass": 1,
+      "pass": 0,
       "total": 19
     },
     "description": "Manual review items: workload container security \u2014 verifying pod security standards, resource limits, and image provenance.",
@@ -871,9 +871,9 @@
       "total": 17
     },
     "5_0": {
-      "fail": 14,
+      "fail": 13,
       "manual": 3,
-      "pass": 0,
+      "pass": 1,
       "total": 17
     },
     "description": "Manual review items: hardware BIOS settings, alerting rules, and physical security controls that cannot be checked by automated scans.",

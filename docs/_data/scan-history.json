@@ -339,5 +339,45 @@
         "manual": 22
       }
     }
+  },
+  {
+    "version": "5.0",
+    "scan_date": "2026-09-02T19:13:20Z",
+    "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+    "content_image_digest": null,
+    "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
+    "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
+    "cluster": "cnfdt16-wlc8p",
+    "summary": {
+      "total_checks": 914,
+      "passing": 332,
+      "failing": 503,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 450,
+      "ocp_failing": 53
+    },
+    "profiles": {
+      "CIS": {
+        "passing": 59,
+        "failing": 9,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 38,
+        "failing": 68,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 160,
+        "failing": 401,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 75,
+        "failing": 17,
+        "manual": 22
+      }
+    }
   }
 ]
