@@ -397,6 +397,7 @@ export-compliance: ## 📊 Export compliance data to JSON for dashboard (require
 	fi
 	@echo "$(BOLD)$(BLUE)📊 Exporting compliance data for OCP $(OCP_VERSION)...$(RESET)"
 	@./core/export-compliance-data.sh $(OCP_VERSION)
+	@cp docs/_data/ocp-$(subst .,_,$(OCP_VERSION)).json docs/assets/data/ocp-$(subst .,_,$(OCP_VERSION)).json
 	@echo "$(GREEN)✅ Compliance data exported to docs/_data/ocp-$(OCP_VERSION).json$(RESET)"
 	@echo ""
 

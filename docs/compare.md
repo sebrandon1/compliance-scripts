@@ -37,13 +37,16 @@ title: Compare Versions
 
 <script>
 var versionData = {};
-{% for vp in version_pages %}
-{% assign vs = vp.version | replace: ".", "_" %}
-{% assign df = "ocp-" | append: vs %}
-{% if site.data[df] %}
-versionData["{{ vp.version }}"] = {{ site.data[df] | jsonify }};
-{% endif %}
-{% endfor %}
+var BASE = "{{ site.baseurl }}";
+
+async function loadVersionData(version) {
+  if (versionData[version]) return versionData[version];
+  var slug = version.replace(/\./g, '_');
+  var resp = await fetch(BASE + "/assets/data/ocp-" + slug + ".json");
+  if (!resp.ok) throw new Error("Failed to load data for OCP " + version);
+  versionData[version] = await resp.json();
+  return versionData[version];
+}
 
 function buildCheckMap(data) {
   var checks = {};
@@ -65,7 +68,7 @@ function buildCheckMap(data) {
 
 var regressions, fixes, added, removed, manualChanges;
 
-function runCompare() {
+async function runCompare() {
   var oldV = document.getElementById('old-version').value;
   var newV = document.getElementById('new-version').value;
   var el = document.getElementById('compare-results');
@@ -77,8 +80,16 @@ function runCompare() {
     return;
   }
 
-  var oldData = versionData[oldV];
-  var newData = versionData[newV];
+  el.innerHTML = '<p style="color: var(--color-text-secondary);">Loading…</p>';
+  var oldData, newData;
+  try {
+    var results = await Promise.all([loadVersionData(oldV), loadVersionData(newV)]);
+    oldData = results[0];
+    newData = results[1];
+  } catch (e) {
+    el.innerHTML = '<p style="color: var(--color-fail);">' + e.message + '</p>';
+    return;
+  }
 
   if (!oldData || !newData) {
     el.innerHTML = '<p style="color: var(--color-fail);">No scan data available for one or both versions.</p>';
