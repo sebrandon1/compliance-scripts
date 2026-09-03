@@ -440,6 +440,7 @@ add-version: ## 📦 Scaffold dashboard files for a new OCP version (requires OC
 	fi
 	@echo "$(BOLD)$(BLUE)📦 Scaffolding OCP $(OCP_VERSION) from $(SOURCE_VERSION)...$(RESET)"
 	@python3 scripts/add-version.py --source $(SOURCE_VERSION) --target $(OCP_VERSION)
+	@$(MAKE) generate-group-matrix
 	@echo "$(GREEN)✅ Version $(OCP_VERSION) scaffolded!$(RESET)"
 	@echo ""
 

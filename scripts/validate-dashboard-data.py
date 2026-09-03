@@ -10,6 +10,7 @@ Usage: python3 scripts/validate-dashboard-data.py [docs/_data/]
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import re
@@ -476,6 +477,54 @@ def validate_group_matrix(filepath: str) -> list[str]:
     return errors
 
 
+def validate_group_matrix_staleness(filepath: str) -> list[str]:
+    """Fail if committed group-matrix.json is stale relative to current scan data."""
+    errors: list[str] = []
+    data_dir = os.path.dirname(filepath)
+    gen_path = os.path.join(os.path.dirname(__file__), "generate-group-matrix.py")
+    spec = importlib.util.spec_from_file_location("generate_group_matrix", gen_path)
+    if spec is None or spec.loader is None:
+        errors.append("Cannot locate generate-group-matrix.py for staleness check")
+        return errors
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+
+    try:
+        tracking_files = mod.list_versioned_tracking_files(data_dir)
+        if not tracking_files:
+            return errors
+        group_checks = mod.collect_group_checks(
+            [mod.load_json(mod.latest_tracking_file(tracking_files))]
+        )
+        scans_by_version = {
+            mod.version_slug_from_scan(p): mod.load_json(p)
+            for p in mod.list_scan_files(data_dir)
+        }
+        with open(filepath) as f:
+            committed = json.load(f)
+        fresh = mod.build_matrix(
+            group_checks, scans_by_version, existing=committed
+        )
+        # Compare numeric cells only (notes are manually managed)
+        for gid, fresh_entry in fresh.items():
+            committed_entry = committed.get(gid, {})
+            for vs, fresh_cell in fresh_entry.items():
+                if vs in ("description", "note"):
+                    continue
+                committed_cell = committed_entry.get(vs, {})
+                for field in ("pass", "fail", "manual", "total"):
+                    fv = fresh_cell.get(field)
+                    cv = committed_cell.get(field)
+                    if fv != cv:
+                        errors.append(
+                            f"group-matrix.json is stale: {gid}.{vs}.{field} "
+                            f"is {cv} but should be {fv} — run make generate-group-matrix"
+                        )
+    except Exception as exc:
+        errors.append(f"Staleness check failed: {exc}")
+    return errors
+
+
 def validate_upstream_prs(filepath: str) -> list[str]:
     """Validate upstream-prs.json structure used by the Hardened page."""
     errors = []
@@ -605,6 +654,7 @@ def main() -> None:
     named_validators = (
         ("scan-history.json", validate_scan_history),
         ("group-matrix.json", validate_group_matrix),
+        ("group-matrix.json", validate_group_matrix_staleness),
         ("upstream-prs.json", validate_upstream_prs),
     )
     for filename, validator in named_validators:
