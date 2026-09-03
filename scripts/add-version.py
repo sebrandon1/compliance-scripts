@@ -149,6 +149,59 @@ def create_tracking(
     return dst_tracking
 
 
+def update_readme_badge(
+    target: str, readme_path: str, dry_run: bool
+) -> None:
+    """Insert a shields.io compliance badge for target into README.md."""
+    slug = version_slug(target)
+    badge_url = (
+        "https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com"
+        f"%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-{slug}.json"
+        "&style=flat-square&logo=redhatopenshift"
+    )
+    dashboard_url = (
+        f"https://sebrandon1.github.io/compliance-scripts/versions/{target}.html"
+    )
+    new_badge = f"[![OCP {target} Compliance]({badge_url})]({dashboard_url})"
+
+    if not os.path.exists(readme_path):
+        print(f"  Skipping README badge: {readme_path} not found",
+              file=sys.stderr)
+        return
+
+    with open(readme_path) as f:
+        lines = f.readlines()
+
+    # Check idempotency
+    if any(f"ocp-{slug}.json" in line for line in lines):
+        print(f"  README badge for OCP {target} already present (skipped)")
+        return
+
+    # Find first compliance badge line (newest-first insertion)
+    insert_idx = None
+    for i, line in enumerate(lines):
+        if "img.shields.io/endpoint" in line and "ocp-" in line:
+            insert_idx = i
+            break
+
+    if insert_idx is None:
+        print(
+            "  Could not find existing compliance badge block in README.md",
+            file=sys.stderr
+        )
+        return
+
+    if dry_run:
+        print(f"  [dry-run] Would insert badge at line {insert_idx + 1}:")
+        print(f"  {new_badge}")
+        return
+
+    lines.insert(insert_idx, new_badge + "\n")
+    with open(readme_path, 'w') as f:
+        f.writelines(lines)
+    print(f"  Inserted OCP {target} badge into {readme_path}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Scaffold dashboard files for a new OCP version"
@@ -214,6 +267,11 @@ def main() -> None:
     create_tracking(
         args.source, args.target, data_dir, args.dry_run
     )
+
+    print("\nStep 3: README badge")
+    docs_parent = os.path.dirname(os.path.abspath(args.docs_dir))
+    readme_path = os.path.join(docs_parent, "README.md")
+    update_readme_badge(args.target, readme_path, args.dry_run)
 
     print(f"\nDone! OCP {args.target} scaffolded.")
     print("\nNext steps:")
