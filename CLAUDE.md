@@ -73,7 +73,7 @@ make serve-docs                           # Serve Jekyll dashboard locally
 make install-jekyll                       # Install Jekyll dependencies
 ```
 
-After a scan export, rerun `make generate-group-matrix` so the Hardened matrix matches the new `ocp-X_Y.json`, then `make backfill-scan-profiles` so the new `scan-history.json` row gets E8/CIS/Moderate/PCI-DSS breakdowns (export does not write `profiles`). Neither script takes CLI flags; both use `docs/_data/`. `make update-dashboard` exports and opens a PR; it does not run these two scripts.
+After a scan export, rerun `make generate-group-matrix` so the Hardened matrix matches the new `ocp-X_Y.json`. `make export-compliance` now calls `backfill-scan-profiles.py` automatically, so per-profile E8/CIS/Moderate/PCI-DSS counts are filled on the new row without a separate step. Run `make backfill-scan-profiles` manually only if you need to fill historical rows that predate this change. Neither script takes CLI flags; both use `docs/_data/`. `make update-dashboard` exports and opens a PR; it does not run these two scripts.
 
 ## Architecture
 
