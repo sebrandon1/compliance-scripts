@@ -311,6 +311,9 @@ fi
 echo "$EXISTING_HISTORY" | jq --argjson entry "$HISTORY_ENTRY" '. + [$entry]' >"$HISTORY_FILE"
 log_info "Appended scan snapshot to ${HISTORY_FILE}"
 
+python3 "${REPO_ROOT}/scripts/backfill-scan-profiles.py"
+log_info "Filled per-profile counts in ${HISTORY_FILE}"
+
 # Generate shields.io endpoint badge JSON
 BADGE_DIR="${REPO_ROOT}/docs/badges"
 mkdir -p "$BADGE_DIR"
