@@ -267,13 +267,14 @@ layout: default
       <span class="matrix-dot manual" style="vertical-align: middle;"></span> Manual
     </p>
     <label style="font-size: 0.85rem; cursor: pointer; user-select: none; margin-right: 1rem;">
-      <input type="checkbox" id="hide-non-hardened" onchange="toggleFilters()" checked style="margin-right: 0.3rem;">
+      <input type="checkbox" id="hide-non-hardened" onchange="applyFilters()" checked style="margin-right: 0.3rem;">
       Hide non-hardened groups
     </label>
     <label style="font-size: 0.85rem; cursor: pointer; user-select: none;">
-      <input type="checkbox" id="hide-manual" onchange="toggleFilters()" style="margin-right: 0.3rem;">
+      <input type="checkbox" id="hide-manual" onchange="applyFilters()" style="margin-right: 0.3rem;">
       Hide manual-review groups
     </label>
+    <input type="text" id="matrix-search" placeholder="Search groups…" oninput="applyFilters()" style="font-size: 0.85rem; padding: 0.2rem 0.5rem; border: 1px solid var(--color-border, #ccc); border-radius: 4px; background: var(--color-bg, #fff); color: var(--color-text, #000); width: 14rem;">
   </div>
 
   <div class="matrix-scroll">
@@ -388,9 +389,10 @@ layout: default
   </div>
 
   <script>
-  function toggleFilters() {
+  function applyFilters() {
     var hideNonHardened = document.getElementById('hide-non-hardened').checked;
     var hideManual = document.getElementById('hide-manual').checked;
+    var term = (document.getElementById('matrix-search').value || '').toLowerCase().trim();
     var rows = document.querySelectorAll('#matrix-table tbody tr');
     rows.forEach(function(row) {
       if (row.classList.contains('group-detail')) {
@@ -403,13 +405,27 @@ layout: default
       if (hideManual && row.getAttribute('data-manual') === 'true') {
         hidden = true;
       }
+      if (!hidden && term) {
+        var cells = row.querySelectorAll('td');
+        var gid = cells[0] ? cells[0].textContent.toLowerCase() : '';
+        var title = cells[1] ? cells[1].textContent.toLowerCase() : '';
+        if (gid.indexOf(term) === -1 && title.indexOf(term) === -1) {
+          hidden = true;
+        }
+      }
       row.style.display = hidden ? 'none' : '';
       if (hidden) {
         setExpandableRow(row, false);
       }
     });
   }
-  toggleFilters();
+  applyFilters();
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      document.getElementById('matrix-search').focus();
+    }
+  });
   </script>
 
   <hr>
