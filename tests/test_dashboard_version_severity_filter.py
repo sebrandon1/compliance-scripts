@@ -56,8 +56,12 @@ def test_set_check_filter_does_not_clobber_severity_buttons():
     assert ".filter-btn:not(.severity-filter)" in VERSION_HTML
 
 
+def test_set_severity_filter_scoped_to_filter_bar():
+    assert ".filter-bar .severity-filter" in VERSION_HTML
+
+
 def test_filter_checks_skips_hidden_sections():
-    assert "section.style.display === 'none') return;" in VERSION_HTML
+    assert "!visibleSections.has(section)) return;" in VERSION_HTML
 
 
 def test_filter_checks_hides_non_matching_sections():
