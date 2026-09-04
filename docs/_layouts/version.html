@@ -184,6 +184,12 @@ layout: default
         <button class="filter-btn" data-filter="has-pr" onclick="setCheckFilter('has-pr')">Has PR</button>
         <button class="filter-btn" data-filter="tracked" onclick="setCheckFilter('tracked')">Tracked</button>
         <button class="filter-btn" data-filter="untracked" onclick="setCheckFilter('untracked')">Untracked</button>
+        <span class="filter-separator"></span>
+        <button class="filter-btn severity-filter active" data-severity="all" onclick="setSeverityFilter('all')">All Severity</button>
+        <button class="filter-btn severity-filter" data-severity="high" onclick="setSeverityFilter('high')">&#128308; HIGH</button>
+        <button class="filter-btn severity-filter" data-severity="medium" onclick="setSeverityFilter('medium')">&#128992; MEDIUM</button>
+        <button class="filter-btn severity-filter" data-severity="low" onclick="setSeverityFilter('low')">&#128994; LOW</button>
+        <button class="filter-btn severity-filter" data-severity="manual" onclick="setSeverityFilter('manual')">&#8505; MANUAL</button>
       </div>
       <div class="filter-counts" id="check-filter-counts" aria-live="polite"></div>
     </div>
@@ -191,28 +197,28 @@ layout: default
     <!-- Failing Tab Content -->
     <div class="tab-panel active" id="panel-failing">
       {% if version_data.remediations.high.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="high">
         <h2><span class="severity-badge high">HIGH</span> Severity Failing Checks ({{ version_data.remediations.high.size }})</h2>
         {% include remediation-table.html checks=version_data.remediations.high severity="high" %}
       </section>
       {% endif %}
 
       {% if version_data.remediations.medium.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="medium">
         <h2><span class="severity-badge medium">MEDIUM</span> Severity Failing Checks ({{ version_data.remediations.medium.size }})</h2>
         {% include remediation-table.html checks=version_data.remediations.medium severity="medium" %}
       </section>
       {% endif %}
 
       {% if version_data.remediations.low.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="low">
         <h2><span class="severity-badge low">LOW</span> Severity Failing Checks ({{ version_data.remediations.low.size }})</h2>
         {% include remediation-table.html checks=version_data.remediations.low severity="low" %}
       </section>
       {% endif %}
 
       {% if version_data.manual_checks.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="manual">
         <h2><span class="severity-badge manual">MANUAL</span> Checks Requiring Review ({{ version_data.manual_checks.size }})</h2>
         {% include remediation-table.html checks=version_data.manual_checks severity="manual" %}
       </section>
@@ -228,21 +234,21 @@ layout: default
     <!-- Passing Tab Content -->
     <div class="tab-panel" id="panel-passing">
       {% if version_data.passing_checks.high.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="high">
         <h2><span class="severity-badge high">HIGH</span> Severity Passing Checks ({{ version_data.passing_checks.high.size }})</h2>
         {% include passing-table.html checks=version_data.passing_checks.high %}
       </section>
       {% endif %}
 
       {% if version_data.passing_checks.medium.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="medium">
         <h2><span class="severity-badge medium">MEDIUM</span> Severity Passing Checks ({{ version_data.passing_checks.medium.size }})</h2>
         {% include passing-table.html checks=version_data.passing_checks.medium %}
       </section>
       {% endif %}
 
       {% if version_data.passing_checks.low.size > 0 %}
-      <section class="remediation-section">
+      <section class="remediation-section" data-severity="low">
         <h2><span class="severity-badge low">LOW</span> Severity Passing Checks ({{ version_data.passing_checks.low.size }})</h2>
         {% include passing-table.html checks=version_data.passing_checks.low %}
       </section>
@@ -269,6 +275,7 @@ function updateHash() {
   var params = [];
   if (currentTab !== 'failing') params.push('tab=' + currentTab);
   if (currentCheckFilter !== 'all') params.push('filter=' + currentCheckFilter);
+  if (currentSeverityFilter !== 'all') params.push('severity=' + currentSeverityFilter);
   if (checkSearchTerm) params.push('q=' + encodeURIComponent(checkSearchTerm));
   history.replaceState(null, '', params.length ? '#' + params.join('&') : location.pathname);
 }
@@ -285,22 +292,38 @@ function switchTab(tabName) {
 }
 
 var currentCheckFilter = 'all';
+var currentSeverityFilter = 'all';
 var checkSearchTerm = '';
+
+function setSeverityFilter(sev) {
+  currentSeverityFilter = sev;
+  document.querySelectorAll('.severity-filter').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelector('.severity-filter[data-severity="' + sev + '"]').classList.add('active');
+  filterChecks();
+}
 
 function setCheckFilter(filter) {
   currentCheckFilter = filter;
-  document.querySelectorAll('.filter-bar .filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.filter-bar .filter-btn:not(.severity-filter)').forEach(function(btn) { btn.classList.remove('active'); });
   document.querySelector('.filter-bar [data-filter="' + filter + '"]').classList.add('active');
   filterChecks();
 }
 
 function filterChecks() {
   checkSearchTerm = document.getElementById('check-search').value.toLowerCase();
+
+  document.querySelectorAll('.remediation-section').forEach(function(section) {
+    var sev = section.getAttribute('data-severity') || '';
+    section.style.display = (currentSeverityFilter === 'all' || sev === currentSeverityFilter) ? '' : 'none';
+  });
+
   var tables = document.querySelectorAll('.remediation-table');
   var visibleCount = 0;
   var totalCount = 0;
 
   tables.forEach(function(table) {
+    var section = table.closest('.remediation-section');
+    if (section && section.style.display === 'none') return;
     var isPassingTable = table.classList.contains('passing-table');
     var rows = table.querySelectorAll('tbody tr');
     rows.forEach(function(row) {
@@ -355,6 +378,7 @@ function filterChecks() {
   var h = parseHash();
   if (h.tab) switchTab(h.tab);
   if (h.filter) setCheckFilter(h.filter);
+  if (h.severity) setSeverityFilter(h.severity);
   if (h.q) {
     document.getElementById('check-search').value = h.q;
     filterChecks();
