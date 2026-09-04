@@ -297,8 +297,8 @@ var checkSearchTerm = '';
 
 function setSeverityFilter(sev) {
   currentSeverityFilter = sev;
-  document.querySelectorAll('.severity-filter').forEach(function(b) { b.classList.remove('active'); });
-  document.querySelector('.severity-filter[data-severity="' + sev + '"]').classList.add('active');
+  document.querySelectorAll('.filter-bar .severity-filter').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelector('.filter-bar .severity-filter[data-severity="' + sev + '"]').classList.add('active');
   filterChecks();
 }
 
@@ -312,9 +312,12 @@ function setCheckFilter(filter) {
 function filterChecks() {
   checkSearchTerm = document.getElementById('check-search').value.toLowerCase();
 
+  var visibleSections = new Set();
   document.querySelectorAll('.remediation-section').forEach(function(section) {
     var sev = section.getAttribute('data-severity') || '';
-    section.style.display = (currentSeverityFilter === 'all' || sev === currentSeverityFilter) ? '' : 'none';
+    var show = currentSeverityFilter === 'all' || sev === currentSeverityFilter;
+    section.style.display = show ? '' : 'none';
+    if (show) visibleSections.add(section);
   });
 
   var tables = document.querySelectorAll('.remediation-table');
@@ -323,7 +326,7 @@ function filterChecks() {
 
   tables.forEach(function(table) {
     var section = table.closest('.remediation-section');
-    if (section && section.style.display === 'none') return;
+    if (section && !visibleSections.has(section)) return;
     var isPassingTable = table.classList.contains('passing-table');
     var rows = table.querySelectorAll('tbody tr');
     rows.forEach(function(row) {
