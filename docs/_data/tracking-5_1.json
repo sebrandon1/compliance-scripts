@@ -1064,7 +1064,7 @@
           "repo": "openshift/os",
           "repo_url": "https://github.com/openshift/os",
           "file": "/usr/lib/modprobe.d/50-security-blacklist.conf",
-          "rationale": "Disables unnecessary kernel modules (Bluetooth, WiFi, exotic filesystems, ATM, TIPC). Reduces attack surface on container hosts.",
+          "rationale": "Disables five unused filesystem modules (cramfs, freevxfs, hfs, hfsplus, and jffs2). Reduces attack surface on container hosts.",
           "risk": "low",
           "scope": "upstream",
           "scope_reason": "cramfs, freevxfs, hfs, hfsplus, jffs2 have zero use on any container host. squashfs excluded (live images), usb-storage excluded (BMC virtual media), udf excluded (Azure/Hyper-V Ignition provisioning).",
@@ -1085,14 +1085,15 @@
               "repo": "coreos/rhel-coreos-config",
               "pr": 289,
               "url": "https://github.com/coreos/rhel-coreos-config/pull/289",
-              "state": "open",
-              "outcome": null,
-              "reason": "Narrowed from 18 to 5 modules (cramfs, freevxfs, hfs, hfsplus, jffs2). UDF removed per reviewer feedback (Azure/Hyper-V uses UDF for Ignition provisioning). Excluded squashfs (live PXE rootfs), usb-storage (BMC virtual media), and 10 others too broad for base image. Precedent: nouveau blacklist already exists in overlay.d/08nouveau/. CIS Level 1 Section 1.1.1.",
+              "state": "closed",
+              "opened": "2026-07-21",
+              "closed": "2026-08-03",
+              "outcome": "redirected",
+              "reason": "Narrowed from 18 to 5 modules (cramfs, freevxfs, hfs, hfsplus, jffs2). UDF removed per reviewer feedback (Azure/Hyper-V uses UDF for Ignition provisioning). Excluded squashfs (live PXE rootfs), usb-storage (BMC virtual media), and 10 others too broad for base image. The change was redirected from the RHCOS base-layer repository to openshift/os because this OCP node-image hardening belongs at the OpenShift layer. The active replacement is openshift/os#1951.",
               "references": [
                 "https://gist.github.com/sebrandon1/7dd9f057db0a58df295842d434216fd6",
                 "https://github.com/coreos/rhel-coreos-config/tree/main/overlay.d/08nouveau"
               ],
-              "opened": "2026-07-21",
               "jira": "CNF-25994"
             },
             {
