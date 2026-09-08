@@ -198,7 +198,7 @@
       "prev_group": "H3",
       "next_group": "M2",
       "last_sync": null,
-      "status_note": null,
+      "status_note": "Future upstream option: investigate whether ComplianceAsCode SSHD checks recognize settings in sshd_config.d drop-ins. This is scanner/remediation behavior, not a request to add new default SSH hardening. No PR planned.",
       "platform": "rhcos",
       "upstream_verdict": "pass-vanilla"
     },
@@ -510,7 +510,7 @@
       "prev_group": "M8",
       "next_group": "M10",
       "last_sync": null,
-      "status_note": null,
+      "status_note": "Future upstream option: reassess auditd name_format=hostname only if maintainers want a default for centralized multi-node aggregation. Keep ran-only for now; no PR planned.",
       "platform": "rhcos",
       "upstream": [
         {
@@ -1011,7 +1011,7 @@
       "prev_group": "M19",
       "next_group": "M21",
       "last_sync": null,
-      "status_note": null,
+      "status_note": "Future upstream option: reassess auditd disk-pressure actions only with a deployment-independent default. Retention thresholds remain operational policy; no PR planned.",
       "platform": "rhcos",
       "upstream": [
         {
@@ -1123,7 +1123,7 @@
       "prev_group": "M21",
       "next_group": "M23",
       "last_sync": null,
-      "status_note": null,
+      "status_note": "Future upstream option: evaluate a narrowly scoped, compatibility-tested subset of network sysctls rather than the full 20-setting bundle. Existing maintainer feedback remains unfavorable; no PR planned.",
       "platform": "rhcos",
       "upstream": [
         {
@@ -1213,7 +1213,7 @@
       "prev_group": "M23",
       "next_group": "M25",
       "last_sync": null,
-      "status_note": null,
+      "status_note": "Future upstream option: revisit only non-redundant kernel arguments after verifying current RHCOS defaults. Do not upstream legacy or operational tuning arguments; no PR planned.",
       "platform": "rhcos",
       "upstream": [
         {
@@ -1369,7 +1369,7 @@
       "prev_group": "M26",
       "next_group": "M28",
       "last_sync": null,
-      "status_note": null,
+      "status_note": "Future upstream option: investigate a ComplianceAsCode scanner fix for SSHD drop-in detection. Do not upstream the five-minute session-timeout policy as a default; no PR planned.",
       "platform": "rhcos",
       "upstream": [
         {
