@@ -68,13 +68,13 @@ Paths not in this list will fall back to the combo file approach.
 
 ```bash
 # Create modular files for high-severity remediations
-./create-modular-configs.sh -s high
+modular/create-modular-configs.sh -s high
 
 # Review generated files
 ls -la complianceremediations/modular/
 
 # Organize into target repository structure
-./organize-machine-configs.sh -d complianceremediations/modular -s high
+core/organize-machine-configs.sh -d complianceremediations/modular -s high
 ```
 
 ### Manual Usage
@@ -84,23 +84,23 @@ ls -la complianceremediations/modular/
 source venv/bin/activate
 
 # Create modular files
-python3 split-machineconfigs-modular.py \
+python3 modular/split-machineconfigs-modular.py \
   --src-dir complianceremediations \
   --out-dir complianceremediations/modular \
   -s high
 
 # Or use the wrapper script
-./create-modular-configs.sh -s high,medium
+modular/create-modular-configs.sh -s high,medium
 ```
 
 ### Options
 
 ```bash
 # Process multiple severity levels
-./create-modular-configs.sh -s high,medium,low
+modular/create-modular-configs.sh -s high,medium,low
 
 # Specify custom directories
-./create-modular-configs.sh \
+modular/create-modular-configs.sh \
   -i complianceremediations \
   -o output/modular \
   -s high
@@ -112,20 +112,20 @@ The modular approach integrates seamlessly with the existing workflow:
 
 ```bash
 # 1. Install compliance operator and run scans
-./install-compliance-operator.sh
-./apply-periodic-scan.sh
+core/install-compliance-operator.sh
+core/apply-periodic-scan.sh
 
 # 2. Collect remediations
-./collect-complianceremediations.sh
+core/collect-complianceremediations.sh
 
 # 3. OLD WAY: Combine into monolithic files
 # python3 combine-machineconfigs-by-path.py -s high
 
 # 3. NEW WAY: Create modular files
-./create-modular-configs.sh -s high
+modular/create-modular-configs.sh -s high
 
 # 4. Organize into target repository
-./organize-machine-configs.sh -d complianceremediations/modular -s high
+core/organize-machine-configs.sh -d complianceremediations/modular -s high
 ```
 
 ## Comparison: Combo vs Modular

@@ -101,12 +101,12 @@ This creates `docs/_data/ocp-4_22.json` with:
 # Check the generated file
 cat docs/_data/ocp-4_22.json | jq '.summary'
 
-# Expected output:
+# Illustrative output (actual values vary by version and profile set):
 # {
-#   "total_checks": 200,
-#   "passing": 180,
-#   "failing": 15,
-#   "manual": 5
+#   "total_checks": 914,
+#   "passing": 336,
+#   "failing": 499,
+#   "manual": 79
 # }
 ```
 
@@ -494,10 +494,12 @@ docs/
 │   ├── ocp-4_21.json                    # OCP 4.21 compliance data
 │   ├── ocp-4_22.json                    # OCP 4.22 compliance data
 │   ├── ocp-5_0.json                     # OCP 5.0 compliance data
+│   ├── ocp-5_1.json                     # OCP 5.1 compliance data
 │   ├── tracking.json                    # Default/latest group tracking
 │   ├── tracking-4_21.json               # Per-version tracking
 │   ├── tracking-4_22.json
 │   ├── tracking-5_0.json
+│   ├── tracking-5_1.json
 │   ├── group-matrix.json                # Hardened page matrix
 │   └── scan-history.json
 ├── _includes/
@@ -518,7 +520,9 @@ docs/
     ├── 4.21.md                          # OCP 4.21 landing page
     ├── 4.22.md
     ├── 5.0.md
-    └── 5.0/groups/                      # H1–H3, M1–M30, L1–L2, MAN1–MAN5
+    ├── 5.1.md
+    ├── 5.0/groups/                      # H1–H3, M1–M30, L1–L2, MAN1–MAN5
+    └── 5.1/groups/
 ```
 
 ---
