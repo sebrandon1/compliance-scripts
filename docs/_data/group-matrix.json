@@ -18,6 +18,12 @@
       "pass": 0,
       "total": 1
     },
+    "5_1": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
     "description": "Sets the system-wide cryptographic policy to disable weak algorithms like SHA-1, protecting all TLS, SSH, and certificate operations on the node.",
     "note": "Requires FIPS; systemd unit"
   },
@@ -35,6 +41,12 @@
       "total": 1
     },
     "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "5_1": {
       "fail": 0,
       "manual": 0,
       "pass": 1,
@@ -62,6 +74,12 @@
       "pass": 1,
       "total": 1
     },
+    "5_1": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
     "description": "Configures the SSH daemon to reject login attempts using empty passwords.",
     "note": "Hardened in RHCOS 9.8+"
   },
@@ -79,6 +97,12 @@
       "total": 1
     },
     "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "5_1": {
       "fail": 0,
       "manual": 0,
       "pass": 1,
@@ -106,6 +130,12 @@
       "pass": 0,
       "total": 1
     },
+    "5_1": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
     "description": "Restricts access to kernel ring buffer messages (dmesg) to root only, preventing information leakage to unprivileged users.",
     "note": "Sysctl MachineConfig needed"
   },
@@ -123,6 +153,12 @@
       "total": 7
     },
     "5_0": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 5,
+      "total": 7
+    },
+    "5_1": {
       "fail": 2,
       "manual": 0,
       "pass": 5,
@@ -150,6 +186,12 @@
       "pass": 0,
       "total": 1
     },
+    "5_1": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
     "description": "Enables encryption of etcd data at rest using AES-CBC, protecting secrets and sensitive API resources stored in the cluster database.",
     "note": "API encryption config"
   },
@@ -167,6 +209,12 @@
       "total": 1
     },
     "5_0": {
+      "fail": 0,
+      "manual": 0,
+      "pass": 1,
+      "total": 1
+    },
+    "5_1": {
       "fail": 0,
       "manual": 0,
       "pass": 1,
@@ -194,6 +242,12 @@
       "pass": 0,
       "total": 1
     },
+    "5_1": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
     "description": "Sets the API server audit profile to WriteRequestBodies, logging the full content of write operations for forensic analysis.",
     "note": "Audit profile API config"
   },
@@ -211,6 +265,12 @@
       "total": 11
     },
     "5_0": {
+      "fail": 11,
+      "manual": 0,
+      "pass": 0,
+      "total": 11
+    },
+    "5_1": {
       "fail": 11,
       "manual": 0,
       "pass": 0,
@@ -238,6 +298,12 @@
       "pass": 0,
       "total": 12
     },
+    "5_1": {
+      "fail": 12,
+      "manual": 0,
+      "pass": 0,
+      "total": 12
+    },
     "description": "Adds audit watches on 12 identity and authentication files (/etc/passwd, /etc/shadow, /etc/group, etc.) to detect unauthorized modifications.",
     "note": "Audit rules MachineConfig"
   },
@@ -255,6 +321,12 @@
       "total": 5
     },
     "5_0": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "5_1": {
       "fail": 5,
       "manual": 0,
       "pass": 0,
@@ -282,6 +354,12 @@
       "pass": 0,
       "total": 32
     },
+    "5_1": {
+      "fail": 32,
+      "manual": 0,
+      "pass": 0,
+      "total": 32
+    },
     "description": "Adds audit rules for 32 system calls to log all unsuccessful file modification attempts, catching permission-denied and missing-file errors.",
     "note": "Audit rules MachineConfig"
   },
@@ -299,6 +377,12 @@
       "total": 22
     },
     "5_0": {
+      "fail": 22,
+      "manual": 0,
+      "pass": 0,
+      "total": 22
+    },
+    "5_1": {
       "fail": 22,
       "manual": 0,
       "pass": 0,
@@ -326,6 +410,12 @@
       "pass": 0,
       "total": 4
     },
+    "5_1": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
     "description": "Adds audit rules for session initiation, MAC policy changes, audit log exports, and makes the audit configuration immutable until reboot.",
     "note": "Audit rules MachineConfig"
   },
@@ -343,6 +433,12 @@
       "total": 5
     },
     "5_0": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "5_1": {
       "fail": 5,
       "manual": 0,
       "pass": 0,
@@ -370,6 +466,12 @@
       "pass": 0,
       "total": 4
     },
+    "5_1": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
     "description": "Applies kernel sysctl parameters to restrict core dumps, disable ICMP redirects, and harden memory protections.",
     "note": "Sysctl MachineConfig needed"
   },
@@ -387,6 +489,12 @@
       "total": 4
     },
     "5_0": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
+    "5_1": {
       "fail": 4,
       "manual": 0,
       "pass": 0,
@@ -414,6 +522,12 @@
       "pass": 0,
       "total": 18
     },
+    "5_1": {
+      "fail": 18,
+      "manual": 0,
+      "pass": 0,
+      "total": 18
+    },
     "description": "Blacklists 18 kernel modules (USB storage, Firewire, Bluetooth, uncommon filesystems, etc.) to reduce the node attack surface.",
     "note": "Kernel module blacklist"
   },
@@ -431,6 +545,12 @@
       "total": 20
     },
     "5_0": {
+      "fail": 17,
+      "manual": 0,
+      "pass": 0,
+      "total": 20
+    },
+    "5_1": {
       "fail": 17,
       "manual": 0,
       "pass": 0,
@@ -458,6 +578,12 @@
       "pass": 0,
       "total": 3
     },
+    "5_1": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
     "description": "Sets kernel parameters to disable core dumps, block kexec_load, and increase perf_event paranoia level.",
     "note": "Kernel sysctl hardening"
   },
@@ -475,6 +601,12 @@
       "total": 6
     },
     "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_1": {
       "fail": 6,
       "manual": 0,
       "pass": 0,
@@ -502,6 +634,12 @@
       "pass": 0,
       "total": 4
     },
+    "5_1": {
+      "fail": 4,
+      "manual": 0,
+      "pass": 0,
+      "total": 4
+    },
     "description": "Configures Chrony NTP client to use designated time servers with restricted port access and polling intervals.",
     "note": "Chrony/NTP site-specific"
   },
@@ -519,6 +657,12 @@
       "total": 6
     },
     "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_1": {
       "fail": 6,
       "manual": 0,
       "pass": 0,
@@ -546,6 +690,12 @@
       "pass": 0,
       "total": 2
     },
+    "5_1": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
     "description": "Applies additional SSHD hardening from the Moderate profile: sets ClientAliveInterval and ClientAliveCountMax for idle session timeout.",
     "note": "SSHD config MachineConfig"
   },
@@ -563,6 +713,12 @@
       "total": 3
     },
     "5_0": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
+    "5_1": {
       "fail": 3,
       "manual": 0,
       "pass": 0,
@@ -590,6 +746,12 @@
       "pass": 0,
       "total": 7
     },
+    "5_1": {
+      "fail": 7,
+      "manual": 0,
+      "pass": 0,
+      "total": 7
+    },
     "description": "Mixed group: restricts node-level terminal access (securetty, audit trail) and configures cluster login banner or OAuth templates.",
     "note": "Mixed node + platform checks"
   },
@@ -607,6 +769,12 @@
       "total": 2
     },
     "5_0": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
+    "5_1": {
       "fail": 2,
       "manual": 0,
       "pass": 0,
@@ -634,6 +802,12 @@
       "pass": 0,
       "total": 2
     },
+    "5_1": {
+      "fail": 2,
+      "manual": 0,
+      "pass": 0,
+      "total": 2
+    },
     "description": "Configures OAuth access token inactivity timeout and token max age to automatically expire idle sessions.",
     "note": "OAuth timeout config"
   },
@@ -651,6 +825,12 @@
       "total": 6
     },
     "5_0": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
+    "5_1": {
       "fail": 6,
       "manual": 0,
       "pass": 0,
@@ -678,6 +858,12 @@
       "pass": 0,
       "total": 3
     },
+    "5_1": {
+      "fail": 3,
+      "manual": 0,
+      "pass": 0,
+      "total": 3
+    },
     "description": "Adds audit rules to log loading and unloading of kernel modules, detecting rootkits or unauthorized drivers.",
     "note": "Audit rules MachineConfig"
   },
@@ -695,6 +881,12 @@
       "total": 5
     },
     "5_0": {
+      "fail": 5,
+      "manual": 0,
+      "pass": 0,
+      "total": 5
+    },
+    "5_1": {
       "fail": 5,
       "manual": 0,
       "pass": 0,
@@ -722,6 +914,12 @@
       "pass": 0,
       "total": 6
     },
+    "5_1": {
+      "fail": 6,
+      "manual": 0,
+      "pass": 0,
+      "total": 6
+    },
     "description": "Adds audit rules to monitor login events, failed authentication attempts, and account lockouts.",
     "note": "Audit rules MachineConfig"
   },
@@ -739,6 +937,12 @@
       "total": 1
     },
     "5_0": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
+    "5_1": {
       "fail": 1,
       "manual": 0,
       "pass": 0,
@@ -766,6 +970,12 @@
       "pass": 0,
       "total": 1
     },
+    "5_1": {
+      "fail": 1,
+      "manual": 0,
+      "pass": 0,
+      "total": 1
+    },
     "description": "Configures the audit daemon (auditd) with proper hostname identification for centralized log correlation.",
     "note": "Auditd config MachineConfig"
   },
@@ -788,6 +998,12 @@
       "pass": 0,
       "total": 19
     },
+    "5_1": {
+      "fail": 3,
+      "manual": 15,
+      "pass": 1,
+      "total": 19
+    },
     "description": "Manual review items: workload container security \u2014 verifying pod security standards, resource limits, and image provenance.",
     "note": "Manual review required"
   },
@@ -805,6 +1021,12 @@
       "total": 7
     },
     "5_0": {
+      "fail": 2,
+      "manual": 5,
+      "pass": 0,
+      "total": 7
+    },
+    "5_1": {
       "fail": 2,
       "manual": 5,
       "pass": 0,
@@ -832,6 +1054,12 @@
       "pass": 0,
       "total": 2
     },
+    "5_1": {
+      "fail": 0,
+      "manual": 2,
+      "pass": 0,
+      "total": 2
+    },
     "description": "Manual review items: secrets management \u2014 verifying that sensitive data is stored in Secrets resources, not in ConfigMaps or environment variables.",
     "note": "Manual review required"
   },
@@ -854,6 +1082,12 @@
       "pass": 0,
       "total": 5
     },
+    "5_1": {
+      "fail": 3,
+      "manual": 2,
+      "pass": 0,
+      "total": 5
+    },
     "description": "Manual review items: audit log storage \u2014 verifying that dedicated partitions or persistent volumes are used for audit log retention.",
     "note": "Manual review required"
   },
@@ -871,6 +1105,12 @@
       "total": 17
     },
     "5_0": {
+      "fail": 13,
+      "manual": 3,
+      "pass": 1,
+      "total": 17
+    },
+    "5_1": {
       "fail": 13,
       "manual": 3,
       "pass": 1,

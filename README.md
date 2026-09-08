@@ -4,6 +4,7 @@
 [![Shell Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml)
 [![Test Compliance Operator](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance-versions.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance-versions.yml)
 
+[![OCP 5.1 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-5_1.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/5.1.html)
 [![OCP 5.0 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-5_0.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/5.0.html)
 [![OCP 4.22 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-4_22.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/4.22.html)
 [![OCP 4.21 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-4_21.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/4.21.html)

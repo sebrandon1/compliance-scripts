@@ -419,5 +419,85 @@
         "manual": 22
       }
     }
+  },
+  {
+    "version": "5.1",
+    "scan_date": "2026-09-04T22:14:34Z",
+    "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+    "content_image_digest": null,
+    "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
+    "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
+    "cluster": "cnfdt16-49zwl",
+    "summary": {
+      "total_checks": 914,
+      "passing": 336,
+      "failing": 499,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 450,
+      "ocp_failing": 49
+    },
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
+  },
+  {
+    "version": "5.1",
+    "scan_date": "2026-09-08T14:48:33Z",
+    "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+    "content_image_digest": null,
+    "operator_image": "ghcr.io/complianceascode/compliance-operator:latest",
+    "scanner_image": "ghcr.io/complianceascode/openscap-ocp:latest",
+    "cluster": "cnfdt16-49zwl",
+    "summary": {
+      "total_checks": 914,
+      "passing": 336,
+      "failing": 499,
+      "manual": 79,
+      "skipped": 0,
+      "rhcos_failing": 450,
+      "ocp_failing": 49
+    },
+    "profiles": {
+      "CIS": {
+        "passing": 60,
+        "failing": 8,
+        "manual": 21
+      },
+      "E8": {
+        "passing": 39,
+        "failing": 67,
+        "manual": 6
+      },
+      "Moderate": {
+        "passing": 161,
+        "failing": 400,
+        "manual": 30
+      },
+      "PCI-DSS": {
+        "passing": 76,
+        "failing": 16,
+        "manual": 22
+      }
+    }
   }
 ]

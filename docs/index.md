@@ -76,7 +76,7 @@ Track OpenShift Compliance Operator results across OCP versions. This dashboard 
   <canvas id="scan-trend-chart" aria-label="Compliance scan trend chart"></canvas>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <script>
 (function() {
   var scanHistory = {{ site.data.scan-history | jsonify }};

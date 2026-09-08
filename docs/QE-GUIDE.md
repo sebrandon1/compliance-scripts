@@ -43,6 +43,8 @@ We maintain baselines for tested versions:
 | `tests/expected-results-4.22.json` | OCP 4.22 | 910 checks (E8, CIS, Moderate, PCI-DSS) |
 | `tests/expected-results-4.21.json` | OCP 4.21 | 106 E8 checks |
 
+> **OCP 5.1**: Dashboard and export data exist (`docs/_data/ocp-5_1.json`) but no committed QE expected-results baseline has been generated yet. Generate one with `make generate-expected OCP_VERSION=5.1` after a scan.
+
 CI (`test-compliance-versions.yml`) runs daily against quick-ocp clusters on OCP 4.20 and 4.21 with operator v1.8.2 and v1.9.0.
 
 ## Using with TailoredProfiles
@@ -57,6 +59,7 @@ If your cluster uses a TailoredProfile (e.g., `rhcos4-e8-ran-hardened`), the sca
 
 Each failing check is mapped to a remediation group. View the full tracking dashboard:
 
+- [OCP 5.1 Groups](https://sebrandon1.github.io/compliance-scripts/versions/5.1/groups/)
 - [OCP 5.0 Groups](https://sebrandon1.github.io/compliance-scripts/versions/5.0/groups/)
 - [OCP 4.22 Groups](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
 - [OCP 4.21 Groups](https://sebrandon1.github.io/compliance-scripts/versions/4.21/groups/)
