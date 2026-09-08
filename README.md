@@ -1,15 +1,16 @@
 # Hardening Scripts Collection
 
-[![Python Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/python-lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/python-lint.yml)
-[![Shell Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml)
-[![Test Compliance Operator](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance-versions.yml/badge.svg)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance-versions.yml)
+[![Python Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/python-lint.yml/badge.svg?style=for-the-badge)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/python-lint.yml)
+[![Shell Lint](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml/badge.svg?style=for-the-badge)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/shell-lint.yml)
+[![Test Compliance Operator](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance-versions.yml/badge.svg?style=for-the-badge)](https://github.com/sebrandon1/compliance-scripts/actions/workflows/test-compliance-versions.yml)
 
-[![OCP 5.1 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-5_1.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/5.1.html)
-[![OCP 5.0 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-5_0.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/5.0.html)
-[![OCP 4.22 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-4_22.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/4.22.html)
-[![OCP 4.21 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-4_21.json&style=flat-square&logo=redhatopenshift)](https://sebrandon1.github.io/compliance-scripts/versions/4.21.html)
-[![Remediation Groups](https://img.shields.io/badge/Groups-40%20tracked%20|%2033%20tested-blue?style=flat-square)](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
-[![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen?style=flat-square&logo=github)](https://sebrandon1.github.io/compliance-scripts/)
+[![OCP 5.1 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-5_1.json&style=for-the-badge&logo=redhatopenshift&logoColor=white)](https://sebrandon1.github.io/compliance-scripts/versions/5.1.html)
+[![OCP 5.0 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-5_0.json&style=for-the-badge&logo=redhatopenshift&logoColor=white)](https://sebrandon1.github.io/compliance-scripts/versions/5.0.html)
+[![OCP 4.22 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-4_22.json&style=for-the-badge&logo=redhatopenshift&logoColor=white)](https://sebrandon1.github.io/compliance-scripts/versions/4.22.html)
+[![OCP 4.21 Compliance](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsebrandon1%2Fcompliance-scripts%2Fmain%2Fdocs%2Fbadges%2Focp-4_21.json&style=for-the-badge&logo=redhatopenshift&logoColor=white)](https://sebrandon1.github.io/compliance-scripts/versions/4.21.html)
+[![Tracked Groups](https://img.shields.io/badge/Groups-40%20tracked-blue?style=for-the-badge)](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
+[![Tested Groups](https://img.shields.io/badge/Tested-33%20groups-4c1?style=for-the-badge)](https://sebrandon1.github.io/compliance-scripts/versions/4.22/groups/)
+[![Dashboard](https://img.shields.io/badge/Dashboard-Live-brightgreen?style=for-the-badge&logo=github&logoColor=white)](https://sebrandon1.github.io/compliance-scripts/)
 
 OpenShift clusters must meet compliance standards like CIS, E8, Moderate, and PCI-DSS. The [Compliance Operator](https://github.com/ComplianceAsCode/compliance-operator) scans clusters for violations and generates remediation objects (usually MachineConfigs) to fix them. This repository automates the full workflow: installing the operator, running scans, collecting remediations, merging overlapping MachineConfigs, organizing them by topic, and generating compliance reports. A [live dashboard](https://sebrandon1.github.io/compliance-scripts/) tracks remediation progress across OCP versions.
 
