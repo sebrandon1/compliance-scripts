@@ -46,7 +46,6 @@ MIRROR_IMAGES=(
 )
 
 OPENSHIFT_MARKETPLACE_IMAGES=(
-	"registry.redhat.io/redhat/community-operator-index:v4.15"
 	"registry.redhat.io/redhat/community-operator-index:v4.16"
 	"registry.redhat.io/redhat/community-operator-index:v4.17"
 	"registry.redhat.io/redhat/community-operator-index:v4.18"
@@ -56,6 +55,7 @@ OPENSHIFT_MARKETPLACE_IMAGES=(
 	"registry.redhat.io/redhat/community-operator-index:v4.22"
 	"registry.redhat.io/redhat/community-operator-index:v4.23"
 	"registry.redhat.io/redhat/community-operator-index:v5.0"
+	"registry.redhat.io/redhat/community-operator-index:v5.1"
 )
 
 usage() {
