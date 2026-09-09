@@ -13,12 +13,14 @@ source "$SCRIPT_DIR/lib/common.sh"
 source_dir="complianceremediations"
 modular_dir="complianceremediations/modular"
 severity="high"
+DRY_RUN="${DRY_RUN:-false}"
 
 usage() {
-	echo "Usage: $0 [-s severity] [-i input-dir] [-o output-dir] [-h]"
+	echo "Usage: $0 [-s severity] [-i input-dir] [-o output-dir] [--dry-run] [-h]"
 	echo "  -s  Severity level(s) to process: high,medium,low (default: high)"
 	echo "  -i  Input directory for remediation YAMLs (default: $source_dir)"
 	echo "  -o  Output directory for modular YAMLs (default: $modular_dir)"
+	echo "  --dry-run  Preview generated files without writing to the output directory"
 	echo "  -h  Show this help message"
 	echo ""
 	echo "This script creates modular MachineConfig files using .d directory includes."
@@ -30,6 +32,21 @@ usage() {
 	exit 1
 }
 
+# Remove long options before letting getopts parse the short options.
+short_args=()
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+	--dry-run)
+		DRY_RUN=true
+		;;
+	*)
+		short_args+=("$1")
+		;;
+	esac
+	shift
+done
+set -- "${short_args[@]}"
+
 while getopts "s:i:o:h" opt; do
 	case $opt in
 	s) severity="$OPTARG" ;;
@@ -39,6 +56,13 @@ while getopts "s:i:o:h" opt; do
 	*) usage ;;
 	esac
 done
+
+generation_dir="$modular_dir"
+if [[ "$DRY_RUN" == "true" ]]; then
+	generation_dir=$(mktemp -d "${TMPDIR:-/tmp}/compliance-modular.XXXXXX")
+	trap 'rm -rf -- "$generation_dir"' EXIT
+	log_info "[DRY-RUN] Previewing modular files without writing to $modular_dir"
+fi
 
 # Ensure Python virtual environment is activated
 if [[ ! -d "venv" ]]; then
@@ -69,16 +93,24 @@ echo ""
 
 python3 "$MODULAR_DIR/split-machineconfigs-modular.py" \
 	--src-dir "$source_dir" \
-	--out-dir "$modular_dir" \
+	--out-dir "$generation_dir" \
 	-s "$severity"
 
 # Check if any files were created
-if [[ ! -d "$modular_dir" ]] || [[ -z "$(ls -A "$modular_dir" 2>/dev/null)" ]]; then
+if [[ ! -d "$generation_dir" ]] || [[ -z "$(ls -A "$generation_dir" 2>/dev/null)" ]]; then
 	log_warn "No modular files were created."
 	log_warn "This could mean:"
 	log_warn "  1. No remediation files found in $source_dir"
 	log_warn "  2. No files match the severity filter: $severity"
 	log_warn "  3. No files target modular paths (sshd_config, pam.d files)"
+	exit 0
+fi
+
+if [[ "$DRY_RUN" == "true" ]]; then
+	echo ""
+	log_info "[DRY-RUN] Files that would be created in $modular_dir:"
+	find "$generation_dir" -maxdepth 1 -type f -name '*.yaml' -print | sort
+	log_success "Dry-run complete. No files were written."
 	exit 0
 fi
 
