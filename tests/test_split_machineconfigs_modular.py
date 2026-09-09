@@ -218,6 +218,61 @@ class TestParseMachineConfigFiles:
         assert key[1] is None  # no severity subdir
         assert files_map[key][0]['lines'] == ["PermitRootLogin no"]
 
+
+# ---- stable numbering ----
+
+class TestStableRemediationCounters:
+    @staticmethod
+    def source(source_file: str) -> dict[str, Any]:
+        return {
+            'source_file': source_file,
+            'role': 'worker',
+            'lines': [f'{source_file}=value'],
+            'basename': os.path.basename(source_file),
+        }
+
+    def test_order_is_independent_of_input_order(self):
+        sources = [
+            self.source('medium/second.yaml'),
+            self.source('high/first.yaml'),
+        ]
+
+        first = split_mod.stable_remediation_counters(
+            '/etc/ssh/sshd_config', 'high', sources)
+        second = split_mod.stable_remediation_counters(
+            '/etc/ssh/sshd_config', 'high', list(reversed(sources)))
+
+        first_numbers = {source['source_file']: number
+                         for number, source in first}
+        second_numbers = {source['source_file']: number
+                          for number, source in second}
+        assert first_numbers == second_numbers
+
+    def test_unrelated_source_does_not_renumber_existing_sources(self):
+        existing = [
+            self.source('high/first.yaml'),
+            self.source('high/second.yaml'),
+        ]
+        with_unrelated = existing + [self.source('high/new-unrelated.yaml')]
+
+        before = split_mod.stable_remediation_counters(
+            '/etc/ssh/sshd_config', 'high', existing)
+        after = split_mod.stable_remediation_counters(
+            '/etc/ssh/sshd_config', 'high', with_unrelated)
+
+        before_numbers = {source['source_file']: number
+                          for number, source in before}
+        after_numbers = {source['source_file']: number
+                         for number, source in after}
+        assert {key: after_numbers[key] for key in before_numbers} == before_numbers
+
+    def test_base_counter_is_reserved(self):
+        planned = split_mod.stable_remediation_counters(
+            '/etc/ssh/sshd_config', 'high', [self.source('high/test.yaml')])
+
+        assert planned[0][0] != split_mod.BASE_COUNTER
+        assert planned[0][0] >= split_mod.FIRST_REMEDIATION_COUNTER
+
     def test_severity_from_directory(self, tmpdir):
         high_dir = os.path.join(tmpdir, "high")
         os.makedirs(high_dir)
