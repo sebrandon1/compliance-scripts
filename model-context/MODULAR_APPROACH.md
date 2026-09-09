@@ -68,10 +68,16 @@ Paths not in this list will fall back to the combo file approach.
 
 ```bash
 # Create modular files for high-severity remediations
-modular/create-modular-configs.sh -s high
+make create-modular-configs SEVERITY=high
+
+# Preview without writing files
+make create-modular-configs SEVERITY=high DRY_RUN=true
 
 # Review generated files
 ls -la complianceremediations/modular/
+
+# Validate generated files
+make validate-modular-configs
 
 # Organize into target repository structure
 core/organize-machine-configs.sh -d complianceremediations/modular -s high
@@ -96,6 +102,13 @@ modular/create-modular-configs.sh -s high,medium
 ### Options
 
 ```bash
+# Make target variables: SOURCE, OUTPUT, SEVERITY, and DRY_RUN
+make create-modular-configs \
+  SOURCE=complianceremediations \
+  OUTPUT=output/modular \
+  SEVERITY=high,medium \
+  DRY_RUN=false
+
 # Process multiple severity levels
 modular/create-modular-configs.sh -s high,medium,low
 
@@ -121,8 +134,9 @@ core/collect-complianceremediations.sh
 # 3. OLD WAY: Combine into monolithic files
 # python3 combine-machineconfigs-by-path.py -s high
 
-# 3. NEW WAY: Create modular files
-modular/create-modular-configs.sh -s high
+# 3. NEW WAY: Create and validate modular files
+make create-modular-configs SEVERITY=high
+make validate-modular-configs
 
 # 4. Organize into target repository
 core/organize-machine-configs.sh -d complianceremediations/modular -s high
@@ -228,4 +242,3 @@ done
 - [PR #439](https://github.com/openshift-kni/telco-reference/pull/439) - RAN Hardening (High): Top 5 SSHD
 - [Compliance Operator](https://github.com/ComplianceAsCode/compliance-operator)
 - [OpenShift MachineConfig](https://docs.openshift.com/container-platform/latest/post_installation_configuration/machine-configuration-tasks.html)
-
