@@ -11,6 +11,7 @@ import sys
 import urllib.parse
 import yaml
 import argparse
+import hashlib
 from typing import Any
 
 # Add project root to path for shared module imports
@@ -21,6 +22,10 @@ from lib.compliance_utils import (  # noqa: E402
 
 
 IGNITION_VERSION = '3.5.0'
+BASE_COUNTER = 75
+FIRST_REMEDIATION_COUNTER = BASE_COUNTER + 1
+MAX_REMEDIATION_COUNTER = 9999
+SEVERITY_ORDER = {'high': 0, 'medium': 1, 'low': 2, None: 3}
 
 # Configuration for paths that support .d directory includes
 MODULAR_PATHS = {
@@ -43,6 +48,62 @@ MODULAR_PATHS = {
         'file_extension': '',
     },
 }
+
+
+def source_sort_key(remediation_info: dict[str, Any]) -> tuple[str, ...]:
+    """Return a stable ordering key for a remediation source."""
+    return (
+        str(remediation_info.get('source_file', '')).casefold(),
+        str(remediation_info.get('role', '')).casefold(),
+        str(remediation_info.get('basename', '')).casefold(),
+        '\n'.join(remediation_info.get('lines', [])),
+    )
+
+
+def group_sort_key(
+        group: tuple[tuple[str, str | None], list[dict[str, Any]]]
+) -> tuple[int, int, str]:
+    """Sort paths, then severities, independently of filesystem traversal."""
+    (path, severity), _sources = group
+    path_order = list(MODULAR_PATHS).index(path) if path in MODULAR_PATHS else len(MODULAR_PATHS)
+    severity_order = SEVERITY_ORDER.get(severity, len(SEVERITY_ORDER))
+    return path_order, severity_order, path
+
+
+def stable_remediation_counters(
+        path: str,
+        severity: str | None,
+        sources: list[dict[str, Any]],
+) -> list[tuple[int, dict[str, Any]]]:
+    """Assign stable numbers to remediation sources.
+
+    The number is derived from the source identity instead of the order returned
+    by ``os.walk``.  This keeps existing generated filenames stable when an
+    unrelated remediation is added to the same path.  The base include file
+    owns ``BASE_COUNTER``; remediation files use the remaining range.
+    """
+    used = {BASE_COUNTER}
+    planned = []
+    for source in sorted(sources, key=source_sort_key):
+        identity = '\0'.join((
+            path,
+            severity or '',
+            str(source.get('source_file', '')),
+            str(source.get('role', '')),
+            str(source.get('basename', '')),
+        ))
+        digest = hashlib.sha256(identity.encode('utf-8')).digest()
+        number_range = MAX_REMEDIATION_COUNTER - FIRST_REMEDIATION_COUNTER + 1
+        counter = FIRST_REMEDIATION_COUNTER + (
+            int.from_bytes(digest[:4], 'big') % number_range
+        )
+        while counter in used:
+            counter += 1
+            if counter > MAX_REMEDIATION_COUNTER:
+                counter = FIRST_REMEDIATION_COUNTER
+        used.add(counter)
+        planned.append((counter, source))
+    return planned
 
 
 def extract_meaningful_settings(lines: list[str]) -> list[str]:
@@ -313,7 +374,8 @@ def main() -> None:
     created_files = []
 
     # Process each (path, severity) combination
-    for (path, severity), sources in sorted(files_map.items()):
+    for (path, severity), sources in sorted(
+            files_map.items(), key=group_sort_key):
         if len(sources) < 1:
             continue
 
@@ -325,11 +387,13 @@ def main() -> None:
                     severity or 'all'})")
 
             # Generate base file (only once per path)
-            base_file = generate_base_yaml(path, severity, config, out_dir, 75)
+            base_file = generate_base_yaml(
+                path, severity, config, out_dir, BASE_COUNTER)
             created_files.append(base_file)
 
             # Generate individual modular files
-            for idx, source in enumerate(sources, start=76):
+            for idx, source in stable_remediation_counters(
+                    path, severity, sources):
                 modular_file = generate_modular_yaml(
                     path, severity, source, config, out_dir, idx
                 )
