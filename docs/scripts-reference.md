@@ -164,7 +164,9 @@ make mirror-images CO_REF=v1.9.0
 **create-modular-configs.sh** — Creates modular MachineConfig files using `.d` directory includes, allowing per-rule file management.
 
 ```bash
-./modular/create-modular-configs.sh [-s severity] [-i input-dir] [-o output-dir]
+./modular/create-modular-configs.sh [-s severity] [-i input-dir] [-o output-dir] [--dry-run]
+make create-modular-configs SOURCE=complianceremediations OUTPUT=complianceremediations/modular SEVERITY=high
+make create-modular-configs SOURCE=complianceremediations OUTPUT=/tmp/modular SEVERITY=high DRY_RUN=true
 ```
 
 **split-machineconfigs-modular.py** — The Python engine behind `create-modular-configs.sh`.
@@ -248,6 +250,7 @@ make test-compliance
 ```bash
 ./scripts/validate-machineconfig.sh -d complianceremediations
 make validate-machineconfigs
+make validate-modular-configs OUTPUT=complianceremediations/modular
 ```
 
 **detect-mc-conflicts.sh** — Reports file-path, sysctl, and kernel-arg conflicts between MachineConfigs.

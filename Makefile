@@ -31,7 +31,8 @@ IMAGE_REGISTRY ?= quay.io/bapalm
 # ────────────────────────────────────────────────────────────────────────────────
 .PHONY: all help preflight install-compliance-operator apply-periodic-scan create-scan \
         wait-for-scans collect-complianceremediations combine-machineconfigs organize-machine-configs \
-        generate-compliance-markdown filter-machineconfigs clean clean-complianceremediations \
+        create-modular-configs validate-modular-configs generate-compliance-markdown \
+        filter-machineconfigs clean clean-complianceremediations \
         full-workflow banner lint python-lint bash-lint verify-images test-compliance \
         export-compliance update-dashboard serve-docs install-jekyll validate-machineconfigs \
         mirror-images rhcos-static-scan shell-smoke-test dashboard-validate add-version \
@@ -61,6 +62,9 @@ help: banner ## 📖 Show this help message
 	@echo ""
 	@echo "$(YELLOW)📊 Data Collection Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(collect|organize|generate-compliance-markdown|generate-expected)"
+	@echo ""
+	@echo "$(YELLOW)🧩 Modular MachineConfig Commands:$(RESET)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(modular)"
 	@echo ""
 	@echo "$(YELLOW)🔍 Code Quality Commands:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST) | grep -E "(lint)"
@@ -179,6 +183,37 @@ combine-machineconfigs: ## 🧩 Combine overlapping MachineConfig remediations b
 	@python3 core/combine-machineconfigs-by-path.py --src-dir complianceremediations --out-dir complianceremediations --header none --no-move
 	@echo "$(GREEN)✅ Combined MachineConfig YAMLs generated!$(RESET)"
 	@echo ""
+
+# Modular workflow defaults. SOURCE/OUTPUT/SEVERITY/DRY_RUN are supported as
+# concise aliases, while the MODULAR_* names make target intent explicit.
+MODULAR_SOURCE ?= $(or $(SOURCE),$(REMEDIATION_DIR),complianceremediations)
+MODULAR_OUTPUT ?= $(or $(OUTPUT),complianceremediations/modular)
+MODULAR_SEVERITY ?= $(or $(SEVERITY),$(SEVERITY_FILTER),high)
+MODULAR_DRY_RUN ?= $(or $(DRY_RUN),false)
+
+create-modular-configs: ## 🧩 Create modular MachineConfig files (SOURCE, OUTPUT, SEVERITY, DRY_RUN)
+	@echo "$(BOLD)$(BLUE)🧩 Creating modular MachineConfig files...$(RESET)"
+	@if [ "$(MODULAR_DRY_RUN)" = "true" ] || [ "$(MODULAR_DRY_RUN)" = "1" ]; then \
+		./modular/create-modular-configs.sh --dry-run \
+			-i "$(MODULAR_SOURCE)" -o "$(MODULAR_OUTPUT)" -s "$(MODULAR_SEVERITY)"; \
+	else \
+		./modular/create-modular-configs.sh \
+			-i "$(MODULAR_SOURCE)" -o "$(MODULAR_OUTPUT)" -s "$(MODULAR_SEVERITY)"; \
+	fi
+
+validate-modular-configs: ## ✅ Validate modular MachineConfig files (OUTPUT, DRY_RUN)
+	@echo "$(BOLD)$(BLUE)✅ Validating modular MachineConfig files...$(RESET)"
+	@if [ ! -d "$(MODULAR_OUTPUT)" ]; then \
+		echo "$(RED)❌ Error: modular output directory not found: $(MODULAR_OUTPUT)$(RESET)"; \
+		echo "$(YELLOW)Run make create-modular-configs first, or set OUTPUT=<directory>.$(RESET)"; \
+		exit 1; \
+	fi
+	@if [ "$(MODULAR_DRY_RUN)" = "true" ] || [ "$(MODULAR_DRY_RUN)" = "1" ]; then \
+		echo "$(DIM)[DRY-RUN] Would validate YAML files in $(MODULAR_OUTPUT):$(RESET)"; \
+		find "$(MODULAR_OUTPUT)" -type f -name '*.yaml' -print | sort; \
+	else \
+		./scripts/validate-machineconfig.sh -d "$(MODULAR_OUTPUT)"; \
+	fi
 
 validate-machineconfigs: ## ✅ Validate MachineConfig YAML files before applying
 	@echo "$(BOLD)$(BLUE)✅ Validating MachineConfig files...$(RESET)"

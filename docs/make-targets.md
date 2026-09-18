@@ -17,6 +17,11 @@ make combine-machineconfigs           # Merge overlapping MachineConfigs
 make organize-machine-configs         # Categorize by topic
 make generate-compliance-markdown     # Generate report
 
+# Modular MachineConfig workflow
+make create-modular-configs            # Create modular .d MachineConfigs
+make validate-modular-configs          # Validate generated modular files
+make create-modular-configs SOURCE=... OUTPUT=... SEVERITY=high DRY_RUN=true
+
 # Validation
 make validate-machineconfigs          # Validate MachineConfig YAML files
 make filter-machineconfigs            # Filter specific flags (requires INPUT, OUTPUT, FLAGS)

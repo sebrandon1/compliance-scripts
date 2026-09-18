@@ -38,6 +38,8 @@ make create-scan
 make wait-for-scans
 make collect-complianceremediations
 make combine-machineconfigs
+make create-modular-configs SEVERITY=high
+make validate-modular-configs
 make organize-machine-configs
 make generate-compliance-markdown
 make clean
@@ -104,7 +106,8 @@ After a scan export, rerun `make generate-group-matrix` so the Hardened matrix m
 | `install-compliance-operator.sh` | `oc` access to cluster | Pods Ready (~5 min), ProfileBundles VALID | Operator running in `openshift-compliance` |
 | `create-scan.sh` / `apply-periodic-scan.sh` | ProfileBundles VALID | ComplianceSuite DONE (~5-15 min) | CheckResults + Remediations in cluster |
 | `collect-complianceremediations.sh` | Scans completed | Immediate | YAML files in `complianceremediations/` |
-| `combine-machineconfigs-by-path.py` or `create-modular-configs.sh` | `complianceremediations/` populated | Immediate | Combined/modular YAML files |
+| `combine-machineconfigs-by-path.py` or `make create-modular-configs` | `complianceremediations/` populated | Immediate | Combined/modular YAML files |
+| `make validate-modular-configs` | Modular YAML files generated | Immediate | Validation results |
 | `organize-machine-configs.sh` | Combined or raw remediations | Immediate | Categorized files in `output/` |
 | `generate-compliance-markdown.sh` | Scans completed, remediations collected | Immediate | `ComplianceCheckResults.md` |
 
@@ -127,7 +130,7 @@ The `--platform` flag on `create-scan.sh` and `apply-periodic-scan.sh` filters s
 ### Safety Considerations
 
 - **MachineConfig changes trigger rolling node reboots.** Always review YAML before applying to a cluster.
-- Use `--dry-run` on `combine-machineconfigs-by-path.py` and `organize-machine-configs.sh` to preview changes.
+- Use `--dry-run` on `combine-machineconfigs-by-path.py`, `organize-machine-configs.sh`, or `make create-modular-configs DRY_RUN=true` to preview changes.
 - The `-x` flag on `organize-machine-configs.sh` applies configs directly to the cluster — use with caution.
 - Non-MachineConfig remediations (e.g., APIServer) may also cause temporary service disruption.
 
