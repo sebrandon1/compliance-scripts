@@ -7,11 +7,16 @@ Paths whose daemon does not natively read a .d directory can opt into a
 generated base MC (``needs_base``). sshd needs none because RHCOS's stock
 sshd_config already includes sshd_config.d/*.conf. PAM is not .d-capable
 at all, so PAM remediations fall back to full-file combo MCs.
+
+Generated output is staged and validated (see validate_outputs) before
+it replaces prior output, so a failed run cannot leave a partial set.
 """
 from __future__ import annotations
 
 import os
 import sys
+import shutil
+import tempfile
 import urllib.parse
 import yaml
 import argparse
@@ -22,6 +27,7 @@ from typing import Any
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from lib.compliance_utils import (  # noqa: E402
     safe_shortname, parse_machineconfig_files, parse_severity_filter,
+    decode_data_source,
 )
 
 
@@ -59,6 +65,14 @@ MODULAR_PATHS: dict[str, dict[str, Any]] = {
         'file_extension': '.conf',
         'needs_base': False,
         'dropin_prefix': '10',
+        # Keywords that legitimately repeat — each line adds a value
+        # instead of first-match-wins — so they are exempt from the
+        # duplicate-setting conflict check in validate_outputs.
+        'repeatable_keywords': (
+            'AcceptEnv', 'AllowGroups', 'AllowUsers', 'DenyGroups',
+            'DenyUsers', 'HostCertificate', 'HostKey', 'ListenAddress',
+            'PermitListen', 'PermitOpen', 'Port',
+        ),
     },
 }
 
@@ -372,6 +386,147 @@ def write_combo_yaml(
     return outpaths
 
 
+def owning_config(target: str) -> dict[str, Any] | None:
+    """Return the MODULAR_PATHS entry whose include_dir contains target."""
+    for cfg in MODULAR_PATHS.values():
+        if target.startswith(cfg['include_dir'] + '/'):
+            return cfg
+    return None
+
+
+def validate_outputs(
+        created_files: list[str],
+        files_map: dict[tuple[str, str | None], list[dict[str, Any]]],
+) -> tuple[list[str], list[str]]:
+    """Check generated MachineConfigs before they replace prior output.
+
+    Verifies that every file parses as a MachineConfig with the expected
+    Ignition structure, that every target path is a known remediation
+    path or lives under a modular include directory, that
+    first-match-wins drop-ins carry no conflicting duplicate settings,
+    and that every input group produced output. Returns
+    (problems, warnings): problems block publication, warnings (e.g. an
+    intentionally empty file such as /etc/securetty) do not.
+    """
+    problems: list[str] = []
+    warnings: list[str] = []
+    targets: list[str] = []
+    # include_dir -> keyword -> occurrences of (value, drop-in name).
+    # Drop-ins in the same directory are first-match-wins, so a keyword
+    # set to two different values means the later value is silently
+    # ignored. Keywords listed in a path's repeatable_keywords (e.g.
+    # sshd's HostKey, where lines accumulate) are exempt.
+    dropin_settings: dict[str, dict[str, list[tuple[str, str]]]] = {}
+    repeatable_by_dir = {
+        cfg['include_dir']: set(cfg.get('repeatable_keywords', ()))
+        for cfg in MODULAR_PATHS.values()
+    }
+    combo_paths = {path for (path, _) in files_map}
+
+    for filepath in created_files:
+        basename = os.path.basename(filepath)
+        try:
+            with open(filepath) as f:
+                doc = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            problems.append(f"{basename}: invalid YAML: {exc}")
+            continue
+        if not isinstance(doc, dict):
+            problems.append(f"{basename}: not a YAML mapping")
+            continue
+        # Guarded lookups: a key that is present but null must degrade
+        # to a reported problem, not an AttributeError.
+        metadata = doc.get('metadata') or {}
+        config = (doc.get('spec') or {}).get('config') or {}
+        name = metadata.get('name') or basename
+        if doc.get('kind') != 'MachineConfig':
+            problems.append(f"{name}: kind is not MachineConfig")
+            continue
+        if not (metadata.get('labels') or {}).get(ROLE_LABEL_KEY):
+            problems.append(f"{name}: missing {ROLE_LABEL_KEY} label")
+        ignition = (config.get('ignition') or {}).get('version')
+        if ignition != IGNITION_VERSION:
+            problems.append(
+                f"{name}: ignition version {ignition!r}, "
+                f"expected {IGNITION_VERSION!r}")
+        entries = (config.get('storage') or {}).get('files')
+        if not isinstance(entries, list) or not entries:
+            problems.append(f"{name}: no storage.files entries")
+            continue
+
+        for entry in entries:
+            target = entry.get('path') or ''
+            targets.append(target)
+            content = decode_data_source(
+                (entry.get('contents') or {}).get('source'))
+            if content is None:
+                problems.append(f"{name}: {target}: source is not a data: URL")
+                continue
+            settings_lines = extract_meaningful_settings(content.splitlines())
+
+            cfg = owning_config(target)
+            # Base MCs legitimately contain only the Include directive,
+            # and some files are intentionally empty (/etc/securetty,
+            # .mco-keep placeholders), so emptiness is a warning.
+            is_base = (cfg is not None
+                       and os.path.basename(target) == cfg.get('base_file'))
+            if not is_base and not settings_lines:
+                warnings.append(
+                    f"{name}: {target}: decoded settings are empty")
+            if target not in combo_paths and cfg is None:
+                problems.append(f"{name}: {target}: unsupported target path")
+            if cfg is None:
+                continue
+            include_dir = cfg['include_dir']
+            seen = dropin_settings.setdefault(include_dir, {})
+            dropin = os.path.basename(target)
+            for line in settings_lines:
+                parts = line.split(None, 1)
+                keyword = parts[0]
+                if keyword in repeatable_by_dir[include_dir]:
+                    continue
+                value = parts[1] if len(parts) > 1 else ''
+                seen.setdefault(keyword, []).append((value, dropin))
+
+    for include_dir, keywords in dropin_settings.items():
+        for keyword, occurrences in keywords.items():
+            by_value: dict[str, list[str]] = {}
+            for value, dropin in occurrences:
+                by_value.setdefault(value, []).append(dropin)
+            if len(by_value) <= 1:
+                continue
+            parts = []
+            for value, dropins in by_value.items():
+                where = (dropins[0] if len(dropins) == 1
+                         else f"{len(dropins)} drop-ins")
+                parts.append(f"{value!r} in {where}")
+            problems.append(
+                f"{include_dir}: {keyword} set to conflicting values: "
+                f"{'; '.join(parts)} (first match wins; later values are "
+                "ignored)")
+
+    # Completeness: every (path, severity) group that reached generation
+    # must have produced at least one file. A base include alone does
+    # not cover a modular path — the group's drop-ins are the output.
+    target_set = set(targets)
+    dropin_dirs: set[str] = set()
+    for target in target_set:
+        cfg = owning_config(target)
+        if cfg is not None and os.path.basename(target) != cfg.get('base_file'):
+            dropin_dirs.add(cfg['include_dir'])
+    for (path, severity), _sources in files_map.items():
+        if path in MODULAR_PATHS:
+            has_output = MODULAR_PATHS[path]['include_dir'] in dropin_dirs
+        else:
+            has_output = path in target_set
+        if not has_output:
+            problems.append(
+                f"no output generated for {path} "
+                f"(severity: {severity or 'all'})")
+
+    return problems, warnings
+
+
 def generate_outputs(
     files_map: dict[tuple[str, str | None], list[dict[str, Any]]],
     out_dir: str,
@@ -456,7 +611,38 @@ def main() -> None:
             if sev in severity_filter
         }
 
-    created_files = generate_outputs(files_map, out_dir)
+    # Generate into a staging directory beside out_dir (same filesystem,
+    # so publishing is a rename) and validate the complete set before
+    # anything replaces prior output — a failed generation must not
+    # leave a partial set behind.
+    staging_dir = tempfile.mkdtemp(
+        prefix='modular-staging-',
+        dir=os.path.dirname(os.path.abspath(out_dir)))
+    try:
+        created_files = generate_outputs(files_map, staging_dir)
+        problems, warnings = validate_outputs(created_files, files_map)
+        for warning in warnings:
+            print(f"WARNING: {warning}", file=sys.stderr)
+        if problems:
+            print(
+                f"\nERROR: {len(problems)} validation problem(s); "
+                f"{out_dir} was not modified:",
+                file=sys.stderr)
+            for problem in problems:
+                print(f"  - {problem}", file=sys.stderr)
+            sys.exit(2)
+
+        # Publish: replace stale output only when there is new output to
+        # take its place, so e.g. a severity filter that matches nothing
+        # does not silently wipe previously generated files.
+        if created_files:
+            for stale in os.listdir(out_dir):
+                if stale.endswith('.yaml'):
+                    os.remove(os.path.join(out_dir, stale))
+            for filepath in created_files:
+                shutil.move(filepath, out_dir)
+    finally:
+        shutil.rmtree(staging_dir, ignore_errors=True)
 
     print(f"\n{'=' * 60}")
     print(f"Generated {len(created_files)} files in {out_dir}/")

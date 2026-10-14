@@ -74,7 +74,7 @@ if [[ ! -d "venv" ]]; then
 fi
 
 # Activate venv if not already active
-if [[ -z "$VIRTUAL_ENV" ]]; then
+if [[ -z "${VIRTUAL_ENV:-}" ]]; then
 	log_info "Activating Python virtual environment..."
 	# shellcheck disable=SC1091
 	source venv/bin/activate
