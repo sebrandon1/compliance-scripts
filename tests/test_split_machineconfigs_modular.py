@@ -35,6 +35,17 @@ NEEDS_BASE_CONFIG = {
     'needs_base': True,
 }
 
+# NEEDS_BASE_CONFIG minus the base-file keys: a modular path that
+# neither needs a base MC nor carries a dropin prefix
+NO_PREFIX_CONFIG = {
+    'include_dir': NEEDS_BASE_CONFIG['include_dir'],
+    'file_extension': NEEDS_BASE_CONFIG['file_extension'],
+}
+
+# RHCOS stock files in /etc/ssh/sshd_config.d; generated drop-ins must
+# sort before these (sshd is first-match-wins)
+STOCK_SSHD_DROPINS = ('40-rhcos-defaults.conf', '50-redhat.conf')
+
 
 def load_mc(path: str) -> dict[str, Any]:
     """Load a generated MachineConfig YAML file."""
@@ -667,15 +678,54 @@ class TestGenerateModularYaml:
         result = split_mod.generate_modular_yaml(
             '/etc/ssh/sshd_config', None, info, config, outdir, 76)
 
-        with open(result) as f:
-            content = f.read()
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
+        doc = load_mc(result)
         file_path = doc['spec']['config']['storage']['files'][0]['path']
-        assert file_path.startswith('/etc/ssh/sshd_config.d/')
-        assert file_path.endswith('.conf')
+        # dropin_prefix + zero-padded counter on the node; the MC
+        # object name keeps the 76+ counter
+        assert file_path == '/etc/ssh/sshd_config.d/10-0076-test.conf'
+        assert doc['metadata']['name'].startswith('76-')
+
+    def test_dropin_sorts_before_stock_files(self, outdir):
+        """sshd is first-match-wins and reads sshd_config.d in lexical
+        order, so every generated drop-in must sort before RHCOS's
+        stock drop-ins."""
+        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
+        info = {
+            'source_file': 'test.yaml',
+            'role': 'worker',
+            'lines': ['PermitRootLogin no'],
+            'basename': 'test.yaml',
+        }
+        basenames = []
+        for counter in (split_mod.FIRST_REMEDIATION_COUNTER, 777,
+                        split_mod.MAX_REMEDIATION_COUNTER):
+            result = split_mod.generate_modular_yaml(
+                '/etc/ssh/sshd_config', None, info, config, outdir, counter)
+            doc = load_mc(result)
+            entry = doc['spec']['config']['storage']['files'][0]
+            basename = os.path.basename(entry['path'])
+            for stock in STOCK_SSHD_DROPINS:
+                assert basename < stock
+            basenames.append(basename)
+        # zero padding keeps lexical order == counter order among the
+        # generated drop-ins (remediation precedence)
+        assert basenames == sorted(basenames)
+
+    def test_no_dropin_prefix_uses_counter_name(self, outdir):
+        """Paths without a dropin_prefix keep the legacy on-node name:
+        the counter alone as the prefix."""
+        info = {
+            'source_file': 'test.yaml',
+            'role': 'worker',
+            'lines': ['SettingOne yes'],
+            'basename': 'test.yaml',
+        }
+        result = split_mod.generate_modular_yaml(
+            FAKE_MODULAR_PATH, None, info, NO_PREFIX_CONFIG, outdir, 76)
+
+        doc = load_mc(result)
+        entry = doc['spec']['config']['storage']['files'][0]
+        assert entry['path'] == '/etc/fake/daemon.conf.d/76-test.conf'
 
     def test_content_encoded_correctly(self, outdir):
         config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
@@ -854,6 +904,27 @@ class TestGenerateOutputs:
                 for line in content.splitlines():
                     assert not line.lower().startswith('include ')
                     assert not line.lower().startswith('@include ')
+
+    def test_sshd_dropins_sort_before_stock_files(self, tmpdir, outdir):
+        """End to end: every sshd_config.d path must sort before RHCOS's
+        stock drop-ins (sshd first-match-wins)."""
+        write_remediation(
+            tmpdir, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'], role='worker')
+        write_remediation(
+            tmpdir, 'sshd-banner', '/etc/ssh/sshd_config',
+            ['Banner /etc/issue'], role='master')
+
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+
+        for outpath in outputs:
+            doc = load_mc(outpath)
+            for entry in doc['spec']['config']['storage']['files']:
+                if entry['path'].startswith('/etc/ssh/sshd_config.d/'):
+                    basename = os.path.basename(entry['path'])
+                    for stock in STOCK_SSHD_DROPINS:
+                        assert basename < stock
 
     def test_pam_falls_through_to_combo(self, tmpdir, outdir):
         """PAM paths are not .d-capable and must produce full-file combo
