@@ -173,6 +173,23 @@ def outdir():
     shutil.rmtree(d)
 
 
+@pytest.fixture
+def main_dirs(tmpdir):
+    """Separate src/out directories for main() staging tests (out must
+    not live under src or the parse walk would pick up its files)."""
+    src = os.path.join(tmpdir, 'src')
+    out = os.path.join(tmpdir, 'out')
+    os.makedirs(src)
+    os.makedirs(out)
+    return src, out
+
+
+def write_stale_output(out: str) -> None:
+    """Drop a leftover from a previous run into an output directory."""
+    with open(os.path.join(out, 'stale.yaml'), 'w') as f:
+        f.write('# stale output from a previous run\n')
+
+
 # ---- safe_shortname ----
 
 class TestSafeShortname:
@@ -1111,3 +1128,283 @@ class TestEndToEnd:
                 non_modular_count += 1
         assert modular_count == 1
         assert non_modular_count == 1
+
+
+# ---- validate_outputs ----
+
+class TestValidateOutputs:
+    """validate_outputs gates publication of a generated set."""
+
+    @staticmethod
+    def generate(
+            tmpdir: str, outdir: str,
+    ) -> tuple[dict, list[str]]:
+        """Parse tmpdir remediations and generate the output set."""
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+        return files_map, outputs
+
+    def write_output_mc(
+            self, outdir: str, filename: str,
+            doc: dict[str, Any]) -> str:
+        path = os.path.join(outdir, filename)
+        with open(path, 'w') as f:
+            yaml.dump(doc, f)
+        return path
+
+    def validate_doc(
+            self, outdir: str, filename: str,
+            doc: dict[str, Any]) -> tuple[list[str], list[str]]:
+        """Write a single hand-built MC and validate it."""
+        return split_mod.validate_outputs(
+            [self.write_output_mc(outdir, filename, doc)], {})
+
+    def test_valid_generation_has_no_problems(self, tmpdir, outdir):
+        """A clean sshd + PAM generation passes every check."""
+        write_remediation(
+            tmpdir, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_remediation(
+            tmpdir, 'pam-auth', '/etc/pam.d/system-auth',
+            ['auth required pam_deny.so'])
+        files_map, outputs = self.generate(tmpdir, outdir)
+        problems, warnings = split_mod.validate_outputs(outputs, files_map)
+        assert problems == []
+        assert warnings == []
+
+    def test_invalid_yaml_reported(self, outdir):
+        path = os.path.join(outdir, 'bad.yaml')
+        with open(path, 'w') as f:
+            f.write('metadata: [unclosed\n')
+        problems, _warnings = split_mod.validate_outputs([path], {})
+        assert len(problems) == 1
+        assert 'bad.yaml' in problems[0]
+        assert 'invalid YAML' in problems[0]
+
+    def test_non_yaml_mapping_reported(self, outdir):
+        path = os.path.join(outdir, 'list.yaml')
+        with open(path, 'w') as f:
+            yaml.dump(['just', 'a', 'list'], f)
+        problems, _warnings = split_mod.validate_outputs([path], {})
+        assert any('not a YAML mapping' in p for p in problems)
+
+    def test_non_machineconfig_kind_reported(self, outdir):
+        doc = make_mc_yaml('/etc/ssh/sshd_config', ['PermitRootLogin no'])
+        doc['kind'] = 'ConfigMap'
+        problems, _warnings = self.validate_doc(outdir, 'notmc.yaml', doc)
+        assert any('kind is not MachineConfig' in p for p in problems)
+
+    def test_missing_role_label_reported(self, outdir):
+        doc = make_mc_yaml('/etc/ssh/sshd_config', ['PermitRootLogin no'])
+        del doc['metadata']['labels']
+        problems, _warnings = self.validate_doc(outdir, 'nolabel.yaml', doc)
+        assert any(f'missing {ROLE_LABEL}' in p for p in problems)
+
+    def test_null_metadata_reported_not_crashed(self, outdir):
+        """A key that is present but null must degrade to a reported
+        problem, not an AttributeError."""
+        doc = make_mc_yaml('/etc/ssh/sshd_config', ['PermitRootLogin no'])
+        doc['metadata'] = None
+        problems, _warnings = self.validate_doc(outdir, 'nullmeta.yaml', doc)
+        assert any(f'missing {ROLE_LABEL}' in p for p in problems)
+
+    def test_wrong_ignition_version_reported(self, outdir):
+        doc = make_mc_yaml('/etc/ssh/sshd_config', ['PermitRootLogin no'])
+        doc['spec']['config']['ignition']['version'] = '3.1.0'
+        problems, _warnings = self.validate_doc(
+            outdir, 'oldignition.yaml', doc)
+        assert any('ignition version' in p for p in problems)
+
+    def test_empty_settings_warned(self, outdir):
+        """Empty decoded settings are a warning, not a blocker: some
+        files are intentionally empty (/etc/securetty, .mco-keep)."""
+        doc = make_mc_yaml(
+            '/etc/ssh/sshd_config.d/10-0076-empty.conf',
+            ['# comments only'])
+        problems, warnings = self.validate_doc(
+            outdir, 'emptysettings.yaml', doc)
+        assert problems == []
+        assert any('decoded settings are empty' in w for w in warnings)
+
+    def test_no_storage_files_reported(self, outdir):
+        doc = make_mc_yaml('/etc/ssh/sshd_config', ['PermitRootLogin no'])
+        del doc['spec']['config']['storage']
+        problems, _warnings = self.validate_doc(
+            outdir, 'nostorage.yaml', doc)
+        assert any('no storage.files entries' in p for p in problems)
+
+    def test_non_data_source_reported(self, outdir):
+        doc = make_mc_yaml('/etc/ssh/sshd_config', ['PermitRootLogin no'])
+        doc['spec']['config']['storage']['files'][0]['contents'][
+            'source'] = 'https://example.com/sshd.conf'
+        problems, _warnings = self.validate_doc(
+            outdir, 'remotesource.yaml', doc)
+        assert any('source is not a data: URL' in p for p in problems)
+
+    def test_unsupported_target_path_reported(self, outdir):
+        doc = make_mc_yaml('/etc/unrelated/file.conf', ['foo bar'])
+        problems, _warnings = self.validate_doc(outdir, 'stray.yaml', doc)
+        assert any('unsupported target path' in p for p in problems)
+
+    def test_conflicting_duplicate_keyword_reported(
+            self, tmpdir, outdir):
+        """Same keyword, different values across drop-ins: later value
+        is dead under first-match-wins, so it must block publication."""
+        write_remediation(
+            tmpdir, 'a-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_remediation(
+            tmpdir, 'b-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin yes'])
+        files_map, outputs = self.generate(tmpdir, outdir)
+        problems, _warnings = split_mod.validate_outputs(outputs, files_map)
+        assert any(
+            'PermitRootLogin' in p and 'first match wins' in p
+            for p in problems)
+
+    def test_repeatable_keyword_exempt_from_conflict_check(
+            self, tmpdir, outdir):
+        """HostKey legitimately repeats (values accumulate), so two
+        drop-ins listing different HostKeys are not a conflict."""
+        write_remediation(
+            tmpdir, 'a-host-keys', '/etc/ssh/sshd_config',
+            ['HostKey /etc/ssh/ssh_host_rsa_key'])
+        write_remediation(
+            tmpdir, 'b-host-keys', '/etc/ssh/sshd_config',
+            ['HostKey /etc/ssh/ssh_host_ecdsa_key'])
+        files_map, outputs = self.generate(tmpdir, outdir)
+        problems, _warnings = split_mod.validate_outputs(outputs, files_map)
+        assert problems == []
+
+    def test_identical_duplicate_keyword_allowed(self, tmpdir, outdir):
+        """Same keyword, same value in two drop-ins is redundant but not
+        ambiguous; it must not block publication."""
+        write_remediation(
+            tmpdir, 'a-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_remediation(
+            tmpdir, 'b-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        files_map, outputs = self.generate(tmpdir, outdir)
+        problems, _warnings = split_mod.validate_outputs(outputs, files_map)
+        assert problems == []
+
+    def test_missing_group_output_reported(self, tmpdir, outdir):
+        """A group present in files_map with no generated file means an
+        incomplete set; the sysctl combo below is never generated."""
+        write_remediation(
+            tmpdir, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_remediation(
+            tmpdir, 'sysctl-forward', '/etc/sysctl.d/99-net.conf',
+            ['net.ipv4.ip_forward=0'])
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        sshd_only = {
+            key: sources for key, sources in files_map.items()
+            if key[0] == '/etc/ssh/sshd_config'}
+        outputs = split_mod.generate_outputs(sshd_only, outdir)
+        problems, _warnings = split_mod.validate_outputs(outputs, files_map)
+        assert any(
+            'no output generated for /etc/sysctl.d/99-net.conf' in p
+            for p in problems)
+
+    def test_missing_modular_group_output_reported(
+            self, tmpdir, outdir):
+        """An sshd group in files_map with no generated drop-in is an
+        incomplete set: only the sysctl combo below is generated."""
+        write_remediation(
+            tmpdir, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_remediation(
+            tmpdir, 'sysctl-forward', '/etc/sysctl.d/99-net.conf',
+            ['net.ipv4.ip_forward=0'])
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        sysctl_only = {
+            key: sources for key, sources in files_map.items()
+            if key[0] == '/etc/sysctl.d/99-net.conf'}
+        outputs = split_mod.generate_outputs(sysctl_only, outdir)
+        problems, _warnings = split_mod.validate_outputs(outputs, files_map)
+        assert any(
+            'no output generated for /etc/ssh/sshd_config' in p
+            for p in problems)
+
+
+# ---- main() staging ----
+
+class TestMainStaging:
+    """main() stages output and only publishes a complete valid set."""
+
+    @staticmethod
+    def run_main(monkeypatch, src: str, out: str) -> None:
+        monkeypatch.setattr(
+            sys, 'argv',
+            ['split-machineconfigs-modular.py',
+             '--src-dir', src, '--out-dir', out])
+        split_mod.main()
+
+    def test_validation_failure_leaves_output_untouched(
+            self, tmpdir, main_dirs, monkeypatch, capsys):
+        """Conflicting drop-ins fail validation; the previous output
+        set must survive untouched and the script must exit non-zero."""
+        src, out = main_dirs
+        write_remediation(
+            src, 'a-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_remediation(
+            src, 'b-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin yes'])
+        write_stale_output(out)
+
+        with pytest.raises(SystemExit) as excinfo:
+            self.run_main(monkeypatch, src, out)
+        assert excinfo.value.code == 2
+        assert os.listdir(out) == ['stale.yaml']
+        captured = capsys.readouterr()
+        assert 'validation problem' in captured.err
+        assert 'PermitRootLogin' in captured.err
+
+    def test_success_replaces_stale_output(
+            self, tmpdir, main_dirs, monkeypatch):
+        src, out = main_dirs
+        write_remediation(
+            src, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        write_stale_output(out)
+        with open(os.path.join(out, 'notes.txt'), 'w') as f:
+            f.write('# hand-written notes survive publishing\n')
+
+        self.run_main(monkeypatch, src, out)
+        names = os.listdir(out)
+        assert 'stale.yaml' not in names
+        assert 'notes.txt' in names
+        assert len([n for n in names if n.endswith('.yaml')]) == 1
+        # The staging directory is cleaned up beside out_dir
+        assert sorted(os.listdir(tmpdir)) == ['out', 'src']
+
+    def test_empty_generation_keeps_existing_output(
+            self, main_dirs, monkeypatch):
+        """Nothing generated (empty source dir): previously generated
+        files are kept rather than wiped."""
+        src, out = main_dirs
+        write_stale_output(out)
+
+        self.run_main(monkeypatch, src, out)
+        assert os.listdir(out) == ['stale.yaml']
+
+    def test_skipped_files_exit_nonzero_after_publish(
+            self, main_dirs, monkeypatch):
+        """An unparseable source still exits 2 after a successful
+        publish, so callers notice the input was incomplete."""
+        src, out = main_dirs
+        write_remediation(
+            src, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'])
+        with open(os.path.join(src, 'broken.yaml'), 'w') as f:
+            f.write('metadata: [unclosed\n')
+
+        with pytest.raises(SystemExit) as excinfo:
+            self.run_main(monkeypatch, src, out)
+        assert excinfo.value.code == 2
+        # The valid remediation was published despite the skip
+        published = [n for n in os.listdir(out) if n.endswith('.yaml')]
+        assert len(published) == 1

@@ -169,7 +169,7 @@ make create-modular-configs SOURCE=complianceremediations OUTPUT=complianceremed
 make create-modular-configs SOURCE=complianceremediations OUTPUT=/tmp/modular SEVERITY=high DRY_RUN=true
 ```
 
-**split-machineconfigs-modular.py** — The Python engine behind `create-modular-configs.sh`.
+**split-machineconfigs-modular.py** — The Python engine behind `create-modular-configs.sh`. Generates into a staging directory, validates the set (Ignition structure, target paths, conflicting duplicate settings, completeness), and only then replaces the output directory; validation failures exit 2 and leave prior output untouched.
 
 ```bash
 python3 modular/split-machineconfigs-modular.py --src-dir complianceremediations --out-dir complianceremediations/modular

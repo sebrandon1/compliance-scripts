@@ -4,6 +4,7 @@ Shared utility functions for compliance scripts.
 Provides common functions used across multiple scripts to avoid
 code duplication:
 - safe_shortname: Convert file paths to safe shortnames for filenames
+- decode_data_source: Decode an Ignition data:, source to file content
 - parse_machineconfig_files: Parse MachineConfig YAMLs grouped by path/severity
 - parse_severity_filter: Validate and parse severity filter strings
 - check_virtualenv: Check for virtual environment and warn if missing
@@ -27,6 +28,20 @@ except ImportError:
 
 # Valid severity levels for compliance remediations
 VALID_SEVERITIES = {"high", "medium", "low"}
+
+# Ignition inline-content sources are data: URLs with no media type
+DATA_URL_PREFIX = 'data:,'
+
+
+def decode_data_source(source: str | None) -> str | None:
+    """Decode an Ignition ``data:,`` source to its file content.
+
+    Returns None when source is absent or not an inline data: URL, so
+    callers can treat remote sources as a validation problem.
+    """
+    if not source or not source.startswith(DATA_URL_PREFIX):
+        return None
+    return urllib.parse.unquote(source[len(DATA_URL_PREFIX):])
 
 
 def safe_shortname(path: str) -> str:
@@ -120,9 +135,9 @@ def parse_machineconfig_files(
                     'storage', {}).get('files', [])
                 for file_entry in file_entries:
                     file_path = file_entry.get('path')
-                    source = file_entry.get('contents', {}).get('source')
-                    if file_path and source and source.startswith('data:,'):
-                        decoded = urllib.parse.unquote(source[6:])
+                    decoded = decode_data_source(
+                        file_entry.get('contents', {}).get('source'))
+                    if file_path and decoded is not None:
                         lines = [line for line in decoded.splitlines() if line.strip()]
                         files_map[(file_path, severity)].append({
                             'source_file': os.path.relpath(fpath, src_dir),

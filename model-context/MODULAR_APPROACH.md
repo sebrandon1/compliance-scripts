@@ -141,6 +141,26 @@ modular/create-modular-configs.sh \
   -s high
 ```
 
+### Output Validation
+
+Output is generated into a staging directory and validated before it replaces
+anything in the output directory, so a failed run cannot leave a partial set:
+
+- each file parses as a MachineConfig with the expected Ignition version, role
+  label, and a decodable `data:` source
+- every target path is a known remediation path or lives under a modular
+  include directory
+- drop-ins in the same `.d` directory carry no conflicting duplicate settings
+  (first-match-wins keywords set to different values; keywords listed in a
+  path's `repeatable_keywords`, such as sshd's `HostKey`, accumulate and are
+  exempt)
+- every input (path, severity) group produced at least one output file
+
+A validation failure prints the problems, exits with code 2, and leaves the
+previous output untouched. Intentionally empty files (e.g. an empty
+`/etc/securetty`, or `.mco-keep` placeholders) are reported as warnings and do
+not block publication.
+
 ## Integration with Existing Workflow
 
 The modular approach integrates seamlessly with the existing workflow:
@@ -222,6 +242,9 @@ MODULAR_PATHS = {
         # drop-ins must not shadow remediations (sshd uses '10' to sort
         # ahead of RHCOS's 40-/50- stock files).
         'dropin_prefix': '10',
+        # Keywords whose lines accumulate instead of first-match-wins;
+        # exempt from the duplicate-setting conflict check.
+        'repeatable_keywords': ('HostKey', 'AcceptEnv'),
     },
     # ... existing entries
 }
