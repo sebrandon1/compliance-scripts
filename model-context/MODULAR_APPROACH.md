@@ -22,17 +22,14 @@ Example of old combo approach:
 
 The new `split-machineconfigs-modular.py` script creates:
 
-1. **Base files** that enable `.d` include directories
-2. **Individual modular files** for each remediation, placed in the `.d` directory
+1. **Individual modular files** for each remediation, placed in the `.d` directory
+2. **Base files** that enable `.d` include directories — only for paths that need one (`needs_base`); sshd does not (see below)
+3. **Combo files** (one full merged file per role) for paths that do not support `.d` includes at all, such as PAM
 
 ### Example Structure
 
 For SSH configuration:
 ```
-75-sshd_config-base-high.yaml
-  ↳ Creates /etc/ssh/sshd_config.d/00-include.conf
-    ↳ Contains: Include /etc/ssh/sshd_config.d/*.conf
-
 76-sshd_config-disable-root-login-worker-high.yaml
   ↳ Creates /etc/ssh/sshd_config.d/76-disable-root-login.conf
     ↳ Contains: PermitRootLogin no
@@ -40,6 +37,16 @@ For SSH configuration:
 77-sshd_config-disable-password-auth-worker-high.yaml
   ↳ Creates /etc/ssh/sshd_config.d/77-disable-password-auth.conf
     ↳ Contains: PasswordAuthentication no, PermitEmptyPasswords no
+```
+
+No base file is generated for sshd: RHCOS's stock `/etc/ssh/sshd_config`
+already contains `Include /etc/ssh/sshd_config.d/*.conf`, and writing an
+Include directive inside `sshd_config.d/` itself would be self-referential
+(the file would be matched by its own glob). Confirm the stock include on
+the target node with:
+
+```bash
+grep Include /etc/ssh/sshd_config
 ```
 
 ### Benefits
@@ -54,13 +61,19 @@ For SSH configuration:
 
 Currently, the modular approach supports:
 
-| Original Path | Include Directory | Base File |
-|--------------|-------------------|-----------|
-| `/etc/ssh/sshd_config` | `/etc/ssh/sshd_config.d/` | `00-include.conf` |
-| `/etc/pam.d/system-auth` | `/etc/pam.d/system-auth.d/` | `00-include` |
-| `/etc/pam.d/password-auth` | `/etc/pam.d/password-auth.d/` | `00-include` |
+| Original Path | Include Directory | Base MC |
+|---------------|-------------------|---------|
+| `/etc/ssh/sshd_config` | `/etc/ssh/sshd_config.d/` | none — stock `sshd_config` already includes the directory |
 
-Paths not in this list will fall back to the combo file approach.
+Paths not in this list fall back to the combo file approach (one full merged
+file per role).
+
+PAM paths (`/etc/pam.d/system-auth`, `/etc/pam.d/password-auth`) are
+deliberately **not** modular: Linux-PAM's `@include` takes a single file,
+not a glob, and RHCOS PAM files are authselect-managed with nothing
+referencing a `.d` directory. PAM remediations fall back to combo files,
+which write the full merged file — the same approach Compliance Operator
+remediations use.
 
 ## Usage
 
@@ -166,21 +179,8 @@ spec:
 
 ### Modular Approach (New)
 ```yaml
-# Base file
-apiVersion: machineconfiguration.openshift.io/v1
-kind: MachineConfig
-metadata:
-  name: 75-sshd_config-base-high
-spec:
-  config:
-    storage:
-      files:
-      - path: /etc/ssh/sshd_config.d/00-include.conf
-        contents: |
-          Include /etc/ssh/sshd_config.d/*.conf
-
----
-# Individual modular file
+# Individual modular file (no base file: RHCOS sshd_config already
+# includes sshd_config.d/*.conf)
 apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
@@ -205,13 +205,18 @@ To add support for additional configuration files:
 MODULAR_PATHS = {
     '/your/config/file': {
         'include_dir': '/your/config/file.d',
-        'base_file': '00-include.conf',
-        'base_content': 'Include /your/config/file.d/*.conf',
         'file_extension': '.conf',
+        # Only set True if the daemon does not natively read the .d
+        # directory; sshd on RHCOS does, so it uses False.
+        'needs_base': False,
     },
     # ... existing entries
 }
 ```
+
+If `needs_base` is True, also provide `base_file` and `base_content`; a
+base MC is then emitted per (path, role) so the include file reaches every
+role the drop-ins target.
 
 ## Troubleshooting
 

@@ -2,6 +2,11 @@
 
 Historical comparison against [telco-reference PR #439](https://github.com/openshift-kni/telco-reference/pull/439). Current usage is in [MODULAR_APPROACH.md](MODULAR_APPROACH.md).
 
+> **Update**: the base include MC shown below is no longer generated for
+> sshd — RHCOS's stock `sshd_config` already includes `sshd_config.d/*.conf`,
+> and a base MC inside that directory would be self-referential. See
+> [MODULAR_APPROACH.md](MODULAR_APPROACH.md).
+
 ## PR #439 Example: Base File
 
 From the PR description, the other AI model created:

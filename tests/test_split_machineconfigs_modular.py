@@ -23,6 +23,47 @@ spec = spec_from_file_location(
 split_mod = module_from_spec(spec)
 spec.loader.exec_module(split_mod)
 
+ROLE_LABEL = 'machineconfiguration.openshift.io/role'
+
+# Synthetic config for a path that DOES need a base MC (sshd does not).
+FAKE_MODULAR_PATH = '/etc/fake/daemon.conf'
+NEEDS_BASE_CONFIG = {
+    'include_dir': '/etc/fake/daemon.conf.d',
+    'base_file': '00-include.conf',
+    'base_content': 'Include /etc/fake/daemon.conf.d/*.conf',
+    'file_extension': '.conf',
+    'needs_base': True,
+}
+
+
+def load_mc(path: str) -> dict[str, Any]:
+    """Load a generated MachineConfig YAML file."""
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+def decode_content(doc: dict[str, Any]) -> str:
+    """Decode the data: source of the first storage file in an MC."""
+    source = doc['spec']['config']['storage']['files'][0]['contents'][
+        'source']
+    return urllib.parse.unquote(source.replace('data:,', ''))
+
+
+def write_remediation(
+    tmpdir: str,
+    name: str,
+    path: str,
+    lines: list[str],
+    role: str = 'worker',
+    subdir: str | None = None,
+) -> None:
+    """Write a remediation MachineConfig YAML into tmpdir."""
+    d = tmpdir if subdir is None else os.path.join(tmpdir, subdir)
+    os.makedirs(d, exist_ok=True)
+    mc = make_mc_yaml(path, lines, name=name, role=role)
+    with open(os.path.join(d, f"{name}.yaml"), 'w') as f:
+        yaml.dump(mc, f)
+
 
 def make_mc_yaml(
     path: str,
@@ -508,85 +549,44 @@ class TestStableRemediationCounters:
 
 class TestGenerateBaseYaml:
     def test_creates_base_file(self, outdir):
-        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
         result = split_mod.generate_base_yaml(
-            '/etc/ssh/sshd_config', 'high', config, outdir, 75)
+            FAKE_MODULAR_PATH, 'worker', NEEDS_BASE_CONFIG, outdir, 75)
 
         assert os.path.exists(result)
         with open(result) as f:
             content = f.read()
         assert "Base configuration" in content
 
-        # Parse past the comment line
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
+        doc = load_mc(result)
         assert doc['kind'] == 'MachineConfig'
         assert doc['spec']['config']['ignition']['version'] == '3.5.0'
 
-    def test_severity_in_filename(self, outdir):
-        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
+    def test_role_in_filename(self, outdir):
         result = split_mod.generate_base_yaml(
-            '/etc/ssh/sshd_config', 'medium', config, outdir, 75)
-        assert 'medium' in os.path.basename(result)
+            FAKE_MODULAR_PATH, 'master', NEEDS_BASE_CONFIG, outdir, 75)
+        assert 'master' in os.path.basename(result)
 
-    def test_no_severity(self, outdir):
-        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
+    def test_role_in_metadata(self, outdir):
         result = split_mod.generate_base_yaml(
-            '/etc/ssh/sshd_config', None, config, outdir, 75)
-        basename = os.path.basename(result)
-        assert 'high' not in basename
-        assert 'medium' not in basename
-        assert 'low' not in basename
+            FAKE_MODULAR_PATH, 'master', NEEDS_BASE_CONFIG, outdir, 75)
+        doc = load_mc(result)
+        assert doc['metadata']['labels'][ROLE_LABEL] == 'master'
 
     def test_include_dir_path_in_output(self, outdir):
-        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
         result = split_mod.generate_base_yaml(
-            '/etc/ssh/sshd_config', None, config, outdir, 75)
+            FAKE_MODULAR_PATH, 'worker', NEEDS_BASE_CONFIG, outdir, 75)
 
-        with open(result) as f:
-            content = f.read()
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
+        doc = load_mc(result)
         file_entry = doc['spec']['config']['storage']['files'][0]
         assert file_entry['path'] == (
-            '/etc/ssh/sshd_config.d/00-include.conf')
+            '/etc/fake/daemon.conf.d/00-include.conf')
 
     def test_base_content_encoded(self, outdir):
-        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
-        split_mod.generate_base_yaml(
-            '/etc/ssh/sshd_config', None, config, outdir, 75)
-
-        outfile = os.path.join(outdir, "75-sshd_config-base.yaml")
-        with open(outfile) as f:
-            content = f.read()
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
-        source = doc['spec']['config']['storage']['files'][0][
-            'contents']['source']
-        decoded = urllib.parse.unquote(source.replace('data:,', ''))
-        assert 'Include /etc/ssh/sshd_config.d/*.conf' in decoded
-
-    def test_pam_base_file(self, outdir):
-        config = split_mod.MODULAR_PATHS['/etc/pam.d/system-auth']
         result = split_mod.generate_base_yaml(
-            '/etc/pam.d/system-auth', None, config, outdir, 75)
-        assert os.path.exists(result)
+            FAKE_MODULAR_PATH, 'worker', NEEDS_BASE_CONFIG, outdir, 75)
 
-        with open(result) as f:
-            content = f.read()
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
-        file_entry = doc['spec']['config']['storage']['files'][0]
-        assert file_entry['path'] == (
-            '/etc/pam.d/system-auth.d/00-include')
+        doc = load_mc(result)
+        assert 'Include /etc/fake/daemon.conf.d/*.conf' in decode_content(doc)
 
 
 # ---- generate_modular_yaml ----
@@ -704,74 +704,103 @@ class TestGenerateModularYaml:
 # ---- write_combo_yaml (fallback for non-modular paths) ----
 
 class TestWriteComboYaml:
+    @staticmethod
+    def source(lines: list[str], role: str = 'worker',
+               name: str | None = None) -> dict[str, Any]:
+        filename = name or f'{role}-rem.yaml'
+        return {
+            'source_file': filename,
+            'role': role,
+            'lines': lines,
+            'basename': filename,
+        }
+
     def test_creates_combo_file(self, outdir):
         sources = [
-            {'lines': ['line1', 'line2']},
-            {'lines': ['line2', 'line3']},
+            self.source(['line1', 'line2']),
+            self.source(['line2', 'line3']),
         ]
-        result = split_mod.write_combo_yaml(
+        results = split_mod.write_combo_yaml(
             '/etc/sysctl.d/99-test.conf', 'high', sources, outdir)
-        assert os.path.exists(result)
+        assert len(results) == 1
+        assert os.path.exists(results[0])
 
     def test_deduplication(self, outdir):
-        sources = [
-            {'lines': ['aaa', 'bbb']},
-            {'lines': ['bbb', 'ccc']},
-        ]
-        result = split_mod.write_combo_yaml(
-            '/etc/sysctl.d/99-test.conf', None, sources, outdir)
+        first = self.source(['zzz', 'aaa'], name='a-first')
+        second = self.source(['aaa', 'mmm'], name='b-second')
+        results = split_mod.write_combo_yaml(
+            '/etc/sysctl.d/99-test.conf', None, [second, first], outdir)
 
-        with open(result) as f:
-            content = f.read()
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
-        source = doc['spec']['config']['storage']['files'][0][
-            'contents']['source']
-        decoded = urllib.parse.unquote(source.replace('data:,', ''))
         decoded_lines = [
-            ln for ln in decoded.strip().split('\n') if ln]
-        assert len(decoded_lines) == 3
-        assert sorted(decoded_lines) == ['aaa', 'bbb', 'ccc']
+            ln for ln in decode_content(load_mc(results[0])).split('\n')
+            if ln]
+        # sources merge in stable source order with the first occurrence
+        # of a line winning -- not alphabetically sorted
+        assert decoded_lines == ['zzz', 'aaa', 'mmm']
+
+    def test_one_combo_per_role(self, outdir):
+        sources = [
+            self.source(['PermitRootLogin no'], role='master'),
+            self.source(['PermitRootLogin no'], role='worker'),
+        ]
+        results = split_mod.write_combo_yaml(
+            '/etc/pam.d/system-auth', None, sources, outdir)
+        assert len(results) == 2
+
+        docs = [load_mc(r) for r in results]
+        roles = sorted(doc['metadata']['labels'][ROLE_LABEL] for doc in docs)
+        assert roles == ['master', 'worker']
+        for doc in docs:
+            assert decode_content(doc).strip() == 'PermitRootLogin no'
+
+    def test_combo_preserves_line_order(self, outdir):
+        """PAM stacks are order-sensitive: pam_faillock authfail must run
+        after preauth, which alphabetical sorting would break."""
+        ordered = [
+            'auth        required      pam_faillock.so preauth',
+            'auth        sufficient    pam_unix.so try_first_pass nullok',
+            'auth        required      pam_faillock.so authfail',
+        ]
+        results = split_mod.write_combo_yaml(
+            '/etc/pam.d/system-auth', None, [self.source(ordered)], outdir)
+
+        decoded_lines = [
+            ln for ln in decode_content(load_mc(results[0])).split('\n')
+            if ln]
+        assert decoded_lines == ordered
 
     def test_severity_in_name(self, outdir):
-        sources = [{'lines': ['test']}]
-        result = split_mod.write_combo_yaml(
+        sources = [self.source(['test'])]
+        results = split_mod.write_combo_yaml(
             '/etc/test.conf', 'medium', sources, outdir)
-        assert 'medium' in os.path.basename(result)
+        assert 'medium' in os.path.basename(results[0])
 
     def test_no_severity_in_name(self, outdir):
-        sources = [{'lines': ['test']}]
-        result = split_mod.write_combo_yaml(
+        sources = [self.source(['test'])]
+        results = split_mod.write_combo_yaml(
             '/etc/test.conf', None, sources, outdir)
-        basename = os.path.basename(result)
-        assert basename.endswith('-combo.yaml')
+        basename = os.path.basename(results[0])
+        assert basename.endswith('-combo-worker.yaml')
         assert 'high' not in basename
         assert 'medium' not in basename
 
     def test_provenance_header(self, outdir):
         sources = [
-            {'lines': ['line1']},
-            {'lines': ['line2']},
+            self.source(['line1']),
+            self.source(['line2']),
         ]
-        result = split_mod.write_combo_yaml(
+        results = split_mod.write_combo_yaml(
             '/etc/test.conf', 'high', sources, outdir)
-        with open(result) as f:
+        with open(results[0]) as f:
             first_line = f.readline()
         assert 'Combined from 2 remediations' in first_line
 
     def test_output_is_valid_machineconfig(self, outdir):
-        sources = [{'lines': ['net.ipv4.ip_forward=1']}]
-        result = split_mod.write_combo_yaml(
+        sources = [self.source(['net.ipv4.ip_forward=1'])]
+        results = split_mod.write_combo_yaml(
             '/etc/sysctl.d/99-net.conf', None, sources, outdir)
 
-        with open(result) as f:
-            content = f.read()
-        lines = content.split('\n')
-        yaml_content = '\n'.join(
-            ln for ln in lines if not ln.startswith('#'))
-        doc = yaml.safe_load(yaml_content)
+        doc = load_mc(results[0])
         assert doc['kind'] == 'MachineConfig'
         assert doc['apiVersion'] == (
             'machineconfiguration.openshift.io/v1')
@@ -784,28 +813,143 @@ class TestModularPaths:
     def test_sshd_config_registered(self):
         assert '/etc/ssh/sshd_config' in split_mod.MODULAR_PATHS
 
-    def test_pam_system_auth_registered(self):
-        assert '/etc/pam.d/system-auth' in split_mod.MODULAR_PATHS
+    def test_sshd_needs_no_base(self):
+        config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
+        assert config['needs_base'] is False
 
-    def test_pam_password_auth_registered(self):
-        assert '/etc/pam.d/password-auth' in split_mod.MODULAR_PATHS
+    def test_pam_paths_not_modular(self):
+        assert '/etc/pam.d/system-auth' not in split_mod.MODULAR_PATHS
+        assert '/etc/pam.d/password-auth' not in split_mod.MODULAR_PATHS
 
     def test_sshd_include_dir(self):
         config = split_mod.MODULAR_PATHS['/etc/ssh/sshd_config']
         assert config['include_dir'] == '/etc/ssh/sshd_config.d'
         assert config['file_extension'] == '.conf'
 
-    def test_pam_include_dir(self):
-        config = split_mod.MODULAR_PATHS['/etc/pam.d/system-auth']
-        assert config['include_dir'] == '/etc/pam.d/system-auth.d'
-        assert config['file_extension'] == ''
+
+# ---- generate_outputs (orchestration) ----
+
+class TestGenerateOutputs:
+    def test_sshd_generation_has_no_self_referential_include(
+            self, tmpdir, outdir):
+        """No generated file may sit inside a directory its own Include
+        glob matches."""
+        write_remediation(
+            tmpdir, 'sshd-root-login', '/etc/ssh/sshd_config',
+            ['PermitRootLogin no'], role='worker')
+        write_remediation(
+            tmpdir, 'sshd-master-banner', '/etc/ssh/sshd_config',
+            ['Banner /etc/issue'], role='master')
+
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+        assert len(outputs) == 2
+
+        for outpath in outputs:
+            doc = load_mc(outpath)
+            content = decode_content(doc)
+            for entry in doc['spec']['config']['storage']['files']:
+                assert not os.path.basename(
+                    entry['path']).startswith('00-include')
+                for line in content.splitlines():
+                    assert not line.lower().startswith('include ')
+                    assert not line.lower().startswith('@include ')
+
+    def test_pam_falls_through_to_combo(self, tmpdir, outdir):
+        """PAM paths are not .d-capable and must produce full-file combo
+        MCs on the role the remediation targets."""
+        write_remediation(
+            tmpdir, 'pam-no-empty-passwords', '/etc/pam.d/system-auth',
+            ['auth required pam_unix.so nullok'], role='master')
+
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+
+        assert len(outputs) == 1
+        doc = load_mc(outputs[0])
+        assert '-combo-' in doc['metadata']['name']
+        entry = doc['spec']['config']['storage']['files'][0]
+        assert entry['path'] == '/etc/pam.d/system-auth'
+        assert doc['metadata']['labels'][ROLE_LABEL] == 'master'
+
+    def test_base_roles_match_dropin_roles(self, tmpdir, outdir,
+                                           monkeypatch):
+        """A path that needs a base MC gets one per role, matching the
+        roles its drop-ins target."""
+        monkeypatch.setattr(
+            split_mod, 'MODULAR_PATHS',
+            {FAKE_MODULAR_PATH: dict(NEEDS_BASE_CONFIG)})
+        write_remediation(
+            tmpdir, 'fake-worker', FAKE_MODULAR_PATH, ['SettingOne yes'])
+        write_remediation(
+            tmpdir, 'fake-master', FAKE_MODULAR_PATH, ['SettingOne yes'],
+            role='master')
+
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+
+        docs = [load_mc(o) for o in outputs]
+        base_roles = sorted(
+            doc['metadata']['labels'][ROLE_LABEL]
+            for doc in docs if '-base-' in doc['metadata']['name'])
+        dropin_roles = sorted(
+            doc['metadata']['labels'][ROLE_LABEL]
+            for doc in docs if '-base-' not in doc['metadata']['name'])
+        assert base_roles == ['master', 'worker']
+        assert dropin_roles == ['master', 'worker']
+
+    def test_base_emitted_once_across_severities(self, tmpdir, outdir,
+                                                 monkeypatch):
+        """The base MC is per (path, role), not per severity group."""
+        monkeypatch.setattr(
+            split_mod, 'MODULAR_PATHS',
+            {FAKE_MODULAR_PATH: dict(NEEDS_BASE_CONFIG)})
+        write_remediation(
+            tmpdir, 'fake-high', FAKE_MODULAR_PATH, ['SettingOne yes'],
+            subdir='high')
+        write_remediation(
+            tmpdir, 'fake-medium', FAKE_MODULAR_PATH, ['SettingTwo no'],
+            subdir='medium')
+
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+
+        docs = [load_mc(o) for o in outputs]
+        bases = [doc for doc in docs if '-base-' in doc['metadata']['name']]
+        assert len(bases) == 1
+
+    def test_base_emitted_once_per_role_across_severities(
+            self, tmpdir, outdir, monkeypatch):
+        """Two severities x two roles yields exactly one base MC per
+        role, not one per severity."""
+        monkeypatch.setattr(
+            split_mod, 'MODULAR_PATHS',
+            {FAKE_MODULAR_PATH: dict(NEEDS_BASE_CONFIG)})
+        write_remediation(
+            tmpdir, 'high-worker', FAKE_MODULAR_PATH, ['SettingOne yes'],
+            subdir='high')
+        write_remediation(
+            tmpdir, 'high-master', FAKE_MODULAR_PATH, ['SettingOne yes'],
+            role='master', subdir='high')
+        write_remediation(
+            tmpdir, 'medium-worker', FAKE_MODULAR_PATH, ['SettingTwo no'],
+            subdir='medium')
+
+        files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
+        outputs = split_mod.generate_outputs(files_map, outdir)
+
+        docs = [load_mc(o) for o in outputs]
+        base_roles = sorted(
+            doc['metadata']['labels'][ROLE_LABEL]
+            for doc in docs if '-base-' in doc['metadata']['name'])
+        assert base_roles == ['master', 'worker']
 
 
 # ---- Integration: end-to-end parse + generate ----
 
 class TestEndToEnd:
-    def test_modular_path_produces_base_and_modular(self, tmpdir, outdir):
-        """SSHD config should produce base + modular output files."""
+    def test_modular_path_produces_modular_only(self, tmpdir, outdir):
+        """SSHD config produces modular drop-ins and no base include MC."""
         mc = make_mc_yaml(
             "/etc/ssh/sshd_config",
             ["PermitRootLogin no", "Banner /etc/issue"],
@@ -816,19 +960,13 @@ class TestEndToEnd:
         files_map, _ = split_mod.parse_machineconfig_files(tmpdir)
         assert len(files_map) == 1
 
-        key = list(files_map.keys())[0]
-        path, severity = key
-        assert path == "/etc/ssh/sshd_config"
-        config = split_mod.MODULAR_PATHS[path]
+        outputs = split_mod.generate_outputs(files_map, outdir)
+        assert len(outputs) == 1
 
-        base = split_mod.generate_base_yaml(
-            path, severity, config, outdir, 75)
-        assert os.path.exists(base)
-
-        modular = split_mod.generate_modular_yaml(
-            path, severity, files_map[key][0], config, outdir, 76)
-        assert modular is not None
-        assert os.path.exists(modular)
+        doc = load_mc(outputs[0])
+        assert '-base-' not in doc['metadata']['name']
+        entry = doc['spec']['config']['storage']['files'][0]
+        assert entry['path'].startswith('/etc/ssh/sshd_config.d/')
 
     def test_non_modular_path_produces_combo(self, tmpdir, outdir):
         """Paths not in MODULAR_PATHS should produce combo output."""
@@ -843,9 +981,10 @@ class TestEndToEnd:
         path, severity = key
 
         assert path not in split_mod.MODULAR_PATHS
-        combo = split_mod.write_combo_yaml(
+        combos = split_mod.write_combo_yaml(
             path, severity, files_map[key], outdir)
-        assert os.path.exists(combo)
+        assert len(combos) == 1
+        assert os.path.exists(combos[0])
 
     def test_multiple_remediations_same_modular_path(
             self, tmpdir, outdir):

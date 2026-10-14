@@ -25,8 +25,10 @@ usage() {
 	echo ""
 	echo "This script creates modular MachineConfig files using .d directory includes."
 	echo "It generates:"
-	echo "  1. Base files that enable include directories (e.g., /etc/ssh/sshd_config.d/)"
-	echo "  2. Individual modular files for each remediation"
+	echo "  1. Individual modular files for each remediation (e.g., /etc/ssh/sshd_config.d/)"
+	echo "  2. Base include files for paths that need them (sshd does not: RHCOS's stock"
+	echo "     sshd_config already includes sshd_config.d/*.conf)"
+	echo "  3. Combo files for paths without .d support (e.g., PAM)"
 	echo ""
 	echo "Example: $0 -s high,medium"
 	exit 1
@@ -102,7 +104,7 @@ if [[ ! -d "$generation_dir" ]] || [[ -z "$(ls -A "$generation_dir" 2>/dev/null)
 	log_warn "This could mean:"
 	log_warn "  1. No remediation files found in $source_dir"
 	log_warn "  2. No files match the severity filter: $severity"
-	log_warn "  3. No files target modular paths (sshd_config, pam.d files)"
+	log_warn "  3. No files target supported paths (sshd_config or combo fallbacks)"
 	exit 0
 fi
 
