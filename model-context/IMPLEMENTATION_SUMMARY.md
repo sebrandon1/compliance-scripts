@@ -2,6 +2,12 @@
 
 Historical design notes for the modular `.d` include approach. For current usage, see [MODULAR_APPROACH.md](MODULAR_APPROACH.md) and [docs/scripts-reference.md](../docs/scripts-reference.md).
 
+> **Update**: base include MCs are no longer generated for sshd (RHCOS's
+> stock `sshd_config` already includes the `.d` directory), and the PAM
+> paths listed below were removed — PAM is not `.d`-capable, so PAM
+> remediations fall back to per-role combo files. See
+> [MODULAR_APPROACH.md](MODULAR_APPROACH.md).
+
 ## What Was Implemented
 
 Modular MachineConfig files using `.d` directory includes, similar to the approach in [telco-reference PR #439](https://github.com/openshift-kni/telco-reference/pull/439).
@@ -15,7 +21,7 @@ Modular MachineConfig files using `.d` directory includes, similar to the approa
 - Creates "base" files that enable `.d` include directories
 - Generates individual modular files for each remediation
 - Supports filtering by severity (high, medium, low)
-- Currently supports: `/etc/ssh/sshd_config`, `/etc/pam.d/system-auth`, `/etc/pam.d/password-auth`
+- Currently supports: `/etc/ssh/sshd_config` (PAM paths were later removed; they fall back to combo files)
 - Falls back to combo files for unsupported paths
 
 **Usage**:

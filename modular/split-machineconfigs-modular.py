@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-Split MachineConfig remediations into modular .d directory files.
-Creates base files that enable include directories and individual
-files for each setting.
+Split MachineConfig remediations into modular .d directory files,
+one drop-in MachineConfig per remediation.
+
+Paths whose daemon does not natively read a .d directory can opt into a
+generated base MC (``needs_base``). sshd needs none because RHCOS's stock
+sshd_config already includes sshd_config.d/*.conf. PAM is not .d-capable
+at all, so PAM remediations fall back to full-file combo MCs.
 """
 from __future__ import annotations
 
@@ -22,30 +26,30 @@ from lib.compliance_utils import (  # noqa: E402
 
 
 IGNITION_VERSION = '3.5.0'
+ROLE_LABEL_KEY = 'machineconfiguration.openshift.io/role'
 BASE_COUNTER = 75
 FIRST_REMEDIATION_COUNTER = BASE_COUNTER + 1
 MAX_REMEDIATION_COUNTER = 9999
 SEVERITY_ORDER = {'high': 0, 'medium': 1, 'low': 2, None: 3}
 
-# Configuration for paths that support .d directory includes
-MODULAR_PATHS = {
+# Configuration for paths that support .d directory includes.
+#
+# PAM is deliberately absent: Linux-PAM's @include takes a single file,
+# not a glob, and RHCOS /etc/pam.d/system-auth is authselect-managed with
+# nothing referencing a system-auth.d/ directory. A drop-in written there
+# would be a dead file, so PAM remediations fall through to
+# write_combo_yaml(), which writes the full merged file the same way
+# Compliance Operator remediations do.
+MODULAR_PATHS: dict[str, dict[str, Any]] = {
+    # RHCOS's stock /etc/ssh/sshd_config already contains
+    # 'Include /etc/ssh/sshd_config.d/*.conf', so no base MC is needed.
+    # Generating one would place an Include inside the directory its own
+    # glob matches. Verify on the target node with:
+    #   grep Include /etc/ssh/sshd_config
     '/etc/ssh/sshd_config': {
         'include_dir': '/etc/ssh/sshd_config.d',
-        'base_file': '00-include.conf',
-        'base_content': 'Include /etc/ssh/sshd_config.d/*.conf',
         'file_extension': '.conf',
-    },
-    '/etc/pam.d/system-auth': {
-        'include_dir': '/etc/pam.d/system-auth.d',
-        'base_file': '00-include',
-        'base_content': '@include system-auth.d/*',
-        'file_extension': '',
-    },
-    '/etc/pam.d/password-auth': {
-        'include_dir': '/etc/pam.d/password-auth.d',
-        'base_file': '00-include',
-        'base_content': '@include password-auth.d/*',
-        'file_extension': '',
+        'needs_base': False,
     },
 }
 
@@ -126,19 +130,20 @@ def extract_meaningful_settings(lines: list[str]) -> list[str]:
 
 def generate_base_yaml(
     path: str,
-    severity: str | None,
-    config: dict[str, str],
+    role: str,
+    config: dict[str, Any],
     out_dir: str,
     counter: int,
 ) -> str:
-    """Generate a base MachineConfig that enables the .d include directory."""
+    """Generate a base MachineConfig that enables the .d include directory.
+
+    Only paths whose MODULAR_PATHS entry sets ``needs_base`` get a base
+    MC, and one is emitted per (path, role) so the include file reaches
+    every role the drop-ins target.
+    """
     shortname = safe_shortname(path)
-    if severity:
-        filename = f"{counter:02d}-{shortname}-base-{severity}.yaml"
-        name = f"{counter:02d}-{shortname}-base-{severity}"
-    else:
-        filename = f"{counter:02d}-{shortname}-base.yaml"
-        name = f"{counter:02d}-{shortname}-base"
+    filename = f"{counter:02d}-{shortname}-base-{role}.yaml"
+    name = f"{counter:02d}-{shortname}-base-{role}"
 
     include_path = os.path.join(config['include_dir'], config['base_file'])
     content = config['base_content']
@@ -150,7 +155,7 @@ def generate_base_yaml(
         'metadata': {
             'name': name,
             'labels': {
-                'machineconfiguration.openshift.io/role': 'worker'
+                ROLE_LABEL_KEY: role
             }
         },
         'spec': {
@@ -189,7 +194,7 @@ def generate_modular_yaml(
         path: str,
         severity: str | None,
         remediation_info: dict[str, Any],
-        config: dict[str, str],
+        config: dict[str, Any],
         out_dir: str,
         counter: int) -> str | None:
     """Generate a modular MachineConfig for a specific remediation."""
@@ -237,7 +242,7 @@ def generate_modular_yaml(
         'metadata': {
             'name': name,
             'labels': {
-                'machineconfiguration.openshift.io/role': role
+                ROLE_LABEL_KEY: role
             }
         },
         'spec': {
@@ -276,63 +281,127 @@ def write_combo_yaml(
     severity: str | None,
     sources: list[dict[str, Any]],
     out_dir: str,
-) -> str:
-    """Write a combined MachineConfig YAML (fallback for non-modular paths)."""
-    all_lines = set()
-    for source in sources:
-        all_lines.update(source['lines'])
-    deduped_lines = sorted(all_lines)
+) -> list[str]:
+    """Write combined MachineConfig YAMLs (fallback for non-modular paths).
 
+    One MC is emitted per role present in the sources so that, for
+    example, master-targeted PAM remediations are not labelled worker.
+    Line order is preserved because the merged files can be
+    order-sensitive (PAM stacks, audit rules); alphabetical sorting
+    would corrupt them.
+    """
+    outpaths = []
     shortname = safe_shortname(path)
-    if severity:
-        filename = f"{shortname}-{severity}-combo.yaml"
-        name = f"75-{shortname}-{severity}-combo"
-    else:
-        filename = f"{shortname}-combo.yaml"
-        name = f"75-{shortname}-combo"
+    for role in sorted({source['role'] for source in sources}):
+        role_sources = [s for s in sources if s['role'] == role]
+        seen: set[str] = set()
+        deduped_lines: list[str] = []
+        for source in sorted(role_sources, key=source_sort_key):
+            for line in source['lines']:
+                if line not in seen:
+                    seen.add(line)
+                    deduped_lines.append(line)
 
-    content = '\n'.join(deduped_lines) + '\n'
-    encoded_content = urllib.parse.quote(content, safe='')
+        if severity:
+            filename = f"{shortname}-{severity}-combo-{role}.yaml"
+            name = f"75-{shortname}-{severity}-combo-{role}"
+        else:
+            filename = f"{shortname}-combo-{role}.yaml"
+            name = f"75-{shortname}-combo-{role}"
 
-    yaml_doc = {
-        'apiVersion': 'machineconfiguration.openshift.io/v1',
-        'kind': 'MachineConfig',
-        'metadata': {
-            'name': name,
-            'labels': {
-                'machineconfiguration.openshift.io/role': 'worker'
-            }
-        },
-        'spec': {
-            'config': {
-                'ignition': {
-                    'version': IGNITION_VERSION
-                },
-                'storage': {
-                    'files': [
-                        {
-                            'contents': {
-                                'source': f"data:,{encoded_content}"
-                            },
-                            'mode': 0o600,
-                            'overwrite': True,
-                            'path': path
-                        }
-                    ]
+        content = '\n'.join(deduped_lines) + '\n'
+        encoded_content = urllib.parse.quote(content, safe='')
+
+        yaml_doc = {
+            'apiVersion': 'machineconfiguration.openshift.io/v1',
+            'kind': 'MachineConfig',
+            'metadata': {
+                'name': name,
+                'labels': {
+                    ROLE_LABEL_KEY: role
+                }
+            },
+            'spec': {
+                'config': {
+                    'ignition': {
+                        'version': IGNITION_VERSION
+                    },
+                    'storage': {
+                        'files': [
+                            {
+                                'contents': {
+                                    'source': f"data:,{encoded_content}"
+                                },
+                                'mode': 0o600,
+                                'overwrite': True,
+                                'path': path
+                            }
+                        ]
+                    }
                 }
             }
         }
-    }
 
-    outpath = os.path.join(out_dir, filename)
-    with open(outpath, 'w') as f:
-        f.write(f"# Combined from {len(sources)} remediations for {path}\n")
-        if severity:
-            f.write(f"# Severity: {severity}\n")
-        yaml.dump(yaml_doc, f, default_flow_style=False, sort_keys=False)
+        outpath = os.path.join(out_dir, filename)
+        with open(outpath, 'w') as f:
+            f.write(
+                f"# Combined from {len(role_sources)} remediations "
+                f"for {path}\n")
+            if severity:
+                f.write(f"# Severity: {severity}\n")
+            yaml.dump(yaml_doc, f, default_flow_style=False, sort_keys=False)
 
-    print(f"Created combo file: {outpath}")
-    return outpath
+        print(f"Created combo file: {outpath}")
+        outpaths.append(outpath)
+    return outpaths
+
+
+def generate_outputs(
+    files_map: dict[tuple[str, str | None], list[dict[str, Any]]],
+    out_dir: str,
+) -> list[str]:
+    """Generate MachineConfig outputs for every (path, severity) group.
+
+    Modular paths get one drop-in MC per remediation, plus a base MC per
+    (path, role) for paths that need one; everything else falls back to
+    per-role combo MCs.
+    """
+    created_files: list[str] = []
+    emitted_bases: set[tuple[str, str]] = set()
+
+    for (path, severity), sources in sorted(
+            files_map.items(), key=group_sort_key):
+        if path in MODULAR_PATHS:
+            config = MODULAR_PATHS[path]
+            print(f"\nProcessing modular path: {path} "
+                  f"(severity: {severity or 'all'})")
+
+            # Base MCs are per (path, role) and shared across severity
+            # groups, so the include file lands on every role the
+            # drop-ins target.
+            if config.get('needs_base', False):
+                for role in sorted({s['role'] for s in sources}):
+                    if (path, role) in emitted_bases:
+                        continue
+                    base_file = generate_base_yaml(
+                        path, role, config, out_dir, BASE_COUNTER)
+                    created_files.append(base_file)
+                    emitted_bases.add((path, role))
+
+            for idx, source in stable_remediation_counters(
+                    path, severity, sources):
+                modular_file = generate_modular_yaml(
+                    path, severity, source, config, out_dir, idx
+                )
+                if modular_file:
+                    created_files.append(modular_file)
+        else:
+            sev = severity or 'all'
+            print(f"\nProcessing non-modular path: {path} (severity: {sev})")
+            combo_files = write_combo_yaml(path, severity, sources, out_dir)
+            created_files.extend(combo_files)
+
+    return created_files
 
 
 def main() -> None:
@@ -371,41 +440,7 @@ def main() -> None:
             if sev in severity_filter
         }
 
-    created_files = []
-
-    # Process each (path, severity) combination
-    for (path, severity), sources in sorted(
-            files_map.items(), key=group_sort_key):
-        if len(sources) < 1:
-            continue
-
-        # Check if this path supports modular configuration
-        if path in MODULAR_PATHS:
-            config = MODULAR_PATHS[path]
-            print(
-                f"\nProcessing modular path: {path} (severity: {
-                    severity or 'all'})")
-
-            # Generate base file (only once per path)
-            base_file = generate_base_yaml(
-                path, severity, config, out_dir, BASE_COUNTER)
-            created_files.append(base_file)
-
-            # Generate individual modular files
-            for idx, source in stable_remediation_counters(
-                    path, severity, sources):
-                modular_file = generate_modular_yaml(
-                    path, severity, source, config, out_dir, idx
-                )
-                if modular_file:
-                    created_files.append(modular_file)
-        else:
-            # Fallback to combo file for non-modular paths
-            sev = severity or 'all'
-            print(
-                f"\nProcessing non-modular path: {path} (severity: {sev})")
-            combo_file = write_combo_yaml(path, severity, sources, out_dir)
-            created_files.append(combo_file)
+    created_files = generate_outputs(files_map, out_dir)
 
     print(f"\n{'=' * 60}")
     print(f"Generated {len(created_files)} files in {out_dir}/")
