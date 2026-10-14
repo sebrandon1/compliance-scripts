@@ -31,13 +31,22 @@ The new `split-machineconfigs-modular.py` script creates:
 For SSH configuration:
 ```
 76-sshd_config-disable-root-login-worker-high.yaml
-  ↳ Creates /etc/ssh/sshd_config.d/76-disable-root-login.conf
+  ↳ Creates /etc/ssh/sshd_config.d/10-0076-disable-root-login.conf
     ↳ Contains: PermitRootLogin no
 
 77-sshd_config-disable-password-auth-worker-high.yaml
-  ↳ Creates /etc/ssh/sshd_config.d/77-disable-password-auth.conf
+  ↳ Creates /etc/ssh/sshd_config.d/10-0077-disable-password-auth.conf
     ↳ Contains: PasswordAuthentication no, PermitEmptyPasswords no
 ```
+
+Drop-in filenames carry a `10-` prefix and a zero-padded counter (e.g.
+`10-0076-disable-root-login.conf`). sshd keeps the first value it reads
+for each keyword and reads `sshd_config.d/` in lexical order, so
+generated drop-ins must sort before RHCOS's stock
+`40-rhcos-defaults.conf` and `50-redhat.conf` — otherwise any keyword
+the stock files also set silently wins. The zero-padded counter keeps
+remediation precedence among the generated files themselves; the
+MachineConfig object name keeps its stable `76+` counter.
 
 No base file is generated for sshd: RHCOS's stock `/etc/ssh/sshd_config`
 already contains `Include /etc/ssh/sshd_config.d/*.conf`, and writing an
@@ -189,7 +198,7 @@ spec:
   config:
     storage:
       files:
-      - path: /etc/ssh/sshd_config.d/76-disable-root-login.conf
+      - path: /etc/ssh/sshd_config.d/10-0076-disable-root-login.conf
         contents: |
           PermitRootLogin no
 ```
@@ -209,6 +218,10 @@ MODULAR_PATHS = {
         # Only set True if the daemon does not natively read the .d
         # directory; sshd on RHCOS does, so it uses False.
         'needs_base': False,
+        # Set when the daemon is first-match-wins and stock distro
+        # drop-ins must not shadow remediations (sshd uses '10' to sort
+        # ahead of RHCOS's 40-/50- stock files).
+        'dropin_prefix': '10',
     },
     # ... existing entries
 }

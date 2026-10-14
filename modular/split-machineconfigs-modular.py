@@ -46,10 +46,19 @@ MODULAR_PATHS: dict[str, dict[str, Any]] = {
     # Generating one would place an Include inside the directory its own
     # glob matches. Verify on the target node with:
     #   grep Include /etc/ssh/sshd_config
+    # sshd keeps the FIRST value it reads for each keyword (first match
+    # wins) and reads sshd_config.d/*.conf in lexical order. Stock RHCOS
+    # ships 40-rhcos-defaults.conf and 50-redhat.conf (which sets, e.g.,
+    # X11Forwarding yes), so generated drop-ins must sort before the
+    # stock files or any keyword they share is silently ignored.
+    # dropin_prefix places every generated drop-in ahead of them, while
+    # the zero-padded counter preserves remediation precedence among
+    # the generated files themselves.
     '/etc/ssh/sshd_config': {
         'include_dir': '/etc/ssh/sshd_config.d',
         'file_extension': '.conf',
         'needs_base': False,
+        'dropin_prefix': '10',
     },
 }
 
@@ -229,8 +238,15 @@ def generate_modular_yaml(
         filename = f"{counter:02d}-{shortname}-{desc}-{role}.yaml"
         name = f"{counter:02d}-{shortname}-{desc}-{role}"
 
-    # Determine the actual config file name in the .d directory
-    config_filename = f"{counter:02d}-{desc}{config['file_extension']}"
+    # dropin_prefix: see MODULAR_PATHS. The counter is zero-padded to
+    # the width of MAX_REMEDIATION_COUNTER so lexical order matches
+    # remediation order, e.g. 10-0076-disable-x11.conf.
+    prefix = config.get('dropin_prefix')
+    if prefix:
+        config_filename = (
+            f"{prefix}-{counter:04d}-{desc}{config['file_extension']}")
+    else:
+        config_filename = f"{counter:02d}-{desc}{config['file_extension']}"
     config_path = os.path.join(config['include_dir'], config_filename)
 
     content = '\n'.join(settings) + '\n'
