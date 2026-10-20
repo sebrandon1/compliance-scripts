@@ -244,22 +244,32 @@ jobs:
         if: >-
           needs.detect-release.outputs.build_operator == 'false' &&
           needs.detect-release.outputs.upstream_operator_exists == 'true'
-        run: |
-          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Copying upstream compliance-operator image for ${CO_REF}..."
-          skopeo copy --all \
-            "docker://ghcr.io/complianceascode/compliance-operator:${CO_REF}" \
-            "docker://${IMAGE_REGISTRY}/compliance-operator:${CO_REF}"
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 15
+          retry_wait_seconds: 30
+          command: |
+            CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+            echo "Copying upstream compliance-operator image for ${CO_REF}..."
+            skopeo copy --all \
+              "docker://ghcr.io/complianceascode/compliance-operator:${CO_REF}" \
+              "docker://${IMAGE_REGISTRY}/compliance-operator:${CO_REF}"
 
       - name: Create operator manifest list
         if: needs.detect-release.outputs.build_operator == 'true'
-        run: |
-          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Creating multi-arch manifest for compliance-operator:${CO_REF}..."
-          docker manifest create "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}" \
-            "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}-amd64" \
-            "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}-arm64"
-          docker manifest push "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}"
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 10
+          retry_wait_seconds: 30
+          command: |
+            CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+            echo "Creating multi-arch manifest for compliance-operator:${CO_REF}..."
+            docker manifest create --amend "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}" \
+              "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}-amd64" \
+              "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}-arm64"
+            docker manifest push "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}"
 
       # ── OpenSCAP: mirror or create manifest list ──
 
@@ -267,22 +277,32 @@ jobs:
         if: >-
           needs.detect-release.outputs.build_openscap == 'false' &&
           needs.detect-release.outputs.upstream_openscap_exists == 'true'
-        run: |
-          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Copying upstream openscap-ocp image for ${CO_REF}..."
-          skopeo copy --all \
-            "docker://ghcr.io/complianceascode/openscap-ocp:${CO_REF}" \
-            "docker://${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}"
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 15
+          retry_wait_seconds: 30
+          command: |
+            CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+            echo "Copying upstream openscap-ocp image for ${CO_REF}..."
+            skopeo copy --all \
+              "docker://ghcr.io/complianceascode/openscap-ocp:${CO_REF}" \
+              "docker://${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}"
 
       - name: Create openscap manifest list
         if: needs.detect-release.outputs.build_openscap == 'true'
-        run: |
-          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Creating multi-arch manifest for openscap-ocp:${CO_REF}..."
-          docker manifest create "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}" \
-            "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}-amd64" \
-            "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}-arm64"
-          docker manifest push "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}"
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 10
+          retry_wait_seconds: 30
+          command: |
+            CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+            echo "Creating multi-arch manifest for openscap-ocp:${CO_REF}..."
+            docker manifest create --amend "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}" \
+              "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}-amd64" \
+              "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}-arm64"
+            docker manifest push "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}"
 
       # ── Bundle: mirror or build (lightweight, QEMU is fine) ──
 
@@ -290,12 +310,17 @@ jobs:
         if: >-
           needs.detect-release.outputs.build_bundle == 'false' &&
           needs.detect-release.outputs.upstream_bundle_exists == 'true'
-        run: |
-          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Copying upstream bundle image for ${CO_REF}..."
-          skopeo copy --all \
-            "docker://ghcr.io/complianceascode/compliance-operator-bundle:${CO_REF}" \
-            "docker://${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_REF}"
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 15
+          retry_wait_seconds: 30
+          command: |
+            CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+            echo "Copying upstream bundle image for ${CO_REF}..."
+            skopeo copy --all \
+              "docker://ghcr.io/complianceascode/compliance-operator-bundle:${CO_REF}" \
+              "docker://${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_REF}"
 
       - name: Build and push bundle
         if: needs.detect-release.outputs.build_bundle == 'true'
@@ -313,12 +338,17 @@ jobs:
         if: >-
           needs.detect-release.outputs.build_catalog == 'false' &&
           needs.detect-release.outputs.upstream_catalog_exists == 'true'
-        run: |
-          CO_REF="${{ needs.detect-release.outputs.co_ref }}"
-          echo "Copying upstream catalog image for ${CO_REF}..."
-          skopeo copy --all \
-            "docker://ghcr.io/complianceascode/compliance-operator-catalog:${CO_REF}" \
-            "docker://${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_REF}"
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 15
+          retry_wait_seconds: 30
+          command: |
+            CO_REF="${{ needs.detect-release.outputs.co_ref }}"
+            echo "Copying upstream catalog image for ${CO_REF}..."
+            skopeo copy --all \
+              "docker://ghcr.io/complianceascode/compliance-operator-catalog:${CO_REF}" \
+              "docker://${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_REF}"
 
       - name: Build catalog from source
         if: needs.detect-release.outputs.build_catalog == 'true'
@@ -328,7 +358,7 @@ jobs:
 
           OPM_VERSION=$(grep -oP 'OPM_VERSION\?\=\K[0-9.]+' co-src/Makefile || echo "1.39.0")
           echo "Installing opm v${OPM_VERSION}..."
-          curl -sSLo /usr/local/bin/opm \
+          curl -fsSL --retry 5 --retry-delay 3 -o /usr/local/bin/opm \
             "https://github.com/operator-framework/operator-registry/releases/download/v${OPM_VERSION}/linux-amd64-opm"
           chmod +x /usr/local/bin/opm
 
