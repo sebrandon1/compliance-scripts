@@ -25,9 +25,14 @@ jobs:
         with:
           python-version: '3.x'
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y make shellcheck
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 5
+          retry_wait_seconds: 10
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y make shellcheck
       - name: Run linting
         run: make python-lint
 
@@ -41,6 +46,12 @@ jobs:
         with:
           python-version: '3.x'
       - name: Install dependencies
-        run: pip install mypy pyyaml types-PyYAML types-requests types-beautifulsoup4
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 5
+          retry_wait_seconds: 10
+          command: |
+            pip install mypy pyyaml types-PyYAML types-requests types-beautifulsoup4
       - name: Run mypy
         run: mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py
