@@ -40,9 +40,11 @@ jobs:
 
       - name: Detect latest CO release
         id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          CO_REF=$(curl -fsSL https://api.github.com/repos/ComplianceAsCode/compliance-operator/releases/latest | \
-            grep -m1 '"tag_name"' | sed -E 's/.*"tag_name"\s*:\s*"([^"]+)".*/\1/')
+          CO_REF=$(./scripts/detect-co-release.sh)
+          echo "Detected CO release: $CO_REF"
           echo "co_ref=$CO_REF" >> "$GITHUB_OUTPUT"
 
       - name: Verify mirror image architectures

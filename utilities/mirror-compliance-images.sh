@@ -73,21 +73,8 @@ require_cmd skopeo jq
 
 if [[ -z "$CO_REF" ]]; then
 	log_info "Auto-detecting latest compliance-operator version..."
-	CO_REF=$(curl -fsSL https://api.github.com/repos/ComplianceAsCode/compliance-operator/releases/latest |
-		jq -r '.tag_name // empty')
-	if [[ -n "$CO_REF" ]]; then
-		log_info "Latest release: $CO_REF"
-	else
-		log_info "No release found, checking tags..."
-		CO_REF=$(curl -fsSL "https://api.github.com/repos/ComplianceAsCode/compliance-operator/tags?per_page=10" |
-			jq -r '.[].name' | grep '^v[0-9]' | sort -t. -k1,1Vr | head -1)
-		if [[ -n "$CO_REF" ]]; then
-			log_info "Latest tag: $CO_REF"
-		else
-			log_error "Could not detect latest version"
-			exit 1
-		fi
-	fi
+	CO_REF=$("$SCRIPT_DIR/scripts/detect-co-release.sh")
+	log_info "Latest release: $CO_REF"
 fi
 log_info "Target version: $CO_REF"
 
