@@ -37,6 +37,9 @@ jobs:
       upstream_bundle_exists: ${{ steps.detect.outputs.upstream_bundle_exists }}
       upstream_catalog_exists: ${{ steps.detect.outputs.upstream_catalog_exists }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
       - name: Detect release and check image availability
         id: detect
         env:
@@ -46,18 +49,8 @@ jobs:
             CO_REF="${{ github.event.inputs.co_ref }}"
             echo "Using manual input: $CO_REF"
           else
-            CO_REF=$(gh api repos/ComplianceAsCode/compliance-operator/releases/latest --jq '.tag_name' 2>/dev/null || true)
-            if [[ -n "$CO_REF" ]]; then
-              echo "Latest release: $CO_REF"
-            else
-              echo "No release found, checking tags..."
-              CO_REF=$(gh api repos/ComplianceAsCode/compliance-operator/tags --jq '.[0].name' 2>/dev/null || true)
-              echo "Latest tag: $CO_REF"
-            fi
-            if [[ -z "$CO_REF" || "$CO_REF" == "v" ]]; then
-              echo "::error::Could not detect latest version"
-              exit 1
-            fi
+            CO_REF=$(./scripts/detect-co-release.sh)
+            echo "Latest release: $CO_REF"
           fi
           echo "co_ref=$CO_REF" >> "$GITHUB_OUTPUT"
 

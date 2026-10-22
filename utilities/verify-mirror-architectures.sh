@@ -48,6 +48,16 @@ else
 	fi
 fi
 
+# A reference ending in ':' has an empty tag, which would otherwise be reported
+# as "not found" and hide the real problem (failed version detection upstream).
+for image in "${IMAGES[@]}"; do
+	if [[ "$image" == *: ]]; then
+		log_error "Image reference has an empty tag: ${image}"
+		log_error "This usually means version detection failed upstream."
+		exit 1
+	fi
+done
+
 echo "════════════════════════════════════════════════════════════════════"
 echo "Mirror Image Architecture Verification"
 echo "════════════════════════════════════════════════════════════════════"
