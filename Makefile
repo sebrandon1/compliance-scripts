@@ -411,7 +411,7 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	  exit 1; \
 	fi
 	@echo "$(DIM)  • Running shfmt...$(RESET)"
-	@shfmt -d core utilities modular lab-tools misc scripts || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w core utilities modular lab-tools misc scripts$(RESET)" && exit 1)
+	@shfmt -d lib core utilities modular lab-tools misc scripts tests || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w lib core utilities modular lab-tools misc scripts tests$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ Bash linting passed!$(RESET)"
 
 # ────────────────────────────────────────────────────────────────────────────────
