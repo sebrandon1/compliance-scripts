@@ -16,17 +16,17 @@ on:
         required: false
         default: '4.21,4.22'
       content_tag:
-        description: 'k8scontent image tag (sync with versions.env)'
+        description: 'k8scontent image tag (leave empty to use versions.env)'
         required: false
-        default: 'v0.1.81'
+        default: ''
       openscap_tag:
-        description: 'openscap-ocp image tag (sync with versions.env CO_IMAGE_TAG)'
+        description: 'openscap-ocp image tag (leave empty to use versions.env CO_IMAGE_TAG)'
         required: false
-        default: 'v1.9.0'
+        default: ''
       must_gather_tag:
-        description: 'must-gather-ocp image tag (sync with versions.env CO_IMAGE_TAG)'
+        description: 'must-gather-ocp image tag (leave empty to use versions.env CO_IMAGE_TAG)'
         required: false
-        default: 'v1.9.0'
+        default: ''
       profiles:
         description: 'Comma-separated SCAP profiles to scan'
         required: false
@@ -62,6 +62,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Load pinned image versions
+        id: pins
+        run: |
+          set -a
+          source versions.env
+          set +a
+          echo "content_tag=${CONTENT_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "co_tag=${CO_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Pinned versions: content=${CONTENT_IMAGE_TAG} co=${CO_IMAGE_TAG}"
+
       - name: Install oc CLI
         run: |
           git clone --depth 1 https://github.com/palmsoftware/quick-k8s.git /tmp/quick-k8s
@@ -73,9 +83,9 @@ jobs:
 
       - name: Run RHCOS static scan (OCP ${{ matrix.ocp_version }})
         env:
-          CONTENT_TAG: ${{ inputs.content_tag || 'v0.1.81' }}
-          OPENSCAP_TAG: ${{ inputs.openscap_tag || 'v1.9.0' }}
-          MUST_GATHER_TAG: ${{ inputs.must_gather_tag || 'v1.9.0' }}
+          CONTENT_TAG: ${{ inputs.content_tag || steps.pins.outputs.content_tag }}
+          OPENSCAP_TAG: ${{ inputs.openscap_tag || steps.pins.outputs.co_tag }}
+          MUST_GATHER_TAG: ${{ inputs.must_gather_tag || steps.pins.outputs.co_tag }}
           PROFILES: ${{ inputs.profiles || 'xccdf_org.ssgproject.content_profile_e8,xccdf_org.ssgproject.content_profile_moderate' }}
           PULL_SECRET: /tmp/pull-secret.json
           RESULTS_DIR: /tmp/rhcos-scan-results
