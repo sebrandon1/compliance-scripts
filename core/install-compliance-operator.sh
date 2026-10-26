@@ -201,12 +201,6 @@ CO_REF="${CO_REF:-${COMPLIANCE_OPERATOR_REF:-}}"
 # Allow forcing community operator via USE_COMMUNITY_OPERATOR=true
 USE_COMMUNITY="${USE_COMMUNITY_OPERATOR:-false}"
 
-get_latest_release_tag() {
-	curl -fsSL "https://api.github.com/repos/$CO_REPO_OWNER/$CO_REPO_NAME/releases/latest" 2>/dev/null |
-		grep -m1 '"tag_name"' |
-		sed -E 's/.*"tag_name"\s*:\s*"([^"]+)".*/\1/'
-}
-
 # ============================================================================
 # Red Hat Certified Operator Check
 # ============================================================================
@@ -269,11 +263,11 @@ fi
 
 if [[ -z "$CO_REF" ]]; then
 	log_info "Resolving latest $CO_REPO_OWNER/$CO_REPO_NAME release tag from GitHub..."
-	CO_REF=$(get_latest_release_tag || true)
+	CO_REF=$("$SCRIPT_DIR/scripts/detect-co-release.sh" || true)
 fi
 
 if [[ -z "$CO_REF" ]]; then
-	log_warn "Could not determine latest release (rate limit or network issue). Falling back to 'master'."
+	log_warn "Could not detect the latest release (network/rate limit); falling back to 'master'. Pass --co-ref or set CO_REF to pin."
 	CO_REF="master"
 else
 	log_info "Using Compliance Operator ref: $CO_REF"

@@ -331,3 +331,11 @@ python3 scripts/parse-oscap-results.py /tmp/rhcos-scan-results/results-e8.xml --
 ```bash
 ./scripts/update-marketplace-versions.sh --dry-run
 ```
+
+**detect-co-release.sh** — Prints the latest Compliance Operator release tag. Uses `gh` when available and otherwise the REST API, sending `Authorization: Bearer $GH_TOKEN` when the token is set. Exits non-zero instead of printing an empty reference, so a rate-limited API can't be mistaken for a missing release. `install-compliance-operator.sh` and the mirror workflows use it to resolve `CO_REF`.
+
+```bash
+./scripts/detect-co-release.sh
+CO_REF=$(./scripts/detect-co-release.sh)
+```
+

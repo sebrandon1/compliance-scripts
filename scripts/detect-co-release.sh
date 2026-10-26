@@ -5,8 +5,9 @@
 #   ./scripts/detect-co-release.sh
 #
 # Uses the GitHub CLI when available (honors GH_TOKEN), falling back to the
-# REST API. Prints the tag on stdout and exits non-zero when no tag can be
-# determined, so callers never receive an empty reference.
+# REST API with the same credentials. Prints the tag on stdout and exits
+# non-zero when no tag can be determined, so callers never receive an empty
+# reference.
 #
 # Environment:
 #   GH_TOKEN         Token for authenticated GitHub API calls (recommended)
@@ -31,9 +32,13 @@ fi
 fetch() {
 	if command -v gh >/dev/null 2>&1; then
 		gh api "repos/${REPO}/$1" 2>/dev/null || true
-	else
-		curl -fsSL "${API_URL}/repos/${REPO}/$1" 2>/dev/null || true
+		return
 	fi
+	local -a curl_args=(-fsSL -H "Accept: application/vnd.github+json")
+	if [[ -n "${GH_TOKEN:-}" ]]; then
+		curl_args+=(-H "Authorization: Bearer ${GH_TOKEN}")
+	fi
+	curl "${curl_args[@]}" "${API_URL}/repos/${REPO}/$1" 2>/dev/null || true
 }
 
 CO_REF=$(fetch "releases/latest" | jq -r '.tag_name // empty' 2>/dev/null || true)
