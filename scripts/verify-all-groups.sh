@@ -24,6 +24,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../lib/common.sh
 source "$SCRIPT_DIR/lib/common.sh"
 
+# Exit codes used by the GitHub fetch helpers.
+readonly RC_NOT_FOUND=1 RC_RATE_LIMITED=2 RC_API_FAILED=3
+
 require_cmd oc jq yq curl
 require_cluster
 
@@ -125,15 +128,56 @@ build_group_list() {
 	fi
 }
 
+# GET a GitHub API URL, printing the response body on success. Returns
+# RC_NOT_FOUND when the resource is absent and RC_RATE_LIMITED/RC_API_FAILED
+# otherwise, so callers can tell "no branch here" apart from "the API refused
+# to answer".
+github_api_get() {
+	local url="$1" response status body
+	local -a curl_args=(-sSL -w '\n%{http_code}')
+	if [[ -n "${GH_TOKEN:-}" ]]; then
+		curl_args+=(-H "Authorization: Bearer ${GH_TOKEN}")
+	fi
+	response=$(curl "${curl_args[@]}" "$url" 2>/dev/null || true)
+	status=${response##*$'\n'}
+	body=${response%$'\n'*}
+	case "$status" in
+	200)
+		printf '%s\n' "$body"
+		;;
+	404)
+		return "$RC_NOT_FOUND"
+		;;
+	403 | 429)
+		log_error "GitHub API returned HTTP ${status} for ${url} (rate limit or bad credentials)"
+		return "$RC_RATE_LIMITED"
+		;;
+	*)
+		log_error "GitHub API request failed (HTTP ${status:-none}): ${url}"
+		return "$RC_API_FAILED"
+		;;
+	esac
+}
+
+# Download a group's MachineConfigs from its compare branch. Returns 0 when
+# files were found, RC_NOT_FOUND when neither hardening path exists on the
+# branch, and the API failure codes from github_api_get otherwise.
 fetch_group_mcs() {
 	local group_id="$1"
 	local compare="$2"
 	local mc_dir="$OUTPUT_DIR/machineconfigs/$group_id"
 	mkdir -p "$mc_dir"
 
-	local mc_files=""
+	local mc_files="" listing="" rc
 	for path in "${HARDENING_PATHS[@]}"; do
-		mc_files=$(curl -fsSL "https://api.github.com/repos/sebrandon1/telco-reference/contents/${path}?ref=${compare}" 2>/dev/null | jq -r '.[].name' 2>/dev/null || true)
+		rc=0
+		listing=$(github_api_get "https://api.github.com/repos/sebrandon1/telco-reference/contents/${path}?ref=${compare}") || rc=$?
+		case "$rc" in
+		0) ;;
+		"$RC_NOT_FOUND") continue ;;
+		*) return "$rc" ;;
+		esac
+		mc_files=$(printf '%s' "$listing" | jq -r '.[].name' 2>/dev/null || true)
 		if [[ -n "$mc_files" ]]; then
 			local files_url="https://raw.githubusercontent.com/sebrandon1/telco-reference/${compare}/${path}"
 			for mc_file in $mc_files; do
@@ -143,7 +187,7 @@ fetch_group_mcs() {
 			return 0
 		fi
 	done
-	return 1
+	return "$RC_NOT_FOUND"
 }
 
 wait_for_scans() {
@@ -223,13 +267,26 @@ while IFS= read -r group_id; do
 	fi
 
 	log_info "$group_id ($title): fetching from $compare"
-	mc_files=$(fetch_group_mcs "$group_id" "$compare" || true)
+	mc_rc=0
+	mc_files=$(fetch_group_mcs "$group_id" "$compare") || mc_rc=$?
 
-	if [[ -z "$mc_files" ]]; then
+	case "$mc_rc" in
+	0) ;;
+	"$RC_RATE_LIMITED")
+		log_error "Cannot verify $group_id without GitHub API access."
+		log_error "Set GH_TOKEN and retry, or wait for the rate limit to reset."
+		exit 1
+		;;
+	"$RC_API_FAILED")
+		log_error "Aborting: could not fetch $group_id from $compare"
+		exit 1
+		;;
+	*)
 		log_warn "$group_id: no MC files found in branch $compare"
 		SKIPPED_GROUPS=$((SKIPPED_GROUPS + 1))
 		continue
-	fi
+		;;
+	esac
 
 	if [[ "$SKIP_APPLY" == "true" ]]; then
 		APPLIED_GROUPS=$((APPLIED_GROUPS + 1))
