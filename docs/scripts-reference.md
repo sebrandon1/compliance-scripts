@@ -139,7 +139,9 @@ python3 core/summarize-remediations.py docs/_data/ocp-5_0.json --offline
 make verify-images
 ```
 
-**mirror-compliance-images.sh** — Mirrors (or builds) compliance-operator images to `IMAGE_REGISTRY`.
+**mirror-compliance-images.sh** — Mirrors (or builds) the four compliance-operator release images (`compliance-operator`, `openscap-ocp`, `compliance-operator-bundle`, `compliance-operator-catalog`) to `IMAGE_REGISTRY` and verifies their architectures. `make mirror-images` delegates to this script.
+
+`k8scontent` is not a release image and is not mirrored here — build and push it with `utilities/build-k8scontent.sh` or the `build-k8scontent` workflow.
 
 ```bash
 ./utilities/mirror-compliance-images.sh v1.9.0
