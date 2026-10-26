@@ -60,6 +60,21 @@ def test_detect_script_fails_loudly(stub_binary, run_script):
     assert "Could not detect" in result.stdout + result.stderr
 
 
+def test_workflow_verifies_pinned_version_tags():
+    text = WORKFLOW.read_text()
+    assert "source versions.env" in text
+    for image in ("compliance-operator", "openscap-ocp",
+                  "compliance-operator-bundle", "compliance-operator-catalog"):
+        assert f"${{IMAGE_REGISTRY}}/{image}:${{CO_IMAGE_TAG}}" in text, image
+    assert "${IMAGE_REGISTRY}/k8scontent:${CONTENT_IMAGE_TAG}" in text
+
+
+def test_workflow_keeps_latest_release_check():
+    text = WORKFLOW.read_text()
+    assert "steps.detect.outputs.co_ref" in text
+    assert "k8scontent:latest" in text
+
+
 def test_verify_script_rejects_empty_tag(stub_binary, run_script):
     stub_binary("jq", "#!/bin/sh\nexit 0\n")
     stub_binary("skopeo", "#!/bin/sh\nexit 0\n")
