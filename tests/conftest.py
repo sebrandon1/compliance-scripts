@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 # Ambient values that would make a test depend on the developer's shell.
-_ISOLATED_VARS = ("GH_TOKEN", "GITHUB_TOKEN", "CURL_STATUS", "LOG_LEVEL")
+_ISOLATED_VARS = ("GH_TOKEN", "GITHUB_TOKEN", "GITHUB_ACTIONS", "CURL_STATUS", "LOG_LEVEL")
 
 
 @pytest.fixture
