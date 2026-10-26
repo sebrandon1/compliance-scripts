@@ -47,12 +47,29 @@ jobs:
           echo "Detected CO release: $CO_REF"
           echo "co_ref=$CO_REF" >> "$GITHUB_OUTPUT"
 
+      - name: Load pinned image versions
+        id: pins
+        run: |
+          set -a
+          source versions.env
+          set +a
+          echo "co_image_tag=${CO_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "content_image_tag=${CONTENT_IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Pinned versions: co=${CO_IMAGE_TAG} content=${CONTENT_IMAGE_TAG}"
+
       - name: Verify mirror image architectures
         run: |
           CO_REF="${{ steps.detect.outputs.co_ref }}"
+          CO_IMAGE_TAG="${{ steps.pins.outputs.co_image_tag }}"
+          CONTENT_IMAGE_TAG="${{ steps.pins.outputs.content_image_tag }}"
           ./utilities/verify-mirror-architectures.sh \
             "${IMAGE_REGISTRY}/compliance-operator:${CO_REF}" \
             "${IMAGE_REGISTRY}/openscap-ocp:${CO_REF}" \
             "${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_REF}" \
             "${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_REF}" \
+            "${IMAGE_REGISTRY}/compliance-operator:${CO_IMAGE_TAG}" \
+            "${IMAGE_REGISTRY}/openscap-ocp:${CO_IMAGE_TAG}" \
+            "${IMAGE_REGISTRY}/compliance-operator-bundle:${CO_IMAGE_TAG}" \
+            "${IMAGE_REGISTRY}/compliance-operator-catalog:${CO_IMAGE_TAG}" \
+            "${IMAGE_REGISTRY}/k8scontent:${CONTENT_IMAGE_TAG}" \
             "${IMAGE_REGISTRY}/k8scontent:latest"
