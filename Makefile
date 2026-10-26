@@ -387,9 +387,9 @@ python-lint: ## 🐍 Lint Python files with flake8
 	@echo "$(GREEN)✅ Python linting passed!$(RESET)"
 	@echo "$(DIM)  • Running mypy type checks...$(RESET)"
 	@if command -v mypy >/dev/null 2>&1; then \
-	  mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py || (echo "$(RED)❌ mypy type checks failed!$(RESET)" && exit 1); \
+	  mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py lab-tools/*.py || (echo "$(RED)❌ mypy type checks failed!$(RESET)" && exit 1); \
 	elif python3 -m mypy --version >/dev/null 2>&1; then \
-	  python3 -m mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py || (echo "$(RED)❌ mypy type checks failed!$(RESET)" && exit 1); \
+	  python3 -m mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py lab-tools/*.py || (echo "$(RED)❌ mypy type checks failed!$(RESET)" && exit 1); \
 	else \
 	  echo "$(DIM)  mypy not installed, skipping type checks$(RESET)"; \
 	fi

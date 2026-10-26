@@ -54,4 +54,4 @@ jobs:
           command: |
             pip install mypy pyyaml types-PyYAML types-requests types-beautifulsoup4
       - name: Run mypy
-        run: mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py
+        run: mypy --ignore-missing-imports core/*.py scripts/*.py modular/*.py misc/*.py lab-tools/*.py
