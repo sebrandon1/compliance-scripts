@@ -150,7 +150,7 @@ pip install -r requirements.txt
 
 ### Python
 - Uses `flake8` with ignored rules: E501 (line length), E402 (module import order), W503 (line break before operator)
-- `make python-lint` also runs `mypy --ignore-missing-imports` on `core/*.py`, `scripts/*.py`, `modular/*.py`, and `misc/*.py`
+- `make python-lint` also runs `mypy --ignore-missing-imports` on `core/*.py`, `scripts/*.py`, `modular/*.py`, `misc/*.py`, and `lab-tools/*.py`
 - Virtual environments (`venv/`, `.venv/`) are excluded from linting
 
 ## Requirements

@@ -46,9 +46,9 @@ except ImportError:
     sys.exit(1)
 
 
-def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
+def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str, url: str,
                         headless: bool = True, timeout: int = 30000,
-                        dry_run: bool = False, url: str | None = None,
+                        dry_run: bool = False,
                         retries: int = 3) -> bool:
     """
     Automate cluster reprovisioning via the succulent web form.
@@ -57,10 +57,10 @@ def reprovision_cluster(ocp_version: str, email: str, kerberos_id: str,
         ocp_version: OCP version tag (e.g., "4.17", "4.18")
         email: Email address for the form
         kerberos_id: Kerberos ID for the form
+        url: URL to the provisioning form
         headless: Run browser in headless mode (default: True)
         timeout: Timeout for page operations in milliseconds (default: 30000)
         dry_run: Run in dry-run mode (visible browser, no submission)
-        url: URL to the provisioning form
         retries: Number of retry attempts on timeout (default: 3)
 
     Returns:
