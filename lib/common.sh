@@ -25,11 +25,11 @@ get_compliance_namespace() {
 _CLEANUP_DIRS=()
 
 _cleanup_temp_dirs() {
-    if (( ${#_CLEANUP_DIRS[@]} > 0 )); then
-        for d in "${_CLEANUP_DIRS[@]}"; do
-            rm -rf "$d"
-        done
-    fi
+	if ((${#_CLEANUP_DIRS[@]} > 0)); then
+		for d in "${_CLEANUP_DIRS[@]}"; do
+			rm -rf "$d"
+		done
+	fi
 }
 trap _cleanup_temp_dirs EXIT
 
@@ -37,33 +37,33 @@ trap _cleanup_temp_dirs EXIT
 # Safe to call multiple times — all directories are tracked and removed.
 # Usage: MY_DIR=$(make_temp_dir)
 make_temp_dir() {
-    local dir
-    dir=$(mktemp -d)
-    _CLEANUP_DIRS+=("$dir")
-    echo "$dir"
+	local dir
+	dir=$(mktemp -d)
+	_CLEANUP_DIRS+=("$dir")
+	echo "$dir"
 }
 
 # ============================================================================
 # COLORS (only if terminal supports it)
 # ============================================================================
 if [[ -t 1 ]]; then
-    RED='\033[0;31m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    BLUE='\033[0;34m'
-    MAGENTA='\033[0;35m'
-    CYAN='\033[0;36m'
-    BOLD='\033[1m'
-    NC='\033[0m' # No Color
+	RED='\033[0;31m'
+	GREEN='\033[0;32m'
+	YELLOW='\033[1;33m'
+	BLUE='\033[0;34m'
+	MAGENTA='\033[0;35m'
+	CYAN='\033[0;36m'
+	BOLD='\033[1m'
+	NC='\033[0m' # No Color
 else
-    RED=''
-    GREEN=''
-    YELLOW=''
-    BLUE=''
-    MAGENTA=''
-    CYAN=''
-    BOLD=''
-    NC=''
+	RED=''
+	GREEN=''
+	YELLOW=''
+	BLUE=''
+	MAGENTA=''
+	CYAN=''
+	BOLD=''
+	NC=''
 fi
 
 # ============================================================================
@@ -75,47 +75,47 @@ LOG_LEVEL="${LOG_LEVEL:-3}"
 
 # Convert named levels to numbers
 case "$(echo "${LOG_LEVEL}" | tr '[:upper:]' '[:lower:]')" in
-    quiet|q)   LOG_LEVEL=0 ;;
-    error|e)   LOG_LEVEL=1 ;;
-    warn|w)    LOG_LEVEL=2 ;;
-    info|i)    LOG_LEVEL=3 ;;
-    debug|d)   LOG_LEVEL=4 ;;
-    [0-4])     ;; # Already a number
-    *)         LOG_LEVEL=3 ;; # Default to info
+quiet | q) LOG_LEVEL=0 ;;
+error | e) LOG_LEVEL=1 ;;
+warn | w) LOG_LEVEL=2 ;;
+info | i) LOG_LEVEL=3 ;;
+debug | d) LOG_LEVEL=4 ;;
+[0-4]) ;;         # Already a number
+*) LOG_LEVEL=3 ;; # Default to info
 esac
 
 log_error() {
-    if [[ $LOG_LEVEL -ge 1 ]]; then echo -e "${RED}[ERROR]${NC} $*" >&2; fi
+	if [[ $LOG_LEVEL -ge 1 ]]; then echo -e "${RED}[ERROR]${NC} $*" >&2; fi
 }
 
 log_warn() {
-    if [[ $LOG_LEVEL -ge 2 ]]; then echo -e "${YELLOW}[WARN]${NC} $*"; fi
+	if [[ $LOG_LEVEL -ge 2 ]]; then echo -e "${YELLOW}[WARN]${NC} $*"; fi
 }
 
 log_info() {
-    if [[ $LOG_LEVEL -ge 3 ]]; then echo -e "${BLUE}[INFO]${NC} $*"; fi
+	if [[ $LOG_LEVEL -ge 3 ]]; then echo -e "${BLUE}[INFO]${NC} $*"; fi
 }
 
 log_success() {
-    if [[ $LOG_LEVEL -ge 3 ]]; then echo -e "${GREEN}[SUCCESS]${NC} $*"; fi
+	if [[ $LOG_LEVEL -ge 3 ]]; then echo -e "${GREEN}[SUCCESS]${NC} $*"; fi
 }
 
 log_debug() {
-    if [[ $LOG_LEVEL -ge 4 ]]; then echo -e "${CYAN}[DEBUG]${NC} $*"; fi
+	if [[ $LOG_LEVEL -ge 4 ]]; then echo -e "${CYAN}[DEBUG]${NC} $*"; fi
 }
 
 # Log at a specific level (for programmatic use)
 # Usage: log 2 "This is a warning"
 log() {
-    local level="$1"
-    shift
-    case "$level" in
-        1|error) log_error "$@" ;;
-        2|warn)  log_warn "$@" ;;
-        3|info)  log_info "$@" ;;
-        4|debug) log_debug "$@" ;;
-        *)       log_info "$@" ;;
-    esac
+	local level="$1"
+	shift
+	case "$level" in
+	1 | error) log_error "$@" ;;
+	2 | warn) log_warn "$@" ;;
+	3 | info) log_info "$@" ;;
+	4 | debug) log_debug "$@" ;;
+	*) log_info "$@" ;;
+	esac
 }
 
 # ============================================================================
@@ -125,23 +125,23 @@ log() {
 # Check if a command exists
 # Usage: require_cmd oc yq jq
 require_cmd() {
-    local missing=0
-    for cmd in "$@"; do
-        if ! command -v "$cmd" &>/dev/null; then
-            log_error "'$cmd' is required but not installed"
-            missing=1
-        fi
-    done
-    [[ $missing -eq 1 ]] && exit 1
-    return 0
+	local missing=0
+	for cmd in "$@"; do
+		if ! command -v "$cmd" &>/dev/null; then
+			log_error "'$cmd' is required but not installed"
+			missing=1
+		fi
+	done
+	[[ $missing -eq 1 ]] && exit 1
+	return 0
 }
 
 # Check cluster connectivity
 require_cluster() {
-    if ! oc whoami &>/dev/null 2>&1; then
-        log_error "Not connected to OpenShift cluster. Run 'oc login' first."
-        exit 1
-    fi
+	if ! oc whoami &>/dev/null 2>&1; then
+		log_error "Not connected to OpenShift cluster. Run 'oc login' first."
+		exit 1
+	fi
 }
 
 # ============================================================================
@@ -151,23 +151,23 @@ require_cluster() {
 # Load .env file if it exists
 # Usage: load_env [path/to/.env]
 load_env() {
-    local env_file="${1:-.env}"
-    if [[ -f "$env_file" ]]; then
-        log_debug "Loading config from $env_file"
-        # shellcheck source=/dev/null
-        source "$env_file"
-    fi
+	local env_file="${1:-.env}"
+	if [[ -f "$env_file" ]]; then
+		log_debug "Loading config from $env_file"
+		# shellcheck source=/dev/null
+		source "$env_file"
+	fi
 }
 
 # Get script directory (call from the script itself)
 # Usage: SCRIPT_DIR=$(get_script_dir)
 get_script_dir() {
-    cd "$(dirname "${BASH_SOURCE[1]}")" && pwd
+	cd "$(dirname "${BASH_SOURCE[1]}")" && pwd
 }
 
 # Get repository root directory
 get_repo_root() {
-    cd "$(dirname "${BASH_SOURCE[1]}")/.." && pwd
+	cd "$(dirname "${BASH_SOURCE[1]}")/.." && pwd
 }
 
 # ============================================================================
@@ -177,30 +177,30 @@ get_repo_root() {
 # Track start time for duration calculation
 # Usage: start_timer
 start_timer() {
-    export _START_TIME
-    _START_TIME=$(date +%s)
+	export _START_TIME
+	_START_TIME=$(date +%s)
 }
 
 # Print duration since start_timer was called
 # Usage: print_duration
 print_duration() {
-    if [[ -n "${_START_TIME:-}" ]]; then
-        local duration=$(($(date +%s) - _START_TIME))
-        local minutes=$((duration / 60))
-        local seconds=$((duration % 60))
-        if [[ $minutes -gt 0 ]]; then
-            log_info "Duration: ${minutes}m ${seconds}s"
-        else
-            log_info "Duration: ${seconds}s"
-        fi
-    fi
+	if [[ -n "${_START_TIME:-}" ]]; then
+		local duration=$(($(date +%s) - _START_TIME))
+		local minutes=$((duration / 60))
+		local seconds=$((duration % 60))
+		if [[ $minutes -gt 0 ]]; then
+			log_info "Duration: ${minutes}m ${seconds}s"
+		else
+			log_info "Duration: ${seconds}s"
+		fi
+	fi
 }
 
 # Setup cleanup trap with duration printing
 # Usage: setup_cleanup
 setup_cleanup() {
-    start_timer
-    trap '_cleanup_temp_dirs; print_duration' EXIT
+	start_timer
+	trap '_cleanup_temp_dirs; print_duration' EXIT
 }
 
 # ============================================================================
@@ -210,38 +210,38 @@ setup_cleanup() {
 # Confirm action with user
 # Usage: confirm "Are you sure?" && do_something
 confirm() {
-    local prompt="${1:-Continue?}"
-    read -r -p "$prompt [y/N] " response
-    case "$response" in
-        [yY][eE][sS]|[yY]) return 0 ;;
-        *) return 1 ;;
-    esac
+	local prompt="${1:-Continue?}"
+	read -r -p "$prompt [y/N] " response
+	case "$response" in
+	[yY][eE][sS] | [yY]) return 0 ;;
+	*) return 1 ;;
+	esac
 }
 
 # Retry a command with exponential backoff
 # Usage: retry 3 5 oc get pods
 #        (3 attempts, starting with 5 second delay)
 retry() {
-    local max_attempts="$1"
-    local delay="$2"
-    shift 2
-    local attempt=1
+	local max_attempts="$1"
+	local delay="$2"
+	shift 2
+	local attempt=1
 
-    while true; do
-        if "$@"; then
-            return 0
-        fi
+	while true; do
+		if "$@"; then
+			return 0
+		fi
 
-        if [[ $attempt -ge $max_attempts ]]; then
-            log_error "Command failed after $max_attempts attempts: $*"
-            return 1
-        fi
+		if [[ $attempt -ge $max_attempts ]]; then
+			log_error "Command failed after $max_attempts attempts: $*"
+			return 1
+		fi
 
-        log_warn "Attempt $attempt/$max_attempts failed, retrying in ${delay}s..."
-        sleep "$delay"
-        delay=$((delay * 2)) # Exponential backoff
-        attempt=$((attempt + 1))
-    done
+		log_warn "Attempt $attempt/$max_attempts failed, retrying in ${delay}s..."
+		sleep "$delay"
+		delay=$((delay * 2)) # Exponential backoff
+		attempt=$((attempt + 1))
+	done
 }
 
 # Run a command with retry and structured error reporting.
@@ -250,66 +250,72 @@ retry() {
 #   --delay S     Initial delay between retries in seconds, doubles each attempt (default: 2)
 # Returns the command's exit code. Logs warnings on retry, error on final failure.
 run_safe() {
-    local retries=3
-    local delay=2
-    while [[ $# -gt 0 && "$1" == --* ]]; do
-        case "$1" in
-        --retries) retries="$2"; shift 2 ;;
-        --delay) delay="$2"; shift 2 ;;
-        *) break ;;
-        esac
-    done
+	local retries=3
+	local delay=2
+	while [[ $# -gt 0 && "$1" == --* ]]; do
+		case "$1" in
+		--retries)
+			retries="$2"
+			shift 2
+			;;
+		--delay)
+			delay="$2"
+			shift 2
+			;;
+		*) break ;;
+		esac
+	done
 
-    local attempt=1
-    while true; do
-        if "$@"; then
-            return 0
-        fi
-        local rc=$?
-        if [[ $attempt -ge $retries ]]; then
-            log_error "Command failed after $retries attempts: $*"
-            return $rc
-        fi
-        log_warn "Attempt $attempt/$retries failed (rc=$rc), retrying in ${delay}s: $*"
-        sleep "$delay"
-        delay=$((delay * 2))
-        attempt=$((attempt + 1))
-    done
+	local attempt=1
+	while true; do
+		if "$@"; then
+			return 0
+		fi
+		local rc=$?
+		if [[ $attempt -ge $retries ]]; then
+			log_error "Command failed after $retries attempts: $*"
+			return $rc
+		fi
+		log_warn "Attempt $attempt/$retries failed (rc=$rc), retrying in ${delay}s: $*"
+		sleep "$delay"
+		delay=$((delay * 2))
+		attempt=$((attempt + 1))
+	done
 }
 
 # Wait for a condition to become true with fixed-interval polling
 # Usage: wait_for 30 10 "Waiting for pods to be Ready" check_pods_ready
 #        (30 attempts, 10s interval, description for log messages)
 wait_for() {
-    local max_attempts="$1"
-    local interval="$2"
-    local description="$3"
-    shift 3
+	local max_attempts="$1"
+	local interval="$2"
+	local description="$3"
+	shift 3
 
-    for i in $(seq 1 "$max_attempts"); do
-        if "$@" >/dev/null 2>&1; then
-            return 0
-        fi
-        log_info "$description ($i/$max_attempts)..."
-        sleep "$interval"
-    done
-    log_error "$description failed after $max_attempts attempts"
-    return 1
+	for i in $(seq 1 "$max_attempts"); do
+		if "$@" >/dev/null 2>&1; then
+			return 0
+		fi
+		log_info "$description ($i/$max_attempts)..."
+		sleep "$interval"
+	done
+	log_error "$description failed after $max_attempts attempts"
+	return 1
 }
 
 # Print execution summary
 # Usage: print_summary "key1" "value1" "key2" "value2" ...
 print_summary() {
-    echo ""
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${BOLD}  EXECUTION SUMMARY${NC}"
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    while [[ $# -ge 2 ]]; do
-        printf "  %-25s %s\n" "$1:" "$2"
-        shift 2
-    done
-    echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
+	echo ""
+	echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+	echo -e "${BOLD}  EXECUTION SUMMARY${NC}"
+	echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+	while [[ $# -ge 2 ]]; do
+		printf "  %-25s %s\n" "$1:" "$2"
+		shift 2
+	done
+	echo -e "${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+	echo ""
 }
 
 # ============================================================================
@@ -319,9 +325,9 @@ print_summary() {
 # Check if a compliance profile exists on the cluster
 # Usage: profile_exists "ocp4-e8" [namespace]
 profile_exists() {
-    local profile="$1"
-    local ns="${2:-$DEFAULT_COMPLIANCE_NAMESPACE}"
-    oc get profile.compliance "$profile" -n "$ns" &>/dev/null
+	local profile="$1"
+	local ns="${2:-$DEFAULT_COMPLIANCE_NAMESPACE}"
+	oc get profile.compliance "$profile" -n "$ns" &>/dev/null
 }
 
 # ============================================================================
@@ -400,22 +406,22 @@ DRY_RUN="${DRY_RUN:-false}"
 # Apply a Kubernetes resource (respects DRY_RUN)
 # Usage: apply_resource file.yaml
 apply_resource() {
-    local file="$1"
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log_info "[DRY-RUN] Would apply: $file"
-        oc apply --dry-run=server -f "$file"
-    else
-        run_safe --retries 3 --delay 2 oc apply -f "$file"
-    fi
+	local file="$1"
+	if [[ "$DRY_RUN" == "true" ]]; then
+		log_info "[DRY-RUN] Would apply: $file"
+		oc apply --dry-run=server -f "$file"
+	else
+		run_safe --retries 3 --delay 2 oc apply -f "$file"
+	fi
 }
 
 # Apply inline YAML (respects DRY_RUN)
 # Usage: echo "yaml..." | apply_inline
 apply_inline() {
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log_info "[DRY-RUN] Would apply inline resource"
-        oc apply --dry-run=server -f -
-    else
-        oc apply -f -
-    fi
+	if [[ "$DRY_RUN" == "true" ]]; then
+		log_info "[DRY-RUN] Would apply inline resource"
+		oc apply --dry-run=server -f -
+	else
+		oc apply -f -
+	fi
 }
