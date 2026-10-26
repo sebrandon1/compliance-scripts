@@ -47,7 +47,7 @@ make serve-docs                           # Serve dashboard locally
 make install-jekyll                       # Install Jekyll dependencies
 
 # Images
-make mirror-images CO_REF=v1.9.0          # Mirror operator images
+make mirror-images CO_REF=v1.9.0          # Mirror the four CO release images and verify arches
 make rhcos-static-scan OCP_VERSION=4.21   # Offline OSCAP scan of RHCOS rootfs
 
 # Linting
