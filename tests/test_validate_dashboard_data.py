@@ -1018,3 +1018,106 @@ class TestValidateCrossReferences:
             scan_path, tracking_path
         )
         assert errors == []
+
+
+class TestScanExportCompleteness:
+    """Tests for validate_scan_export_completeness (issue #443)."""
+
+    @staticmethod
+    def _export(total: int, scan_date: str, **extra: Any) -> dict[str, Any]:
+        data: dict[str, Any] = {
+            "scan_date": scan_date,
+            "summary": {
+                "total_checks": total,
+                "passing": total,
+                "failing": 0,
+                "manual": 0,
+            },
+            "content_image": "quay.io/bapalm/k8scontent:v0.1.81",
+        }
+        data.update(extra)
+        return data
+
+    def _run(self, tmpdir, files: dict[str, dict[str, Any]]):
+        paths = [
+            write_json(tmpdir, name, data) for name, data in files.items()
+        ]
+        return validate_dashboard.validate_scan_export_completeness(paths)
+
+    def test_partial_export_is_an_error(self, tmpdir):
+        errors, warnings = self._run(tmpdir, {
+            "ocp-5_0.json": self._export(900, "2026-11-01T00:00:00Z"),
+            "ocp-5_1.json": self._export(300, "2026-11-01T00:00:00Z"),
+        })
+        assert "ocp-5_1.json" in errors
+        assert "only 300 checks" in errors["ocp-5_1.json"][0]
+        assert warnings == {}
+
+    def test_comparable_export_passes(self, tmpdir):
+        errors, warnings = self._run(tmpdir, {
+            "ocp-5_0.json": self._export(1000, "2026-11-01T00:00:00Z"),
+            "ocp-5_1.json": self._export(900, "2026-11-01T00:00:00Z"),
+        })
+        assert errors == {}
+        assert warnings == {}
+
+    def test_stale_scan_date_warns_only(self, tmpdir):
+        errors, warnings = self._run(tmpdir, {
+            "ocp-5_0.json": self._export(900, "2026-01-01T00:00:00Z"),
+            "ocp-5_1.json": self._export(900, "2026-12-01T00:00:00Z"),
+        })
+        assert errors == {}
+        assert "ocp-5_0.json" in warnings
+
+    def test_incomplete_marker_suppresses_checks(self, tmpdir):
+        errors, warnings = self._run(tmpdir, {
+            "ocp-5_0.json": self._export(900, "2026-11-01T00:00:00Z"),
+            "ocp-5_1.json": self._export(
+                100, "2026-01-01T00:00:00Z", incomplete=True
+            ),
+        })
+        assert errors == {}
+        assert warnings == {}
+
+    def test_historical_exports_are_ignored(self, tmpdir):
+        errors, warnings = self._run(tmpdir, {
+            "ocp-5_0.json": self._export(900, "2026-11-01T00:00:00Z"),
+            "ocp-5_1.json": self._export(900, "2026-11-01T00:00:00Z"),
+            "ocp-5_1-2026-08-01.json": self._export(
+                100, "2026-01-01T00:00:00Z"
+            ),
+            "ocp-5_1-baseline-2026-08-01.json": self._export(
+                50, "2025-01-01T00:00:00Z"
+            ),
+        })
+        assert errors == {}
+        assert warnings == {}
+
+    def test_missing_content_image_is_an_error(self, tmpdir):
+        first = self._export(900, "2026-11-01T00:00:00Z")
+        second = self._export(900, "2026-11-01T00:00:00Z")
+        del second["content_image"]
+        errors, _ = self._run(tmpdir, {
+            "ocp-5_0.json": first,
+            "ocp-5_1.json": second,
+        })
+        assert "ocp-5_1.json" in errors
+        assert any("content_image" in message for message in errors["ocp-5_1.json"])
+
+    def test_single_current_export_is_not_compared(self, tmpdir):
+        errors, warnings = self._run(tmpdir, {
+            "ocp-5_1.json": self._export(100, "2026-11-01T00:00:00Z"),
+        })
+        assert errors == {}
+        assert warnings == {}
+
+    def test_untagged_content_image_without_pin_is_an_error(self, tmpdir):
+        first = self._export(900, "2026-11-01T00:00:00Z")
+        second = self._export(900, "2026-11-01T00:00:00Z")
+        second["content_image"] = "quay.io/bapalm/k8scontent"
+        errors, _ = self._run(tmpdir, {
+            "ocp-5_0.json": first,
+            "ocp-5_1.json": second,
+        })
+        assert "ocp-5_1.json" in errors
+        assert any("not pinned" in message for message in errors["ocp-5_1.json"])
