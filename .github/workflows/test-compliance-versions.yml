@@ -132,7 +132,9 @@ jobs:
           CO_REF=${{ steps.inputs.outputs.co_ref }}
           oc get compliancecheckresults -n openshift-compliance -o json > "compliance-results-${OCP_VERSION}-${CO_REF}.json" || true
           oc get compliancesuite -n openshift-compliance -o yaml > "compliance-suites-${OCP_VERSION}-${CO_REF}.yaml" || true
-          ./tests/generate-expected.sh "$OCP_VERSION" 2>/dev/null && mv "tests/expected-results-${OCP_VERSION}.json" "actual-baseline-${OCP_VERSION}-${CO_REF}.json" || true
+          if ./tests/generate-expected.sh "$OCP_VERSION" 2>/dev/null; then
+            mv "tests/expected-results-${OCP_VERSION}.json" "actual-baseline-${OCP_VERSION}-${CO_REF}.json" || true
+          fi
 
       - name: Upload results
         if: always()
