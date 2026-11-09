@@ -4,7 +4,7 @@ set -euo pipefail
 # Shell smoke test: runs bash -n (syntax check) on all .sh files in the
 # project directories that contain automation scripts.
 
-DIRS=(core scripts utilities misc modular)
+DIRS=(core scripts utilities misc modular lib lab-tools tests)
 FAIL=0
 PASS=0
 
