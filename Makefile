@@ -336,7 +336,7 @@ test-compliance: banner ## 🧪 Run compliance validation (same as CI workflow) 
 # 🔍 Code Quality & Linting
 # ────────────────────────────────────────────────────────────────────────────────
 
-lint: python-lint bash-lint ## 🔍 Run all linters (Python + Bash)
+lint: python-lint bash-lint workflow-lint ## 🔍 Run all linters (Python + Bash + workflows)
 	@echo ""
 	@echo "$(BOLD)$(GREEN)✅ All linting checks passed!$(RESET)"
 	@echo ""
@@ -391,7 +391,7 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	  exit 1; \
 	fi
 	@echo "$(DIM)  • Running shellcheck...$(RESET)"
-	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' -not -path './docs/vendor/*' | xargs shellcheck -e SC1091,SC2034,SC2001,SC2028,SC2129,SC2155,SC2317,SC2329 || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
+	@find . -name '*.sh' -type f -not -path './venv/*' -not -path './generated-networkpolicies/*' -not -path './complianceremediations/*' -not -path './test-runs/*' -not -path './testing/*' -not -path './docs/vendor/*' -print0 | xargs -0 shellcheck || (echo "$(RED)❌ shellcheck failed!$(RESET)" && exit 1)
 	@if ! command -v shfmt >/dev/null 2>&1; then \
 	  echo "$(RED)❌ shfmt not found. Please install it:$(RESET)"; \
 	  echo "$(DIM)  macOS: brew install shfmt$(RESET)"; \
@@ -401,6 +401,17 @@ bash-lint: ## 📜 Lint Bash scripts with shellcheck and shfmt
 	@echo "$(DIM)  • Running shfmt...$(RESET)"
 	@shfmt -d lib core utilities modular lab-tools misc scripts tests || (echo "$(RED)❌ shfmt formatting check failed!$(RESET)" && echo "$(YELLOW)💡 To automatically fix formatting issues, run:$(RESET)" && echo "$(CYAN)   shfmt -w lib core utilities modular lab-tools misc scripts tests$(RESET)" && exit 1)
 	@echo "$(GREEN)✅ Bash linting passed!$(RESET)"
+
+workflow-lint: ## 🧩 Lint GitHub Actions workflows with actionlint
+	@echo "$(BOLD)$(BLUE)🧩 Linting GitHub Actions workflows...$(RESET)"
+	@if command -v actionlint >/dev/null 2>&1; then \
+	  SHELLCHECK_OPTS="-e $$(sed -n 's/^disable=//p' .shellcheckrc)" actionlint || (echo "$(RED)❌ Workflow linting failed!$(RESET)" && exit 1); \
+	else \
+	  echo "$(YELLOW)⚙️  actionlint not found, skipping workflow lint$(RESET)"; \
+	  echo "$(DIM)  macOS: brew install actionlint$(RESET)"; \
+	  echo "$(DIM)  Linux: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12$(RESET)"; \
+	fi
+	@echo "$(GREEN)✅ Workflow linting passed!$(RESET)"
 
 # ────────────────────────────────────────────────────────────────────────────────
 # 🌐 Compliance Dashboard (GitHub Pages)
