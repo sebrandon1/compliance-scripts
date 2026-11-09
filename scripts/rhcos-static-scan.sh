@@ -97,7 +97,20 @@ log_info "Extracting rootfs..."
 podman create --name rhcos-scan-extract "$RHCOS_IMAGE" 2>/dev/null
 ROOTFS="$WORK_DIR/rhcos-root"
 mkdir -p "$ROOTFS"
-podman export rhcos-scan-extract | tar -C "$ROOTFS" -xf - || true
+# tar can exit non-zero on benign warnings, so judge the result, not the status.
+EXTRACT_STATUS=0
+podman export rhcos-scan-extract 2>"$WORK_DIR/podman-export.err" |
+	tar -C "$ROOTFS" -xf - || EXTRACT_STATUS=$?
+if [[ "$EXTRACT_STATUS" -ne 0 ]]; then
+	log_warn "Rootfs extraction exited with status $EXTRACT_STATUS; checking the result"
+fi
+if [[ ! -d "$ROOTFS/etc" || ! -d "$ROOTFS/usr" ]]; then
+	log_error "RHCOS rootfs extraction produced no usable tree"
+	if [[ -s "$WORK_DIR/podman-export.err" ]]; then
+		sed 's/^/  podman: /' "$WORK_DIR/podman-export.err" >&2
+	fi
+	exit 1
+fi
 
 RHCOS_VERSION="unknown"
 for osrel in "$ROOTFS/usr/lib/os-release" "$ROOTFS/etc/os-release"; do
@@ -111,7 +124,8 @@ for osrel in "$ROOTFS/usr/lib/os-release" "$ROOTFS/etc/os-release"; do
 done
 
 if [[ "$RHCOS_VERSION" == "unknown" ]]; then
-	log_warn "Could not determine RHCOS version from rootfs"
+	log_error "Could not determine RHCOS version from rootfs; extraction is not usable"
+	exit 1
 fi
 log_info "RHCOS version: $RHCOS_VERSION"
 
