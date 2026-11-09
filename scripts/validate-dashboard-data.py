@@ -16,11 +16,18 @@ import os
 import re
 import sys
 import glob
+from datetime import datetime
 from typing import Any
 
 ISO8601_PATTERN = re.compile(
     r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$'
 )
+
+# The current export for a version is exactly ocp-<major>_<minor>.json.
+# Dated snapshots (ocp-4_22-2026-07-01.json) and baselines are historical.
+CURRENT_EXPORT_PATTERN = re.compile(r"^ocp-(\d+)_(\d+)\.json$")
+MIN_PEER_RATIO = 0.5
+MAX_AGE_DAYS = 180
 
 
 PROFILE_PREFIXES = [
@@ -525,6 +532,108 @@ def validate_group_matrix_staleness(filepath: str) -> list[str]:
     return errors
 
 
+def _parse_scan_date(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not ISO8601_PATTERN.match(value):
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return None
+
+
+def _version_key(filename: str) -> tuple[int, int] | None:
+    match = CURRENT_EXPORT_PATTERN.match(filename)
+    if not match:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def validate_scan_export_completeness(
+    scan_files: list[str],
+) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """Flag current exports that are incomplete or stale relative to peers.
+
+    Returns (errors, warnings) keyed by export filename. Historical and
+    baseline exports are ignored. An export may be marked ``"incomplete": true``
+    when it is intentionally partial, which suppresses these checks.
+    """
+    errors: dict[str, list[str]] = {}
+    warnings: dict[str, list[str]] = {}
+
+    current: dict[str, dict[str, Any]] = {}
+    for filepath in scan_files:
+        basename = os.path.basename(filepath)
+        if _version_key(basename) is None:
+            continue
+        with open(filepath) as f:
+            current[basename] = json.load(f)
+
+    if len(current) < 2:
+        return errors, warnings
+
+    totals = [
+        total
+        for data in current.values()
+        if isinstance(total := data.get("summary", {}).get("total_checks"), int)
+    ]
+    max_total = max(totals) if totals else 0
+    dates = [
+        parsed
+        for data in current.values()
+        if (parsed := _parse_scan_date(data.get("scan_date"))) is not None
+    ]
+    newest_date = max(dates) if dates else None
+    version_keys = [_version_key(name) for name in current]
+    oldest_version = min(key for key in version_keys if key is not None)
+
+    for basename, data in current.items():
+        if data.get("incomplete") is True:
+            continue
+        messages: list[str] = []
+        version_key = _version_key(basename)
+
+        total = data.get("summary", {}).get("total_checks")
+        if isinstance(total, int) and max_total and total < max_total * MIN_PEER_RATIO:
+            messages.append(
+                f"only {total} checks versus {max_total} in the largest current "
+                f"export; scan looks partial (regenerate with "
+                f"`make export-compliance`, or set \"incomplete\": true)"
+            )
+
+        if version_key != oldest_version:
+            content_image = data.get("content_image")
+            if not content_image:
+                messages.append(
+                    "missing content_image (regenerate with "
+                    "`make export-compliance`)"
+                )
+            # A tagged content image identifies the content; a digest or
+            # export timestamp pins it precisely. Accept either form.
+            has_pin = bool(
+                data.get("exported_at") or data.get("content_image_digest")
+            )
+            is_tagged = isinstance(content_image, str) and ":" in content_image
+            if not has_pin and not is_tagged:
+                messages.append(
+                    "content image is not pinned (need a tag, "
+                    "exported_at, or content_image_digest); regenerate with "
+                    "`make export-compliance`"
+                )
+
+        if messages:
+            errors[basename] = messages
+
+        scanned = _parse_scan_date(data.get("scan_date"))
+        if newest_date and scanned is not None:
+            age_days = (newest_date - scanned).days
+            if age_days > MAX_AGE_DAYS:
+                warnings[basename] = [
+                    f"scan_date is {age_days} days older than the newest export"
+                ]
+
+    return errors, warnings
+
+
 def validate_upstream_prs(filepath: str) -> list[str]:
     """Validate upstream-prs.json structure used by the Hardened page."""
     errors = []
@@ -669,6 +778,23 @@ def main() -> None:
             all_errors[filename] = errors
         else:
             print("OK")
+
+    # Completeness: current exports must be comparable to their peers
+    print("Validating current scan export completeness...", end=" ")
+    completeness_errors, completeness_warnings = (
+        validate_scan_export_completeness(scan_files)
+    )
+    if completeness_errors:
+        print("FAIL")
+        all_errors.update(completeness_errors)
+    else:
+        print("OK")
+    if completeness_warnings:
+        print(f"WARNINGS: {len(completeness_warnings)} stale export(s):")
+        for filename, messages in completeness_warnings.items():
+            print(f"\n  {filename}:")
+            for message in messages:
+                print(f"    - {message}")
 
     # Cross-reference: tracking remediations vs scan data (warnings only)
     xref_warnings: dict[str, list[str]] = {}

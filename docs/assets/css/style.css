@@ -732,6 +732,15 @@ a:hover {
   margin: 0.25rem 0;
 }
 
+.incomplete-banner {
+  background: var(--color-code-bg);
+  border-left: 4px solid var(--color-medium);
+  color: var(--color-text);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
 .scan-environment {
   background: var(--color-code-bg);
   border-radius: 8px;

@@ -16,6 +16,14 @@ layout: default
   {% include resolve-tracking.html %}
 
   {% if version_data %}
+  {% if version_data.incomplete %}
+  <div class="incomplete-banner" role="alert">
+    <strong>Partial data.</strong> This export covers only part of the supported
+    profile set, so its counts are not comparable with the other version pages.
+    Refresh it on an OCP {{ page.version }} cluster with
+    <code>make export-compliance OCP_VERSION={{ page.version }}</code>.
+  </div>
+  {% endif %}
   <div class="scan-info">
     <p><strong>Last Scan:</strong> {{ version_data.scan_date | date: "%Y-%m-%d %H:%M UTC" }}</p>
     {% if version_data.exported_at %}

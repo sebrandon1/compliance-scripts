@@ -1,5 +1,6 @@
 {
   "version": "4.21",
+  "incomplete": true,
   "scan_date": "2026-01-14T20:19:36Z",
   "summary": {
     "total_checks": 205,
