@@ -37,6 +37,16 @@ jobs:
       operator_short: ${{ steps.operator.outputs.short }}
       needs_operator_mirror: ${{ steps.operator.outputs.needs_mirror }}
     steps:
+      - name: Install skopeo
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 5
+          retry_wait_seconds: 10
+          command: |
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq skopeo
+
       - name: Detect k8scontent commit
         id: content
         run: |
@@ -100,6 +110,16 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Install skopeo
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 5
+          retry_wait_seconds: 10
+          command: |
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq skopeo
+
       - name: Check Red Hat Status
         uses: palmsoftware/redhat-status@v0
         with:
@@ -194,6 +214,16 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Install skopeo
+        uses: nick-fields/retry@v4.0.0
+        with:
+          max_attempts: 3
+          timeout_minutes: 5
+          retry_wait_seconds: 10
+          command: |
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq skopeo
+
       - name: Check Red Hat Status
         uses: palmsoftware/redhat-status@v0
         with:
