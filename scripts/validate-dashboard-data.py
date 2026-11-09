@@ -37,6 +37,17 @@ PROFILE_PREFIXES = [
 ]
 
 
+def version_slug_from_export(basename: str) -> str | None:
+    """Derive the base version slug (e.g. 4_22) from an export filename.
+
+    Dated snapshots (``ocp-4_22-2026-07-01.json``) and pinned exports
+    (``ocp-5_1-co-1.8.2-2026-09-08.json``) resolve to their base version so
+    they are never matched against an unrelated tracking file.
+    """
+    match = re.match(r"^ocp-(\d+_\d+)", basename)
+    return match.group(1) if match else None
+
+
 def strip_profile_prefix(name: str) -> str:
     """Strip profile/role prefix from a check name."""
     for prefix in PROFILE_PREFIXES:
@@ -707,8 +718,14 @@ def validate_cross_references(
     for item in scan_data.get("manual_checks", []):
         scan_names.add(strip_profile_prefix(item["name"]))
 
-    tracking_rems = tracking_data.get("remediations", {})
-    missing = sorted(r for r in tracking_rems if r not in scan_names)
+    # Entries without a "file" are planned, unimplemented checks documented in
+    # tracking.json, not remediations that should appear in a scan export.
+    implemented = {
+        name
+        for name, meta in tracking_data.get("remediations", {}).items()
+        if isinstance(meta, dict) and meta.get("file")
+    }
+    missing = sorted(r for r in implemented if r not in scan_names)
 
     if missing:
         sample = ", ".join(missing[:10])
@@ -802,7 +819,11 @@ def main() -> None:
         if "baseline" in filepath:
             continue
         basename = os.path.basename(filepath)
-        version_slug = basename.replace("ocp-", "").replace(".json", "")
+        version_slug = version_slug_from_export(basename)
+        # Only the current export per version is cross-referenced. Dated
+        # snapshots are historical and have no matching tracking file.
+        if basename != f"ocp-{version_slug}.json":
+            continue
         tracking_path = os.path.join(data_dir, f"tracking-{version_slug}.json")
         if not os.path.exists(tracking_path):
             tracking_path = os.path.join(data_dir, "tracking.json")

@@ -871,6 +871,26 @@ class TestMainIntegration:
         finally:
             sys.argv = old_argv
 
+    def test_main_does_not_cross_reference_dated_exports(
+        self, tmpdir, capsys
+    ):
+        write_json(tmpdir, "ocp-4_22.json", make_valid_scan_export())
+        write_json(
+            tmpdir, "ocp-4_22-2026-07-01.json", make_valid_scan_export()
+        )
+        write_json(tmpdir, "tracking.json", make_valid_tracking())
+
+        old_argv = sys.argv
+        try:
+            sys.argv = ["validate-dashboard-data.py", tmpdir]
+            validate_dashboard.main()
+        finally:
+            sys.argv = old_argv
+
+        out = capsys.readouterr().out
+        assert "Cross-referencing ocp-4_22.json" in out
+        assert "ocp-4_22-2026-07-01.json <->" not in out
+
     def test_main_rejects_invalid_group_matrix(self, tmpdir):
         write_json(tmpdir, "group-matrix.json", {"bad": {}})
         old_argv = sys.argv
@@ -934,8 +954,16 @@ class TestValidateCrossReferences:
         }
 
     def _make_tracking_with_rems(
-        self, rem_names: list[str]
+        self, rem_names: list[str], file: str | None = "auto"
     ) -> dict[str, Any]:
+        remediations = {}
+        for n in rem_names:
+            entry: dict[str, Any] = {"group": "H1"}
+            if file == "auto":
+                entry["file"] = f"complianceremediations/{n}.yaml"
+            elif file is not None:
+                entry["file"] = file
+            remediations[n] = entry
         return {
             "meta": {"version": "4.22"},
             "groups": {
@@ -947,8 +975,36 @@ class TestValidateCrossReferences:
                     "platform": "rhcos",
                 },
             },
-            "remediations": {n: {"group": "H1"} for n in rem_names},
+            "remediations": remediations,
         }
+
+    def test_version_slug_from_dated_export(self):
+        assert validate_dashboard.version_slug_from_export(
+            "ocp-4_22-2026-07-01.json"
+        ) == "4_22"
+        assert validate_dashboard.version_slug_from_export(
+            "ocp-5_1-co-1.8.2-2026-09-08.json"
+        ) == "5_1"
+        assert validate_dashboard.version_slug_from_export(
+            "ocp-4_21.json"
+        ) == "4_21"
+        assert validate_dashboard.version_slug_from_export(
+            "not-a-scan.json"
+        ) is None
+
+    def test_null_file_remediation_not_warned(self, tmpdir):
+        scan_path = write_json(
+            tmpdir, "scan.json",
+            self._make_scan_with_checks(["ocp4-cis-configure-crypto-policy"])
+        )
+        tracking_path = write_json(
+            tmpdir, "tracking.json",
+            self._make_tracking_with_rems(["planned-check"], file=None)
+        )
+        errors = validate_dashboard.validate_cross_references(
+            scan_path, tracking_path
+        )
+        assert errors == []
 
     def test_matching_data_passes(self, tmpdir):
         scan_path = write_json(
