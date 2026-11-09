@@ -174,18 +174,39 @@ jobs:
 
           FILES_URL="https://raw.githubusercontent.com/sebrandon1/telco-reference/${COMPARE}/${HARDENING_PATH}"
           APPLIED=0
+          SKIPPED=0
+          TOTAL=0
           echo "## Applied MachineConfigs" >> "$GITHUB_STEP_SUMMARY"
           for mc_file in $MC_FILES; do
+            TOTAL=$((TOTAL + 1))
             curl -fsSL "${FILES_URL}/${mc_file}" -o "artifacts/machineconfigs/${mc_file}"
-            KIND=$(yq e '.kind' "artifacts/machineconfigs/${mc_file}" 2>/dev/null || echo "")
+            # oc is guaranteed on the runner; do not depend on yq being present.
+            KIND=$(oc apply --dry-run=client -o jsonpath='{.kind}' -f "artifacts/machineconfigs/${mc_file}" 2>/dev/null || echo "")
+            if [ -z "$KIND" ]; then
+              echo "::warning::Could not determine kind for ${mc_file}; skipping"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
             if [ "$KIND" = "MachineConfig" ] || [ "$KIND" = "APIServer" ] || [ "$KIND" = "OAuth" ]; then
               echo "Applying: $mc_file ($KIND)"
               oc apply -f "artifacts/machineconfigs/${mc_file}"
               echo "- \`${mc_file}\` ($KIND)" >> "$GITHUB_STEP_SUMMARY"
               APPLIED=$((APPLIED + 1))
+            else
+              echo "Skipping unsupported kind ${KIND} in ${mc_file}"
+              SKIPPED=$((SKIPPED + 1))
             fi
           done
-          echo "Applied $APPLIED file(s) from group $GROUP_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo "Applied $APPLIED file(s) from group $GROUP_ID ($SKIPPED skipped of $TOTAL)" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$SKIPPED" -eq "$TOTAL" ]; then
+            echo "::error::Could not classify any of the $TOTAL file(s) in branch $COMPARE"
+            exit 1
+          fi
+          if [ "$APPLIED" -eq 0 ]; then
+            echo "::error::Applied 0 remediation objects; nothing to verify"
+            exit 1
+          fi
 
       - name: Wait for MCP rollout
         run: |
