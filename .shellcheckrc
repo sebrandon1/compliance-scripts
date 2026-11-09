@@ -1,0 +1,3 @@
+# Shared shellcheck configuration. Read by shellcheck directly and by
+# actionlint when it lints embedded shell in workflow `run:` blocks.
+disable=SC1091,SC2034,SC2001,SC2028,SC2129,SC2155,SC2317,SC2329
