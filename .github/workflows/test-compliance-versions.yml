@@ -24,7 +24,9 @@ permissions: read-all
 jobs:
   test-compliance:
     name: test-compliance (${{ matrix.co_ref }}, ${{ matrix.ocp_version }})
-    runs-on: ubuntu-latest
+    # Pinned to 24.04: quick-ocp refuses OCP < 4.22 on the 26.04 image
+    # (older CRC fails SSH during start). Revisit when the matrix moves to 4.22+.
+    runs-on: ubuntu-24.04
     if: github.repository_owner == 'sebrandon1' && github.actor != 'dependabot[bot]'
     strategy:
       fail-fast: false
